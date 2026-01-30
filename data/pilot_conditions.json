@@ -1,0 +1,64 @@
+[
+    {
+        "code": "G43.0",
+        "name": "Migraine without aura",
+        "description": "Recurrent headache disorder characterized by unilateral, pulsating attacks.",
+        "symptoms_text": "Severe throbbing pain on one side of head. Sensitive to light and sound. Nausea and vomiting. Worsened by activity.",
+        "prevalence": "common",
+        "severity": "moderate-severe",
+        "match_criteria": {
+            "locations": [
+                "head"
+            ],
+            "types": [
+                "throbbing",
+                "pulsating"
+            ],
+            "triggers": [
+                "light",
+                "sound",
+                "stress"
+            ],
+            "symptomWeights": {
+                "nausea": {
+                    "weight": 2.0
+                },
+                "photophobia": {
+                    "weight": 2.0
+                }
+            }
+        },
+        "red_flags": [
+            "Sudden severe headache (thunderclap)"
+        ]
+    },
+    {
+        "code": "G44.2",
+        "name": "Tension-type headache",
+        "description": "Most common type of headache, feeling like a tight band around the head.",
+        "symptoms_text": "Dull, aching pain on both sides of head. Tightness or pressure. No nausea. Mild to moderate intensity.",
+        "prevalence": "very_common",
+        "severity": "mild-moderate",
+        "match_criteria": {
+            "locations": [
+                "head",
+                "forehead"
+            ],
+            "types": [
+                "dull",
+                "aching",
+                "tight",
+                "pressure"
+            ],
+            "triggers": [
+                "stress",
+                "posture"
+            ],
+            "absentSymptoms": [
+                "nausea",
+                "vomiting"
+            ]
+        },
+        "red_flags": []
+    }
+]

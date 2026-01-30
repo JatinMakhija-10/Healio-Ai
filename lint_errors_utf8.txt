@@ -1,0 +1,379 @@
+
+> temp-app@0.1.0 lint
+> eslint
+
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\components\PainSlider.js
+  5:7  warning  'SEVERITY_LABELS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\services\ChatService.js
+  18:10  warning  'LanguageSelector' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\services\ConditionDatabase.js
+  611:11  warning  'loc' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\seed_care_pathways.ts
+  315:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  315:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\history\page.tsx
+    4:52   warning  'CardDescription' is defined but never used                      @typescript-eslint/no-unused-vars
+   16:15   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   17:16   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  126:42   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  232:99   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  251:121  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  275:102  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\learn\page.tsx
+  127:117  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  127:125  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  127:145  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  152:113  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\page.tsx
+   57:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   83:81  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:18  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\profile\page.tsx
+    9:10  warning  'Input' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:16  warning  'Flame' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:23  warning  'Droplets' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   17:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+   18:66  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+   25:17  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\profile\page.tsx:25:17
+  23 |         if (pending) {
+  24 |             try {
+> 25 |                 setLocalProfile(JSON.parse(pending));
+     |                 ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |             } catch (e) {
+  27 |                 console.error("Failed to parse pending profile:", e);
+  28 |             }  react-hooks/set-state-in-effect
+   33:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  169:37  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+  169:68  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx
+   49:34  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:49:34
+  47 |         const savedPush = localStorage.getItem("settings_push_notif");
+  48 |
+> 49 |         if (savedEmail !== null) setEmailNotif(savedEmail === "true");
+     |                                  ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  50 |         if (savedPush !== null) setPushNotif(savedPush === "true");
+  51 |
+  52 |         const savedAyurvedic = localStorage.getItem("healio_pref_ayurvedic");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/set-state-in-effect
+  175:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:175:26
+  173 |                             <p className="text-sm text-slate-500">Receive summaries of your consultations.</p>
+  174 |                         </div>
+> 175 |                         <Switch checked={emailNotif} onToggle={toggleEmail} />
+      |                          ^^^^^^ This component is created during render
+  176 |                     </div>
+  177 |                     <div className="flex items-center justify-between">
+  178 |                         <div className="space-y-0.5">
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:145:20
+  143 |
+  144 |     // Helper for Switch UI
+> 145 |     const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |         <div
+      | ^^^^^^^^^^^^
+> 147 |             className={`h-6 w-11 rounded-full relative cursor-pointer transition-colors ${checked ? 'bg-teal-600' : 'bg-slate-200'}`}
+      | ^^^^^^^^^^^^
+> 148 |             onClick={onToggle}
+      | ^^^^^^^^^^^^
+> 149 |         >
+      | ^^^^^^^^^^^^
+> 150 |             <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all bg-white ${checked ? 'right-1' : 'left-1'}`} />
+      | ^^^^^^^^^^^^
+> 151 |         </div>
+      | ^^^^^^^^^^^^
+> 152 |     );
+      | ^^^^^^ The component is created during render here
+  153 |
+  154 |     return (
+  155 |         <div className="space-y-6 max-w-3xl pb-8">                    react-hooks/static-components
+  182:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:182:26
+  180 |                             <p className="text-sm text-slate-500">Get alerts about your health reminders.</p>
+  181 |                         </div>
+> 182 |                         <Switch checked={pushNotif} onToggle={togglePush} />
+      |                          ^^^^^^ This component is created during render
+  183 |                     </div>
+  184 |                 </CardContent>
+  185 |             </Card>
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:145:20
+  143 |
+  144 |     // Helper for Switch UI
+> 145 |     const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |         <div
+      | ^^^^^^^^^^^^
+> 147 |             className={`h-6 w-11 rounded-full relative cursor-pointer transition-colors ${checked ? 'bg-teal-600' : 'bg-slate-200'}`}
+      | ^^^^^^^^^^^^
+> 148 |             onClick={onToggle}
+      | ^^^^^^^^^^^^
+> 149 |         >
+      | ^^^^^^^^^^^^
+> 150 |             <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all bg-white ${checked ? 'right-1' : 'left-1'}`} />
+      | ^^^^^^^^^^^^
+> 151 |         </div>
+      | ^^^^^^^^^^^^
+> 152 |     );
+      | ^^^^^^ The component is created during render here
+  153 |
+  154 |     return (
+  155 |         <div className="space-y-6 max-w-3xl pb-8">                                                                                                  react-hooks/static-components
+  201:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:201:26
+  199 |                             <p className="text-sm text-slate-500">Enable Indian home remedies and Dosha analysis.</p>
+  200 |                         </div>
+> 201 |                         <Switch checked={ayurvedicMode} onToggle={toggleAyurvedic} />
+      |                          ^^^^^^ This component is created during render
+  202 |                     </div>
+  203 |                     <div className="flex items-center justify-between">
+  204 |                         <div className="space-y-0.5">
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:145:20
+  143 |
+  144 |     // Helper for Switch UI
+> 145 |     const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |         <div
+      | ^^^^^^^^^^^^
+> 147 |             className={`h-6 w-11 rounded-full relative cursor-pointer transition-colors ${checked ? 'bg-teal-600' : 'bg-slate-200'}`}
+      | ^^^^^^^^^^^^
+> 148 |             onClick={onToggle}
+      | ^^^^^^^^^^^^
+> 149 |         >
+      | ^^^^^^^^^^^^
+> 150 |             <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all bg-white ${checked ? 'right-1' : 'left-1'}`} />
+      | ^^^^^^^^^^^^
+> 151 |         </div>
+      | ^^^^^^^^^^^^
+> 152 |     );
+      | ^^^^^^ The component is created during render here
+  153 |
+  154 |     return (
+  155 |         <div className="space-y-6 max-w-3xl pb-8">      react-hooks/static-components
+  208:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:208:26
+  206 |                             <p className="text-sm text-slate-500">Show confidence intervals and evidence quality.</p>
+  207 |                         </div>
+> 208 |                         <Switch checked={showUncertainty} onToggle={toggleUncertainty} />
+      |                          ^^^^^^ This component is created during render
+  209 |                     </div>
+  210 |                     <div className="flex items-center justify-between">
+  211 |                         <div className="space-y-0.5">
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:145:20
+  143 |
+  144 |     // Helper for Switch UI
+> 145 |     const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |         <div
+      | ^^^^^^^^^^^^
+> 147 |             className={`h-6 w-11 rounded-full relative cursor-pointer transition-colors ${checked ? 'bg-teal-600' : 'bg-slate-200'}`}
+      | ^^^^^^^^^^^^
+> 148 |             onClick={onToggle}
+      | ^^^^^^^^^^^^
+> 149 |         >
+      | ^^^^^^^^^^^^
+> 150 |             <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all bg-white ${checked ? 'right-1' : 'left-1'}`} />
+      | ^^^^^^^^^^^^
+> 151 |         </div>
+      | ^^^^^^^^^^^^
+> 152 |     );
+      | ^^^^^^ The component is created during render here
+  153 |
+  154 |     return (
+  155 |         <div className="space-y-6 max-w-3xl pb-8">  react-hooks/static-components
+  215:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:215:26
+  213 |                             <p className="text-sm text-slate-500">Show reasoning behind the diagnosis.</p>
+  214 |                         </div>
+> 215 |                         <Switch checked={detailedExplanations} onToggle={toggleDetailed} />
+      |                          ^^^^^^ This component is created during render
+  216 |                     </div>
+  217 |                 </CardContent>
+  218 |             </Card>
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:145:20
+  143 |
+  144 |     // Helper for Switch UI
+> 145 |     const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |         <div
+      | ^^^^^^^^^^^^
+> 147 |             className={`h-6 w-11 rounded-full relative cursor-pointer transition-colors ${checked ? 'bg-teal-600' : 'bg-slate-200'}`}
+      | ^^^^^^^^^^^^
+> 148 |             onClick={onToggle}
+      | ^^^^^^^^^^^^
+> 149 |         >
+      | ^^^^^^^^^^^^
+> 150 |             <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all bg-white ${checked ? 'right-1' : 'left-1'}`} />
+      | ^^^^^^^^^^^^
+> 151 |         </div>
+      | ^^^^^^^^^^^^
+> 152 |     );
+      | ^^^^^^ The component is created during render here
+  153 |
+  154 |     return (
+  155 |         <div className="space-y-6 max-w-3xl pb-8">                                                                                      react-hooks/static-components
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\ChatInterface.tsx
+   22:5   warning  'intentEngine' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   96:17  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\ChatInterface.tsx:96:17
+  94 |     const saveConsultation = async (symptoms: UserSymptomData, diagnosisResult: DiagnosisResult, uncertainty?: UncertaintyEstimate, rules?: RuleResult[]) => {
+  95 |         const consultationData = {
+> 96 |             id: Date.now().toString(),
+     |                 ^^^^^^^^^^ Cannot call impure function
+  97 |             created_at: new Date().toISOString(),
+  98 |             symptoms: symptoms,
+  99 |             diagnosis: {  react-hooks/purity
+  287:17  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\ChatInterface.tsx:287:17
+  285 |         // Add user response
+  286 |         addMessage({
+> 287 |             id: Date.now().toString(),
+      |                 ^^^^^^^^^^ Cannot call impure function
+  288 |             role: "user",
+  289 |             content: option
+  290 |         });                                                                                                                                                                                   react-hooks/purity
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\DiagnosisResultCard.tsx
+  7:50  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\IntakeCard.tsx
+   11:10  warning  'RadioGroup' is defined but never used                           @typescript-eslint/no-unused-vars
+   11:22  warning  'RadioGroupItem' is defined but never used                       @typescript-eslint/no-unused-vars
+  170:60  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\dashboard\DailyTipCard.tsx
+  463:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\dashboard\DailyTipCard.tsx:463:9
+  461 |         // Randomize on mount
+  462 |         const randomTip = TIPS[Math.floor(Math.random() * TIPS.length)];
+> 463 |         setTip(randomTip);
+      |         ^^^^^^ Avoid calling setState() directly within an effect
+  464 |     }, []);
+  465 |
+  466 |     const refreshTip = () => {  react-hooks/set-state-in-effect
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\layout\Header.tsx
+  5:33  warning  'Heart' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\api\endlessMedical.ts
+   7:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:26  warning  'symptoms' is defined but never used      @typescript-eslint/no-unused-vars
+  49:55  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\analysis\doshicAnalysis.ts
+  141:5  warning  'currentSeason' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\prakriti\prakritiEngine.ts
+  241:13  warning  'totalWeight' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  279:12  warning  'third' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\types.ts
+  307:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\vikriti\vikritiEngine.ts
+  304:11  warning  'balance' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\advanced\ClinicalDecisionRules.ts
+  144:62  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+  285:19  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\advanced\UncertaintyQuantification.ts
+  48:15  warning  'evidenceBonus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\care-pathways\pathwayEngine.ts
+  146:5  warning  'diagnosis' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\EmpatheticResponseGenerator.ts
+   15:5   warning  'ConversationPhase' is defined but never used                 @typescript-eslint/no-unused-vars
+   87:27  warning  '_detail' is defined but never used                           @typescript-eslint/no-unused-vars
+  136:33  warning  'communicationPreference' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  166:33  warning  'communicationPreference' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  266:22  warning  'state' is defined but never used                             @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\IntentEngine.ts
+  13:5  warning  'ExtractedEntity' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\MedicalNER.ts
+   99:7   warning  'NEGATION_WINDOW' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  111:7   warning  'RECENT_INDICATORS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  241:43  warning  'tokens' is defined but never used                      @typescript-eslint/no-unused-vars
+  282:15  warning  'afterText' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\engine.ts
+    3:54  warning  'getBestQuestion' is defined but never used     @typescript-eslint/no-unused-vars
+    3:71  warning  'PRECOMPUTE_STATS' is defined but never used    @typescript-eslint/no-unused-vars
+  228:10  warning  'calculateScore' is defined but never used      @typescript-eslint/no-unused-vars
+  740:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\prakritiEngine.ts
+  103:5  warning  'condition' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\precompute.ts
+  207:19  warning  'queryTerms' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  214:31  warning  'error' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\test_production_features.ts
+  3:10  warning  'symptomCorrelationDetector' is defined but never used  @typescript-eslint/no-unused-vars
+  4:10  warning  'clinicalRules' is defined but never used               @typescript-eslint/no-unused-vars
+  5:10  warning  'uncertaintyQuantifier' is defined but never used       @typescript-eslint/no-unused-vars
+
+✖ 77 problems (34 errors, 43 warnings)
+

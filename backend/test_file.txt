@@ -1,0 +1,2 @@
+This is a test file for the Healio.AI backend upload verification.
+If you can read this, the upload was successful!

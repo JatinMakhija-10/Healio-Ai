@@ -1,0 +1,177 @@
+
+> temp-app@0.1.0 lint
+> eslint
+
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\components\PainSlider.js
+  5:7  warning  'SEVERITY_LABELS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\services\ChatService.js
+  18:10  warning  'LanguageSelector' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\legacy\src\services\ConditionDatabase.js
+  611:11  warning  'loc' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\seed_care_pathways.ts
+  315:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  315:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\history\page.tsx
+    4:52   warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+   16:15   error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   17:16   error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  232:99   error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  251:121  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  275:102  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\learn\page.tsx
+  152:113  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\page.tsx
+   57:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   83:81  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:18  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\profile\page.tsx
+    9:10  warning  'Input' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:16  warning  'Flame' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:23  warning  'Droplets' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   17:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+   18:66  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+   25:17  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\profile\page.tsx:25:17
+  23 |         if (pending) {
+  24 |             try {
+> 25 |                 setLocalProfile(JSON.parse(pending));
+     |                 ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |             } catch (e) {
+  27 |                 console.error("Failed to parse pending profile:", e);
+  28 |             }  react-hooks/set-state-in-effect
+   33:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  169:37  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+  169:68  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react/no-unescaped-entities
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx
+  59:34  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\settings\page.tsx:59:34
+  57 |         const savedPush = localStorage.getItem("settings_push_notif");
+  58 |
+> 59 |         if (savedEmail !== null) setEmailNotif(savedEmail === "true");
+     |                                  ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  60 |         if (savedPush !== null) setPushNotif(savedPush === "true");
+  61 |
+  62 |         const savedAyurvedic = localStorage.getItem("healio_pref_ayurvedic");  react-hooks/set-state-in-effect
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\ChatInterface.tsx
+  22:5  warning  'intentEngine' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  79:9  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\ChatInterface.tsx:79:9
+  77 |         const savedDetailed = localStorage.getItem("healio_pref_detailed");
+  78 |
+> 79 |         setPreferences({
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |             ayurvedicMode: savedAyurvedic !== "false", // Default true
+  81 |             showUncertainty: savedUncertainty !== "false", // Default true
+  82 |             detailedExplanations: savedDetailed !== "false" // Default true  react-hooks/set-state-in-effect
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\DiagnosisResultCard.tsx
+  7:50  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\chat\IntakeCard.tsx
+  11:10  warning  'RadioGroup' is defined but never used      @typescript-eslint/no-unused-vars
+  11:22  warning  'RadioGroupItem' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\dashboard\DailyTipCard.tsx
+  463:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+C:\Users\JATIN\Desktop\Healio.AI\src\components\layout\Header.tsx
+  5:33  warning  'Heart' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\api\endlessMedical.ts
+   7:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:26  warning  'symptoms' is defined but never used      @typescript-eslint/no-unused-vars
+  49:55  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\analysis\doshicAnalysis.ts
+  141:5  warning  'currentSeason' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\prakriti\prakritiEngine.ts
+  241:13  warning  'totalWeight' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  279:12  warning  'third' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\types.ts
+  307:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\ayurveda\vikriti\vikritiEngine.ts
+  304:11  warning  'balance' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\advanced\ClinicalDecisionRules.ts
+  144:62  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+  285:19  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\advanced\UncertaintyQuantification.ts
+  48:15  warning  'evidenceBonus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\care-pathways\pathwayEngine.ts
+  146:5  warning  'diagnosis' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\EmpatheticResponseGenerator.ts
+   15:5   warning  'ConversationPhase' is defined but never used                 @typescript-eslint/no-unused-vars
+   87:27  warning  '_detail' is defined but never used                           @typescript-eslint/no-unused-vars
+  136:33  warning  'communicationPreference' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  166:33  warning  'communicationPreference' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  266:22  warning  'state' is defined but never used                             @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\IntentEngine.ts
+  13:5  warning  'ExtractedEntity' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\dialogue\MedicalNER.ts
+   99:7   warning  'NEGATION_WINDOW' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  111:7   warning  'RECENT_INDICATORS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  241:43  warning  'tokens' is defined but never used                      @typescript-eslint/no-unused-vars
+  282:15  warning  'afterText' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\engine.ts
+    3:54  warning  'getBestQuestion' is defined but never used     @typescript-eslint/no-unused-vars
+    3:71  warning  'PRECOMPUTE_STATS' is defined but never used    @typescript-eslint/no-unused-vars
+  228:10  warning  'calculateScore' is defined but never used      @typescript-eslint/no-unused-vars
+  740:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\prakritiEngine.ts
+  103:5  warning  'condition' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\precompute.ts
+  207:19  warning  'queryTerms' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  214:31  warning  'error' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\JATIN\Desktop\Healio.AI\src\lib\diagnosis\test_production_features.ts
+  3:10  warning  'symptomCorrelationDetector' is defined but never used  @typescript-eslint/no-unused-vars
+  4:10  warning  'clinicalRules' is defined but never used               @typescript-eslint/no-unused-vars
+  5:10  warning  'uncertaintyQuantifier' is defined but never used       @typescript-eslint/no-unused-vars
+
+✖ 66 problems (22 errors, 44 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

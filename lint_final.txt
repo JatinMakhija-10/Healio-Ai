@@ -1,0 +1,8 @@
+
+C:\Users\JATIN\Desktop\Healio.AI\src\app\dashboard\page.tsx
+   57:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   83:81  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:18  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+✖ 3 problems (1 error, 2 warnings)
+

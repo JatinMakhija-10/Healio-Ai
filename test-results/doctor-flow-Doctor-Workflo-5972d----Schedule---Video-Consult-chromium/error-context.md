@@ -1,0 +1,43 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - img [ref=e10]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Welcome Back
+        - generic [ref=e17]: Enter your credentials to access your account
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]: Email Address
+            - textbox "Email Address" [ref=e22]:
+              - /placeholder: name@example.com
+          - generic [ref=e23]:
+            - generic [ref=e24]:
+              - generic [ref=e25]: Password
+              - link "Forgot password?" [ref=e26] [cursor=pointer]:
+                - /url: "#"
+            - textbox "Password" [ref=e27]:
+              - /placeholder: ••••••••
+          - button "Sign In" [ref=e28]:
+            - text: Sign In
+            - img
+        - paragraph [ref=e30]:
+          - text: Don't have an account?
+          - link "Create free account" [ref=e31] [cursor=pointer]:
+            - /url: /signup
+    - paragraph [ref=e32]:
+      - text: By logging in, you agree to our
+      - link "Terms of Service" [ref=e33] [cursor=pointer]:
+        - /url: "#"
+      - text: and
+      - link "Privacy Policy" [ref=e34] [cursor=pointer]:
+        - /url: "#"
+      - text: .
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e40] [cursor=pointer]:
+    - img [ref=e41]
+  - alert [ref=e44]
+```
