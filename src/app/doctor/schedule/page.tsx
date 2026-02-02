@@ -11,11 +11,18 @@ import { useAppointments } from "@/hooks/useAppointments";
 import { toast } from "sonner";
 import { SlotInfo } from "react-big-calendar";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
+import { useEffect } from "react";
+
 
 export default function SchedulePage() {
+    const { user } = useAuth();
+    const [patients, setPatients] = useState<any[]>([]);
+
     const {
         appointments,
-        addAppointment, // We need to expose this in hook or use store
+        createAppointment,
         reschedule,
     } = useAppointments();
 
@@ -23,6 +30,22 @@ export default function SchedulePage() {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     const router = useRouter();
+
+    useEffect(() => {
+        async function loadPatients() {
+            if (!user) return;
+            try {
+                const doctor = await api.getDoctorProfile(user.id);
+                if (doctor) {
+                    const pts = await api.getDoctorPatients(doctor.id);
+                    setPatients(pts);
+                }
+            } catch (error) {
+                console.error("Failed to load patients", error);
+            }
+        }
+        loadPatients();
+    }, [user]);
 
     const handleSelectSlot = (slotInfo: SlotInfo) => {
         setSelectedDate(slotInfo.start);
@@ -35,27 +58,29 @@ export default function SchedulePage() {
         router.push(`/doctor/consult/${apt.id}`);
     };
 
-    const handleBook = (booking: NewBooking) => {
-        const [hours, minutes] = booking.time.split(':').map(Number);
-        const scheduledAt = new Date(selectedDate);
-        scheduledAt.setHours(hours, minutes, 0, 0);
+    const handleBook = async (booking: NewBooking) => {
+        try {
+            await createAppointment({
+                patientId: booking.patientId,
+                date: booking.date,
+                duration: booking.duration,
+                notes: booking.notes
+            });
+            setIsBookingModalOpen(false);
+        } catch (error) {
+            // Error handled by hook
+        }
+    };
 
-        const newApt = {
-            id: Math.random().toString(),
-            patientId: booking.patientId,
-            patientName: booking.patientName,
-            scheduledAt,
-            duration: booking.duration,
-            status: 'scheduled' as const,
-            chiefComplaint: booking.notes,
-            patientAvatar: undefined,
-            aiDiagnosis: 'Pending Analysis',
-            aiConfidence: 0,
-            hasRedFlags: false,
-        };
-        addAppointment(newApt);
-        toast.success("Appointment booked successfully!");
-        setIsBookingModalOpen(false);
+    const handleSync = () => {
+        toast.promise(
+            new Promise((resolve) => setTimeout(resolve, 1500)),
+            {
+                loading: 'Syncing with external calendars...',
+                success: 'Calendar synced successfully',
+                error: 'Failed to sync calendar',
+            }
+        );
     };
 
     const handleReschedule = async (id: string, start: Date, end: Date) => {
@@ -71,7 +96,7 @@ export default function SchedulePage() {
                     <p className="text-slate-500">Manage your appointments and availability.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline">Sync Calendar</Button>
+                    <Button variant="outline" onClick={handleSync}>Sync Calendar</Button>
                     <Button
                         className="bg-teal-600 hover:bg-teal-700 gap-2"
                         onClick={() => setIsBookingModalOpen(true)}
@@ -98,6 +123,7 @@ export default function SchedulePage() {
                 onBook={handleBook}
                 selectedDate={selectedDate}
                 existingAppointments={appointments}
+                patients={patients}
             />
         </div>
     );

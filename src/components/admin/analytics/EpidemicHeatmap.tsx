@@ -1,62 +1,69 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
-import { scaleQuantile } from "d3-scale";
-import { Tooltip } from "react-tooltip";
+import { Chart } from "react-google-charts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Map as MapIcon, Info } from "lucide-react";
 
-// India TopoJSON URL - Highcharts CDN is reliable and supports CORS
-const INDIA_TOPO_JSON = "https://code.highcharts.com/mapdata/countries/in/in-all.topo.json";
-
 interface HeatmapData {
-    id: string; // State code or name match
+    id: string;
     state: string;
     cases: number;
-    riskLevel: string; // 'Low', 'Moderate', 'High', 'Critical'
+    riskLevel: string;
 }
 
-// Mock Data for demonstration
-const MOCK_DATA: HeatmapData[] = [
-    { id: "MH", state: "Maharashtra", cases: 2453, riskLevel: "Critical" },
-    { id: "DL", state: "NCT of Delhi", cases: 1890, riskLevel: "High" }, // Updated name for Highcharts matching
-    { id: "KL", state: "Kerala", cases: 1200, riskLevel: "Moderate" },
-    { id: "KA", state: "Karnataka", cases: 1600, riskLevel: "High" },
-    { id: "TN", state: "Tamil Nadu", cases: 900, riskLevel: "Moderate" },
-    { id: "UP", state: "Uttar Pradesh", cases: 400, riskLevel: "Low" },
-    { id: "GJ", state: "Gujarat", cases: 750, riskLevel: "Moderate" },
-    { id: "WB", state: "West Bengal", cases: 1100, riskLevel: "High" },
-];
-
 export function EpidemicHeatmap() {
-    const [data, setData] = useState<HeatmapData[]>([]);
+    const [data, setData] = useState<any[][]>([["State", "Users"]]);
     const [loading, setLoading] = useState(true);
-    const [tooltipContent, setTooltipContent] = useState("");
 
     useEffect(() => {
-        // Simulate API fetch delay
-        setTimeout(() => {
-            setData(MOCK_DATA);
-            setLoading(false);
-        }, 1000);
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/analytics/epidemic');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch epidemic data');
+                }
+                const realData: HeatmapData[] = await response.json();
+
+                if (Array.isArray(realData) && realData.length > 0) {
+                    // Google Charts expects [["State", "Value"], ["IN-MH", 500]] format
+                    // But names also work well for India with resolution 'provinces'
+                    const chartData: (string | number)[][] = [["State", "Users"]];
+                    realData.forEach(item => {
+                        // Google Charts works best with "IN-MH" codes or full names "Maharashtra"
+                        // Since we have full names in DB, we'll try to use them directly or prefix if needed.
+                        // For India GeoChart, full names usually work if they match ISO/standard names.
+                        chartData.push([item.state, item.cases]);
+                    });
+                    setData(chartData);
+                } else {
+                    setData([["State", "Users"]]);
+                }
+            } catch (error) {
+                console.error('Error loading heatmap data:', error);
+                setData([["State", "Users"]]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
-    const colorScale = scaleQuantile<string>()
-        .domain(data.map(d => d.cases))
-        .range([
-            "#ffedea",
-            "#ffcec5",
-            "#ffad9f",
-            "#ff8a75",
-            "#ff5533",
-            "#e2492d",
-            "#be3d26",
-            "#9a311f",
-            "#782618"
-        ]);
+    const options = {
+        region: "IN", // India
+        domain: "IN",
+        displayMode: "regions",
+        resolution: "provinces",
+        colorAxis: { colors: ["#ffedea", "#ff5533", "#782618"] }, // Gradient from light to dark red
+        backgroundColor: "transparent",
+        datalessRegionColor: "#EAEAEC",
+        defaultColor: "#f5f5f5",
+        legend: { textStyle: { color: 'blue', fontSize: 16 } },
+        tooltip: { isHtml: true }, // Use standard tooltips
+        keepAspectRatio: true,
+    };
 
     return (
         <Card className="w-full h-full min-h-[600px] flex flex-col">
@@ -68,17 +75,17 @@ export function EpidemicHeatmap() {
                             Epidemic Intensity Map
                         </CardTitle>
                         <CardDescription>
-                            Real-time regional tracking of disease outbreaks and symptom clusters.
+                            Real-time regional tracking of registered users and potential clusters.
                         </CardDescription>
                     </div>
                     <div className="flex gap-2">
-                        <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">Critical: &gt;2000</Badge>
-                        <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-700">High: 1000-2000</Badge>
-                        <Badge variant="outline" className="border-yellow-200 bg-yellow-50 text-yellow-700">Mod: 500-1000</Badge>
+                        <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">Critical: &gt;50</Badge>
+                        <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-700">High: 20-50</Badge>
+                        <Badge variant="outline" className="border-yellow-200 bg-yellow-50 text-yellow-700">Mod: 10-20</Badge>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="flex-1 relative bg-slate-50/50 rounded-b-xl overflow-hidden p-0">
+            <CardContent className="flex-1 relative bg-slate-50/50 rounded-b-xl overflow-hidden p-4">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
                         <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
@@ -86,68 +93,38 @@ export function EpidemicHeatmap() {
                     </div>
                 ) : (
                     <div className="w-full h-full flex items-center justify-center relative">
-                        <ComposableMap
-                            projection="geoMercator"
-                            projectionConfig={{
-                                scale: 1000,
-                                center: [80, 22] // Adjusted center for India
-                            }}
-                            className="w-full h-full max-w-4xl"
-                            style={{ maxWidth: "100%", maxHeight: "100%" }}
-                        >
-                            <ZoomableGroup zoom={1} center={[80, 22]}>
-                                <Geographies geography={INDIA_TOPO_JSON}>
-                                    {({ geographies }) =>
-                                        geographies.map((geo) => {
-                                            // Handle Highcharts TopoJSON format
-                                            const stateName = geo.properties.name || geo.properties['name'] || "Unknown";
+                        <Chart
+                            chartType="GeoChart"
+                            width="100%"
+                            height="100%"
+                            data={data.length > 1 ? data : [["State", "Users"], ["Empty", 0]]}
+                            options={options}
+                            chartEvents={[
+                                {
+                                    eventName: "select",
+                                    callback: ({ chartWrapper }) => {
+                                        const chart = chartWrapper?.getChart();
+                                        const selection = chart?.getSelection();
+                                        if (!selection || selection.length === 0) return;
+                                        // Handle click if needed
+                                    },
+                                },
+                            ]}
+                        />
 
-                                            // Matching logic
-                                            const cur = data.find(s =>
-                                                stateName === s.state ||
-                                                s.state.includes(stateName) ||
-                                                stateName.includes(s.state)
-                                            );
+                        {data.length <= 1 && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <p className="text-slate-400">No data available to display</p>
+                            </div>
+                        )}
 
-                                            return (
-                                                <Geography
-                                                    key={geo.rsmKey}
-                                                    geography={geo}
-                                                    fill={cur ? colorScale(cur.cases) : "#EAEAEC"}
-                                                    stroke="#FFF"
-                                                    strokeWidth={0.5}
-                                                    style={{
-                                                        default: { outline: "none" },
-                                                        hover: { fill: "#db2777", outline: "none", cursor: "pointer" },
-                                                        pressed: { outline: "none" }
-                                                    }}
-                                                    onMouseEnter={() => {
-                                                        const count = cur ? cur.cases : 0;
-                                                        const risk = cur ? cur.riskLevel : 'Low';
-                                                        setTooltipContent(`${stateName}: ${count} Active Cases (${risk})`);
-                                                    }}
-                                                    onMouseLeave={() => {
-                                                        setTooltipContent("");
-                                                    }}
-                                                    data-tooltip-id="map-tooltip"
-                                                    data-tooltip-content={tooltipContent}
-                                                />
-                                            );
-                                        })
-                                    }
-                                </Geographies>
-                            </ZoomableGroup>
-                        </ComposableMap>
-
-                        <Tooltip id="map-tooltip" />
-
-                        <div className="absolute bottom-4 right-4 bg-white/90 p-4 rounded-lg shadow-lg backdrop-blur-sm border text-sm max-w-xs z-10">
+                        <div className="absolute bottom-4 right-4 bg-white/90 p-4 rounded-lg shadow-lg backdrop-blur-sm border text-sm max-w-xs z-10 pointer-events-none">
                             <h4 className="font-semibold mb-2 flex items-center gap-2">
                                 <Info className="h-4 w-4 text-purple-500" />
                                 Insight
                             </h4>
                             <p className="text-slate-600">
-                                <span className="font-medium text-slate-900">Maharashtra</span> represents the highest concentration of reported symptoms this week. Recommend prioritizing resource allocation.
+                                Density mapping based on registered user locations.
                             </p>
                         </div>
                     </div>

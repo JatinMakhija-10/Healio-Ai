@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,22 +22,11 @@ import { PreCallCheck } from '@/components/features/video/PreCallCheck';
 import { motion, AnimatePresence } from 'framer-motion';
 import { saveClinicalNotes } from '@/lib/appointments/contextClient';
 import { toast } from 'sonner';
+import { api } from '@/lib/api';
+
+
 
 type ConsultationPhase = 'pre_check' | 'in_call' | 'post_call';
-
-// Mock patient data - would come from API
-const mockPatient = {
-    id: 'PT-1002',
-    name: 'Priya Sharma',
-    age: 29,
-    gender: 'Female',
-    avatar: undefined,
-    condition: 'Migraine',
-    chiefComplaint: 'Pulsating headache on left side, sensitivity to light.',
-    aiDiagnosis: 'Migraine with Aura',
-    aiConfidence: 0.94,
-    hasRedFlags: false,
-};
 
 export default function ConsultationPage() {
     const params = useParams();
@@ -48,6 +37,30 @@ export default function ConsultationPage() {
     const [consultationNotes, setConsultationNotes] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    // Real Data State
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [appointment, setAppointment] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            if (!appointmentId) return;
+            try {
+                const data = await api.getAppointmentById(appointmentId);
+                if (data) {
+                    setAppointment(data);
+                    setConsultationNotes(data.notes || '');
+                }
+            } catch (error) {
+                console.error("Failed to fetch appointment", error);
+                toast.error("Failed to load appointment details");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [appointmentId]);
+
     const handlePreCheckComplete = () => {
         setPhase('in_call');
     };
@@ -56,19 +69,27 @@ export default function ConsultationPage() {
         setPhase('post_call');
     };
 
-    // ...
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center bg-slate-100">Loading...</div>;
+    }
+
+    if (!appointment) {
+        return <div className="min-h-screen flex items-center justify-center bg-slate-100">Appointment not found</div>;
+    }
+
+    const patient = appointment.patient || {};
 
     const handleSaveNotes = async () => {
         setIsSaving(true);
         try {
+            // Using existing logic, though ideally we update the appointment record directly or fetch clinical notes table
             await saveClinicalNotes(appointmentId, {
-                // Mapping single text field to clinical notes structure
-                // Ideally we'd have structured fields, but for this UI we map to 'plan' or generic
                 subjective: consultationNotes
             });
             toast.success("Consultation notes saved");
             router.push('/doctor/schedule');
         } catch (error) {
+            console.error("Save notes error", error);
             toast.error("Failed to save notes");
         } finally {
             setIsSaving(false);
@@ -88,7 +109,7 @@ export default function ConsultationPage() {
                         </Button>
                         <div>
                             <h1 className="font-semibold text-slate-900">Video Consultation</h1>
-                            <p className="text-sm text-slate-500">Appointment #{appointmentId}</p>
+                            <p className="text-sm text-slate-500">Appointment #{appointmentId.slice(0, 8)}</p>
                         </div>
                     </div>
 
@@ -116,10 +137,12 @@ export default function ConsultationPage() {
                             exit={{ opacity: 0, y: -20 }}
                         >
                             <PreCallCheck
-                                patientName={mockPatient.name}
+                                remoteParticipantName={patient.full_name || 'Patient'}
+                                userName={appointment.doctor?.specialization ? `Dr. ${appointment.doctor.full_name || 'Doctor'}` : 'Doctor'}
                                 onComplete={handlePreCheckComplete}
                                 onCancel={() => router.push('/doctor/schedule')}
                             />
+
                         </motion.div>
                     )}
 
@@ -136,12 +159,13 @@ export default function ConsultationPage() {
                             <div className="lg:col-span-8">
                                 <VideoRoom
                                     appointmentId={appointmentId}
-                                    patientName={mockPatient.name}
-                                    patientAvatar={mockPatient.avatar}
+                                    patientName={patient.full_name}
+                                    patientAvatar={patient.avatar_url}
                                     onCallEnd={handleCallEnd}
                                 />
                             </div>
 
+                            {/* Patient Info Sidebar */}
                             {/* Patient Info Sidebar */}
                             <div className="lg:col-span-4 space-y-4">
                                 {/* Patient Card */}
@@ -149,15 +173,16 @@ export default function ConsultationPage() {
                                     <CardHeader className="pb-3">
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-12 w-12">
-                                                <AvatarImage src={mockPatient.avatar} />
+                                                <AvatarImage src={patient.avatar_url} />
                                                 <AvatarFallback className="bg-teal-100 text-teal-700">
-                                                    {mockPatient.name.charAt(0)}
+                                                    {patient.full_name?.charAt(0) || 'P'}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <CardTitle className="text-lg">{mockPatient.name}</CardTitle>
+                                                <CardTitle className="text-lg">{patient.full_name || 'Unknown Patient'}</CardTitle>
                                                 <p className="text-sm text-slate-500">
-                                                    {mockPatient.age} yrs • {mockPatient.gender}
+                                                    {patient.age ? `${patient.age} yrs` : ''}
+                                                    {patient.gender ? ` • ${patient.gender}` : ''}
                                                 </p>
                                             </div>
                                         </div>
@@ -167,26 +192,20 @@ export default function ConsultationPage() {
                                             <p className="text-xs font-medium text-slate-500 uppercase mb-1">
                                                 Chief Complaint
                                             </p>
-                                            <p className="text-sm text-slate-700">{mockPatient.chiefComplaint}</p>
+                                            <p className="text-sm text-slate-700">{appointment.notes || 'No notes provided'}</p>
                                         </div>
 
+                                        {/* AI Analysis - Only show if data is available (mocking this part for now or hiding) */}
+                                        {/* In a real app, we would fetch this from the linked consultation/diagnosis */}
+                                        {/* 
                                         <div className="p-3 bg-slate-50 rounded-lg">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Stethoscope className="h-4 w-4 text-teal-600" />
                                                 <span className="text-xs font-medium text-slate-500">AI Analysis</span>
                                             </div>
                                             <p className="font-medium text-slate-900">{mockPatient.aiDiagnosis}</p>
-                                            <p className="text-xs text-slate-500">
-                                                {(mockPatient.aiConfidence * 100).toFixed(0)}% confidence
-                                            </p>
                                         </div>
-
-                                        {mockPatient.hasRedFlags && (
-                                            <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-200">
-                                                <AlertTriangle className="h-4 w-4 text-red-600" />
-                                                <span className="text-sm text-red-700">Red flags detected</span>
-                                            </div>
-                                        )}
+                                        */}
                                     </CardContent>
                                 </Card>
 
@@ -227,7 +246,7 @@ export default function ConsultationPage() {
                                     </div>
                                     <CardTitle className="text-2xl">Consultation Complete</CardTitle>
                                     <p className="text-slate-500">
-                                        Your call with {mockPatient.name} has ended
+                                        Your call with {patient.full_name} has ended
                                     </p>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
@@ -241,7 +260,7 @@ export default function ConsultationPage() {
                                             </div>
                                             <div>
                                                 <span className="text-slate-500">Patient</span>
-                                                <p className="font-medium">{mockPatient.name}</p>
+                                                <p className="font-medium">{patient.full_name}</p>
                                             </div>
                                         </div>
                                     </div>

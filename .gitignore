@@ -79,12 +79,23 @@ Thumbs.db
 # Sensitive files (auto-detected)
 .env.example
 .env.local
+node_modules
+tsconfig.tsbuildinfo
+
+# Project specific logs and temp files
+*.log
+*_errors.txt
+*_results.txt
+app_errors.txt
+diagnosis_errors.txt
+final_diagnosis_errors.txt
+lint_*.txt
+lint_*.json
+test_output.txt
+test_results*.txt
+verification_result.txt
+tsc_errors*.txt
 build_error.log
 eslint.log
 lint_errors.log
-node_modules
-tsconfig.tsbuildinfo
-tsc_errors.log
-tsc_errors_2.log
-tsc_errors_3.log
 

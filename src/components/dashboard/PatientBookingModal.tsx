@@ -127,19 +127,26 @@ export function PatientBookingModal({
             scheduledAt.setSeconds(0);
             scheduledAt.setMilliseconds(0);
 
+            // Fetch the latest consultation to link the AI context
+            const latestConsultation = await api.getLatestConsultation(user.id);
+
             await api.createAppointment({
                 patient_id: user.id,
-                doctor_id: doctor.user_id,
+                doctor_id: doctor.id, // Corrected: Use doctor's PK, not user_id
                 scheduled_at: scheduledAt.toISOString(),
-                duration_minutes: 30, // Default duration
-                reason: "Initial Consultation"
+                duration_minutes: 30,
+                reason: latestConsultation
+                    ? `Follow-up on ${latestConsultation.diagnosis?.condition || 'recent consultation'}`
+                    : "Initial Consultation",
+                diagnosis_ref_id: latestConsultation?.id
             });
 
             setIsSuccess(true);
             toast.success("Appointment Request Sent!");
-        } catch (error) {
-            console.error("Booking failed", error);
-            toast.error("Failed to book appointment. Please try again.");
+        } catch (error: any) {
+            console.error("Booking failed detailed:", error);
+            console.error("Booking failed message:", error.message || "No message");
+            toast.error(`Failed to book: ${error.message || "Unknown error"}`);
         } finally {
             setIsSubmitting(false);
         }

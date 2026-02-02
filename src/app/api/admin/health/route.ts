@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +10,7 @@ const CACHE_TTL = 10000; // 10 seconds
 
 async function checkDatabaseHealth(): Promise<'operational' | 'degraded' | 'down'> {
     try {
+        const supabase = await createClient();
         const start = Date.now();
         const { error } = await supabase.from('profiles').select('id').limit(1);
         const latency = Date.now() - start;
@@ -72,6 +72,7 @@ function aggregateSystemStatus(services: { database: string; aiService: string; 
 
 export async function GET(request: NextRequest) {
     try {
+        const supabase = await createClient();
         // Check authentication
         const { data: { session } } = await supabase.auth.getSession();
 

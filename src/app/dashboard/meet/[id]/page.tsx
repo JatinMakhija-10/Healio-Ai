@@ -9,6 +9,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { PreCallCheck } from '@/components/features/video/PreCallCheck';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import { api } from '@/lib/api';
+import { toast } from 'sonner';
 
 type ConsultationPhase = 'pre_check' | 'in_call' | 'post_call';
 
@@ -17,9 +19,28 @@ export default function PatientMeetPage() {
     const router = useRouter();
     const appointmentId = params.id as string;
 
-    // In a real app, we'd fetch patient name/details here
-    // For now, we assume the user is the patient
     const [phase, setPhase] = useState<ConsultationPhase>('pre_check');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [appointment, setAppointment] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            if (!appointmentId) return;
+            try {
+                const data = await api.getAppointmentById(appointmentId);
+                if (data) {
+                    setAppointment(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch appointment", error);
+                toast.error("Failed to load consultation details");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [appointmentId]);
 
     const handlePreCheckComplete = () => {
         setPhase('in_call');
@@ -28,6 +49,22 @@ export default function PatientMeetPage() {
     const handleCallEnd = () => {
         setPhase('post_call');
     };
+
+    if (loading) {
+        return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading consultation...</div>;
+    }
+
+    if (!appointment) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-4">
+                <p>Consultation not found.</p>
+                <Button variant="outline" onClick={() => router.push('/dashboard')}>Return to Dashboard</Button>
+            </div>
+        );
+    }
+
+    const doctor = appointment.doctor || {};
+    const doctorName = doctor.full_name || 'Doctor';
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -41,7 +78,13 @@ export default function PatientMeetPage() {
                     </Button>
                     <div>
                         <h1 className="font-semibold">Consultation Room</h1>
-                        <p className="text-xs text-slate-400">ID: {appointmentId}</p>
+                        <p className="text-xs text-slate-400">ID: {appointmentId.slice(0, 8)}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="text-right hidden sm:block">
+                        <p className="text-sm font-medium text-slate-200">{doctorName}</p>
+                        <p className="text-xs text-slate-500">{doctor.specialization?.[0] || 'Specialist'}</p>
                     </div>
                 </div>
             </header>
@@ -59,16 +102,18 @@ export default function PatientMeetPage() {
                         >
                             <div className="bg-white rounded-xl shadow-xl overflow-hidden p-1">
                                 <PreCallCheck
-                                    patientName="You"
+                                    remoteParticipantName={doctorName}
+                                    userName={appointment?.patient?.full_name || 'Patient'}
                                     onComplete={handlePreCheckComplete}
                                     onCancel={() => router.push('/dashboard')}
                                 />
                             </div>
                             <p className="text-center text-sm text-slate-500 mt-4">
-                                Checking your camera and microphone ensures a smooth consultation.
+                                Checking your camera and microphone ensures a smooth consultation with {doctorName}.
                             </p>
                         </motion.div>
                     )}
+
 
                     {/* Phase 2: In-Call */}
                     {phase === 'in_call' && (
@@ -81,8 +126,8 @@ export default function PatientMeetPage() {
                         >
                             <VideoRoom
                                 appointmentId={appointmentId}
-                                patientName="Patient" // This would be dynamic
-                                patientAvatar={undefined}
+                                patientName={doctorName} // Displaying the Doctor's name as the "remote" participant
+                                patientAvatar={doctor.avatar_url} // Displaying the Doctor's avatar
                                 onCallEnd={handleCallEnd}
                             />
                         </motion.div>
@@ -102,7 +147,7 @@ export default function PatientMeetPage() {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold">Consultation Ended</h2>
-                                <p className="text-slate-400">Thank you for using Healio.AI</p>
+                                <p className="text-slate-400">Thank you for consulting with {doctorName}</p>
                             </div>
                             <div className="flex gap-3 justify-center">
                                 <Button asChild className="bg-teal-600 hover:bg-teal-700">
@@ -119,3 +164,4 @@ export default function PatientMeetPage() {
         </div>
     );
 }
+

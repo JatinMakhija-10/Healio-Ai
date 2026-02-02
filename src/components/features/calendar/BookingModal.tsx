@@ -45,6 +45,7 @@ interface BookingModalProps {
     existingAppointments?: Appointment[];
     patientId?: string;
     patientName?: string;
+    patients?: { id: string; full_name: string; avatar_url?: string }[];
 }
 
 export interface NewBooking {
@@ -84,6 +85,7 @@ export function BookingModal({
     existingAppointments = [],
     patientId = '',
     patientName = '',
+    patients = [],
 }: BookingModalProps) {
     const [date, setDate] = useState<Date | undefined>(selectedDate || new Date());
     const [time, setTime] = useState('09:00');
@@ -93,7 +95,14 @@ export function BookingModal({
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurringPattern, setRecurringPattern] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
     const [recurringCount, setRecurringCount] = useState(4);
-    const [patient, setPatient] = useState({ id: patientId, name: patientName });
+    const [selectedPatientId, setSelectedPatientId] = useState(patientId);
+    const [patientNameState, setPatientNameState] = useState(patientName);
+
+    const handlePatientSelect = (value: string) => {
+        setSelectedPatientId(value);
+        const p = patients.find(pt => pt.id === value);
+        if (p) setPatientNameState(p.full_name);
+    };
 
     // Check for conflicts
     const hasConflict = useMemo(() => {
@@ -138,8 +147,8 @@ export function BookingModal({
         if (!date) return;
 
         const booking: NewBooking = {
-            patientId: patient.id,
-            patientName: patient.name,
+            patientId: selectedPatientId,
+            patientName: patientNameState,
             date,
             time,
             duration,
@@ -173,15 +182,27 @@ export function BookingModal({
                     {/* Patient Info */}
                     <div className="space-y-2">
                         <Label>Patient</Label>
-                        <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                            <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-teal-600" />
-                            </div>
-                            <div>
-                                <div className="font-medium">{patient.name || 'Select Patient'}</div>
-                                <div className="text-sm text-slate-500">{patient.id || 'No patient selected'}</div>
-                            </div>
-                        </div>
+                        <Select value={selectedPatientId} onValueChange={handlePatientSelect} disabled={!!patientId}>
+                            <SelectTrigger className="h-14">
+                                <div className="flex items-center gap-2 text-left">
+                                    <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                                        <User className="h-4 w-4 text-teal-600" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-sm">
+                                            {patients.find(p => p.id === selectedPatientId)?.full_name || patientNameState || 'Select Patient'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {patients.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                        {p.full_name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Date Picker */}

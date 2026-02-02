@@ -1,19 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Activity,
-    Users,
     DollarSign,
-    TrendingUp,
-    Star,
+    Users,
     ArrowUpRight,
-    ArrowDownRight,
-    Calendar,
-    Filter,
-    Download
+    Download,
+    Clock,
+    CheckCircle2,
+    FileText
 } from "lucide-react";
 import {
     Select,
@@ -22,35 +20,150 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { invoiceService } from "@/lib/invoices/invoiceService";
+import { paymentService, Transaction } from "@/lib/payments/paymentService";
+import { appointmentService } from "@/lib/appointments/appointmentService";
+import { supabase } from "@/lib/supabase";
 
-export default function DoctorAnalyticsPage() {
-    // Mock Data
-    const metrics = {
-        totalRevenue: 12450,
-        revenueGrowth: 12.5,
-        totalPatients: 148,
-        patientGrowth: 8.2,
-        consultations: 312,
-        consultationGrowth: 15.3,
-        rating: 4.8,
-        ratingCount: 96
-    };
+interface RevenueSummary {
+    totalRevenue: number;
+    pendingRevenue: number;
+    approvedRevenue: number;
+    paidRevenue: number;
+    totalInvoices: number;
+    pendingInvoices: number;
+    approvedInvoices: number;
+    paidInvoices: number;
+}
 
-    const recentPayouts = [
-        { id: "TX-9823", date: "Jan 24, 2026", amount: 1250, status: "processed" },
-        { id: "TX-9755", date: "Jan 17, 2026", amount: 3400, status: "processed" },
-        { id: "TX-9612", date: "Jan 10, 2026", amount: 2800, status: "processed" },
-    ];
+export default function DoctorRevenuePage() {
+    const [loading, setLoading] = useState(true);
+    const [revenueSummary, setRevenueSummary] = useState<RevenueSummary | null>(null);
+    const [recentPayouts, setRecentPayouts] = useState<Transaction[]>([]);
+    const [totalConsultations, setTotalConsultations] = useState(0);
+    const [period, setPeriod] = useState("30d");
+    const [doctorId, setDoctorId] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadDoctorData();
+    }, [period]);
+
+    async function loadDoctorData() {
+        try {
+            setLoading(true);
+
+
+            // Get current user
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+                console.error('Error getting user:', userError);
+                return;
+            }
+
+            // Get doctor ID from doctors table
+            const { data: doctorData, error: doctorError } = await supabase
+                .from('doctors')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+
+            if (doctorError || !doctorData) {
+                console.error('Error getting doctor:', doctorError);
+                return;
+            }
+
+            setDoctorId(doctorData.id);
+
+            // Calculate date range
+            const dateRange = getDateRange(period);
+
+            // Load revenue summary
+            const summary = await invoiceService.getDoctorRevenueSummary(
+                doctorData.id,
+                dateRange.startDate,
+                dateRange.endDate
+            );
+            setRevenueSummary(summary);
+
+            // Load recent payouts
+            const payouts = await paymentService.getDoctorPayouts(doctorData.id);
+            setRecentPayouts(payouts.slice(0, 5)); // Get last 5 payouts
+
+            // Load consultation count
+            const appointments = await appointmentService.getCompletedAppointments(
+                doctorData.id,
+                dateRange.startDate,
+                dateRange.endDate
+            );
+            setTotalConsultations(appointments.length);
+
+        } catch (error) {
+            console.error('Error loading revenue data:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function getDateRange(period: string) {
+        const now = new Date();
+        const endDate = now.toISOString();
+        let startDate = new Date();
+
+        switch (period) {
+            case '7d':
+                startDate.setDate(now.getDate() - 7);
+                break;
+            case '30d':
+                startDate.setDate(now.getDate() - 30);
+                break;
+            case '90d':
+                startDate.setDate(now.getDate() - 90);
+                break;
+            case 'year':
+                startDate.setFullYear(now.getFullYear(), 0, 1);
+                break;
+            default:
+                startDate.setDate(now.getDate() - 30);
+        }
+
+        return {
+            startDate: startDate.toISOString(),
+            endDate
+        };
+    }
+
+    function formatCurrency(amount: number): string {
+        return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+
+    function formatDate(dateString: string): string {
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                    <p className="text-slate-500">Loading revenue data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Practice Analytics</h1>
-                    <p className="text-slate-500">Insights into your patients, earnings, and performance.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Revenue & Analytics</h1>
+                    <p className="text-slate-500">Track your earnings, invoices, and payouts.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Select defaultValue="30d">
+                    <Select value={period} onValueChange={setPeriod}>
                         <SelectTrigger className="w-[140px] bg-white">
                             <SelectValue placeholder="Period" />
                         </SelectTrigger>
@@ -77,44 +190,17 @@ export default function DoctorAnalyticsPage() {
                                 <DollarSign className="h-6 w-6 text-teal-600" />
                             </div>
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
-                                <ArrowUpRight className="h-3 w-3" />
-                                {metrics.revenueGrowth}%
+                                <CheckCircle2 className="h-3 w-3" />
+                                Paid
                             </Badge>
                         </div>
                         <p className="text-sm font-medium text-slate-500">Total Revenue</p>
-                        <h3 className="text-2xl font-bold text-slate-900 mt-1">₹{metrics.totalRevenue.toLocaleString()}</h3>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-blue-100 rounded-xl">
-                                <Users className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
-                                <ArrowUpRight className="h-3 w-3" />
-                                {metrics.patientGrowth}%
-                            </Badge>
-                        </div>
-                        <p className="text-sm font-medium text-slate-500">Active Patients</p>
-                        <h3 className="text-2xl font-bold text-slate-900 mt-1">{metrics.totalPatients}</h3>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-purple-100 rounded-xl">
-                                <VideoIcon className="h-6 w-6 text-purple-600" />
-                            </div>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
-                                <ArrowUpRight className="h-3 w-3" />
-                                {metrics.consultationGrowth}%
-                            </Badge>
-                        </div>
-                        <p className="text-sm font-medium text-slate-500">Consultations</p>
-                        <h3 className="text-2xl font-bold text-slate-900 mt-1">{metrics.consultations}</h3>
+                        <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                            {formatCurrency(revenueSummary?.paidRevenue || 0)}
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-2">
+                            {revenueSummary?.paidInvoices || 0} paid invoices
+                        </p>
                     </CardContent>
                 </Card>
 
@@ -122,86 +208,172 @@ export default function DoctorAnalyticsPage() {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-amber-100 rounded-xl">
-                                <Star className="h-6 w-6 text-amber-600" />
+                                <Clock className="h-6 w-6 text-amber-600" />
                             </div>
-                            <span className="text-xs text-slate-500">{metrics.ratingCount} reviews</span>
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1">
+                                Pending
+                            </Badge>
                         </div>
-                        <p className="text-sm font-medium text-slate-500">Patient Rating</p>
-                        <h3 className="text-2xl font-bold text-slate-900 mt-1">{metrics.rating} <span className="text-sm text-slate-400 font-normal">/ 5.0</span></h3>
+                        <p className="text-sm font-medium text-slate-500">Pending Revenue</p>
+                        <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                            {formatCurrency(revenueSummary?.pendingRevenue || 0)}
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-2">
+                            {revenueSummary?.pendingInvoices || 0} awaiting approval
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-blue-100 rounded-xl">
+                                <ArrowUpRight className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
+                                Approved
+                            </Badge>
+                        </div>
+                        <p className="text-sm font-medium text-slate-500">Approved Revenue</p>
+                        <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                            {formatCurrency(revenueSummary?.approvedRevenue || 0)}
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-2">
+                            {revenueSummary?.approvedInvoices || 0} processing
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-purple-100 rounded-xl">
+                                <Users className="h-6 w-6 text-purple-600" />
+                            </div>
+                        </div>
+                        <p className="text-sm font-medium text-slate-500">Consultations</p>
+                        <h3 className="text-2xl font-bold text-slate-900 mt-1">{totalConsultations}</h3>
+                        <p className="text-xs text-slate-400 mt-2">Completed</p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Charts & Graphs Section - Mocked with CSS only for now */}
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* Revenue Trend (2/3 width) */}
+            {/* Invoice Breakdown */}
+            <div className="grid lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Revenue Trend</CardTitle>
-                        <CardDescription>Monthly earnings over the last 6 months</CardDescription>
+                        <CardTitle>Invoice Status Overview</CardTitle>
+                        <CardDescription>Breakdown of your invoices by status</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full flex items-end justify-between gap-4 px-2 pt-8 pb-2">
-                            {[45, 60, 52, 75, 68, 85, 80, 95, 88, 92, 100, 90].map((h, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
-                                    <div
-                                        className="w-full bg-teal-100 rounded-t-sm transition-all duration-300 group-hover:bg-teal-500 relative"
-                                        style={{ height: `${h}%` }}
-                                    >
-                                        <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded pointer-events-none whitespace-nowrap z-10">
-                                            ₹{(h * 150).toLocaleString()}
-                                        </div>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 rounded-lg">
+                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-medium">
-                                        {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}
-                                    </span>
+                                    <div>
+                                        <p className="font-medium text-slate-900">Paid Invoices</p>
+                                        <p className="text-sm text-slate-500">{revenueSummary?.paidInvoices || 0} invoices</p>
+                                    </div>
                                 </div>
-                            ))}
+                                <div className="text-right">
+                                    <p className="text-xl font-bold text-green-700">
+                                        {formatCurrency(revenueSummary?.paidRevenue || 0)}
+                                    </p>
+                                    <p className="text-xs text-green-600">Revenue received</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-amber-100 rounded-lg">
+                                        <Clock className="h-5 w-5 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-slate-900">Pending Invoices</p>
+                                        <p className="text-sm text-slate-500">{revenueSummary?.pendingInvoices || 0} invoices</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xl font-bold text-amber-700">
+                                        {formatCurrency(revenueSummary?.pendingRevenue || 0)}
+                                    </p>
+                                    <p className="text-xs text-amber-600">Awaiting approval</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <FileText className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-slate-900">Approved Invoices</p>
+                                        <p className="text-sm text-slate-500">{revenueSummary?.approvedInvoices || 0} invoices</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xl font-bold text-blue-700">
+                                        {formatCurrency(revenueSummary?.approvedRevenue || 0)}
+                                    </p>
+                                    <p className="text-xs text-blue-600">Being processed</p>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Patient Demographics (1/3 width) */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Specialties</CardTitle>
-                        <CardDescription>Appointments by category</CardDescription>
+                        <CardTitle>Quick Stats</CardTitle>
+                        <CardDescription>Performance summary</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-slate-700">General Consultation</span>
-                                <span className="text-slate-500">45%</span>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-slate-600">Total Invoices</span>
+                                <span className="font-bold text-slate-900">{revenueSummary?.totalInvoices || 0}</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-teal-500 rounded-full" style={{ width: '45%' }} />
+                                <div
+                                    className="h-full bg-teal-500 rounded-full"
+                                    style={{ width: '100%' }}
+                                />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-slate-700">Ayurveda</span>
-                                <span className="text-slate-500">30%</span>
+
+                        <div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-slate-600">Paid Rate</span>
+                                <span className="font-bold text-slate-900">
+                                    {revenueSummary?.totalInvoices
+                                        ? Math.round((revenueSummary.paidInvoices / revenueSummary.totalInvoices) * 100)
+                                        : 0}%
+                                </span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 rounded-full" style={{ width: '30%' }} />
+                                <div
+                                    className="h-full bg-green-500 rounded-full"
+                                    style={{
+                                        width: revenueSummary?.totalInvoices
+                                            ? `${(revenueSummary.paidInvoices / revenueSummary.totalInvoices) * 100}%`
+                                            : '0%'
+                                    }}
+                                />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-slate-700">Follow-up</span>
-                                <span className="text-slate-500">15%</span>
-                            </div>
-                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full" style={{ width: '15%' }} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-slate-700">Other</span>
-                                <span className="text-slate-500">10%</span>
-                            </div>
-                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-slate-300 rounded-full" style={{ width: '10%' }} />
+
+                        <div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-slate-600">Avg per Consult</span>
+                                <span className="font-bold text-slate-900">
+                                    {formatCurrency(
+                                        totalConsultations > 0
+                                            ? (revenueSummary?.paidRevenue || 0) / totalConsultations
+                                            : 0
+                                    )}
+                                </span>
                             </div>
                         </div>
                     </CardContent>
@@ -220,54 +392,55 @@ export default function DoctorAnalyticsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-slate-500 uppercase bg-slate-50">
-                                <tr>
-                                    <th className="px-4 py-3 rounded-l-lg">Transaction ID</th>
-                                    <th className="px-4 py-3">Date</th>
-                                    <th className="px-4 py-3">Amount</th>
-                                    <th className="px-4 py-3 rounded-r-lg">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {recentPayouts.map((payout) => (
-                                    <tr key={payout.id} className="hover:bg-slate-50/50">
-                                        <td className="px-4 py-3 font-medium text-slate-900">{payout.id}</td>
-                                        <td className="px-4 py-3 text-slate-500">{payout.date}</td>
-                                        <td className="px-4 py-3 font-medium text-slate-900">₹{payout.amount.toLocaleString()}</td>
-                                        <td className="px-4 py-3">
-                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 capitalize">
-                                                {payout.status}
-                                            </Badge>
-                                        </td>
+                    {recentPayouts.length === 0 ? (
+                        <div className="text-center py-8">
+                            <DollarSign className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                            <p className="text-slate-500">No payouts yet</p>
+                            <p className="text-sm text-slate-400 mt-1">
+                                Complete consultations and send invoices to start earning
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-slate-500 uppercase bg-slate-50">
+                                    <tr>
+                                        <th className="px-4 py-3 rounded-l-lg">Transaction ID</th>
+                                        <th className="px-4 py-3">Date</th>
+                                        <th className="px-4 py-3">Amount</th>
+                                        <th className="px-4 py-3 rounded-r-lg">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {recentPayouts.map((payout) => (
+                                        <tr key={payout.id} className="hover:bg-slate-50/50">
+                                            <td className="px-4 py-3 font-medium text-slate-900">{payout.transaction_id}</td>
+                                            <td className="px-4 py-3 text-slate-500">
+                                                {payout.processed_at ? formatDate(payout.processed_at) : 'Pending'}
+                                            </td>
+                                            <td className="px-4 py-3 font-medium text-slate-900">
+                                                {formatCurrency(payout.amount)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={
+                                                        payout.status === 'completed'
+                                                            ? "bg-green-50 text-green-700 border-green-200"
+                                                            : "bg-amber-50 text-amber-700 border-amber-200"
+                                                    }
+                                                >
+                                                    {payout.status}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
     );
-}
-
-function VideoIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="m22 8-6 4 6 4V8Z" />
-            <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
-        </svg>
-    )
 }

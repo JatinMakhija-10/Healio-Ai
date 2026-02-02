@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
+        const supabase = await createClient();
         // Check if user is authenticated and is admin
         const { data: { session } } = await supabase.auth.getSession();
 

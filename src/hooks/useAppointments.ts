@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Custom hook for appointment management with API integration
@@ -64,13 +65,13 @@ export function useAppointments() {
                 scheduledAt: new Date(apt.scheduled_at),
                 duration: apt.duration_minutes,
                 status: apt.status,
-                chiefComplaint: apt.notes_for_doctor || '',
+                chiefComplaint: apt.notes || '',
                 aiDiagnosis: 'Pending Analysis',
                 aiConfidence: 0,
                 hasRedFlags: false,
                 isUrgent: false,
                 meetingLink: apt.meeting_link,
-                notes: apt.notes_for_doctor,
+                notes: apt.notes,
             }));
 
             setAppointments(mapped);
@@ -86,6 +87,76 @@ export function useAppointments() {
         fetchAppointments();
     }, [fetchAppointments]);
 
+    // Real-time subscription for appointment changes
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel(`doctor-appointments:${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'appointments',
+                },
+                (payload) => {
+                    console.log('[Doctor Appointments] Realtime update:', payload);
+
+                    // Show toast notifications
+                    if (payload.eventType === 'INSERT') {
+                        toast.success('New appointment booked!');
+                    } else if (payload.eventType === 'UPDATE') {
+                        const newStatus = (payload.new as any).status;
+                        if (newStatus === 'cancelled_by_patient') {
+                            toast.info('Appointment cancelled by patient');
+                        }
+                    }
+
+                    // Refresh appointments list
+                    fetchAppointments();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [user, fetchAppointments]);
+
+    // Create appointment
+    const createAppointment = useCallback(async (bookingData: {
+        patientId: string;
+        date: Date;
+        duration: number;
+        notes?: string;
+    }) => {
+        if (!user) return;
+
+        toast.loading('Booking appointment...', { id: 'book-appointment' });
+
+        try {
+            const doctor = await api.getDoctorProfile(user.id);
+            if (!doctor) throw new Error("Doctor profile not found");
+
+            const newApt = await api.createAppointment({
+                patient_id: bookingData.patientId,
+                doctor_id: doctor.id,
+                scheduled_at: bookingData.date.toISOString(),
+                duration_minutes: bookingData.duration,
+                reason: bookingData.notes
+            });
+
+            // Optimistic add or refetch
+            fetchAppointments();
+            toast.success('Appointment booked successfully', { id: 'book-appointment' });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to book appointment', { id: 'book-appointment' });
+            throw error;
+        }
+    }, [user, fetchAppointments]);
+
     // Update appointment status with optimistic UI
     const updateStatus = useCallback(async (
         appointmentId: string,
@@ -100,8 +171,14 @@ export function useAppointments() {
         toast.loading('Updating appointment...', { id: 'update-status' });
 
         try {
-            // API call would go here
-            // await api.updateAppointmentStatus(appointmentId, newStatus);
+            // Check if status is cancellation
+            if (newStatus === 'cancelled_by_doctor') {
+                // Call API to cancel
+                await supabase.from('appointments').update({ status: newStatus }).eq('id', appointmentId);
+            } else {
+                await supabase.from('appointments').update({ status: newStatus }).eq('id', appointmentId);
+            }
+
             toast.success('Appointment updated', { id: 'update-status' });
         } catch (error) {
             // Rollback on failure
@@ -130,7 +207,11 @@ export function useAppointments() {
         toast.loading('Rescheduling...', { id: 'reschedule' });
 
         try {
-            // API call would go here
+            await supabase.from('appointments').update({
+                scheduled_at: newDate.toISOString(),
+                ...(newDuration && { duration_minutes: newDuration })
+            }).eq('id', appointmentId);
+
             toast.success('Appointment rescheduled', { id: 'reschedule' });
         } catch (error) {
             store.rollbackUpdate(appointmentId, original);
@@ -184,7 +265,8 @@ export function useAppointments() {
 
         // Actions
         fetchAppointments,
-        addAppointment: storeActions.addAppointment,
+        addAppointment: storeActions.addAppointment, // Legacy
+        createAppointment,
         updateStatus,
         reschedule,
         cancel,

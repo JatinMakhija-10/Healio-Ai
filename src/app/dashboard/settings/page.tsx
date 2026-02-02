@@ -18,7 +18,8 @@ import {
     MapPin,
     Clock,
     ChevronUp,
-    Activity
+    Activity,
+    User
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -33,7 +34,13 @@ const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void 
 );
 
 export default function SettingsPage() {
-    const { logout } = useAuth();
+    const { logout, profile, updateProfile } = useAuth();
+
+    // Profile Editing State
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [profileSaveMessage, setProfileSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     // Notification State
     const [emailNotif, setEmailNotif] = useState(true);
@@ -52,6 +59,12 @@ export default function SettingsPage() {
     const [emergencyContact, setEmergencyContact] = useState({ name: "", phone: "" });
 
     useEffect(() => {
+        // Load profile data from context
+        if (profile) {
+            setFullName(profile.full_name || "");
+            setPhone(profile.phone || "");
+        }
+
         // Load preferences from local storage
         const savedEmail = localStorage.getItem("settings_email_notif");
         const savedPush = localStorage.getItem("settings_push_notif");
@@ -72,7 +85,30 @@ export default function SettingsPage() {
         if (savedEmergency) {
             setEmergencyContact(JSON.parse(savedEmergency));
         }
-    }, []);
+    }, [profile]);
+
+    const handleSaveProfile = async () => {
+        setIsSavingProfile(true);
+        setProfileSaveMessage(null);
+
+        try {
+            await updateProfile({
+                full_name: fullName,
+                phone: phone
+            });
+
+            setProfileSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setTimeout(() => setProfileSaveMessage(null), 3000);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setProfileSaveMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'Failed to update profile'
+            });
+        } finally {
+            setIsSavingProfile(false);
+        }
+    };
 
     const handleSaveEmergency = () => {
         localStorage.setItem("healio_emergency_contact", JSON.stringify(emergencyContact));
@@ -334,6 +370,63 @@ export default function SettingsPage() {
                 <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
                 <p className="text-slate-500">Manage your application preferences and account.</p>
             </div>
+
+            {/* Profile Information */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <User className="h-5 w-5 text-teal-600" />
+                        <CardTitle>Profile Information</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                            id="fullName"
+                            placeholder="Your full name"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                            id="phone"
+                            placeholder="+91-XXXXXXXXXX"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                            id="email"
+                            value={profile?.email || ""}
+                            disabled
+                            className="bg-slate-50 text-slate-500"
+                        />
+                        <p className="text-xs text-slate-500">Email cannot be changed</p>
+                    </div>
+
+                    {profileSaveMessage && (
+                        <div className={`p-3 rounded-md text-sm ${profileSaveMessage.type === 'success'
+                            ? 'bg-teal-50 text-teal-800 border border-teal-200'
+                            : 'bg-red-50 text-red-800 border border-red-200'
+                            }`}>
+                            {profileSaveMessage.text}
+                        </div>
+                    )}
+
+                    <Button
+                        onClick={handleSaveProfile}
+                        disabled={isSavingProfile}
+                        className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800"
+                    >
+                        {isSavingProfile ? 'Saving...' : 'Save Profile'}
+                    </Button>
+                </CardContent>
+            </Card>
 
             {/* Notifications */}
             <Card>

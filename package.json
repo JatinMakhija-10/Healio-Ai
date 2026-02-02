@@ -43,6 +43,7 @@
     "react-big-calendar": "^1.19.4",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
+    "react-google-charts": "^5.2.1",
     "react-hook-form": "^7.71.1",
     "react-simple-maps": "^3.0.0",
     "react-tooltip": "^5.30.0",

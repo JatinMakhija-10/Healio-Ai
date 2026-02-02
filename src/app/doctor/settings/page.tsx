@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +22,66 @@ import {
 } from "lucide-react";
 
 export default function DoctorSettingsPage() {
-    const { user } = useAuth();
+    const { user, profile, doctorProfile, updateProfile, updateDoctorProfile } = useAuth();
+
+    // Profile State
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [specialization, setSpecialization] = useState("");
+    const [bio, setBio] = useState("");
+    const [experience, setExperience] = useState("");
+    const [licenseNumber, setLicenseNumber] = useState("");
+    const [consultationFee, setConsultationFee] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // Load data from context
+    useEffect(() => {
+        if (profile) {
+            setFullName(profile.full_name || "");
+            setPhone(profile.phone || "");
+        }
+        if (doctorProfile) {
+            setSpecialization(doctorProfile.specialization || "");
+            setBio(doctorProfile.bio || "");
+            setExperience(doctorProfile.experience_years?.toString() || "");
+            setLicenseNumber(doctorProfile.license_number || "");
+            setConsultationFee(doctorProfile.consultation_fee?.toString() || "");
+        }
+    }, [profile, doctorProfile]);
+
+    const handleSaveProfile = async () => {
+        setIsSaving(true);
+        setSaveMessage(null);
+
+        try {
+            // Update profile table
+            await updateProfile({
+                full_name: fullName,
+                phone: phone
+            });
+
+            // Update doctors table
+            await updateDoctorProfile({
+                specialization: specialization,
+                bio: bio,
+                experience_years: experience ? parseInt(experience) : null,
+                license_number: licenseNumber,
+                consultation_fee: consultationFee ? parseFloat(consultationFee) : null
+            });
+
+            setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setTimeout(() => setSaveMessage(null), 3000);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setSaveMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'Failed to update profile'
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -83,22 +144,62 @@ export default function DoctorSettingsPage() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="firstName">First Name</Label>
-                                        <Input id="firstName" defaultValue={user?.user_metadata?.full_name?.split(' ')[0]} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="lastName">Last Name</Label>
-                                        <Input id="lastName" defaultValue={user?.user_metadata?.full_name?.split(' ').slice(1).join(' ')} />
+                                    <div className="space-y-2 col-span-2">
+                                        <Label htmlFor="fullName">Full Name</Label>
+                                        <Input
+                                            id="fullName"
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                            placeholder="Dr. John Doe"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="specialty">Specialty</Label>
+                                    <Label htmlFor="specialization">Specialization</Label>
                                     <div className="flex items-center gap-2">
                                         <Stethoscope className="h-4 w-4 text-slate-400" />
-                                        <Input id="specialty" defaultValue="Ayurvedic Practitioner" />
+                                        <Input
+                                            id="specialization"
+                                            value={specialization}
+                                            onChange={(e) => setSpecialization(e.target.value)}
+                                            placeholder="e.g., General Medicine, Ayurveda"
+                                        />
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="experience">Years of Experience</Label>
+                                        <Input
+                                            id="experience"
+                                            type="number"
+                                            value={experience}
+                                            onChange={(e) => setExperience(e.target.value)}
+                                            placeholder="5"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fee">Consultation Fee (₹)</Label>
+                                        <Input
+                                            id="fee"
+                                            type="number"
+                                            step="0.01"
+                                            value={consultationFee}
+                                            onChange={(e) => setConsultationFee(e.target.value)}
+                                            placeholder="500.00"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="license">License Number</Label>
+                                    <Input
+                                        id="license"
+                                        value={licenseNumber}
+                                        onChange={(e) => setLicenseNumber(e.target.value)}
+                                        placeholder="MCI-XXXXX"
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
@@ -107,12 +208,27 @@ export default function DoctorSettingsPage() {
                                         id="bio"
                                         className="w-full min-h-[100px] p-3 rounded-md border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         placeholder="Tell patients about your experience and medical philosophy..."
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
                                     />
                                 </div>
 
-                                <Button className="bg-teal-600 hover:bg-teal-700">
+                                {saveMessage && (
+                                    <div className={`p-3 rounded-md text-sm ${saveMessage.type === 'success'
+                                            ? 'bg-teal-50 text-teal-800 border border-teal-200'
+                                            : 'bg-red-50 text-red-800 border border-red-200'
+                                        }`}>
+                                        {saveMessage.text}
+                                    </div>
+                                )}
+
+                                <Button
+                                    onClick={handleSaveProfile}
+                                    disabled={isSaving}
+                                    className="bg-teal-600 hover:bg-teal-700"
+                                >
                                     <Save className="h-4 w-4 mr-2" />
-                                    Save Changes
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -125,15 +241,16 @@ export default function DoctorSettingsPage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email Address</Label>
-                                    <Input id="email" defaultValue={user?.email} disabled />
+                                    <Input id="email" value={profile?.email || ""} disabled className="bg-slate-50 text-slate-500" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone Number</Label>
-                                    <Input id="phone" placeholder="+91 00000 00000" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="website">Website</Label>
-                                    <Input id="website" placeholder="https://" />
+                                    <Label htmlFor="phoneDoctor">Phone Number</Label>
+                                    <Input
+                                        id="phoneDoctor"
+                                        placeholder="+91 00000 00000"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

@@ -10,7 +10,7 @@ export interface Appointment {
     duration_minutes: number;
     status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled_by_patient' | 'cancelled_by_doctor' | 'no_show';
     meeting_link?: string;
-    notes_for_doctor?: string;
+    notes?: string;
     created_at: string;
     updated_at: string;
     started_at?: string;
@@ -44,7 +44,7 @@ export interface CreateAppointmentInput {
     diagnosisSnapshot?: Record<string, unknown>;
     scheduledAt: Date;
     durationMinutes?: number;
-    notesForDoctor?: string;
+    notes?: string;
 }
 
 /**
@@ -60,7 +60,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
             diagnosis_snapshot: input.diagnosisSnapshot,
             scheduled_at: input.scheduledAt.toISOString(),
             duration_minutes: input.durationMinutes || 30,
-            notes_for_doctor: input.notesForDoctor,
+            notes: input.notes,
             status: 'scheduled',
         })
         .select()

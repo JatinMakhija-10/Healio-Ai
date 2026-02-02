@@ -33,7 +33,7 @@ export type Appointment = {
     scheduled_at: string;
     duration_minutes: number;
     status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled_by_patient' | 'cancelled_by_doctor' | 'no_show';
-    notes_for_doctor?: string;
+    notes?: string;
     patient?: PatientProfile; // Joined
 };
 
@@ -251,6 +251,7 @@ export const api = {
 
     /**
      * Create Appointment
+     * @param appointmentData - Appointment details including optional diagnosis reference
      */
     async createAppointment(appointmentData: {
         patient_id: string;
@@ -258,6 +259,7 @@ export const api = {
         scheduled_at: string; // ISO string
         duration_minutes: number;
         reason?: string;
+        diagnosis_ref_id?: string; // Link to AI consultation
     }) {
         const { data, error } = await supabase
             .from('appointments')
@@ -267,12 +269,77 @@ export const api = {
                 scheduled_at: appointmentData.scheduled_at,
                 duration_minutes: appointmentData.duration_minutes,
                 status: 'scheduled',
-                notes_for_doctor: appointmentData.reason
+                notes: appointmentData.reason,
+                diagnosis_ref_id: appointmentData.diagnosis_ref_id, // Link to consultation
+                consultation_fee: 500 // Default fee, should ideally come from doctor profile
             })
             .select()
             .single();
 
         if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Get Appointment by ID
+     * Used for consultation pages
+     */
+    async getAppointmentById(appointmentId: string) {
+        // 1. Get Appointment
+        const { data: appointment, error } = await supabase
+            .from('appointments')
+            .select('*')
+            .eq('id', appointmentId)
+            .single();
+
+        if (error || !appointment) return null;
+
+        // 2. Get Patient Profile
+        const { data: patient } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', appointment.patient_id)
+            .single();
+
+        // 3. Get Doctor Profile
+        const { data: doctor } = await supabase
+            .from('doctors')
+            .select('*')
+            .eq('id', appointment.doctor_id)
+            .single();
+
+        const { data: doctorProfile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', doctor?.user_id)
+            .single();
+
+        return {
+            ...appointment,
+            patient: patient || { full_name: 'Unknown Patient', avatar_url: null },
+            doctor: {
+                ...doctor,
+                full_name: doctorProfile?.full_name || 'Doctor',
+                avatar_url: doctorProfile?.avatar_url
+            }
+        };
+    },
+
+
+    /**
+     * Get Latest Consultation for a Patient
+     * Used to link the most recent AI diagnosis to an appointment
+     */
+    async getLatestConsultation(patientId: string) {
+        const { data, error } = await supabase
+            .from('consultations')
+            .select('*')
+            .eq('user_id', patientId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error) return null;
         return data;
     },
 
@@ -288,5 +355,80 @@ export const api = {
 
         if (error) return null;
         return data;
+    },
+
+    /**
+     * Get Consultation History for a Patient
+     */
+    async getPatientConsultations(patientId: string) {
+        const { data, error } = await supabase
+            .from('consultations')
+            .select('*')
+            .eq('user_id', patientId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching consultations:", error);
+            return [];
+        }
+        return data || [];
+    },
+
+    /**
+     * Get Notifications for a User
+     */
+    async getNotifications(userId: string, unreadOnly = false) {
+        let query = supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (unreadOnly) {
+            query = query.eq('is_read', false);
+        }
+
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching notifications:", error);
+            return [];
+        }
+        return data || [];
+    },
+
+    /**
+     * Mark Notification as Read
+     */
+    async markNotificationAsRead(notificationId: string) {
+        const { error } = await supabase
+            .from('notifications')
+            .update({ is_read: true, read_at: new Date().toISOString() })
+            .eq('id', notificationId);
+
+        if (error) {
+            console.error("Error marking notification as read:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Mark All Notifications as Read
+     */
+    async markAllNotificationsAsRead(userId: string) {
+        const { error } = await supabase
+            .from('notifications')
+            .update({ is_read: true, read_at: new Date().toISOString() })
+            .eq('user_id', userId)
+            .eq('is_read', false);
+
+        if (error) {
+            console.error("Error marking all notifications as read:", error);
+            throw error;
+        }
     }
 };

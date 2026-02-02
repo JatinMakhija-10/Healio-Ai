@@ -117,7 +117,7 @@ export const useAdminMetricsStore = create<AdminMetricsState>((set, get) => ({
         if (now - state.lastUpdateTimestamp < state.updateThrottle) {
             setTimeout(() => {
                 set((state) => ({
-                    metrics: state.metrics ? { ...state.metrics, [key]: value } : { [key]: value } as AdminMetrics,
+                    metrics: state.metrics ? { ...state.metrics, [key]: value } : { [key]: value } as unknown as AdminMetrics,
                     lastUpdated: new Date(),
                     lastUpdateTimestamp: Date.now(),
                 }));
@@ -126,7 +126,7 @@ export const useAdminMetricsStore = create<AdminMetricsState>((set, get) => ({
         }
 
         set((state) => ({
-            metrics: state.metrics ? { ...state.metrics, [key]: value } : { [key]: value } as AdminMetrics,
+            metrics: state.metrics ? { ...state.metrics, [key]: value } : { [key]: value } as unknown as AdminMetrics,
             lastUpdated: new Date(),
             lastUpdateTimestamp: now,
         }));

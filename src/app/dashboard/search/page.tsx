@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { PatientBookingModal } from "@/components/dashboard/PatientBookingModal";
 import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 export default function SearchPage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -38,7 +39,29 @@ export default function SearchPage() {
                 setLoading(false);
             }
         }
+
         fetchDoctors();
+
+        // Real-time subscription for doctor updates
+        const channel = supabase
+            .channel('doctor-updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'doctors'
+                },
+                (payload: any) => {
+                    console.log('Doctor update received, refreshing list...', payload);
+                    fetchDoctors();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const filteredDoctors = doctors.filter(doc => {

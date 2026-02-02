@@ -26,6 +26,12 @@ import { api, Appointment } from "@/lib/api";
 export default function DoctorDashboardPage() {
     const { user } = useAuth();
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        todayCount: 0,
+        weekCount: 0,
+        completedToday: 0,
+        revenue: 0
+    });
     const [todayAppointments, setTodayAppointments] = useState<AppointmentCardProps[]>([]);
 
     useEffect(() => {
@@ -44,7 +50,6 @@ export default function DoctorDashboardPage() {
                 const appointments = await api.getDoctorAppointments(doctorData.id);
 
                 // 3. Map to UI Model
-                const today = new Date();
                 const mapped: AppointmentCardProps[] = appointments.map((apt: any) => ({
                     id: apt.id,
                     patientName: apt.patient?.full_name || "Unknown Patient",
@@ -52,12 +57,18 @@ export default function DoctorDashboardPage() {
                     scheduledAt: new Date(apt.scheduled_at),
                     duration: apt.duration_minutes,
                     status: apt.status,
-                    chiefComplaint: apt.notes_for_doctor || "No notes provided",
+                    chiefComplaint: apt.notes || "No notes provided",
                     aiDiagnosis: "Pending Analysis", // Placeholder until linked to consultations
                     aiConfidence: 0,
                     hasRedFlags: false,
                     isUrgent: false,
                 }));
+
+                const today = new Date();
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
+                const endOfWeek = new Date(today);
+                endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Saturday
 
                 // Filter for "Today"
                 const todayOnly = mapped.filter(apt => {
@@ -67,7 +78,22 @@ export default function DoctorDashboardPage() {
                         d.getFullYear() === today.getFullYear();
                 });
 
+                // Calculate Stats
+                const weekCount = mapped.filter(apt => {
+                    const d = apt.scheduledAt;
+                    return d >= startOfWeek && d <= endOfWeek;
+                }).length;
+
+                const completedToday = todayOnly.filter(apt => apt.status === 'completed').length;
+
                 setTodayAppointments(todayOnly);
+                setStats({
+                    todayCount: todayOnly.length,
+                    weekCount,
+                    completedToday,
+                    revenue: 0 // TODO: Implement revenue tracking
+                });
+
             } catch (error) {
                 console.error("Dashboard fetch error:", error);
             } finally {
@@ -79,14 +105,6 @@ export default function DoctorDashboardPage() {
     }, [user]);
 
     const doctorName = user?.user_metadata?.full_name || "Doctor";
-
-    // Stats
-    const stats = {
-        todayCount: todayAppointments.length,
-        weekCount: 24, // Mock
-        completedToday: 2, // Mock
-        revenue: 12500, // Mock - INR
-    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -177,9 +195,8 @@ export default function DoctorDashboardPage() {
                             <div>
                                 <p className="text-sm font-medium text-slate-500">This Week</p>
                                 <p className="text-3xl font-bold text-slate-900 mt-1">{stats.weekCount}</p>
-                                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                                    <TrendingUp className="h-3 w-3" />
-                                    +12% vs last week
+                                <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                                    Scheduled
                                 </p>
                             </div>
                             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
@@ -213,7 +230,9 @@ export default function DoctorDashboardPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-slate-500">Earnings</p>
-                                <p className="text-3xl font-bold text-slate-900 mt-1">₹{stats.revenue.toLocaleString()}</p>
+                                <p className="text-3xl font-bold text-slate-900 mt-1">
+                                    {stats.revenue > 0 ? `₹${stats.revenue.toLocaleString()}` : "—"}
+                                </p>
                                 <p className="text-xs text-slate-400 mt-1">this month</p>
                             </div>
                             <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
