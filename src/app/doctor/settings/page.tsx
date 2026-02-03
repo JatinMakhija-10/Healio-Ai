@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SPECIALIZATIONS } from "@/lib/constants";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
@@ -159,12 +161,21 @@ export default function DoctorSettingsPage() {
                                     <Label htmlFor="specialization">Specialization</Label>
                                     <div className="flex items-center gap-2">
                                         <Stethoscope className="h-4 w-4 text-slate-400" />
-                                        <Input
-                                            id="specialization"
+                                        <Select
                                             value={specialization}
-                                            onChange={(e) => setSpecialization(e.target.value)}
-                                            placeholder="e.g., General Medicine, Ayurveda"
-                                        />
+                                            onValueChange={(value) => setSpecialization(value)}
+                                        >
+                                            <SelectTrigger id="specialization" className="w-full">
+                                                <SelectValue placeholder="Select Specialization" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {SPECIALIZATIONS.map((spec) => (
+                                                    <SelectItem key={spec} value={spec}>
+                                                        {spec}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
 
@@ -215,8 +226,8 @@ export default function DoctorSettingsPage() {
 
                                 {saveMessage && (
                                     <div className={`p-3 rounded-md text-sm ${saveMessage.type === 'success'
-                                            ? 'bg-teal-50 text-teal-800 border border-teal-200'
-                                            : 'bg-red-50 text-red-800 border border-red-200'
+                                        ? 'bg-teal-50 text-teal-800 border border-teal-200'
+                                        : 'bg-red-50 text-red-800 border border-red-200'
                                         }`}>
                                         {saveMessage.text}
                                     </div>

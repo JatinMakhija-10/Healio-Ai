@@ -37,13 +37,14 @@ const navGroups = [
             { label: "Doctor Verification", href: "/admin/doctors", icon: UserCheck, badge: 5 },
             { label: "Users", href: "/admin/users", icon: Users },
             { label: "Transactions", href: "/admin/transactions", icon: CreditCard },
+            { label: "Invoices", href: "/admin/invoices", icon: FileText },
         ],
     },
     {
         label: "Quality & Compliance",
         items: [
             { label: "Flagged Sessions", href: "/admin/compliance", icon: Shield, badge: 3 },
-            { label: "Clinical QA", href: "/admin/qa", icon: FileText },
+            { label: "Clinical QA", href: "/admin/clinical-qna", icon: FileText },
         ],
     },
     {

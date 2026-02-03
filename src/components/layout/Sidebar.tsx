@@ -38,6 +38,11 @@ const sidebarItems = [
         icon: UserCircle,
     },
     {
+        title: "Find Specialist",
+        href: "/dashboard/search",
+        icon: UserCircle,
+    },
+    {
         title: "Settings",
         href: "/dashboard/settings",
         icon: Settings,
@@ -46,11 +51,6 @@ const sidebarItems = [
         title: "Learn",
         href: "/dashboard/learn",
         icon: BookOpen,
-    },
-    {
-        title: "Find Specialist",
-        href: "/dashboard/search",
-        icon: UserCircle,
     },
 ];
 

@@ -226,7 +226,7 @@ export const api = {
         const { data: doctors, error } = await supabase
             .from('doctors')
             .select('*')
-            .eq('verification_status', 'verified'); // Or custom verification logic
+            .in('verification_status', ['verified', 'approved']); // Or custom verification logic
 
         if (error || !doctors) {
             console.error("Error fetching doctors:", error);
@@ -243,10 +243,13 @@ export const api = {
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
 
         // 3. Merge
-        return doctors.map(d => ({
-            ...d,
-            profile: profileMap.get(d.user_id) || { full_name: 'Unknown Doctor', avatar_url: null }
-        }));
+        // 3. Merge and Filter (Remove orphans)
+        return doctors
+            .map(d => ({
+                ...d,
+                profile: profileMap.get(d.user_id)
+            }))
+            .filter(d => d.profile && d.profile.full_name);
     },
 
     /**

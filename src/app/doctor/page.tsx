@@ -24,7 +24,7 @@ import Link from "next/link";
 import { api, Appointment } from "@/lib/api";
 
 export default function DoctorDashboardPage() {
-    const { user } = useAuth();
+    const { user, profile, doctorProfile } = useAuth();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         todayCount: 0,
@@ -38,16 +38,24 @@ export default function DoctorDashboardPage() {
         async function fetchDashboardData() {
             if (!user) return;
             try {
-                // 1. Get Doctor Profile
-                const doctorData = await api.getDoctorProfile(user.id);
-                if (!doctorData) {
+                // 1. Get Doctor Profile ID (prefer context, fallback to API)
+                let doctorId = doctorProfile?.id;
+
+                if (!doctorId) {
+                    const doctorData = await api.getDoctorProfile(user.id);
+                    if (doctorData) {
+                        doctorId = doctorData.id;
+                    }
+                }
+
+                if (!doctorId) {
                     console.log("No doctor profile found for user");
                     setLoading(false);
                     return;
                 }
 
                 // 2. Get Appointments
-                const appointments = await api.getDoctorAppointments(doctorData.id);
+                const appointments = await api.getDoctorAppointments(doctorId);
 
                 // 3. Map to UI Model
                 const mapped: AppointmentCardProps[] = appointments.map((apt: any) => ({
@@ -102,9 +110,15 @@ export default function DoctorDashboardPage() {
         }
 
         fetchDashboardData();
-    }, [user]);
+    }, [user, doctorProfile]); // Re-run if doctorProfile updates
 
-    const doctorName = user?.user_metadata?.full_name || "Doctor";
+    // Use profile name if available, otherwise fallback to metadata or default
+    const doctorName = profile?.full_name || user?.user_metadata?.full_name || "Doctor";
+
+    // Check verification status
+    const isProfileIncomplete = !doctorProfile || !doctorProfile.specialization;
+    const isPendingVerification = doctorProfile?.verification_status === 'pending';
+    const isVerified = doctorProfile?.verification_status === 'verified';
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -123,7 +137,7 @@ export default function DoctorDashboardPage() {
                         <span>AI-Powered Clinical Insights</span>
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900">
-                        {getGreeting()}, <span className="text-teal-600">Dr. {doctorName.split(" ")[0]}</span>
+                        {getGreeting()}, <span className="text-teal-600">Dr. {doctorName.replace(/^Dr\.?\s*/i, "").split(" ")[0]}</span>
                     </h1>
                     <p className="text-slate-500">
                         You have {stats.todayCount} consultations scheduled for today.
@@ -147,7 +161,9 @@ export default function DoctorDashboardPage() {
             </div>
 
             {/* Dashboard Content */}
-            {todayAppointments.length === 0 && !loading && (
+
+            {/* Profile Incomplete Warning */}
+            {isProfileIncomplete && (
                 <Card className="bg-amber-50 border-amber-200">
                     <CardContent className="p-6">
                         <div className="flex items-start gap-4">
@@ -155,13 +171,32 @@ export default function DoctorDashboardPage() {
                                 <AlertTriangle className="h-5 w-5 text-amber-600" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-semibold text-amber-900">Profile Incomplete?</h3>
+                                <h3 className="font-semibold text-amber-900">Profile Incomplete</h3>
                                 <p className="text-sm text-amber-700 mt-1">
-                                    If you don&apos;t see your appointments, ensure you have completed your registration and are verified by the admin.
+                                    Please complete your profile details to start accepting appointments.
                                 </p>
                                 <Button variant="link" className="text-amber-700 h-auto p-0 mt-2 font-semibold" asChild>
-                                    <Link href="/doctor/settings">Complete Your Profile <ArrowRight className="h-4 w-4 ml-1" /></Link>
+                                    <Link href="/doctor/settings">Complete Profile <ArrowRight className="h-4 w-4 ml-1" /></Link>
                                 </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Verification Pending Warning */}
+            {isPendingVerification && !isProfileIncomplete && (
+                <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                <Clock className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-semibold text-blue-900">Verification Pending</h3>
+                                <p className="text-sm text-blue-700 mt-1">
+                                    Your profile is under review. You will be able to accept appointments once verified by the admin.
+                                </p>
                             </div>
                         </div>
                     </CardContent>

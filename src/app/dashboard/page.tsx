@@ -44,7 +44,7 @@ type Consultation = {
 };
 
 export default function DashboardPage() {
-    const { user, loading } = useAuth();
+    const { user, profile, loading } = useAuth();
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [localName, setLocalName] = useState<string | null>(null);
@@ -118,7 +118,7 @@ export default function DashboardPage() {
                     // We should fallback or try to fetch.
 
                     const conditionId = (latest.diagnosis as Record<string, any>).id ||
-                        latest.diagnosis.condition.toLowerCase().replace(/ /g, '_');
+                        latest.diagnosis.condition.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
 
                     const base = await fetchPathwayForCondition(conditionId);
 
@@ -179,7 +179,8 @@ export default function DashboardPage() {
     // ... existing variables (userName, lastSession, getTimeAgo)
 
     // Determine display name with fallbacks
-    const userName = user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
+    // Prioritize DB profile (updated via Settings) -> MetaData (from Onboarding) -> Local -> Email
+    const userName = profile?.full_name || user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
 
     const lastSession = history[0];
 

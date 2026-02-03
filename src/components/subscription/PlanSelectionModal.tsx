@@ -103,7 +103,7 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                         <p className="text-xs text-slate-500">For health-conscious individuals</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-2xl font-bold text-slate-900">${PLANS.plus.price}</p>
+                                        <p className="text-2xl font-bold text-slate-900">₹{PLANS.plus.price}</p>
                                         <p className="text-xs text-slate-500">/{PLANS.plus.interval}</p>
                                     </div>
                                 </div>
@@ -126,7 +126,7 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                             Processing...
                                         </>
                                     ) : (
-                                        "Start 14-Day Free Trial"
+                                        "Start Free Trial"
                                     )}
                                 </Button>
                             </div>

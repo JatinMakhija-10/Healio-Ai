@@ -15,7 +15,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
         name: 'Healio Basic',
         price: 0,
         interval: 'month',
-        currency: 'USD',
+        currency: 'INR',
         features: [
             'Basic AI Diagnosis',
             '3 Daily Consultations',
@@ -25,9 +25,9 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
     plus: {
         id: 'plus',
         name: 'Healio Plus',
-        price: 9.99,
+        price: 999,
         interval: 'month',
-        currency: 'USD',
+        currency: 'INR',
         features: [
             'Unlimited AI Diagnosis',
             'PDF Health Reports',
@@ -39,9 +39,9 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
     pro: {
         id: 'pro',
         name: 'Healio Pro',
-        price: 49.99,
+        price: 4999,
         interval: 'month',
-        currency: 'USD',
+        currency: 'INR',
         features: [
             'Patient Analytics Dashboard',
             'Clinical Sandbox Access',

@@ -12,7 +12,7 @@
 
 DO $$
 DECLARE
-    v_doctor_uuid UUID := 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+    v_doctor_uuid UUID := '';
     v_patient_uuid UUID := 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b22';
     v_doctor_email TEXT := 'doctor.test@healio.ai';
     v_patient_email TEXT := 'patient.test@healio.ai';

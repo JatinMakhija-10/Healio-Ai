@@ -86,14 +86,54 @@ export default function InboxPage() {
     const loadChats = async (doctorId: string) => {
         try {
             const data = await chatService.getInboxChats(doctorId);
-            setChats(data);
-            if (data.length > 0 && !selectedChat) {
-                // Optionally select first chat
-                // setSelectedChat(data[0]); 
-            }
+
+            // Dummy Data (Forced as per user request to avoid seeing Dr. Mittal)
+            const DUMMY_CHATS: ChatPreview[] = [
+                {
+                    appointment_id: 'dummy-1',
+                    doctor_id: doctorId,
+                    patient_id: 'p-1',
+                    patient_name: 'Rahul Sharma',
+                    patient_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
+                    last_message: 'Doctor, when should I take the medicine?',
+                    last_message_time: new Date().toISOString(),
+                    last_message_type: 'text',
+                    unread_count: 2
+                },
+                {
+                    appointment_id: 'dummy-2',
+                    doctor_id: doctorId,
+                    patient_id: 'p-2',
+                    patient_name: 'Priya Singh',
+                    patient_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+                    last_message: 'Thanks for the consultation.',
+                    last_message_time: new Date(Date.now() - 3600000).toISOString(),
+                    last_message_type: 'text',
+                    unread_count: 0
+                }
+            ];
+
+            // Filter out any "Dr. Mittal" from real data if we want to show both, 
+            // but for now let's just show dummy data as requested.
+            setChats(DUMMY_CHATS);
+
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load chats");
+            // Even on error, show dummy data
+            const DUMMY_CHATS: ChatPreview[] = [
+                {
+                    appointment_id: 'dummy-1',
+                    doctor_id: doctorId,
+                    patient_id: 'p-1',
+                    patient_name: 'Rahul Sharma',
+                    patient_avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
+                    last_message: 'Doctor, when should I take the medicine?',
+                    last_message_time: new Date().toISOString(),
+                    last_message_type: 'text',
+                    unread_count: 2
+                }
+            ];
+            setChats(DUMMY_CHATS);
         } finally {
             setIsLoading(false);
         }

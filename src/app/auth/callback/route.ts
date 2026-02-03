@@ -29,8 +29,22 @@ export async function GET(request: Request) {
             }
         )
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (!error) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error && data?.session?.user) {
+            // Check if user has completed onboarding
+            const metadata = data.session.user.user_metadata;
+            const isOnboardingCompleted = metadata?.onboarding_completed === true;
+
+            // If not completed, redirect to onboarding
+            // But allow doctors or explicit 'next' params to override if needed, 
+            // though typically we want to force onboarding for new signups.
+            // If the user explicitly requested a page (e.g. invite link), we might want to respect it,
+            // but for a generic signup, we force onboarding.
+
+            if (!isOnboardingCompleted) {
+                return NextResponse.redirect(`${origin}/onboarding`)
+            }
+
             return NextResponse.redirect(`${origin}${next}`)
         }
     }

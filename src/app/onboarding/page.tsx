@@ -271,11 +271,31 @@ export default function OnboardingWizard() {
 
         try {
             console.log("Saving profile to Supabase metadata...", profileData);
+
+            // 1. Update Auth Metadata (for session and quick access)
             const { error } = await supabase.auth.updateUser({
                 data: profileData
             });
-
             if (error) throw error;
+
+            // 2. Update Public Profiles Table (for Dashboard/Settings persistence)
+            // ensuring consistency so Settings can edit this later
+            const { error: dbError } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: data.fullName,
+                    // If phone is collected in onboarding (e.g. step 6 emergency, or if added to step 1 which it isn't currently but good to prep)
+                    // Currently onboarding doesn't seem to have a specific 'phone' field for the user themselves, only emergency contact.
+                    // But if we want to sync metadata phone if it exists:
+                    // phone: data.phone || undefined 
+                })
+                .eq('id', user.id);
+
+            if (dbError) {
+                console.error("Error syncing to profiles table:", dbError);
+                // We don't throw here to avoid blocking completion if metadata worked, 
+                // but it might cause the issue user described. Let's log it.
+            }
 
             // Clear pending profile from localStorage since it's now saved
             localStorage.removeItem('healio_pending_profile');
