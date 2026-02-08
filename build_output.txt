@@ -1,0 +1,119 @@
+﻿
+> temp-app@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The 
+"middleware" file 
+convention is 
+deprecated. Please 
+use "proxy" instead. 
+Learn more: https://n
+extjs.org/docs/messag
+es/middleware-to-prox
+y
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" "C:
+\Users\JATIN\AppData\
+Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (ΓÜá The   
+  "middle...lewar    
+e-to-proxy:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 10.7s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/41) ...
+  Generating static pages using 15 workers (10/41) 
+  Generating static pages using 15 workers (20/41) 
+(node:39116) 
+Warning: `--localstor
+age-file` was 
+provided without a 
+valid path
+(Use `node 
+--trace-warnings 
+...` to show where 
+the warning was 
+created)
+[Precompute] Engine optimization data loaded: {
+  totalConditions: 265,
+  bucketCount: 264,
+  symptomIndexSize: 1141,
+  topQuestionsCount: 9
+}
+  Generating static pages using 15 workers (30/41) 
+Γ£ô Generating static pages using 15 workers (41/41) in 913.9ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /admin
+Γö£ Γùï /admin/analytics
+Γö£ Γùï /admin/clinical-qna
+Γö£ Γùï /admin/compliance
+Γö£ Γùï /admin/doctors
+Γö£ Γùï /admin/features
+Γö£ Γùï /admin/insights
+Γö£ Γùï /admin/invoices
+Γö£ Γùï /admin/settings
+Γö£ Γùï /admin/transactions
+Γö£ Γùï /admin/users
+Γö£ ╞Æ /admin/users/[id]
+Γö£ ╞Æ /api/admin/health
+Γö£ ╞Æ /api/admin/metrics
+Γö£ ╞Æ /api/analytics/epidemic
+Γö£ ╞Æ /api/embeddings
+Γö£ ╞Æ /auth/callback
+Γö£ Γùï /dashboard
+Γö£ Γùï /dashboard/assessment/prakriti
+Γö£ Γùï /dashboard/consult
+Γö£ Γùï /dashboard/family
+Γö£ Γùï /dashboard/history
+Γö£ Γùï /dashboard/inbox
+Γö£ Γùï /dashboard/learn
+Γö£ ╞Æ /dashboard/meet/[id]
+Γö£ ╞Æ /dashboard/pathway/[id]
+Γö£ Γùï /dashboard/profile
+Γö£ Γùï /dashboard/search
+Γö£ Γùï /dashboard/settings
+Γö£ Γùï /dashboard/wellness
+Γö£ Γùï /doctor
+Γö£ Γùï /doctor/analytics
+Γö£ ╞Æ /doctor/consult/[id]
+Γö£ ╞Æ /doctor/consultations/[id]/complete
+Γö£ Γùï /doctor/inbox
+Γö£ Γùï /doctor/patients
+Γö£ ╞Æ /doctor/patients/[id]
+Γö£ Γùï /doctor/pending
+Γö£ Γùï /doctor/register
+Γö£ Γùï /doctor/sandbox
+Γö£ Γùï /doctor/schedule
+Γö£ Γùï /doctor/settings
+Γö£ Γùï /doctor/signup
+Γö£ Γùï /login
+Γö£ Γùï /onboarding
+Γöö Γùï /signup
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

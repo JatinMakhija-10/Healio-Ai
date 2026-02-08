@@ -56,7 +56,124 @@ export function PreCallCheck({
 }: PreCallCheckProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
-    // ... items ...
+    const [isMuted, setIsMuted] = useState(false);
+    const [isVideoOff, setIsVideoOff] = useState(false);
+    const [audioLevel, setAudioLevel] = useState(0);
+    const [devices, setDevices] = useState<DeviceState>({
+        audioInputs: [],
+        audioOutputs: [],
+        videoInputs: [],
+        selectedAudioInput: '',
+        selectedAudioOutput: '',
+        selectedVideoInput: '',
+    });
+    const [checks, setChecks] = useState<{
+        camera: CheckStatus;
+        microphone: CheckStatus;
+        speaker: CheckStatus;
+        connection: CheckStatus;
+    }>({
+        camera: 'pending',
+        microphone: 'pending',
+        speaker: 'pending',
+        connection: 'pending',
+    });
+
+    const toggleMute = () => setIsMuted((prev) => !prev);
+    const toggleVideo = () => setIsVideoOff((prev) => !prev);
+
+    const allChecksPass =
+        checks.camera === 'success' &&
+        checks.microphone === 'success' &&
+        checks.speaker === 'success' &&
+        checks.connection === 'success';
+
+    const renderCheckIcon = (status: CheckStatus) => {
+        switch (status) {
+            case 'success':
+                return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+            case 'error':
+                return <XCircle className="h-5 w-5 text-red-500" />;
+            case 'checking':
+                return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
+            default:
+                return <div className="h-5 w-5 rounded-full border-2 border-slate-300" />;
+        }
+    };
+
+    // Initialize devices and run checks
+    useEffect(() => {
+        const initializeDevices = async () => {
+            try {
+                // Request permissions and get stream
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true,
+                });
+                setStream(mediaStream);
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                }
+
+                // Get available devices
+                const deviceList = await navigator.mediaDevices.enumerateDevices();
+                const audioInputs = deviceList.filter((d) => d.kind === 'audioinput');
+                const audioOutputs = deviceList.filter((d) => d.kind === 'audiooutput');
+                const videoInputs = deviceList.filter((d) => d.kind === 'videoinput');
+
+                setDevices({
+                    audioInputs,
+                    audioOutputs,
+                    videoInputs,
+                    selectedAudioInput: audioInputs[0]?.deviceId || '',
+                    selectedAudioOutput: audioOutputs[0]?.deviceId || '',
+                    selectedVideoInput: videoInputs[0]?.deviceId || '',
+                });
+
+                // Run system checks
+                setChecks({
+                    camera: videoInputs.length > 0 ? 'success' : 'error',
+                    microphone: audioInputs.length > 0 ? 'success' : 'error',
+                    speaker: audioOutputs.length > 0 ? 'success' : 'error',
+                    connection: navigator.onLine ? 'success' : 'error',
+                });
+
+                // Audio level monitoring
+                const audioContext = new AudioContext();
+                const analyser = audioContext.createAnalyser();
+                const microphone = audioContext.createMediaStreamSource(mediaStream);
+                microphone.connect(analyser);
+                analyser.fftSize = 512;
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                const updateAudioLevel = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    setAudioLevel(average / 255);
+                    requestAnimationFrame(updateAudioLevel);
+                };
+                updateAudioLevel();
+            } catch (error) {
+                console.error('Failed to initialize devices:', error);
+                setChecks({
+                    camera: 'error',
+                    microphone: 'error',
+                    speaker: 'error',
+                    connection: navigator.onLine ? 'success' : 'error',
+                });
+            }
+        };
+
+        initializeDevices();
+
+        // Cleanup
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+            }
+        };
+    }, []);
 
     return (
         <Card className={cn("max-w-3xl mx-auto", className)}>
