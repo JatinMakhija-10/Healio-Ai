@@ -1,0 +1,42 @@
+HEALIO.AI — INVESTOR Q&A
+=========================
+
+
+Q1: What stops Google/Practo from copying this?
+
+Healio.AI's moat is built on three layers that are exceptionally hard to replicate together. The 265+ condition database with dual modern-Ayurvedic mappings represents over six months of expert medical curation, the five-stage Bayesian pipeline (NLU, inference, correlation, uncertainty, clinical rules) creates deep architectural complexity, and the Ayurvedic integration requires domain expertise that pure-tech competitors simply do not have. We estimate a replication effort of 12 to 18 months for a five-person team of both medical and engineering professionals.
+
+
+Q2: Is this a medical device requiring FDA/CDSCO approval?
+
+Healio.AI is positioned as a health information platform, not a medical diagnostic device. Every output carries a disclaimer, confidence intervals are always shown to prevent overreliance, emergencies are redirected to 911, and the doctor marketplace ensures a human-in-the-loop for all serious cases. A formal regulatory review will be conducted before commercial scale-up to align with India's CDSCO guidelines.
+
+
+Q3: How accurate is the AI diagnosis?
+
+The engine uses Bayesian inference with priors adjusted by age, gender, and risk factors, updated with each symptom using Bayes' theorem. Thirteen clinically validated symptom patterns detect conditions like stroke (0.95 specificity, 6x multiplier) and MI (0.92 specificity, 5x multiplier), while five validated clinical decision rules — Wells, PERC, HEART, NEXUS, and Ottawa — add precision with sensitivities up to 99.6%. The uncertainty module widens confidence intervals when evidence is weak, ensuring honesty. The platform is designed for triage and guided self-assessment, not definitive diagnosis, as it cannot perform physical examinations.
+
+
+Q4: What is the path to $10M ARR?
+
+The revenue model combines three pillars: DTC (50K subscribers at Rs.199/month = Rs.1.2Cr), B2B (1,000 doctors at Rs.999/month + consultation commissions), and Enterprise (clinic API licensing at Rs.50L/year). Year 3 projections reach Rs.6 crore (~$730K). Reaching $10M ARR requires scaling to 500K+ premium users or landing enterprise deals with hospital chains and government programs — both realistic targets in India's rapidly digitizing $15B healthcare market.
+
+
+Q5: How do you handle mental health emergencies?
+
+Crisis patterns such as "want to die" and "self-harm" are checked before all other classifications and are detected at confidence 1.0, the highest possible score. When triggered, the system skips diagnosis entirely and immediately shows intervention resources — the Suicide Prevention Lifeline (988), Crisis Text Line, and IASP crisis centres — with a compassionate, direct tone. No user in distress is ever subjected to a diagnostic workflow.
+
+
+Q6: How is the Ayurvedic integration scientifically valid?
+
+Every condition maps Sanskrit names to modern medical terms (e.g., "Amlapitta" to Acidity), the Prakriti assessment uses weighted questionnaires with consistency checks and quality ratings, and each home remedy includes precise ingredients, quantities, and step-by-step instructions. Yoga recommendations are presented as evidence-based physical activities with defined durations and frequencies. The system explicitly positions Ayurvedic wisdom as a complementary wellness layer alongside modern medicine, avoiding any supernatural claims.
+
+
+Q7: What is the technology risk and why not use GPT/Claude?
+
+Technology risk is low because the core AI runs client-side in TypeScript with zero dependency on external APIs — no OpenAI, no vendor lock-in, no per-query costs. At one million monthly queries, an LLM approach would cost $10K-$100K/month; Healio's engine costs $0. The custom Bayesian approach also delivers deterministic reproducibility, full reasoning-trace explainability, zero hallucination risk, and offline capability — advantages no LLM can match while still meeting regulatory expectations.
+
+
+Q8: How do you acquire and retain doctors?
+
+The platform has a built-in multi-step onboarding flow capturing registration numbers, license validation, specialization, and fees, with an admin dashboard for manual approval or rejection. Verified doctors access a 14+ page portal with patient management, scheduling, live consultations, inbox, and practice analytics. The transparent revenue split (platform fee vs. doctor payout tracked in the transactions table) and growth metrics dashboard create strong retention beyond simple patient matching.
