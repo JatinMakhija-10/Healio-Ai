@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 
 
-import { getPatientById } from "@/lib/mockData";
+import { getPatientById } from "../../../../../data/seed/mockData";
 
 export default function PatientProfilePage() {
     const params = useParams();

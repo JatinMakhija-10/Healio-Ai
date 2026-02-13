@@ -37,6 +37,23 @@ export type Appointment = {
     patient?: PatientProfile; // Joined
 };
 
+export type WellnessVideo = {
+    id: string;
+    doctor_id: string;
+    title: string;
+    description: string | null;
+    category: string;
+    video_url: string;
+    thumbnail_url: string | null;
+    duration_seconds: number | null;
+    is_published: boolean;
+    views_count: number;
+    created_at: string;
+    updated_at: string;
+    doctor_name?: string;
+    doctor_avatar?: string;
+};
+
 export const api = {
     /**
      * Create or update doctor profile
@@ -163,17 +180,11 @@ export const api = {
         // 2. Get Unique Doctor IDs
         const doctorIds = Array.from(new Set(appointments.map((a: any) => a.doctor_id)));
 
-        // 3. Fetch Doctor Profiles
-        // We need both the doctor record and the profile name
-        const { data: doctors } = await supabase
-            .from('doctors')
-            .select('user_id, specialty, consultation_fee')
-            .in('user_id', doctorIds);
-
-        const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url')
-            .in('id', doctorIds);
+        // 3. Fetch Doctor Profiles (Parallel)
+        const [{ data: doctors }, { data: profiles }] = await Promise.all([
+            supabase.from('doctors').select('user_id, specialty, consultation_fee').in('user_id', doctorIds),
+            supabase.from('profiles').select('id, full_name, avatar_url').in('id', doctorIds)
+        ]);
 
         const doctorMap = new Map();
         doctors?.forEach(d => {
@@ -264,6 +275,14 @@ export const api = {
         reason?: string;
         diagnosis_ref_id?: string; // Link to AI consultation
     }) {
+        // Fetch doctor's actual consultation fee from their profile
+        const { data: doctorProfile } = await supabase
+            .from('doctors')
+            .select('consultation_fee')
+            .eq('user_id', appointmentData.doctor_id)
+            .single();
+        const consultationFee = doctorProfile?.consultation_fee ?? 500;
+
         const { data, error } = await supabase
             .from('appointments')
             .insert({
@@ -273,8 +292,8 @@ export const api = {
                 duration_minutes: appointmentData.duration_minutes,
                 status: 'scheduled',
                 notes: appointmentData.reason,
-                diagnosis_ref_id: appointmentData.diagnosis_ref_id, // Link to consultation
-                consultation_fee: 500 // Default fee, should ideally come from doctor profile
+                diagnosis_ref_id: appointmentData.diagnosis_ref_id,
+                consultation_fee: consultationFee
             })
             .select()
             .single();
@@ -391,11 +410,7 @@ export const api = {
             query = query.eq('is_read', false);
         }
 
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+        const { data, error } = await query;
 
         if (error) {
             console.error("Error fetching notifications:", error);
@@ -433,5 +448,226 @@ export const api = {
             console.error("Error marking all notifications as read:", error);
             throw error;
         }
+    },
+
+    // ============================================================
+    // Wellness Videos
+    // ============================================================
+
+    /**
+     * Get Videos uploaded by a specific Doctor
+     */
+    async getDoctorVideos(doctorId: string): Promise<WellnessVideo[]> {
+        const { data, error } = await supabase
+            .from('wellness_videos')
+            .select('*')
+            .eq('doctor_id', doctorId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching doctor videos:", error);
+            return [];
+        }
+        return data || [];
+    },
+
+    /**
+     * Get all published videos (patient-facing)
+     */
+    async getPublishedVideos(filters?: { category?: string; search?: string }): Promise<WellnessVideo[]> {
+        let query = supabase
+            .from('wellness_videos')
+            .select('*')
+            .eq('is_published', true)
+            .order('created_at', { ascending: false });
+
+        if (filters?.category && filters.category !== 'all') {
+            query = query.eq('category', filters.category);
+        }
+
+        if (filters?.search) {
+            query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        }
+
+        const { data: videos, error } = await query;
+
+        if (error) {
+            console.error("Error fetching published videos:", error);
+            return [];
+        }
+
+        if (!videos || videos.length === 0) return [];
+
+        // Fetch doctor names for display
+        const doctorIds = Array.from(new Set(videos.map(v => v.doctor_id)));
+        const { data: doctors } = await supabase
+            .from('doctors')
+            .select('id, user_id')
+            .in('id', doctorIds);
+
+        const userIds = doctors?.map(d => d.user_id) || [];
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', userIds);
+
+        const doctorToProfile = new Map<string, { full_name: string; avatar_url: string | null }>();
+        doctors?.forEach(d => {
+            const prof = profiles?.find(p => p.id === d.user_id);
+            if (prof) doctorToProfile.set(d.id, prof);
+        });
+
+        return videos.map(v => ({
+            ...v,
+            doctor_name: doctorToProfile.get(v.doctor_id)?.full_name || 'Practitioner',
+            doctor_avatar: doctorToProfile.get(v.doctor_id)?.avatar_url || null,
+        }));
+    },
+
+    /**
+     * Upload video metadata (file upload to storage is done separately)
+     */
+    async uploadVideoMetadata(data: {
+        doctor_id: string;
+        title: string;
+        description?: string;
+        category: string;
+        video_url: string;
+        thumbnail_url?: string;
+        duration_seconds?: number;
+        is_published?: boolean;
+    }) {
+        const { data: video, error } = await supabase
+            .from('wellness_videos')
+            .insert({
+                doctor_id: data.doctor_id,
+                title: data.title,
+                description: data.description || null,
+                category: data.category,
+                video_url: data.video_url,
+                thumbnail_url: data.thumbnail_url || null,
+                duration_seconds: data.duration_seconds || null,
+                is_published: data.is_published ?? true,
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return video;
+    },
+
+    /**
+     * Update video metadata
+     */
+    async updateVideo(videoId: string, data: Partial<{
+        title: string;
+        description: string;
+        category: string;
+        is_published: boolean;
+        thumbnail_url: string;
+    }>) {
+        const { error } = await supabase
+            .from('wellness_videos')
+            .update({ ...data, updated_at: new Date().toISOString() })
+            .eq('id', videoId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Delete a video
+     */
+    async deleteVideo(videoId: string) {
+        const { error } = await supabase
+            .from('wellness_videos')
+            .delete()
+            .eq('id', videoId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Increment video view count
+     */
+    async incrementVideoViews(videoId: string) {
+        const { error } = await supabase.rpc('increment_video_views', { video_id: videoId });
+        // Fallback: manual increment if RPC not available
+        if (error) {
+            const { data } = await supabase
+                .from('wellness_videos')
+                .select('views_count')
+                .eq('id', videoId)
+                .single();
+            if (data) {
+                await supabase
+                    .from('wellness_videos')
+                    .update({ views_count: (data.views_count || 0) + 1 })
+                    .eq('id', videoId);
+            }
+        }
+    },
+
+    /**
+     * [ADMIN] Get ALL videos with doctor info (published + unpublished)
+     */
+    async getAllVideosAdmin(): Promise<WellnessVideo[]> {
+        const { data: videos, error } = await supabase
+            .from('wellness_videos')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching all videos (admin):", error);
+            return [];
+        }
+
+        if (!videos || videos.length === 0) return [];
+
+        // Fetch doctor names
+        const doctorIds = Array.from(new Set(videos.map(v => v.doctor_id)));
+        const { data: doctors } = await supabase
+            .from('doctors')
+            .select('id, user_id')
+            .in('id', doctorIds);
+
+        const userIds = doctors?.map(d => d.user_id) || [];
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', userIds);
+
+        const doctorToProfile = new Map<string, { full_name: string; avatar_url: string | null }>();
+        doctors?.forEach(d => {
+            const prof = profiles?.find(p => p.id === d.user_id);
+            if (prof) doctorToProfile.set(d.id, prof);
+        });
+
+        return videos.map(v => ({
+            ...v,
+            doctor_name: doctorToProfile.get(v.doctor_id)?.full_name || 'Unknown Doctor',
+            doctor_avatar: doctorToProfile.get(v.doctor_id)?.avatar_url || null,
+        }));
+    },
+
+    /**
+     * [ADMIN] Force-publish or unpublish any video
+     */
+    async adminToggleVideoPublish(videoId: string, isPublished: boolean) {
+        const { error } = await supabase
+            .from('wellness_videos')
+            .update({ is_published: isPublished, updated_at: new Date().toISOString() })
+            .eq('id', videoId);
+        if (error) throw error;
+    },
+
+    /**
+     * [ADMIN] Delete any video
+     */
+    async adminDeleteVideo(videoId: string) {
+        const { error } = await supabase
+            .from('wellness_videos')
+            .delete()
+            .eq('id', videoId);
+        if (error) throw error;
     }
 };

@@ -32,12 +32,14 @@ export async function POST(req: Request) {
             }
         }
 
-        // Mock Fallback (Return random 1536-dim vector)
-        // This ensures the frontend doesn't crash and triggers the "keyword fallback" logic
-        console.warn("Using MOCK embedding (No OpenAI Key or API Error)");
-        const mockEmbedding = Array(1536).fill(0).map(() => Math.random() * 0.1);
-
-        return NextResponse.json({ embedding: mockEmbedding });
+        // Return empty embedding to signal the retrieval layer to use keyword fallback
+        // instead of random vectors that silently degrade diagnosis accuracy
+        console.warn("Embedding unavailable (No OpenAI Key or API Error) — keyword fallback will be used");
+        return NextResponse.json({
+            embedding: [],
+            fallback: true,
+            message: 'Embedding service unavailable — using keyword matching'
+        });
 
     } catch (error) {
         console.error("Embedding route error:", error);

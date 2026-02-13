@@ -60,14 +60,18 @@ export async function searchConditions(symptoms: UserSymptomData): Promise<Condi
 
     // 2. Keyword/Location Fallback (if Vector fails or finds few)
     if (candidates.length < 5) {
-        console.warn("Vector search yielded few results, falling back to location filter.");
-        // Basic filter by location in JSONB
-        // Note: JSONB contains query syntax is specific
-        // For now, let's use the local fallback `CONDITIONS` array to ensure reliability during migration
-        // In full prod, this would be a DB Text Search query
-
-        // Simulating DB text search with local for safe fallback
-        return Object.values(CONDITIONS);
+        console.warn("Vector search yielded few results, falling back to location-filtered conditions.");
+        // Filter local conditions by symptom location instead of returning entire catalog
+        const locationTerms = symptoms.location.map(l => l.toLowerCase());
+        const filtered = Object.values(CONDITIONS).filter(c =>
+            c.matchCriteria?.locations?.some((loc: string) =>
+                locationTerms.some(term =>
+                    loc.toLowerCase().includes(term) || term.includes(loc.toLowerCase())
+                )
+            )
+        );
+        // Return location-matched conditions, or capped subset if no location match
+        return filtered.length > 0 ? filtered : Object.values(CONDITIONS).slice(0, 20);
     }
 
     // Map DatabaseCondition to Engine Condition (handling discrepancies if any)

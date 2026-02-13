@@ -11,7 +11,8 @@ import {
     Settings,
     LogOut,
     Stethoscope,
-    BookOpen
+    BookOpen,
+    Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -51,6 +52,11 @@ const sidebarItems = [
         title: "Learn",
         href: "/dashboard/learn",
         icon: BookOpen,
+    },
+    {
+        title: "Videos",
+        href: "/dashboard/videos",
+        icon: Video,
     },
 ];
 

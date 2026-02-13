@@ -14,6 +14,7 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
+    Video,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -41,6 +42,11 @@ const navItems = [
         href: "/doctor/inbox",
         icon: MessageSquare,
         badge: 3, // Example unread count
+    },
+    {
+        label: "Videos",
+        href: "/doctor/videos",
+        icon: Video,
     },
     {
         label: "Analytics",

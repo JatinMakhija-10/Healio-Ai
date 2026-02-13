@@ -18,6 +18,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Zap,
+    Video,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -36,6 +37,7 @@ const navGroups = [
         items: [
             { label: "Doctor Verification", href: "/admin/doctors", icon: UserCheck, badge: 5 },
             { label: "Users", href: "/admin/users", icon: Users },
+            { label: "Video Management", href: "/admin/videos", icon: Video },
             { label: "Transactions", href: "/admin/transactions", icon: CreditCard },
             { label: "Invoices", href: "/admin/invoices", icon: FileText },
         ],

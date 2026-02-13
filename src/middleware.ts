@@ -1,5 +1,23 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+// Inline RBAC check — cannot import from lib in Edge runtime
+type UserRole = 'patient' | 'doctor' | 'admin';
+
+function isRouteAllowed(pathname: string, role: UserRole): boolean {
+    if (pathname.startsWith('/admin')) return role === 'admin';
+    if (pathname.startsWith('/doctor')) return role === 'doctor' || role === 'admin';
+    if (pathname.startsWith('/dashboard')) return role === 'patient' || role === 'admin';
+    return true; // Public routes
+}
+
+function getDashboardRoute(role: UserRole): string {
+    switch (role) {
+        case 'admin': return '/admin';
+        case 'doctor': return '/doctor';
+        default: return '/dashboard';
+    }
+}
 
 export async function middleware(request: NextRequest) {
     let response = NextResponse.next({
@@ -10,51 +28,55 @@ export async function middleware(request: NextRequest) {
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+        || '',
         {
             cookies: {
-                get(name: string) {
-                    return request.cookies.get(name)?.value
+                getAll() {
+                    return request.cookies.getAll()
                 },
-                set(name: string, value: string, options: CookieOptions) {
-                    request.cookies.set({
-                        name,
-                        value,
-                        ...options,
-                    })
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        request.cookies.set({ name, value, ...options })
+                    )
                     response = NextResponse.next({
                         request: {
                             headers: request.headers,
                         },
                     })
-                    response.cookies.set({
-                        name,
-                        value,
-                        ...options,
-                    })
-                },
-                remove(name: string, options: CookieOptions) {
-                    request.cookies.set({
-                        name,
-                        value: '',
-                        ...options,
-                    })
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
-                    })
-                    response.cookies.set({
-                        name,
-                        value: '',
-                        ...options,
-                    })
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        response.cookies.set({ name, value, ...options })
+                    )
                 },
             },
         }
     )
 
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // --- RBAC Enforcement ---
+    const pathname = request.nextUrl.pathname;
+    const protectedPrefixes = ['/admin', '/doctor', '/dashboard'];
+    const isProtectedRoute = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
+
+    if (isProtectedRoute) {
+        if (!user) {
+            // Not authenticated — redirect to login
+            const loginUrl = request.nextUrl.clone();
+            loginUrl.pathname = '/login';
+            loginUrl.searchParams.set('redirectTo', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+
+        const role = (user.user_metadata?.role as UserRole) || 'patient';
+        if (!isRouteAllowed(pathname, role)) {
+            // Authenticated but wrong role — redirect to their dashboard
+            const dashboardUrl = request.nextUrl.clone();
+            dashboardUrl.pathname = getDashboardRoute(role);
+            return NextResponse.redirect(dashboardUrl);
+        }
+    }
 
     return response
 }

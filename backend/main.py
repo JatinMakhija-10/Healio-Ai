@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -27,6 +27,15 @@ ALLOWED_MIME_TYPES = set(os.getenv("ALLOWED_MIME_TYPES",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain").split(","))
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
+BACKEND_API_KEY = os.getenv("BACKEND_API_KEY", "")
+
+# API Key authentication dependency
+async def verify_api_key(x_api_key: str = Header(default="")):
+    """Verify the API key from the X-API-Key header."""
+    if not BACKEND_API_KEY:
+        return  # No key configured = auth disabled (dev mode)
+    if x_api_key != BACKEND_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -49,7 +58,7 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST"],  # Explicit methods instead of wildcard
-    allow_headers=["Content-Type", "Authorization"],  # Explicit headers
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],  # Explicit headers
 )
 
 UPLOAD_DIR = "uploads"
@@ -153,7 +162,7 @@ async def read_root(request: Request):
         "status": "healthy"
     }
 
-@app.post("/upload", response_model=FileUploadResponse)
+@app.post("/upload", response_model=FileUploadResponse, dependencies=[Depends(verify_api_key)])
 @limiter.limit(f"{UPLOAD_RATE_LIMIT_PER_MINUTE}/minute")
 async def upload_file(request: Request, file: UploadFile = File(...)):
     """
@@ -256,7 +265,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 # Email API Endpoints
 # ======================
 
-@app.post("/api/email/diagnosis")
+@app.post("/api/email/diagnosis", dependencies=[Depends(verify_api_key)])
 @limiter.limit("10/minute")
 async def send_diagnosis_email(request: Request, email_req: DiagnosisEmailRequest):
     """
@@ -282,7 +291,7 @@ async def send_diagnosis_email(request: Request, email_req: DiagnosisEmailReques
         print(f"Email error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred sending the email")
 
-@app.post("/api/email/reminder")
+@app.post("/api/email/reminder", dependencies=[Depends(verify_api_key)])
 @limiter.limit("20/minute")
 async def send_reminder_email(request: Request, email_req: ReminderEmailRequest):
     """
@@ -299,7 +308,7 @@ async def send_reminder_email(request: Request, email_req: ReminderEmailRequest)
         )
         
         if success:
-            return {" status": "success", "message": "Reminder email sent successfully"}
+            return {"status": "success", "message": "Reminder email sent successfully"}
         else:
             raise HTTPException(status_code=500, detail="Failed to send email")
             
@@ -307,7 +316,7 @@ async def send_reminder_email(request: Request, email_req: ReminderEmailRequest)
         print(f"Email error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred sending the email")
 
-@app.post("/api/email/health-tip")
+@app.post("/api/email/health-tip", dependencies=[Depends(verify_api_key)])
 @limiter.limit("5/minute")
 async def send_health_tip_email(request: Request, email_req: HealthTipEmailRequest):
     """
