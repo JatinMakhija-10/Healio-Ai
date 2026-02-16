@@ -203,12 +203,26 @@ export default function PatientVideosPage() {
                             >
                                 {/* Thumbnail */}
                                 <div className="relative aspect-video bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="h-14 w-14 rounded-full bg-white/90 shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                        <Play className="h-6 w-6 text-teal-600 ml-0.5" />
+                                    {video.thumbnail_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={video.thumbnail_url}
+                                            alt={video.title}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : null}
+                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div className="h-12 w-12 rounded-full bg-white/90 shadow-xl flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform">
+                                            <Play className="h-5 w-5 text-teal-600 ml-0.5" />
+                                        </div>
                                     </div>
+
                                     {video.duration_seconds && (
-                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 backdrop-blur-sm">
                                             <Clock className="h-3 w-3" />
                                             {formatDuration(video.duration_seconds)}
                                         </div>
@@ -331,6 +345,49 @@ export default function PatientVideosPage() {
                                         </p>
                                     )}
                                 </div>
+
+                                {/* Related Videos */}
+                                {(() => {
+                                    const related = videos
+                                        .filter(v => v.category === selectedVideo.category && v.id !== selectedVideo.id)
+                                        .slice(0, 3);
+
+                                    if (related.length === 0) return null;
+
+                                    return (
+                                        <div className="px-4 pb-6 pt-2 border-t border-slate-100">
+                                            <h4 className="text-sm font-semibold text-slate-900 mb-3">Related Videos</h4>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                {related.map(video => (
+                                                    <div
+                                                        key={video.id}
+                                                        className="group cursor-pointer space-y-2"
+                                                        onClick={() => setSelectedVideo(video)}
+                                                    >
+                                                        <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100">
+                                                            {video.thumbnail_url ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img
+                                                                    src={video.thumbnail_url}
+                                                                    alt={video.title}
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                                                                    <Film className="h-6 w-6 text-slate-400" />
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                                        </div>
+                                                        <p className="text-xs font-medium text-slate-700 line-clamp-2 group-hover:text-teal-700 transition-colors">
+                                                            {video.title}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         );
                     })()}

@@ -5,12 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { VideoRoom } from '@/components/features/video/VideoRoom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { PreCallCheck } from '@/components/features/video/PreCallCheck';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useVideoStore, selectFormattedDuration } from '@/stores/videoStore';
 
 type ConsultationPhase = 'pre_check' | 'in_call' | 'post_call';
 
@@ -23,6 +24,7 @@ export default function PatientMeetPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [appointment, setAppointment] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const callDuration = useVideoStore(selectFormattedDuration);
 
     useEffect(() => {
         async function fetchData() {
@@ -126,9 +128,10 @@ export default function PatientMeetPage() {
                         >
                             <VideoRoom
                                 appointmentId={appointmentId}
-                                patientName={doctorName} // Displaying the Doctor's name as the "remote" participant
-                                patientAvatar={doctor.avatar_url} // Displaying the Doctor's avatar
+                                patientName={doctorName}
+                                patientAvatar={doctor.avatar_url}
                                 onCallEnd={handleCallEnd}
+                                role="answerer"
                             />
                         </motion.div>
                     )}
@@ -142,12 +145,12 @@ export default function PatientMeetPage() {
                             className="text-center space-y-6 max-w-md"
                         >
                             <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto text-green-400">
-                                <Loader2 className="h-10 w-10 animate-spin" />
-                                {/* Just using Loader as a placeholder icon, really should be Check */}
+                                <CheckCircle2 className="h-10 w-10" />
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold">Consultation Ended</h2>
                                 <p className="text-slate-400">Thank you for consulting with {doctorName}</p>
+                                <p className="text-slate-500 text-sm">Duration: {callDuration}</p>
                             </div>
                             <div className="flex gap-3 justify-center">
                                 <Button asChild className="bg-teal-600 hover:bg-teal-700">

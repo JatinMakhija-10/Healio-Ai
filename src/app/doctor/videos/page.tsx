@@ -84,6 +84,11 @@ export default function DoctorVideosPage() {
     const [videoUrl, setVideoUrl] = useState("");
     const [isPublished, setIsPublished] = useState(true);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch doctor ID and videos
     useEffect(() => {
@@ -113,8 +118,11 @@ export default function DoctorVideosPage() {
         setVideoUrl("");
         setIsPublished(true);
         setSelectedFile(null);
+        setSelectedThumbnail(null);
+        setThumbnailPreview(null);
         setEditingVideo(null);
         setUploadMode("url");
+        setIsDragging(false);
     }
 
     function openEditDialog(video: WellnessVideo) {
@@ -124,6 +132,8 @@ export default function DoctorVideosPage() {
         setCategory(video.category);
         setVideoUrl(video.video_url);
         setIsPublished(video.is_published);
+        setThumbnailPreview(video.thumbnail_url || null);
+        setSelectedThumbnail(null); // Reset new selection
         setUploadMode("url");
         setDialogOpen(true);
     }
@@ -135,11 +145,12 @@ export default function DoctorVideosPage() {
         setUploading(true);
         try {
             let finalUrl = videoUrl;
+            let finalThumbnailUrl = editingVideo?.thumbnail_url || null;
 
-            // If file upload mode and file selected, upload to Supabase Storage
+            // 1. Upload Video File (if selected)
             if (uploadMode === "file" && selectedFile) {
                 const fileExt = selectedFile.name.split(".").pop();
-                const filePath = `${doctorId}/${Date.now()}.${fileExt}`;
+                const filePath = `${doctorId}/${Date.now()}_video.${fileExt}`;
                 const { error: uploadError } = await supabase.storage
                     .from("wellness-videos")
                     .upload(filePath, selectedFile, { cacheControl: "3600", upsert: false });
@@ -150,6 +161,22 @@ export default function DoctorVideosPage() {
                     .from("wellness-videos")
                     .getPublicUrl(filePath);
                 finalUrl = urlData.publicUrl;
+            }
+
+            // 2. Upload Thumbnail (if selected)
+            if (selectedThumbnail) {
+                const fileExt = selectedThumbnail.name.split(".").pop();
+                const filePath = `${doctorId}/${Date.now()}_thumb.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from("wellness-videos")
+                    .upload(filePath, selectedThumbnail, { cacheControl: "3600", upsert: false });
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from("wellness-videos")
+                    .getPublicUrl(filePath);
+                finalThumbnailUrl = urlData.publicUrl;
             }
 
             if (!finalUrl) {
@@ -165,11 +192,19 @@ export default function DoctorVideosPage() {
                     description,
                     category,
                     is_published: isPublished,
+                    thumbnail_url: finalThumbnailUrl || "",
                 });
                 setVideos((prev) =>
                     prev.map((v) =>
                         v.id === editingVideo.id
-                            ? { ...v, title, description, category, is_published: isPublished }
+                            ? {
+                                ...v,
+                                title,
+                                description,
+                                category,
+                                is_published: isPublished,
+                                thumbnail_url: finalThumbnailUrl
+                            }
                             : v
                     )
                 );
@@ -181,6 +216,7 @@ export default function DoctorVideosPage() {
                     description,
                     category,
                     video_url: finalUrl,
+                    thumbnail_url: finalThumbnailUrl || undefined,
                     is_published: isPublished,
                 });
                 setVideos((prev) => [newVideo, ...prev]);
@@ -218,6 +254,43 @@ export default function DoctorVideosPage() {
             console.error("Error toggling publish:", err);
         }
     }
+
+    // Drag & Drop Handlers
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith("video/")) {
+                setSelectedFile(file);
+                setUploadMode("file");
+            } else {
+                alert("Please drop a video file.");
+            }
+        }
+    };
+
+    const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (!file.type.startsWith("image/")) {
+                alert("Please select an image file.");
+                return;
+            }
+            setSelectedThumbnail(file);
+            setThumbnailPreview(URL.createObjectURL(file));
+        }
+    };
 
     if (loading) {
         return (
@@ -348,16 +421,32 @@ export default function DoctorVideosPage() {
                                         <div>
                                             <Label>Video File *</Label>
                                             <div
-                                                className="mt-1 border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/50 transition-colors"
+                                                className={cn(
+                                                    "mt-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200",
+                                                    isDragging
+                                                        ? "border-teal-500 bg-teal-50"
+                                                        : "border-slate-200 hover:border-teal-400 hover:bg-teal-50/50"
+                                                )}
                                                 onClick={() => fileInputRef.current?.click()}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
                                             >
-                                                <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
+                                                <Upload className={cn(
+                                                    "h-8 w-8 mx-auto mb-2 transition-colors",
+                                                    isDragging ? "text-teal-600" : "text-slate-400"
+                                                )} />
                                                 {selectedFile ? (
-                                                    <p className="text-sm font-medium text-teal-700">{selectedFile.name}</p>
+                                                    <div className="flex flex-col items-center">
+                                                        <p className="text-sm font-medium text-teal-700">{selectedFile.name}</p>
+                                                        <p className="text-xs text-slate-400">
+                                                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                                                        </p>
+                                                    </div>
                                                 ) : (
                                                     <>
                                                         <p className="text-sm text-slate-600 font-medium">
-                                                            Click to choose a video file
+                                                            {isDragging ? "Drop video here" : "Click to choose a video file"}
                                                         </p>
                                                         <p className="text-xs text-slate-400 mt-1">
                                                             MP4, WebM, MOV — Max 100MB
@@ -376,6 +465,45 @@ export default function DoctorVideosPage() {
                                     )}
                                 </>
                             )}
+
+                            {/* Thumbnail Upload */}
+                            <div>
+                                <Label>Thumbnail Image (Optional)</Label>
+                                <div className="mt-1 flex gap-4 items-start">
+                                    {thumbnailPreview && (
+                                        <div className="shrink-0">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={thumbnailPreview}
+                                                alt="Thumbnail preview"
+                                                className="h-20 w-32 object-cover rounded-lg border border-slate-200 bg-slate-100"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => thumbnailInputRef.current?.click()}
+                                            className="w-full sm:w-auto"
+                                        >
+                                            <Upload className="h-3.5 w-3.5 mr-2" />
+                                            {thumbnailPreview ? "Change Thumbnail" : "Upload Thumbnail"}
+                                        </Button>
+                                        <p className="text-[11px] text-slate-400 mt-1.5">
+                                            Recommended: 16:9 ratio (e.g. 1280x720). custom cover for the video grid.
+                                        </p>
+                                    </div>
+                                    <input
+                                        ref={thumbnailInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleThumbnailSelect}
+                                    />
+                                </div>
+                            </div>
 
                             <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                 <div>
@@ -461,16 +589,24 @@ export default function DoctorVideosPage() {
                             >
                                 {/* Thumbnail / Preview */}
                                 <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                                    <Play className="h-12 w-12 text-white/30 group-hover:text-white/60 transition-colors" />
+                                    {video.thumbnail_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={video.thumbnail_url}
+                                            alt={video.title}
+                                            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                        />
+                                    ) : null}
+                                    <Play className="h-12 w-12 text-white/30 group-hover:text-white/60 transition-colors z-10" />
                                     {!video.is_published && (
-                                        <div className="absolute top-2 left-2">
+                                        <div className="absolute top-2 left-2 z-10">
                                             <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-[10px]">
                                                 Draft
                                             </Badge>
                                         </div>
                                     )}
                                     {video.duration_seconds && (
-                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
                                             <Clock className="h-3 w-3" />
                                             {formatDuration(video.duration_seconds)}
                                         </div>

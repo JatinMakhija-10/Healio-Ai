@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { saveClinicalNotes } from '@/lib/appointments/contextClient';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { useVideoStore, selectFormattedDuration } from '@/stores/videoStore';
 
 
 
@@ -36,6 +37,7 @@ export default function ConsultationPage() {
     const [phase, setPhase] = useState<ConsultationPhase>('pre_check');
     const [consultationNotes, setConsultationNotes] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const callDuration = useVideoStore(selectFormattedDuration);
 
     // Real Data State
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -162,6 +164,7 @@ export default function ConsultationPage() {
                                     patientName={patient.full_name}
                                     patientAvatar={patient.avatar_url}
                                     onCallEnd={handleCallEnd}
+                                    role="caller"
                                 />
                             </div>
 
@@ -256,7 +259,7 @@ export default function ConsultationPage() {
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span className="text-slate-500">Duration</span>
-                                                <p className="font-medium">15:32</p>
+                                                <p className="font-medium">{callDuration}</p>
                                             </div>
                                             <div>
                                                 <span className="text-slate-500">Patient</span>

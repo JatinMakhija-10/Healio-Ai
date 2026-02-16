@@ -10,6 +10,8 @@ export type CallStatus =
     | 'ended'
     | 'error';
 
+export type ConnectionQuality = 'excellent' | 'good' | 'fair' | 'poor';
+
 export interface Participant {
     id: string;
     name: string;
@@ -17,7 +19,7 @@ export interface Participant {
     isMuted: boolean;
     isVideoOff: boolean;
     isScreenSharing: boolean;
-    connectionQuality: 'good' | 'fair' | 'poor';
+    connectionQuality: ConnectionQuality;
 }
 
 export interface DeviceState {
@@ -35,6 +37,10 @@ interface VideoState {
     roomUrl: string | null;
     appointmentId: string | null;
 
+    // Streams (real MediaStream objects)
+    localStream: MediaStream | null;
+    remoteStream: MediaStream | null;
+
     // Participants
     participants: Participant[];
     localParticipant: Participant | null;
@@ -44,6 +50,9 @@ interface VideoState {
     isVideoOff: boolean;
     isScreenSharing: boolean;
     isPipActive: boolean;
+
+    // Connection quality
+    connectionQuality: ConnectionQuality;
 
     // Devices
     devices: DeviceState;
@@ -62,6 +71,11 @@ interface VideoState {
     setCallStatus: (status: CallStatus) => void;
     joinCall: (roomUrl: string, appointmentId: string) => void;
     leaveCall: () => void;
+
+    // Stream Actions
+    setLocalStream: (stream: MediaStream | null) => void;
+    setRemoteStream: (stream: MediaStream | null) => void;
+    setConnectionQuality: (quality: ConnectionQuality) => void;
 
     // Control Actions
     toggleMute: () => void;
@@ -99,17 +113,20 @@ const initialDeviceState: DeviceState = {
     selectedVideoInput: null,
 };
 
-export const useVideoStore = create<VideoState>()((set, get) => ({
+export const useVideoStore = create<VideoState>()((set) => ({
     // Initial State
     callStatus: 'idle',
     roomUrl: null,
     appointmentId: null,
+    localStream: null,
+    remoteStream: null,
     participants: [],
     localParticipant: null,
     isMuted: false,
     isVideoOff: false,
     isScreenSharing: false,
     isPipActive: false,
+    connectionQuality: 'good',
     devices: initialDeviceState,
     isDeviceCheckComplete: false,
     isChatOpen: false,
@@ -136,7 +153,14 @@ export const useVideoStore = create<VideoState>()((set, get) => ({
         localParticipant: null,
         isScreenSharing: false,
         isPipActive: false,
+        localStream: null,
+        remoteStream: null,
     }),
+
+    // Stream Actions
+    setLocalStream: (stream) => set({ localStream: stream }),
+    setRemoteStream: (stream) => set({ remoteStream: stream }),
+    setConnectionQuality: (quality) => set({ connectionQuality: quality }),
 
     // Control Actions
     toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
