@@ -407,9 +407,21 @@ export const COMMON_CONDITIONS: Record<string, Condition> = {
         exercises: [
             {
                 name: 'Rest',
-                description: 'Allow body to heal',
+                description: 'Allow body to heal and conserve energy',
                 duration: 'As needed',
                 frequency: 'During illness'
+            },
+            {
+                name: 'Kapalbhati (Gentle)',
+                description: 'Mild rhythmic breathing to clear nasal passages and improve lung capacity',
+                duration: '3-5 minutes',
+                frequency: 'Once daily (when not feverish)'
+            },
+            {
+                name: 'Surya Namaskar (Sun Salutation - Gentle)',
+                description: 'Gentle rounds to boost circulation and stimulate immunity during recovery',
+                duration: '5-10 minutes',
+                frequency: 'During recovery phase'
             }
         ],
         warnings: ['Keep warm', 'Stay hydrated', 'Rest adequately', 'Avoid cold drinks'],
@@ -584,15 +596,27 @@ export const COMMON_CONDITIONS: Record<string, Condition> = {
         exercises: [
             {
                 name: 'Neck Stretches',
-                description: 'Relieves tension',
+                description: 'Relieves tension headaches by loosening tight neck muscles',
                 duration: '5 minutes',
                 frequency: 'Several times daily'
             },
             {
-                name: 'Eye Rest',
-                description: '20-20-20 rule for screen users',
-                duration: '20 seconds looking 20 feet away',
-                frequency: 'Every 20 minutes'
+                name: 'Eye Rest (20-20-20 Rule)',
+                description: 'Look at something 20 feet away for 20 seconds every 20 minutes',
+                duration: '20 seconds',
+                frequency: 'Every 20 minutes during screen time'
+            },
+            {
+                name: 'Anulom Vilom (Alternate Nostril Breathing)',
+                description: 'Balances energy flow and calms the mind to relieve headaches',
+                duration: '5-10 minutes',
+                frequency: 'Morning and evening'
+            },
+            {
+                name: 'Balasana (Child\'s Pose)',
+                description: 'Gentle forward fold that relaxes the head and neck, reducing tension',
+                duration: '2-5 minutes',
+                frequency: 'When headache occurs'
             }
         ],
         warnings: ['Don\'t skip meals', 'Limit screen time', 'Stay hydrated', 'Regular sleep'],
@@ -650,15 +674,27 @@ export const COMMON_CONDITIONS: Record<string, Condition> = {
         ],
         exercises: [
             {
-                name: 'Cat-Cow Stretch',
-                description: 'Gentle spinal mobilization',
+                name: 'Marjaryasana-Bitilasana (Cat-Cow Stretch)',
+                description: 'Gentle spinal mobilization that warms up the spine and releases tension',
                 duration: '5 minutes',
                 frequency: 'Morning and evening'
             },
             {
                 name: 'Gentle Walking',
-                description: 'Keeps back mobile',
+                description: 'Keeps back mobile and prevents stiffness',
                 duration: '15-20 minutes',
+                frequency: 'Daily'
+            },
+            {
+                name: 'Bhujangasana (Cobra Pose)',
+                description: 'Strengthens lower back muscles and improves spinal flexibility',
+                duration: '30 seconds, 3-5 reps',
+                frequency: 'Daily'
+            },
+            {
+                name: 'Setu Bandhasana (Bridge Pose)',
+                description: 'Strengthens glutes and core to support the lower back',
+                duration: '30 seconds hold, 5 reps',
                 frequency: 'Daily'
             }
         ],

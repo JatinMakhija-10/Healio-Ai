@@ -196,11 +196,17 @@ export function BookingModal({
                                 </div>
                             </SelectTrigger>
                             <SelectContent>
-                                {patients.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.full_name}
-                                    </SelectItem>
-                                ))}
+                                {patients.length === 0 ? (
+                                    <div className="p-3 text-center text-sm text-slate-500">
+                                        No patients found. Patients will appear here after they book their first appointment with you.
+                                    </div>
+                                ) : (
+                                    patients.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.full_name}
+                                        </SelectItem>
+                                    ))
+                                )}
                             </SelectContent>
                         </Select>
                     </div>
@@ -357,7 +363,7 @@ export function BookingModal({
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        disabled={hasConflict || !date}
+                        disabled={hasConflict || !date || !selectedPatientId}
                         className="bg-teal-600 hover:bg-teal-700"
                     >
                         {isRecurring ? `Book ${recurringCount} Sessions` : 'Book Appointment'}

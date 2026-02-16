@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, ChevronLeft, ShieldAlert, CheckCircle } from "lucide-react";
+import { ChevronRight, ChevronLeft, ShieldAlert, CheckCircle, Stethoscope, Leaf, Dumbbell, Home } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ONBOARDING_PRAKRITI_QUESTIONS } from "@/lib/ayurveda/prakriti/onboardingQuestions";
@@ -48,9 +48,11 @@ type OnboardingData = {
         phone: string;
         relation: string;
     };
-    // Step 7: Consent
+    // Step 2: Care Preferences
+    carePreferences: string[]; // 'modern_medicine' | 'ayurveda' | 'yoga' | 'home_remedies'
+    // Step 8: Consent
     hasConsented: boolean;
-    // Step 8: Prakriti Assessment (Ayurvedic Constitution)
+    // Prakriti Assessment (Ayurvedic Constitution)
     prakritiAnswers: Record<string, 'vata' | 'pitta' | 'kapha'>; // question ID -> selected dosha
 };
 
@@ -64,6 +66,7 @@ const INITIAL_DATA: OnboardingData = {
     alcohol: "none",
     exercise: "moderate",
     diet: "mixed",
+    carePreferences: [],
     conditions: [],
     allergies: "",
     familyHistory: [],
@@ -82,13 +85,14 @@ const INITIAL_DATA: OnboardingData = {
 export default function OnboardingWizard() {
     const [step, setStep] = useState(1);
     const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
-    const totalSteps = 7; // Removed Prakriti Assessment
+    const totalSteps = 8; // Added Care Preferences step
     const progress = (step / totalSteps) * 100;
     const router = useRouter();
     const { user, loading } = useAuth(); // Assuming loading is available in useAuth
 
     const handleNext = () => {
-        if (step < totalSteps) setStep(step + 1);
+        if (step < totalSteps) setStep(step + 1)
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         else handleComplete();
     };
 
@@ -244,7 +248,9 @@ export default function OnboardingWizard() {
             },
             // Computed health intelligence
             health_risk_profile: healthRiskProfile,
-            ayurvedic_profile: ayurvedicProfile
+            ayurvedic_profile: ayurvedicProfile,
+            // Care preferences
+            care_preferences: data.carePreferences
         };
 
         // Log summary of key health insights
@@ -369,21 +375,23 @@ export default function OnboardingWizard() {
                             <CardHeader>
                                 <CardTitle className="text-2xl text-slate-800">
                                     {step === 1 && "Basic Profile"}
-                                    {step === 2 && "Vitals & Lifestyle"}
-                                    {step === 3 && "Medical History"}
-                                    {step === 4 && "Family & Lifestyle"}
-                                    {step === 5 && "Safety Check"}
-                                    {step === 6 && "Emergency Contact"}
-                                    {step === 7 && "Consent & Privacy"}
+                                    {step === 2 && "Personalize Your Care"}
+                                    {step === 3 && "Vitals & Lifestyle"}
+                                    {step === 4 && "Medical History"}
+                                    {step === 5 && "Family & Lifestyle"}
+                                    {step === 6 && "Safety Check"}
+                                    {step === 7 && "Emergency Contact"}
+                                    {step === 8 && "Consent & Privacy"}
                                 </CardTitle>
                                 <CardDescription className="text-slate-500">
                                     {step === 1 && "Tell us a bit about yourself so we can personalize your care."}
-                                    {step === 2 && "We need these details to check for risk factors."}
-                                    {step === 3 && "Help us understand your health history."}
-                                    {step === 4 && "Your background helps us identify genetic risks."}
-                                    {step === 5 && "Let's ensure our recommendations are safe for you."}
-                                    {step === 6 && "In case we detect a critical situation."}
-                                    {step === 7 && "Review how we handle your data."}
+                                    {step === 2 && "Choose the healing approaches you'd like to see in your diagnosis."}
+                                    {step === 3 && "We need these details to check for risk factors."}
+                                    {step === 4 && "Help us understand your health history."}
+                                    {step === 5 && "Your background helps us identify genetic risks."}
+                                    {step === 6 && "Let's ensure our recommendations are safe for you."}
+                                    {step === 7 && "In case we detect a critical situation."}
+                                    {step === 8 && "Review how we handle your data."}
                                 </CardDescription>
                             </CardHeader>
 
@@ -432,8 +440,75 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 2: Vitals & Lifestyle --- */}
+                                {/* --- Step 2: Personalize Your Care --- */}
                                 {step === 2 && (
+                                    <div className="space-y-4">
+                                        <p className="text-sm text-slate-600">Select the healing approaches you prefer. Your diagnosis results will show recommendations from these categories only.</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {([
+                                                {
+                                                    key: 'modern_medicine', label: 'Modern Medicine', desc: 'Standard clinical treatments & medications', icon: Stethoscope,
+                                                    selectedClass: 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-200', checkClass: 'text-blue-500', iconBg: 'bg-blue-100', iconColor: 'text-blue-600'
+                                                },
+                                                {
+                                                    key: 'ayurveda', label: 'Ayurveda', desc: 'Traditional Ayurvedic remedies & practices', icon: Leaf,
+                                                    selectedClass: 'border-green-400 bg-green-50 shadow-md ring-2 ring-green-200', checkClass: 'text-green-500', iconBg: 'bg-green-100', iconColor: 'text-green-600'
+                                                },
+                                                {
+                                                    key: 'yoga', label: 'Yoga & Exercise', desc: 'Yoga poses, pranayama & physical therapy', icon: Dumbbell,
+                                                    selectedClass: 'border-purple-400 bg-purple-50 shadow-md ring-2 ring-purple-200', checkClass: 'text-purple-500', iconBg: 'bg-purple-100', iconColor: 'text-purple-600'
+                                                },
+                                                {
+                                                    key: 'home_remedies', label: 'Home Remedies', desc: 'Natural Indian home remedies & herbs', icon: Home,
+                                                    selectedClass: 'border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200', checkClass: 'text-amber-500', iconBg: 'bg-amber-100', iconColor: 'text-amber-600'
+                                                },
+                                            ] as const).map((item) => {
+                                                const isSelected = data.carePreferences.includes(item.key);
+                                                const Icon = item.icon;
+                                                return (
+                                                    <button
+                                                        key={item.key}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                carePreferences: isSelected
+                                                                    ? prev.carePreferences.filter(p => p !== item.key)
+                                                                    : [...prev.carePreferences, item.key]
+                                                            }));
+                                                        }}
+                                                        className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${isSelected
+                                                            ? item.selectedClass
+                                                            : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                                                            }`}
+                                                    >
+                                                        {isSelected && (
+                                                            <div className="absolute top-2 right-2">
+                                                                <CheckCircle className={`h-5 w-5 ${item.checkClass}`} />
+                                                            </div>
+                                                        )}
+                                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${isSelected ? item.iconBg : 'bg-slate-100'
+                                                            }`}>
+                                                            <Icon className={`h-5 w-5 ${isSelected ? item.iconColor : 'text-slate-500'
+                                                                }`} />
+                                                        </div>
+                                                        <h4 className={`font-semibold text-sm ${isSelected ? 'text-slate-900' : 'text-slate-700'
+                                                            }`}>{item.label}</h4>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        {data.carePreferences.length === 0 && (
+                                            <p className="text-xs text-amber-600 flex items-center gap-1">
+                                                <ShieldAlert className="h-3 w-3" /> Please select at least one care approach.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* --- Step 3: Vitals & Lifestyle --- */}
+                                {step === 3 && (
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
@@ -529,8 +604,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 3: Medical History --- */}
-                                {step === 3 && (
+                                {/* --- Step 4: Medical History --- */}
+                                {step === 4 && (
                                     <div className="space-y-6">
                                         <div className="space-y-3">
                                             <Label className="text-base">Existing Conditions</Label>
@@ -562,8 +637,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 4: Family History & Lifestyle --- */}
-                                {step === 4 && (
+                                {/* --- Step 5: Family History & Lifestyle --- */}
+                                {step === 5 && (
                                     <div className="space-y-6">
                                         <div className="space-y-3">
                                             <Label className="text-base">Family Medical History</Label>
@@ -638,8 +713,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 5: Safety --- */}
-                                {step === 5 && (
+                                {/* --- Step 6: Safety --- */}
+                                {step === 6 && (
                                     <div className="space-y-6">
                                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 text-amber-800 text-sm">
                                             <ShieldAlert className="h-5 w-5 shrink-0" />
@@ -701,8 +776,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 6: Emergency Contact --- */}
-                                {step === 6 && (
+                                {/* --- Step 7: Emergency Contact --- */}
+                                {step === 7 && (
                                     <div className="space-y-6">
                                         <div className="bg-slate-50 p-4 rounded-lg flex gap-3 text-slate-700 text-sm border border-slate-200">
                                             <ShieldAlert className="h-5 w-5 shrink-0 text-teal-600" />
@@ -764,8 +839,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* --- Step 7: Consent --- */}
-                                {step === 7 && (
+                                {/* --- Step 8: Consent --- */}
+                                {step === 8 && (
                                     <div className="space-y-8 text-center py-2">
                                         <div className="relative mx-auto w-20 h-20">
                                             <div className="absolute inset-0 bg-teal-100 rounded-full animate-ping opacity-20" />
@@ -832,7 +907,8 @@ export default function OnboardingWizard() {
                                 <Button
                                     onClick={handleNext}
                                     disabled={
-                                        (step === 7 && !data.hasConsented)
+                                        (step === 8 && !data.hasConsented) ||
+                                        (step === 2 && data.carePreferences.length === 0)
                                     }
                                     className={`min-w-[140px] transition-all ${step === totalSteps
                                         ? "bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white shadow-lg shadow-teal-600/20 border-0"

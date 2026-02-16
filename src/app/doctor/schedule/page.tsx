@@ -60,9 +60,14 @@ export default function SchedulePage() {
 
     const handleBook = async (booking: NewBooking) => {
         try {
+            // Combine date and time into a single Date object
+            const [hours, mins] = booking.time.split(':').map(Number);
+            const combinedDate = new Date(booking.date);
+            combinedDate.setHours(hours, mins, 0, 0);
+
             await createAppointment({
                 patientId: booking.patientId,
-                date: booking.date,
+                date: combinedDate,
                 duration: booking.duration,
                 notes: booking.notes
             });
