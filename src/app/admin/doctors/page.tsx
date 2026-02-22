@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +15,17 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
     UserCheck,
     Search,
-    Filter,
     CheckCircle2,
     XCircle,
     MessageSquare,
@@ -31,148 +37,241 @@ import {
     MapPin,
     ExternalLink,
     ArrowLeft,
+    RefreshCw,
+    AlertCircle,
+    IndianRupee,
+    Star,
 } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface DoctorApplication {
     id: string;
-    userId: string;
-    fullName: string;
+    user_id: string;
+    full_name: string;
     email: string;
-    avatar?: string;
+    avatar_url?: string;
     specialty: string[];
     qualification: string;
-    experienceYears: number;
-    licenseNumber: string;
-    licenseDocumentUrl: string;
-    bio: string;
-    location: string;
-    appliedAt: Date;
-    status: "pending" | "approved" | "rejected" | "more_info_required";
+    experience_years: number;
+    license_number?: string;
+    license_document_url?: string;
+    bio?: string;
+    location?: string;
+    consultation_fee: number;
+    verification_status: "pending" | "approved" | "rejected" | "more_info_required";
+    created_at: string;
+    rating: number;
+    rating_count: number;
+    total_consultations: number;
 }
 
-// Mock data
-const mockApplications: DoctorApplication[] = [
-    {
-        id: "doc-1",
-        userId: "usr-1",
-        fullName: "Dr. Aisha Patel",
-        email: "aisha.patel@email.com",
-        specialty: ["General Medicine", "Ayurveda"],
-        qualification: "MBBS, MD (Ayurveda)",
-        experienceYears: 8,
-        licenseNumber: "MH-12345-2020",
-        licenseDocumentUrl: "/docs/license.pdf",
-        bio: "Experienced physician with focus on holistic healing combining modern medicine with traditional Ayurvedic practices.",
-        location: "Mumbai, Maharashtra",
-        appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        status: "pending",
-    },
-    {
-        id: "doc-2",
-        userId: "usr-2",
-        fullName: "Dr. Rajesh Kumar",
-        email: "rajesh.kumar@email.com",
-        specialty: ["Dermatology"],
-        qualification: "MBBS, MD (Dermatology)",
-        experienceYears: 12,
-        licenseNumber: "DL-67890-2018",
-        licenseDocumentUrl: "/docs/license2.pdf",
-        bio: "Dermatologist specializing in skin conditions and cosmetic procedures.",
-        location: "New Delhi",
-        appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        status: "pending",
-    },
-    {
-        id: "doc-3",
-        userId: "usr-3",
-        fullName: "Dr. Meera Sharma",
-        email: "meera.sharma@email.com",
-        specialty: ["Orthopedics", "Sports Medicine"],
-        qualification: "MBBS, MS (Ortho)",
-        experienceYears: 15,
-        licenseNumber: "KA-11111-2015",
-        licenseDocumentUrl: "/docs/license3.pdf",
-        bio: "Orthopedic surgeon with expertise in sports injuries and joint replacements.",
-        location: "Bangalore, Karnataka",
-        appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
-        status: "pending",
-    },
-];
+const statusConfig = {
+    pending: { label: "Pending Review", className: "bg-amber-100 text-amber-700 border-amber-200" },
+    approved: { label: "Approved", className: "bg-green-100 text-green-700 border-green-200" },
+    rejected: { label: "Rejected", className: "bg-red-100 text-red-700 border-red-200" },
+    more_info_required: { label: "More Info Needed", className: "bg-blue-100 text-blue-700 border-blue-200" },
+};
 
 export default function DoctorVerificationPage() {
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [applications, setApplications] = useState<DoctorApplication[]>([]);
     const [selectedDoctor, setSelectedDoctor] = useState<DoctorApplication | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [showMoreInfoDialog, setShowMoreInfoDialog] = useState(false);
     const [infoRequest, setInfoRequest] = useState("");
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setApplications(mockApplications);
+    const fetchDoctors = useCallback(async () => {
+        try {
+            setLoading(true);
+            // Join doctors with profiles to get email and avatar
+            const { data, error } = await supabase
+                .from("doctors")
+                .select(`
+                    id,
+                    user_id,
+                    specialty,
+                    qualification,
+                    experience_years,
+                    bio,
+                    license_number,
+                    license_document_url,
+                    consultation_fee,
+                    verification_status,
+                    created_at,
+                    rating,
+                    rating_count,
+                    total_consultations,
+                    profiles!doctors_user_id_fkey (
+                        full_name,
+                        avatar_url,
+                        email,
+                        phone
+                    )
+                `)
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            const mapped = (data || []).map((d: any) => ({
+                id: d.id,
+                user_id: d.user_id,
+                full_name: d.profiles?.full_name || "Unknown Doctor",
+                email: d.profiles?.email || "",
+                avatar_url: d.profiles?.avatar_url,
+                specialty: d.specialty || [],
+                qualification: d.qualification || "",
+                experience_years: d.experience_years || 0,
+                license_number: d.license_number,
+                license_document_url: d.license_document_url,
+                bio: d.bio,
+                location: d.profiles?.phone, // using phone as proxy for location
+                consultation_fee: d.consultation_fee || 0,
+                verification_status: d.verification_status || "pending",
+                created_at: d.created_at,
+                rating: d.rating || 0,
+                rating_count: d.rating_count || 0,
+                total_consultations: d.total_consultations || 0,
+            }));
+
+            setApplications(mapped);
+        } catch (error) {
+            console.error("Error fetching doctors:", error);
+            toast.error("Failed to load doctor applications");
+        } finally {
             setLoading(false);
-        }, 600);
-        return () => clearTimeout(timer);
+        }
     }, []);
 
-    const filteredApplications = applications.filter(
-        (app) =>
-            app.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    useEffect(() => {
+        fetchDoctors();
+    }, [fetchDoctors]);
+
+    const filteredApplications = applications.filter((app) => {
+        const matchesSearch =
+            app.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             app.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.specialty.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+            app.specialty.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchesStatus = statusFilter === "all" || app.verification_status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
-    const handleApprove = (doctor: DoctorApplication) => {
-        setApplications((prev) =>
-            prev.map((app) =>
-                app.id === doctor.id ? { ...app, status: "approved" } : app
-            )
-        );
-        setSelectedDoctor(null);
-    };
+    const handleApprove = async (doctor: DoctorApplication) => {
+        try {
+            setActionLoading(true);
+            const { error } = await supabase
+                .from("doctors")
+                .update({
+                    verification_status: "approved",
+                    verified: true,
+                    verified_at: new Date().toISOString(),
+                })
+                .eq("id", doctor.id);
 
-    const handleReject = () => {
-        if (selectedDoctor) {
+            if (error) throw error;
+
+            // Update the profile role to 'doctor' if needed
+            await supabase
+                .from("profiles")
+                .update({ role: "doctor" })
+                .eq("id", doctor.user_id);
+
             setApplications((prev) =>
                 prev.map((app) =>
-                    app.id === selectedDoctor.id ? { ...app, status: "rejected" } : app
+                    app.id === doctor.id ? { ...app, verification_status: "approved" } : app
                 )
             );
-            setSelectedDoctor(null);
+            if (selectedDoctor?.id === doctor.id) {
+                setSelectedDoctor({ ...doctor, verification_status: "approved" });
+            }
+            toast.success(`Dr. ${doctor.full_name} has been approved!`);
+        } catch (error) {
+            console.error("Error approving doctor:", error);
+            toast.error("Failed to approve doctor");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleReject = async () => {
+        if (!selectedDoctor) return;
+        try {
+            setActionLoading(true);
+            const { error } = await supabase
+                .from("doctors")
+                .update({
+                    verification_status: "rejected",
+                    verified: false,
+                    rejection_reason: rejectReason,
+                })
+                .eq("id", selectedDoctor.id);
+
+            if (error) throw error;
+
+            setApplications((prev) =>
+                prev.map((app) =>
+                    app.id === selectedDoctor.id ? { ...app, verification_status: "rejected" } : app
+                )
+            );
+            setSelectedDoctor({ ...selectedDoctor, verification_status: "rejected" });
             setShowRejectDialog(false);
             setRejectReason("");
+            toast.success("Application has been rejected.");
+        } catch (error) {
+            console.error("Error rejecting doctor:", error);
+            toast.error("Failed to reject application");
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const handleRequestMoreInfo = () => {
-        if (selectedDoctor) {
+    const handleRequestMoreInfo = async () => {
+        if (!selectedDoctor) return;
+        try {
+            setActionLoading(true);
+            const { error } = await supabase
+                .from("doctors")
+                .update({
+                    verification_status: "more_info_required",
+                })
+                .eq("id", selectedDoctor.id);
+
+            if (error) throw error;
+
             setApplications((prev) =>
                 prev.map((app) =>
-                    app.id === selectedDoctor.id ? { ...app, status: "more_info_required" } : app
+                    app.id === selectedDoctor.id
+                        ? { ...app, verification_status: "more_info_required" }
+                        : app
                 )
             );
-            setSelectedDoctor(null);
+            setSelectedDoctor({ ...selectedDoctor, verification_status: "more_info_required" });
             setShowMoreInfoDialog(false);
             setInfoRequest("");
+            toast.success("Information request sent to doctor.");
+        } catch (error) {
+            console.error("Error updating doctor:", error);
+            toast.error("Failed to send information request");
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const getTimeAgo = (date: Date) => {
+    const getTimeAgo = (dateStr: string) => {
+        const date = new Date(dateStr);
         const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
         if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
         if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
         return `${Math.floor(seconds / 86400)} days ago`;
     };
 
-    const statusConfig = {
-        pending: { label: "Pending Review", className: "bg-amber-100 text-amber-700 border-amber-200" },
-        approved: { label: "Approved", className: "bg-green-100 text-green-700 border-green-200" },
-        rejected: { label: "Rejected", className: "bg-red-100 text-red-700 border-red-200" },
-        more_info_required: { label: "More Info Needed", className: "bg-blue-100 text-blue-700 border-blue-200" },
-    };
+    const pendingCount = applications.filter((a) => a.verification_status === "pending").length;
 
     return (
         <div className="space-y-6">
@@ -184,11 +283,13 @@ export default function DoctorVerificationPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold text-slate-900">Doctor Verification</h1>
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                            {applications.filter((a) => a.status === "pending").length} pending
-                        </Badge>
+                        {pendingCount > 0 && (
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                                {pendingCount} pending
+                            </Badge>
+                        )}
                     </div>
-                    <p className="text-slate-500 mt-1">Review and verify doctor credentials</p>
+                    <p className="text-slate-500 mt-1">Review and verify doctor credentials from the database</p>
                 </div>
 
                 <div className="flex gap-3">
@@ -202,11 +303,37 @@ export default function DoctorVerificationPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" className="gap-2">
-                        <Filter className="h-4 w-4" />
-                        Filter
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[160px]">
+                            <SelectValue placeholder="Filter status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="approved">Approved</SelectItem>
+                            <SelectItem value="rejected">Rejected</SelectItem>
+                            <SelectItem value="more_info_required">More Info</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" onClick={fetchDoctors} disabled={loading}>
+                        <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                     </Button>
                 </div>
+            </div>
+
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                    { label: "Total", count: applications.length, color: "text-slate-700", bg: "bg-slate-50" },
+                    { label: "Pending", count: applications.filter(a => a.verification_status === "pending").length, color: "text-amber-700", bg: "bg-amber-50" },
+                    { label: "Approved", count: applications.filter(a => a.verification_status === "approved").length, color: "text-green-700", bg: "bg-green-50" },
+                    { label: "Rejected", count: applications.filter(a => a.verification_status === "rejected").length, color: "text-red-700", bg: "bg-red-50" },
+                ].map((stat) => (
+                    <div key={stat.label} className={`${stat.bg} rounded-xl p-3 text-center`}>
+                        <div className={`text-2xl font-bold ${stat.color}`}>{stat.count}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{stat.label}</div>
+                    </div>
+                ))}
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
@@ -223,7 +350,7 @@ export default function DoctorVerificationPage() {
                         </div>
                     ) : filteredApplications.length > 0 ? (
                         filteredApplications.map((doctor) => {
-                            const initials = doctor.fullName
+                            const initials = doctor.full_name
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")
@@ -242,7 +369,6 @@ export default function DoctorVerificationPage() {
                                     <CardContent className="p-4">
                                         <div className="flex gap-3">
                                             <Avatar className="h-12 w-12">
-                                                <AvatarImage src={doctor.avatar} />
                                                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-700 text-white">
                                                     {initials}
                                                 </AvatarFallback>
@@ -250,21 +376,21 @@ export default function DoctorVerificationPage() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="font-semibold text-slate-900 truncate">
-                                                        {doctor.fullName}
+                                                        {doctor.full_name}
                                                     </h3>
                                                 </div>
                                                 <p className="text-sm text-slate-500 truncate">
-                                                    {doctor.specialty.join(", ")}
+                                                    {doctor.specialty.length > 0 ? doctor.specialty.join(", ") : "No specialty set"}
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <Badge
                                                         variant="outline"
-                                                        className={`text-[10px] ${statusConfig[doctor.status].className}`}
+                                                        className={`text-[10px] ${statusConfig[doctor.verification_status].className}`}
                                                     >
-                                                        {statusConfig[doctor.status].label}
+                                                        {statusConfig[doctor.verification_status].label}
                                                     </Badge>
                                                     <span className="text-xs text-slate-400">
-                                                        {getTimeAgo(doctor.appliedAt)}
+                                                        {getTimeAgo(doctor.created_at)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -276,8 +402,9 @@ export default function DoctorVerificationPage() {
                     ) : (
                         <Card className="border-dashed">
                             <CardContent className="p-8 text-center text-slate-500">
-                                <UserCheck className="h-12 w-12 mx-auto mb-3 text-slate-300" />
-                                <p>No applications found</p>
+                                <AlertCircle className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                                <p className="font-medium">No applications found</p>
+                                <p className="text-sm mt-1">No doctors match your current filters</p>
                             </CardContent>
                         </Card>
                     )}
@@ -291,19 +418,18 @@ export default function DoctorVerificationPage() {
                                 <div className="flex items-start justify-between">
                                     <div className="flex gap-4">
                                         <Avatar className="h-16 w-16 ring-4 ring-purple-100">
-                                            <AvatarImage src={selectedDoctor.avatar} />
                                             <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-700 text-white text-xl">
-                                                {selectedDoctor.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                                                {selectedDoctor.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div>
-                                            <CardTitle className="text-xl">{selectedDoctor.fullName}</CardTitle>
+                                            <CardTitle className="text-xl">{selectedDoctor.full_name}</CardTitle>
                                             <p className="text-slate-500">{selectedDoctor.email}</p>
                                             <Badge
                                                 variant="outline"
-                                                className={`mt-2 ${statusConfig[selectedDoctor.status].className}`}
+                                                className={`mt-2 ${statusConfig[selectedDoctor.verification_status].className}`}
                                             >
-                                                {statusConfig[selectedDoctor.status].label}
+                                                {statusConfig[selectedDoctor.verification_status].label}
                                             </Badge>
                                         </div>
                                     </div>
@@ -316,67 +442,101 @@ export default function DoctorVerificationPage() {
                                         <Stethoscope className="h-5 w-5 text-slate-400 mt-0.5" />
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Specialization</p>
-                                            <p className="text-sm text-slate-900">{selectedDoctor.specialty.join(", ")}</p>
+                                            <p className="text-sm text-slate-900">
+                                                {selectedDoctor.specialty.length > 0
+                                                    ? selectedDoctor.specialty.join(", ")
+                                                    : "Not specified"}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
                                         <GraduationCap className="h-5 w-5 text-slate-400 mt-0.5" />
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Qualification</p>
-                                            <p className="text-sm text-slate-900">{selectedDoctor.qualification}</p>
+                                            <p className="text-sm text-slate-900">{selectedDoctor.qualification || "Not specified"}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
                                         <Clock className="h-5 w-5 text-slate-400 mt-0.5" />
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Experience</p>
-                                            <p className="text-sm text-slate-900">{selectedDoctor.experienceYears} years</p>
+                                            <p className="text-sm text-slate-900">{selectedDoctor.experience_years} years</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
-                                        <MapPin className="h-5 w-5 text-slate-400 mt-0.5" />
+                                        <IndianRupee className="h-5 w-5 text-slate-400 mt-0.5" />
                                         <div>
-                                            <p className="text-xs text-slate-500 font-medium">Location</p>
-                                            <p className="text-sm text-slate-900">{selectedDoctor.location}</p>
+                                            <p className="text-xs text-slate-500 font-medium">Consultation Fee</p>
+                                            <p className="text-sm text-slate-900">₹{selectedDoctor.consultation_fee}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
+                                        <Star className="h-5 w-5 text-slate-400 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Rating</p>
+                                            <p className="text-sm text-slate-900">
+                                                {selectedDoctor.rating > 0
+                                                    ? `${selectedDoctor.rating.toFixed(1)} (${selectedDoctor.rating_count} reviews)`
+                                                    : "No ratings yet"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
+                                        <UserCheck className="h-5 w-5 text-slate-400 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Total Consultations</p>
+                                            <p className="text-sm text-slate-900">{selectedDoctor.total_consultations}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Bio */}
-                                <div>
-                                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Bio</h4>
-                                    <p className="text-sm text-slate-600 leading-relaxed">{selectedDoctor.bio}</p>
-                                </div>
+                                {selectedDoctor.bio && (
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-slate-700 mb-2">Bio</h4>
+                                        <p className="text-sm text-slate-600 leading-relaxed">{selectedDoctor.bio}</p>
+                                    </div>
+                                )}
 
                                 {/* License Info */}
-                                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <FileText className="h-5 w-5 text-amber-600" />
-                                            <div>
-                                                <p className="text-sm font-medium text-amber-900">Medical License</p>
-                                                <p className="text-xs text-amber-700">{selectedDoctor.licenseNumber}</p>
+                                {selectedDoctor.license_number && (
+                                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <FileText className="h-5 w-5 text-amber-600" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-amber-900">Medical License</p>
+                                                    <p className="text-xs text-amber-700">{selectedDoctor.license_number}</p>
+                                                </div>
                                             </div>
+                                            {selectedDoctor.license_document_url && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-100"
+                                                    onClick={() => window.open(selectedDoctor.license_document_url, "_blank")}
+                                                >
+                                                    <ExternalLink className="h-4 w-4" />
+                                                    View Document
+                                                </Button>
+                                            )}
                                         </div>
-                                        <Button variant="outline" size="sm" className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-100">
-                                            <ExternalLink className="h-4 w-4" />
-                                            View Document
-                                        </Button>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Timeline */}
                                 <div className="flex items-center gap-2 text-sm text-slate-500">
                                     <Calendar className="h-4 w-4" />
-                                    <span>Applied {getTimeAgo(selectedDoctor.appliedAt)}</span>
+                                    <span>Applied {format(new Date(selectedDoctor.created_at), "PPP")}</span>
                                 </div>
 
                                 {/* Actions */}
-                                {selectedDoctor.status === "pending" && (
+                                {selectedDoctor.verification_status === "pending" && (
                                     <div className="flex gap-3 pt-4 border-t">
                                         <Button
                                             className="flex-1 bg-green-600 hover:bg-green-700 gap-2"
                                             onClick={() => handleApprove(selectedDoctor)}
+                                            disabled={actionLoading}
                                         >
                                             <CheckCircle2 className="h-4 w-4" />
                                             Approve
@@ -385,6 +545,7 @@ export default function DoctorVerificationPage() {
                                             variant="outline"
                                             className="flex-1 gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
                                             onClick={() => setShowMoreInfoDialog(true)}
+                                            disabled={actionLoading}
                                         >
                                             <MessageSquare className="h-4 w-4" />
                                             Request Info
@@ -393,9 +554,24 @@ export default function DoctorVerificationPage() {
                                             variant="outline"
                                             className="flex-1 gap-2 border-red-200 text-red-700 hover:bg-red-50"
                                             onClick={() => setShowRejectDialog(true)}
+                                            disabled={actionLoading}
                                         >
                                             <XCircle className="h-4 w-4" />
                                             Reject
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {selectedDoctor.verification_status === "approved" && (
+                                    <div className="flex gap-3 pt-4 border-t">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                                            onClick={() => setShowRejectDialog(true)}
+                                            disabled={actionLoading}
+                                        >
+                                            <XCircle className="h-4 w-4" />
+                                            Revoke Approval
                                         </Button>
                                     </div>
                                 )}
@@ -417,9 +593,13 @@ export default function DoctorVerificationPage() {
             <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Reject Application</DialogTitle>
+                        <DialogTitle>
+                            {selectedDoctor?.verification_status === "approved"
+                                ? "Revoke Approval"
+                                : "Reject Application"}
+                        </DialogTitle>
                         <DialogDescription>
-                            Please provide a reason for rejecting this application. This will be sent to the applicant.
+                            Please provide a reason. This will be saved to the doctor&apos;s record.
                         </DialogDescription>
                     </DialogHeader>
                     <Textarea
@@ -432,8 +612,12 @@ export default function DoctorVerificationPage() {
                         <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim()}>
-                            Confirm Rejection
+                        <Button
+                            variant="destructive"
+                            onClick={handleReject}
+                            disabled={!rejectReason.trim() || actionLoading}
+                        >
+                            {actionLoading ? "Processing..." : "Confirm"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -458,8 +642,11 @@ export default function DoctorVerificationPage() {
                         <Button variant="outline" onClick={() => setShowMoreInfoDialog(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={handleRequestMoreInfo} disabled={!infoRequest.trim()}>
-                            Send Request
+                        <Button
+                            onClick={handleRequestMoreInfo}
+                            disabled={!infoRequest.trim() || actionLoading}
+                        >
+                            {actionLoading ? "Sending..." : "Send Request"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
