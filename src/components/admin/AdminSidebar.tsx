@@ -13,68 +13,105 @@ import {
     Shield,
     Activity,
     Map,
-    Bell,
     LogOut,
     ChevronLeft,
     ChevronRight,
     Zap,
     Video,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
 
-const navGroups = [
-    {
-        label: "Overview",
-        items: [
-            { label: "The Pulse", href: "/admin", icon: LayoutDashboard },
-        ],
-    },
-    {
-        label: "Management",
-        items: [
-            { label: "Doctor Verification", href: "/admin/doctors", icon: UserCheck, badge: 5 },
-            { label: "Users", href: "/admin/users", icon: Users },
-            { label: "Video Management", href: "/admin/videos", icon: Video },
-            { label: "Transactions", href: "/admin/transactions", icon: CreditCard },
-            { label: "Invoices", href: "/admin/invoices", icon: FileText },
-        ],
-    },
-    {
-        label: "Quality & Compliance",
-        items: [
-            { label: "Flagged Sessions", href: "/admin/compliance", icon: Shield, badge: 3 },
-            { label: "Clinical QA", href: "/admin/clinical-qna", icon: FileText },
-        ],
-    },
-    {
-        label: "Strategic",
-        items: [
-            { label: "Epidemic Heatmap", href: "/admin/insights", icon: Map },
-            { label: "Analytics", href: "/admin/analytics", icon: Activity },
-        ],
-    },
-    {
-        label: "System",
-        items: [
-            { label: "Feature Flags", href: "/admin/features", icon: Zap },
-            { label: "Settings", href: "/admin/settings", icon: Settings },
-        ],
-    },
-];
+interface Badges {
+    pendingDoctors: number;
+    flaggedSessions: number;
+}
 
 export function AdminSidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
     const [collapsed, setCollapsed] = useState(false);
+    const [badges, setBadges] = useState<Badges>({ pendingDoctors: 0, flaggedSessions: 0 });
 
-    const initials = user?.user_metadata?.full_name
-        ?.split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase() || user?.email?.[0]?.toUpperCase() || "A";
+    const initials =
+        user?.user_metadata?.full_name
+            ?.split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase() ||
+        user?.email?.[0]?.toUpperCase() ||
+        "A";
+
+    useEffect(() => {
+        const fetchBadges = async () => {
+            try {
+                const [doctorsResult, flaggedResult] = await Promise.all([
+                    supabase
+                        .from("doctors")
+                        .select("id", { count: "exact", head: true })
+                        .eq("verification_status", "pending"),
+                    supabase
+                        .from("flagged_sessions")
+                        .select("id", { count: "exact", head: true })
+                        .eq("status", "open"),
+                ]);
+                setBadges({
+                    pendingDoctors: doctorsResult.count ?? 0,
+                    flaggedSessions: flaggedResult.count ?? 0,
+                });
+            } catch {
+                // Silently ignore – badges are non-critical
+            }
+        };
+
+        fetchBadges();
+        // Refresh every 60 seconds to keep counts fresh
+        const interval = setInterval(fetchBadges, 60_000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const navGroups = [
+        {
+            label: "Overview",
+            items: [
+                { label: "The Pulse", href: "/admin", icon: LayoutDashboard, badge: 0 },
+            ],
+        },
+        {
+            label: "Management",
+            items: [
+                { label: "Doctor Verification", href: "/admin/doctors", icon: UserCheck, badge: badges.pendingDoctors },
+                { label: "Users", href: "/admin/users", icon: Users, badge: 0 },
+                { label: "Video Management", href: "/admin/videos", icon: Video, badge: 0 },
+                { label: "Transactions", href: "/admin/transactions", icon: CreditCard, badge: 0 },
+                { label: "Invoices", href: "/admin/invoices", icon: FileText, badge: 0 },
+            ],
+        },
+        {
+            label: "Quality & Compliance",
+            items: [
+                { label: "Flagged Sessions", href: "/admin/compliance", icon: Shield, badge: badges.flaggedSessions },
+                { label: "Clinical QA", href: "/admin/clinical-qna", icon: FileText, badge: 0 },
+            ],
+        },
+        {
+            label: "Strategic",
+            items: [
+                { label: "Epidemic Heatmap", href: "/admin/insights", icon: Map, badge: 0 },
+                { label: "Analytics", href: "/admin/analytics", icon: Activity, badge: 0 },
+            ],
+        },
+        {
+            label: "System",
+            items: [
+                { label: "Feature Flags", href: "/admin/features", icon: Zap, badge: 0 },
+                { label: "Settings", href: "/admin/settings", icon: Settings, badge: 0 },
+            ],
+        },
+    ];
 
     return (
         <aside
@@ -85,10 +122,7 @@ export function AdminSidebar() {
             )}
         >
             {/* Logo / Brand */}
-            <div className={cn(
-                "flex items-center gap-3 p-4 border-b border-slate-800/50",
-                collapsed && "justify-center"
-            )}>
+            <div className={cn("flex items-center gap-3 p-4 border-b border-slate-800/50", collapsed && "justify-center")}>
                 <div className="relative">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-500/20">
                         <Shield className="h-5 w-5 text-white" />
@@ -118,7 +152,8 @@ export function AdminSidebar() {
                         )}
                         <div className="space-y-1">
                             {group.items.map((item) => {
-                                const isActive = pathname === item.href ||
+                                const isActive =
+                                    pathname === item.href ||
                                     (item.href !== "/admin" && pathname.startsWith(item.href));
 
                                 return (
@@ -144,15 +179,15 @@ export function AdminSidebar() {
                                         {!collapsed && (
                                             <>
                                                 <span className="text-sm font-medium">{item.label}</span>
-                                                {item.badge && (
-                                                    <span className="ml-auto bg-purple-500/80 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full">
-                                                        {item.badge}
+                                                {item.badge > 0 && (
+                                                    <span className="ml-auto bg-purple-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5">
+                                                        {item.badge > 99 ? "99+" : item.badge}
                                                     </span>
                                                 )}
                                             </>
                                         )}
-                                        {collapsed && item.badge && (
-                                            <span className="absolute right-1.5 top-1 w-2 h-2 bg-purple-500 rounded-full" />
+                                        {collapsed && item.badge > 0 && (
+                                            <span className="absolute right-1.5 top-1 w-2.5 h-2.5 bg-purple-500 rounded-full border border-slate-900" />
                                         )}
                                     </Link>
                                 );
@@ -163,19 +198,13 @@ export function AdminSidebar() {
             </nav>
 
             {/* User Section */}
-            <div className={cn(
-                "p-3 border-t border-slate-800/50",
-                collapsed && "flex flex-col items-center"
-            )}>
+            <div className={cn("p-3 border-t border-slate-800/50", collapsed && "flex flex-col items-center")}>
                 {/* Collapse Toggle */}
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setCollapsed(!collapsed)}
-                    className={cn(
-                        "w-full mb-3 text-slate-400 hover:text-white hover:bg-white/5",
-                        collapsed && "w-auto"
-                    )}
+                    className={cn("w-full mb-3 text-slate-400 hover:text-white hover:bg-white/5", collapsed && "w-auto")}
                 >
                     {collapsed ? (
                         <ChevronRight className="h-4 w-4" />
@@ -188,10 +217,7 @@ export function AdminSidebar() {
                 </Button>
 
                 {/* Profile */}
-                <div className={cn(
-                    "flex items-center gap-3 p-2 rounded-xl bg-white/5 border border-white/5",
-                    collapsed && "p-1.5"
-                )}>
+                <div className={cn("flex items-center gap-3 p-2 rounded-xl bg-white/5 border border-white/5", collapsed && "p-1.5")}>
                     <Avatar className="h-9 w-9 ring-2 ring-purple-500/30">
                         <AvatarImage src={user?.user_metadata?.avatar_url} />
                         <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-700 text-white text-sm font-medium">
@@ -203,9 +229,7 @@ export function AdminSidebar() {
                             <p className="text-sm font-medium text-white truncate">
                                 {user?.user_metadata?.full_name || "Admin"}
                             </p>
-                            <p className="text-[10px] text-purple-400/70 truncate">
-                                Super Admin
-                            </p>
+                            <p className="text-[10px] text-purple-400/70 truncate">Super Admin</p>
                         </div>
                     )}
                     {!collapsed && (
