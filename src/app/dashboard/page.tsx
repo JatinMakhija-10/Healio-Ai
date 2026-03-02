@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
+// PHASE 2 — DailyTipCard
+// import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock, Activity, ArrowRight, Calendar, AlertTriangle, MessageSquare, Info, Video } from "lucide-react";
+import { Plus, Clock, Activity, ArrowRight, Calendar, AlertTriangle, MessageSquare, Info } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,12 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { PathwayCard } from "@/components/diagnosis/care-pathways/PathwayCard";
-import { fetchPathwayForCondition } from "@/lib/diagnosis/pathwayClient";
-import { generatePersonalizedPathway, calculateCurrentDay } from "@/lib/diagnosis/care-pathways/pathwayEngine";
-import { PersonalizedPathway } from "@/lib/diagnosis/care-pathways/types";
+// PHASE 2 — Care Pathways
+// import { PathwayCard } from "@/components/diagnosis/care-pathways/PathwayCard";
+// import { fetchPathwayForCondition } from "@/lib/diagnosis/pathwayClient";
+// import { generatePersonalizedPathway, calculateCurrentDay } from "@/lib/diagnosis/care-pathways/pathwayEngine";
+// import { PersonalizedPathway } from "@/lib/diagnosis/care-pathways/types";
 import { api } from "@/lib/api";
-import { useRealtimeAppointments } from "@/hooks/useRealtimeAppointments";
+// PHASE 2 — Real-time Appointments
+// import { useRealtimeAppointments } from "@/hooks/useRealtimeAppointments";
 
 
 
@@ -48,26 +51,25 @@ export default function DashboardPage() {
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [localName, setLocalName] = useState<string | null>(null);
-    const [activePathway, setActivePathway] = useState<PersonalizedPathway | null>(null);
-    const [activeAppointments, setActiveAppointments] = useState<any[]>([]);
+    // PHASE 2 — Care Pathways
+    // const [activePathway, setActivePathway] = useState<PersonalizedPathway | null>(null);
+    // PHASE 2 — Appointments
+    // const [activeAppointments, setActiveAppointments] = useState<any[]>([]);
     const router = useRouter();
 
-    // Enable real-time appointment updates
-    useRealtimeAppointments({
-        enabled: !!user,
-        onAppointmentCreated: (appointment) => {
-            // Refresh appointments list
-            loadAppointments();
-        },
-        onAppointmentUpdated: (appointment) => {
-            // Refresh appointments list
-            loadAppointments();
-        },
-        onAppointmentDeleted: () => {
-            // Refresh appointments list
-            loadAppointments();
-        }
-    });
+    // PHASE 2 — Enable real-time appointment updates
+    // useRealtimeAppointments({
+    //     enabled: !!user,
+    //     onAppointmentCreated: (appointment) => {
+    //         loadAppointments();
+    //     },
+    //     onAppointmentUpdated: (appointment) => {
+    //         loadAppointments();
+    //     },
+    //     onAppointmentDeleted: () => {
+    //         loadAppointments();
+    //     }
+    // });
 
     useEffect(() => {
         if (!user && !loading) {
@@ -91,7 +93,7 @@ export default function DashboardPage() {
             } catch (e) { /* ignore */ }
         }
 
-        // Fetch history and active pathway
+        // Fetch history
         async function loadDashboardData() {
             if (!user) return;
             try {
@@ -102,43 +104,27 @@ export default function DashboardPage() {
                 // Also update localStorage for backup/offline if needed (optional)
                 localStorage.setItem('healio_consultation_history', JSON.stringify(parsed));
 
-                // If we have history, try to load the pathway for the latest condition
-                if (parsed.length > 0) {
-                    const latest = parsed[0];
-                    // Heuristic: try to find ID from condition name if ID isn't explicitly saved
-                    // In reality, we should save conditionId in history.
-                    // For now, assuming distinct IDs like 'common_cold', 'flu' etc.
-                    // or converting "Common Cold" -> "common_cold" is risky but a starting point.
-                    // Ideally, we'd use latest.diagnosis.id if it exists.
-
-                    // Let's assume we can try to fetch by the condition string acting as ID first
-                    // or mapped. For this demo, we'll try to convert to snake_case if strictly needed
-                    // but let's try the raw string first if the ID is stored there.
-                    // Note: The history type definition in this file only has 'condition: string'.
-                    // We should fallback or try to fetch.
-
-                    const conditionId = (latest.diagnosis as Record<string, any>).id ||
-                        latest.diagnosis.condition.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-
-                    const base = await fetchPathwayForCondition(conditionId);
-
-                    if (base) {
-                        // Generate personalized
-                        const personalized = generatePersonalizedPathway(
-                            {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                condition: { id: conditionId, name: base.conditionName } as any,
-                                confidence: 0.8,
-                                matchedKeywords: []
-                            }, // Mock DiagnosisResult
-                            base,
-                            user?.user_metadata?.ayurvedic_profile || null,
-                            null, // Vikriti
-                            null  // Agni
-                        );
-                        setActivePathway(personalized);
-                    }
-                }
+                // PHASE 2 — Care Pathway loading
+                // if (parsed.length > 0) {
+                //     const latest = parsed[0];
+                //     const conditionId = (latest.diagnosis as Record<string, any>).id ||
+                //         latest.diagnosis.condition.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                //     const base = await fetchPathwayForCondition(conditionId);
+                //     if (base) {
+                //         const personalized = generatePersonalizedPathway(
+                //             {
+                //                 condition: { id: conditionId, name: base.conditionName } as any,
+                //                 confidence: 0.8,
+                //                 matchedKeywords: []
+                //             },
+                //             base,
+                //             user?.user_metadata?.ayurvedic_profile || null,
+                //             null,
+                //             null
+                //         );
+                //         setActivePathway(personalized);
+                //     }
+                // }
 
             } catch (e) {
                 console.error("Failed to load dashboard data", e);
@@ -147,34 +133,30 @@ export default function DashboardPage() {
         }
 
         loadDashboardData();
-        loadAppointments();
+        // PHASE 2 — loadAppointments();
     }, [user]); // Re-run when user profile loads
 
-    // Fetch upcoming appointments - extracted for real-time updates
-    const loadAppointments = async () => {
-        if (!user) return;
-        try {
-            // Fetch from API
-            const raw = await api.getPatientAppointments(user.id);
-            const now = new Date();
-
-            // Map to UI model and filter for upcoming
-            const upcoming = raw
-                .map((a: any) => ({
-                    id: a.id,
-                    doctorName: a.doctor?.full_name || 'Healio Doctor',
-                    scheduledAt: a.scheduled_at, // Keep as string for now or parse
-                    type: 'video', // Assuming video for now based on context
-                    status: a.status
-                }))
-                .filter((a: any) => new Date(a.scheduledAt) > now && a.status !== 'cancelled')
-                .sort((a: any, b: any) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-
-            setActiveAppointments(upcoming);
-        } catch (e) {
-            console.error("Failed to load appointments", e);
-        }
-    };
+    // PHASE 2 — Fetch upcoming appointments - extracted for real-time updates
+    // const loadAppointments = async () => {
+    //     if (!user) return;
+    //     try {
+    //         const raw = await api.getPatientAppointments(user.id);
+    //         const now = new Date();
+    //         const upcoming = raw
+    //             .map((a: any) => ({
+    //                 id: a.id,
+    //                 doctorName: a.doctor?.full_name || 'Healio Doctor',
+    //                 scheduledAt: a.scheduled_at,
+    //                 type: 'video',
+    //                 status: a.status
+    //             }))
+    //             .filter((a: any) => new Date(a.scheduledAt) > now && a.status !== 'cancelled')
+    //             .sort((a: any, b: any) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    //         setActiveAppointments(upcoming);
+    //     } catch (e) {
+    //         console.error("Failed to load appointments", e);
+    //     }
+    // };
 
     // ... existing variables (userName, lastSession, getTimeAgo)
 
@@ -273,18 +255,18 @@ export default function DashboardPage() {
                 </Dialog>
             </div>
 
-            {/* Active Pathway Card (New) */}
-            {activePathway && (
+            {/* PHASE 2 — Active Pathway Card */}
+            {/* {activePathway && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-8">
                     <PathwayCard
                         pathway={activePathway}
                         currentDay={calculateCurrentDay(new Date(history[0].created_at))}
                     />
                 </div>
-            )}
+            )} */}
 
-            {/* Optional Prakriti Assessment Prompt */}
-            {
+            {/* PHASE 2 — Prakriti Assessment Prompt */}
+            {/* {
                 !user?.user_metadata?.ayurvedic_profile?.prakriti && (
                     <div className="bg-gradient-to-r from-teal-800 to-teal-900 rounded-2xl p-6 shadow-xl text-white relative overflow-hidden mb-8 group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
@@ -306,11 +288,11 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )
-            }
+            } */}
 
             {/* Stats / Quick Cards */}
-            <div className="grid md:grid-cols-3 gap-6">
-                {/* ... existing cards ... */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {/* Last Assessment Card — KEEP */}
                 <Card className="border-slate-200 shadow-sm bg-white h-full">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-slate-500">Last Assessment</CardTitle>
@@ -333,7 +315,20 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
+                {/* Total Consultations Card — NEW for Phase 1 */}
                 <Card className="border-slate-200 shadow-sm bg-white h-full">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-slate-500">Total Consultations</CardTitle>
+                        <Activity className="h-4 w-4 text-teal-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-xl font-medium text-slate-900">{history.length}</div>
+                        <p className="text-xs text-slate-500 mt-1">Sessions completed</p>
+                    </CardContent>
+                </Card>
+
+                {/* PHASE 2 — Pain Trend Card */}
+                {/* <Card className="border-slate-200 shadow-sm bg-white h-full">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-slate-500">Pain Trend</CardTitle>
                         <Activity className="h-4 w-4 text-teal-500" />
@@ -353,9 +348,10 @@ export default function DashboardPage() {
                             </>
                         )}
                     </CardContent>
-                </Card>
+                </Card> */}
 
-                <DailyTipCard />
+                {/* PHASE 2 — Daily Tip Card */}
+                {/* <DailyTipCard /> */}
             </div>
 
             {/* Recent Sessions */}

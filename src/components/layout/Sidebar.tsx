@@ -16,49 +16,63 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { PHASE_CONFIG } from "@/lib/phaseConfig";
 
-const sidebarItems = [
+const allSidebarItems = [
     {
         title: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
+        visible: true, // Always visible
     },
     {
         title: "New Consultation",
         href: "/dashboard/consult",
         icon: MessageSquarePlus,
+        visible: true, // Always visible
     },
     {
         title: "History",
         href: "/dashboard/history",
         icon: History,
+        visible: true, // Always visible
     },
     {
         title: "Profile",
         href: "/dashboard/profile",
         icon: UserCircle,
+        visible: true, // Always visible
     },
+    // PHASE 2 — Find Specialist / Doctor Marketplace
     {
         title: "Find Specialist",
         href: "/dashboard/search",
         icon: UserCircle,
+        visible: PHASE_CONFIG.showDoctorMarketplace,
     },
     {
         title: "Settings",
         href: "/dashboard/settings",
         icon: Settings,
+        visible: true, // Always visible
     },
+    // PHASE 2 — Learn Section
     {
         title: "Learn",
         href: "/dashboard/learn",
         icon: BookOpen,
+        visible: PHASE_CONFIG.showLearnSection,
     },
+    // PHASE 2 — Videos Section
     {
         title: "Videos",
         href: "/dashboard/videos",
         icon: Video,
+        visible: PHASE_CONFIG.showVideos,
     },
 ];
+
+const sidebarItems = allSidebarItems.filter(item => item.visible);
 
 export function Sidebar() {
     const pathname = usePathname();

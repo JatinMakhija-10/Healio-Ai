@@ -23,10 +23,12 @@ import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { Button } from "@/components/ui/button";
 import { pdf } from '@react-pdf/renderer';
 import { MedicalReportDocument } from "./MedicalReportPDF";
-import { DoctorSelectionModal } from "@/components/booking/DoctorSelectionModal";
+// PHASE 2 — Doctor Booking
+// import { DoctorSelectionModal } from "@/components/booking/DoctorSelectionModal";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { useAuth } from "@/context/AuthContext";
+import { PHASE_CONFIG } from "@/lib/phaseConfig";
 
 interface DiagnosisResultCardProps {
     condition: Condition;
@@ -59,9 +61,10 @@ export function DiagnosisResultCard({
     showBookDoctor = true,
     carePreferences: propCarePreferences,
 }: DiagnosisResultCardProps) {
-    const [activeTab, setActiveTab] = useState<string>("modern_medicine");
+    const [activeTab, setActiveTab] = useState<string>("home_remedies");
     const [isGenerating, setIsGenerating] = useState(false);
-    const [showBookingModal, setShowBookingModal] = useState(false);
+    // PHASE 2 — Booking
+    // const [showBookingModal, setShowBookingModal] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const { user } = useAuth();
@@ -77,13 +80,17 @@ export function DiagnosisResultCard({
     // Build available tabs based on preferences and available content
     const availableTabs = useMemo(() => {
         const tabs: { key: string; label: string }[] = [];
-        if (carePreferences.includes('modern_medicine') && condition.remedies?.length > 0)
-            tabs.push({ key: 'modern_medicine', label: 'Modern Medicine' });
-        if (carePreferences.includes('ayurveda') && condition.indianHomeRemedies?.length > 0)
-            tabs.push({ key: 'ayurveda', label: 'Ayurveda' });
-        if (carePreferences.includes('yoga') && condition.exercises?.length > 0)
-            tabs.push({ key: 'yoga', label: 'Yoga & Exercise' });
-        if (carePreferences.includes('home_remedies') && condition.indianHomeRemedies?.length > 0)
+        // PHASE 2 — Modern Medicine tab
+        // if (PHASE_CONFIG.showModernMedicine && carePreferences.includes('modern_medicine') && condition.remedies?.length > 0)
+        //     tabs.push({ key: 'modern_medicine', label: 'Modern Medicine' });
+        // PHASE 2 — Ayurveda tab
+        // if (PHASE_CONFIG.showAyurveda && carePreferences.includes('ayurveda') && condition.indianHomeRemedies?.length > 0)
+        //     tabs.push({ key: 'ayurveda', label: 'Ayurveda' });
+        // PHASE 2 — Yoga & Exercise tab
+        // if (PHASE_CONFIG.showYogaExercise && carePreferences.includes('yoga') && condition.exercises?.length > 0)
+        //     tabs.push({ key: 'yoga', label: 'Yoga & Exercise' });
+        // Phase 1 — Home Remedies always visible
+        if (condition.indianHomeRemedies?.length > 0)
             tabs.push({ key: 'home_remedies', label: 'Home Remedies' });
         return tabs;
     }, [carePreferences, condition]);
@@ -333,8 +340,8 @@ export function DiagnosisResultCard({
                         </div>
 
                         <div className="space-y-3">
-                            {/* Modern Medicine / Standard Remedies */}
-                            {activeTab === 'modern_medicine' && condition.remedies?.slice(0, 3).map((remedy, idx) => (
+                            {/* PHASE 2 — Modern Medicine / Standard Remedies */}
+                            {/* {activeTab === 'modern_medicine' && condition.remedies?.slice(0, 3).map((remedy, idx) => (
                                 <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100 hover:border-teal-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-slate-800 text-sm">{remedy.name}</span>
@@ -347,10 +354,10 @@ export function DiagnosisResultCard({
                                     <p className="text-xs text-slate-500 mt-1">{remedy.description}</p>
                                     {remedy.method && <p className="text-xs text-slate-700 mt-1 italic">Method: {remedy.method}</p>}
                                 </div>
-                            ))}
+                            ))} */}
 
-                            {/* Ayurveda Remedies */}
-                            {activeTab === 'ayurveda' && (condition.indianHomeRemedies || []).slice(0, 3).map((remedy, idx) => (
+                            {/* PHASE 2 — Ayurveda Remedies */}
+                            {/* {activeTab === 'ayurveda' && (condition.indianHomeRemedies || []).slice(0, 3).map((remedy, idx) => (
                                 <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-100 hover:border-green-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-green-800 text-sm">{remedy.name}</span>
@@ -363,10 +370,10 @@ export function DiagnosisResultCard({
                                     <p className="text-xs text-green-700 mt-1">{remedy.description}</p>
                                     {remedy.method && <p className="text-xs text-green-800 mt-1 italic">Method: {remedy.method}</p>}
                                 </div>
-                            ))}
+                            ))} */}
 
-                            {/* Yoga & Exercise */}
-                            {activeTab === 'yoga' && condition.exercises?.slice(0, 4).map((exercise, idx) => (
+                            {/* PHASE 2 — Yoga & Exercise */}
+                            {/* {activeTab === 'yoga' && condition.exercises?.slice(0, 4).map((exercise, idx) => (
                                 <div key={idx} className="bg-purple-50 p-3 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-2">
@@ -389,21 +396,16 @@ export function DiagnosisResultCard({
                                         </span>
                                     </div>
                                 </div>
-                            ))}
+                            ))} */}
 
-                            {/* Home Remedies */}
-                            {activeTab === 'home_remedies' && (condition.indianHomeRemedies || []).slice(0, 3).map((remedy, idx) => (
+                            {/* Phase 1 — Home Remedies (Always Visible) */}
+                            {activeTab === 'home_remedies' && (condition.indianHomeRemedies || []).slice(0, 5).map((remedy, idx) => (
                                 <div key={idx} className="bg-amber-50 p-3 rounded-lg border border-amber-100 hover:border-amber-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-amber-800 text-sm">{remedy.name}</span>
-                                        {remedy.videoUrl && (
-                                            <a href={remedy.videoUrl} target="_blank" rel="noreferrer" className="text-amber-600 hover:text-amber-700">
-                                                <Video size={16} />
-                                            </a>
-                                        )}
                                     </div>
                                     <p className="text-xs text-amber-700 mt-1">{remedy.description}</p>
-                                    {remedy.method && <p className="text-xs text-amber-800 mt-1 italic">Method: {remedy.method}</p>}
+                                    {remedy.method && <p className="text-xs text-amber-800 mt-1 italic">How to use: {remedy.method}</p>}
                                     {remedy.ingredients?.length > 0 && (
                                         <p className="text-xs text-amber-600 mt-1">Ingredients: {remedy.ingredients.join(', ')}</p>
                                     )}
@@ -412,8 +414,8 @@ export function DiagnosisResultCard({
                         </div>
                     </div>
 
-                    {/* 6. BOOK A DOCTOR CTA */}
-                    {showBookDoctor && (
+                    {/* PHASE 2 — Book a Doctor CTA */}
+                    {/* {showBookDoctor && (
                         <div className="p-4 border-t border-slate-100">
                             <div className={`p-4 rounded-xl ${shouldRecommendDoctor ? 'bg-gradient-to-r from-teal-600 to-teal-700' : 'bg-slate-100'}`}>
                                 <div className="flex items-center gap-4">
@@ -443,7 +445,15 @@ export function DiagnosisResultCard({
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
+
+                    {/* Phase 1 — Disclaimer (Always Visible) */}
+                    <div className="p-4 border-t border-amber-100 bg-amber-50/50">
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                            <AlertTriangle className="h-3 w-3 inline mr-1" />
+                            <strong>Disclaimer:</strong> Healio is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment. These suggestions are for informational purposes only — please consult a qualified homeopathic practitioner before taking any remedy.
+                        </p>
+                    </div>
 
                     {/* 7. PRIVACY FOOTER */}
                     <div className="bg-slate-50 p-3 border-t border-slate-100 flex items-center justify-between">
@@ -452,14 +462,14 @@ export function DiagnosisResultCard({
                             <span>Analysis is encrypted & private</span>
                         </div>
                         <div className="text-[10px] text-slate-400">
-                            AI-assisted • Consult a doctor
+                            AI-assisted • For informational purposes only
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Booking Modal */}
-            <DoctorSelectionModal
+            {/* PHASE 2 — Booking Modal */}
+            {/* <DoctorSelectionModal
                 open={showBookingModal}
                 onOpenChange={setShowBookingModal}
                 diagnosisId={diagnosisId}
@@ -470,7 +480,7 @@ export function DiagnosisResultCard({
                     warnings: allWarnings,
                 }}
                 onBookingComplete={handleBookingComplete}
-            />
+            /> */}
 
             {/* Premium Upgrade Modal */}
             <PlanSelectionModal

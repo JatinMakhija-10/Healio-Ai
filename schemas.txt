@@ -1,0 +1,79 @@
+--- Schema for sym_src ---
+CREATE TABLE `sym_src` (
+  `sym_id` mediumint(8) unsigned NOT NULL,
+  `src_id` varchar(12) NOT NULL,
+  `src_page` smallint(5) unsigned NOT NULL,
+  `extra` text NOT NULL,
+  `kuenzli` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `username` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY `src_id` (`src_id`),
+  KEY `kuenzli` (`kuenzli`),
+  KEY `username` (`username`),
+  KEY `sym_src` (`sym_id`,`src_id`),
+  KEY `sym_id` (`sym_id`)
+);
+
+--- Schema for sym_stats ---
+CREATE TABLE `sym_stats` (
+  `sym_table` varchar(255) NOT NULL,
+  `sym_base_table` varchar(15) NOT NULL,
+  `sym_count` mediumint(8) unsigned NOT NULL,
+  `username` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sym_table`)
+);
+
+--- Schema for sym_status ---
+CREATE TABLE `sym_status` (
+  `status_id` tinyint(1) unsigned NOT NULL,
+  `status_de` varchar(64) NOT NULL,
+  `status_en` varchar(64) NOT NULL,
+  `status_symbol` char(2) NOT NULL,
+  `status_grade` tinyint(1) NOT NULL,
+  PRIMARY KEY (`status_id`)
+);
+
+--- Schema for sym_synonyms ---
+CREATE TABLE `sym_synonyms` (
+  `syn_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`syn_id`)
+);
+
+--- Schema for sym_translations ---
+CREATE TABLE `sym_translations` (
+  `sym_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `symptom` text NOT NULL,
+  `lang_id` varchar(6) NOT NULL,
+  `username` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sym_id`,`lang_id`),
+  KEY `lang_id` (`lang_id`),
+  KEY `sym_id` (`sym_id`),
+  KEY `symptom_2` (`symptom`(333)),
+  FULLTEXT KEY `symptom` (`symptom`)
+);
+
+--- Schema for symptoms ---
+CREATE TABLE `symptoms` (
+  `sym_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `symptom` text NOT NULL,
+  `pid` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `rubric_id` tinyint(3) unsigned NOT NULL,
+  `lang_id` varchar(6) NOT NULL,
+  `translation` tinyint(1) NOT NULL DEFAULT '0',
+  `syn_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `xref_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `username` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sym_id`),
+  UNIQUE KEY `sym_rubric_lang` (`symptom`(326),`rubric_id`,`lang_id`,`translation`),
+  KEY `parents_id` (`pid`),
+  KEY `rubric_id` (`rubric_id`),
+  KEY `lang_id` (`lang_id`),
+  KEY `syn_id` (`syn_id`),
+  KEY `xref_id` (`xref_id`),
+  KEY `symptom_rubric` (`rubric_id`,`symptom`(333)),
+  FULLTEXT KEY `symptom` (`symptom`)
+);
+

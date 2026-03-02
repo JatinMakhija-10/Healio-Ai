@@ -505,421 +505,49 @@ export async function diagnose(symptoms: UserSymptomData): Promise<{
     uncertainty?: UncertaintyEstimate,
     clinicalRules?: RuleResult[]
 }> {
-    const startTime = performance.now();
-    let results: DiagnosisResult[] = [];
     const alerts = scanRedFlags(symptoms);
 
-    // --- ADVANCED 1: Symptom Correlation Detection ---
-    const symptomList = extractSymptomList(symptoms);
-    const detectedPatterns = symptomCorrelationDetector.detectPatterns(symptomList);
-
-    // --- ADVANCED 2: Clinical Decision Rules ---
-    // Extract demographics from profile or default
-    const demographics = symptoms.userProfile || { age: 30 };
-    const ruleResults = clinicalRules.applyRules(extractSymptomList(symptoms), demographics);
-
-    // --- RETRIEVAL: Vector Search + Filtering ---
-    // Fetch relevant candidates from DB (or fallback) using semantic search
-    const candidateConditions = await searchConditions(symptoms);
-
-    // --- OPTIMIZATION 2: Score with Early Aggregation ---
-    // Prepare evidence metrics once
-    const evidenceMetrics = buildEvidenceMetrics(symptoms, detectedPatterns);
-
-    for (const condition of candidateConditions) {
-        const { score: confidence, matchedKeywords, reasoningTrace } = calculateBayesianScore(condition, symptoms, detectedPatterns);
-
-        // Pruning: Only keep candidates above threshold
-        if (confidence > ENGINE_CONFIG.PRUNING_THRESHOLD * 100) {
-            // Calculate uncertainty for this specific result
-            const uncertainty = uncertaintyQuantifier.quantify(
-                confidence,
-                extractSymptomList(symptoms),
-                evidenceMetrics
-            );
-
-            results.push({
-                condition,
-                confidence,
-                matchedKeywords,
-                reasoningTrace,
-                uncertainty
-            });
-        }
-    }
-
-    // Sort by confidence
-    results.sort((a, b) => b.confidence - a.confidence);
-
-    // --- OPTIMIZATION 3: Aggressive Pruning ---
-    if (results.length > ENGINE_CONFIG.AGGRESSIVE_PRUNE_THRESHOLD) {
-        results = results.slice(0, ENGINE_CONFIG.MAX_CANDIDATES);
-    }
-
-    // --- OPTIMIZATION 4: Early Exit ---
-    // If top candidate has very high confidence, skip complex questioning
-    const hasHighConfidence = results.length > 0 && results[0].confidence >= ENGINE_CONFIG.EARLY_EXIT_CONFIDENCE;
-
-    // Apply cap to 100% after sorting
-    results.forEach(r => {
-        if (r.confidence > 100) r.confidence = 100;
-    });
-
-    // --- CLINICAL UNCERTAINTY FLAG ---
-    // Mark as uncertain if top 2 candidates are within 15% of each other
-    if (results.length >= 2) {
-        const gap = results[0].confidence - results[1].confidence;
-        if (gap < 15) {
-            results[0].uncertaintyFlag = true;
-            results[1].uncertaintyFlag = true;
-        }
-    }
-
-
-    // --- Akinator-Style Questioning Logic (Information Gain) ---
-    // OPTIMIZATION 5: Skip questioning if high confidence already achieved
-
-    if (results.length >= 2 && !hasHighConfidence) {
-        const topCandidates = results.slice(0, 8); // Consider broader set for questioning
-
-        // Helper to check if user already mentioned a term
-        const userText = JSON.stringify(symptoms).toLowerCase();
-        const excludedText = (symptoms.excludedSymptoms || []).join(" ").toLowerCase();
-        const isUnknown = (term: string) => !userText.includes(term.toLowerCase()) && !excludedText.includes(term.toLowerCase());
-
-        // 1. Collect all potential differentiating "Features"
-        const potentialQuestions: {
-            type: 'symptom' | 'trigger' | 'painType' | 'duration' | 'severity';
-            key: string;
-            score: number; // Lower is better (closer to 50/50 split)
-            question: string;
-            options: string[];
-        }[] = [];
-
-        // Helper to check coverage
-        const totalConf = topCandidates.reduce((sum, r) => sum + r.confidence, 0);
-        const MIN_COVERAGE = totalConf * 0.4; // Question must apply to at least 40% of candidates
-
-        // A. Duration (Global check)
-        if (isUnknown('acute') && isUnknown('chronic') && isUnknown('days') && isUnknown('months')) {
-            const acuteConf = topCandidates.reduce((sum, r) => {
-                const d = r.condition.matchCriteria.durationHint;
-                return sum + (d === 'acute' || d === 'any' ? r.confidence : 0);
-            }, 0);
-            const chronicConf = topCandidates.reduce((sum, r) => {
-                const d = r.condition.matchCriteria.durationHint;
-                return sum + (d === 'chronic' || d === 'any' ? r.confidence : 0);
-            }, 0);
-
-            // Only ask if enough candidates have a duration hint
-            const coverage = acuteConf + chronicConf;
-            if (coverage >= MIN_COVERAGE) {
-                potentialQuestions.push({
-                    type: 'duration',
-                    key: 'duration',
-                    score: Math.abs(acuteConf - chronicConf),
-                    question: "How long have you been experiencing these symptoms?",
-                    options: ["Recently (Days/Weeks)", "Long time (Months/Years)"]
-                });
-            }
-        }
-
-        // B. Severity (Global check)
-        if (isUnknown('severe') && isUnknown('mild')) {
-            // Heuristic: severe conditions have 'severe' in types or severity field
-            const severeConf = topCandidates.reduce((sum, r) => {
-                const isSevere = r.condition.severity === 'severe' || r.condition.matchCriteria.types?.includes('severe');
-                return sum + (isSevere ? r.confidence : 0);
-            }, 0);
-            const mildConf = topCandidates.reduce((sum, r) => {
-                const isSevere = r.condition.severity === 'severe' || r.condition.matchCriteria.types?.includes('severe');
-                return sum + (!isSevere ? r.confidence : 0);
-            }, 0);
-
-            if ((severeConf + mildConf) >= MIN_COVERAGE) {
-                potentialQuestions.push({
-                    type: 'severity',
-                    key: 'severity',
-                    score: Math.abs(severeConf - mildConf),
-                    question: "How would you describe the intensity?",
-                    options: ["Mild / Manageable", "Severe / Unbearable"]
-                });
-            }
-        }
-
-        // C. Special Symptoms, Triggers, Types
-        const allFeatures = new Set<string>();
-        topCandidates.forEach(r => {
-            r.condition.matchCriteria.specialSymptoms?.forEach(s => allFeatures.add(`symptom:${s}`));
-            r.condition.matchCriteria.triggers?.forEach(t => allFeatures.add(`trigger:${t}`));
-            r.condition.matchCriteria.types?.forEach(t => allFeatures.add(`type:${t}`));
+    try {
+        const response = await fetch('/api/diagnose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symptoms, userProfile: symptoms.userProfile })
         });
 
-        allFeatures.forEach(feature => {
-            const [type, value] = feature.split(':');
+        if (!response.ok) throw new Error('API request failed');
+        const data = await response.json();
 
-            // Blacklist generic/nonsense triggers for questioning
-            const triggerBlacklist = ['flu', 'virus', 'infection', 'bacteria', 'disease', 'sickness', 'cold'];
-            if (type === 'trigger' && triggerBlacklist.some(b => value.toLowerCase().includes(b))) return;
+        if (data.diagnosis) {
+            const aiDiag = data.diagnosis;
 
-            if (!isUnknown(value)) return;
-
-            // Calculate Split Score
-            let yesConf = 0;
-            let noConf = 0;
-
-            topCandidates.forEach(r => {
-                let hasIt = false;
-                if (type === 'symptom') hasIt = r.condition.matchCriteria.specialSymptoms?.some(s => s.toLowerCase() === value.toLowerCase()) || false;
-                if (type === 'trigger') hasIt = r.condition.matchCriteria.triggers?.some(t => t.toLowerCase() === value.toLowerCase()) || false;
-                if (type === 'type') hasIt = r.condition.matchCriteria.types?.some(t => t.toLowerCase() === value.toLowerCase()) || false;
-
-                if (hasIt) yesConf += r.confidence;
-                else noConf += r.confidence;
-            });
-
-            // We prefer questions that split the field evenly
-            const diff = Math.abs(yesConf - noConf);
-
-            // Generate Question String
-            let qText = "";
-            let opts = ["Yes", "No"];
-
-            if (type === 'symptom') {
-                qText = `Do you also experience ${value}?`;
-                opts = [`Yes, I have ${value}`, "No"];
-            } else if (type === 'trigger') {
-                qText = `Does it worsen with ${value}?`;
-                opts = [`Yes, worsens with ${value}`, "No"];
-            } else if (type === 'type') {
-                qText = `Is the sensation ${value}?`;
-                opts = [`Yes, it is ${value}`, "No"];
-            }
-
-            // Cost Function: Penalize harder questions (Triggers are harder to recall than current symptoms)
-            // Score = Diff * Cost (Lower is better)
-            let cost = 1.0;
-            if (type === 'trigger') cost = 1.5;
-
-            // --- PHASE 4: Mimic Differentiation Boost ---
-            try {
-                if (topCandidates.length >= 2) {
-                    const c1 = topCandidates[0].condition;
-                    const c2 = topCandidates[1].condition;
-
-                    const isMimicSituation = (c1.mimics?.includes(c2.id) || c2.mimics?.includes(c1.id));
-
-                    if (isMimicSituation) {
-                        let c1Has = false;
-                        let c2Has = false;
-
-                        if (type === 'symptom') {
-                            c1Has = c1.matchCriteria.specialSymptoms?.some(s => s.toLowerCase() === value.toLowerCase()) || false;
-                            c2Has = c2.matchCriteria.specialSymptoms?.some(s => s.toLowerCase() === value.toLowerCase()) || false;
-                        }
-                        // Triggers/Types logic similar... (simplified for now to symptoms)
-
-                        // If they disagree on this trait (XOR), it's a critical differentiator
-                        if (c1Has !== c2Has) {
-                            cost = 0.1; // Massive boost (makes score very small, floating to top)
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Error in Mimic Logic:", err);
-            }
-
-            potentialQuestions.push({
-                type: type as 'symptom' | 'trigger' | 'painType' | 'duration' | 'severity',
-                key: value,
-                score: diff * cost,
-                question: qText,
-                options: opts
-            });
-        });
-
-        // 2. Select Best Question
-        // Sort by score (ascending) -> smallest difference is best 50/50 split
-        potentialQuestions.sort((a, b) => a.score - b.score);
-
-        // DEBUG LOG
-        // if (potentialQuestions.length > 0) {
-        //    console.log(`[Engine] Best Q: ${potentialQuestions[0].key} Score: ${potentialQuestions[0].score} TotalConf: ${totalConf}`);
-        // }
-
-        // --- PLATEAU DETECTION ---
-        // If the best question has a score roughly equal to totalConfidence,
-        // it means even the best question produces a 100/0 split (one-sided).
-        // This usually happens when all candidates share the same symptoms.
-        // In this case, asking more won't help differentiate.
-        if (potentialQuestions.length > 0 && potentialQuestions[0].score > (totalConf * 0.85)) {
-            console.log("[Engine] Plateau detected. Stopping.");
-            // Return just results without a question implies we are done/stuck
-            return { results, alerts };
-        }
-
-        // --- PHASE 2: Compound Questions ---
-        // Try to bundle top 3 differentiating questions into one "Do you have any of these?"
-        const bestSingleQ = potentialQuestions[0];
-
-        if (bestSingleQ) {
-            // Heuristic: If we have multiple good potential questions (diff score < 500), bundle them.
-            // (Max Diff is roughly 100 * N_Candidates). A low score means it splits candidates well.
-
-            const goodQuestions = potentialQuestions.filter(q => q.score < (totalConf * 0.6) && q.type === 'symptom').slice(0, 3);
-
-            if (goodQuestions.length >= 2) {
-                const combinedTokens = goodQuestions.map(q => q.key);
-                const combinedOptions = goodQuestions.map(q =>
-                    q.question
-                        .replace(/^Do you (also )?(have|experience|feel) /, '')
-                        .replace(/^Are you /, '')
-                        .replace('?', '')
-                        .trim()
-                );
-
-                return {
-                    results,
-                    question: {
-                        type: 'multi_choice',
-                        question: "Are you experiencing any of the following?",
-                        options: [...combinedOptions, "None of the above"],
-                        multiSelectTokens: combinedTokens,
-                        relatedConditions: topCandidates.map(r => r.condition.id)
-                    },
-                    alerts,
-                    clinicalRules: ruleResults
-                };
-            }
-
-            // Fallback to single best question
-            return {
-                results,
-                question: {
-                    type: 'clarification',
-                    question: bestSingleQ.question,
-                    options: bestSingleQ.options,
-                    symptomKey: bestSingleQ.key, // This is what gets added to notes/exclusions
-                    relatedConditions: topCandidates.map(r => r.condition.id)
+            const result: DiagnosisResult = {
+                condition: {
+                    id: 'ai_diagnosis',
+                    name: aiDiag.conditionName || 'Homeopathic Assessment',
+                    description: aiDiag.description || '',
+                    severity: aiDiag.severity || 'moderate',
+                    matchCriteria: { locations: [], types: [] },
+                    remedies: aiDiag.remedies || [],
+                    indianHomeRemedies: [],
+                    exercises: [],
+                    warnings: aiDiag.warnings || [],
+                    seekHelp: aiDiag.seekHelp ? 'Please consult a doctor immediately.' : ''
                 },
-                alerts,
-                clinicalRules: ruleResults
+                confidence: aiDiag.confidence || 85,
+                matchedKeywords: [],
+                reasoningTrace: [{ factor: 'AI Assessment', impact: 100, type: 'prior' }]
             };
-        }
-    }
 
-    // --- Category Fallback / Low Confidence ---
-    // If confidence is low (< 40%), determine the category and ask a broad assessment question
-    if (results.length === 0 || results[0].confidence < 40) {
-
-        // Detect Category
-        const locations = symptoms.location.join(" ").toLowerCase();
-        let categoryQuestion: ClarificationQuestion | null = null;
-
-        if (locations.includes("head") || locations.includes("neck")) {
-            categoryQuestion = {
-                type: 'clarification',
-                question: "Is the pain accompanied by any vision changes or sensitivity to light?",
-                options: ["Yes, vision changes/light sensitivity", "No"],
-                relatedConditions: []
-            };
-        } else if (locations.includes("stomach") || locations.includes("abdomen")) {
-            categoryQuestion = {
-                type: 'clarification',
-                question: "Do you notice any changes in your appetite or bowel movements?",
-                options: ["Yes, appetite/bowel changes", "No"],
-                relatedConditions: []
-            };
-        } else if (locations.includes("chest")) {
-            categoryQuestion = {
-                type: 'clarification',
-                question: "Do you experience shortness of breath or palpitations?",
-                options: ["Yes, breathlessness/palpitations", "No"],
-                relatedConditions: []
-            };
-        }
-
-        // Only return if we haven't asked this (simple check: if userText includes the key words)
-        const userText = JSON.stringify(symptoms).toLowerCase();
-        if (categoryQuestion && !userText.includes("vision") && !userText.includes("appetite") && !userText.includes("breath")) {
-            return { results, question: categoryQuestion, alerts, clinicalRules: ruleResults };
-        }
-    }
-
-    // --- External API Fallback ---
-    // If no results or low confidence, try External API
-    // Increased threshold to 60%
-    if (results.length === 0 || results[0].confidence < 60) {
-        try {
-            // Lazy load api to avoid circular dependencies if any
-            const { EndlessMedicalAPI } = await import('../api/endlessMedical');
-
-            // Convert symptoms to list
-            const symptomList = [
-                ...symptoms.location,
-                symptoms.painType,
-                ...symptoms.triggers || [],
-                symptoms.additionalNotes
-            ].filter(Boolean) as string[];
-
-            const apiResults = await EndlessMedicalAPI.analyze(symptomList);
-
-            if (apiResults && apiResults.length > 0) {
-                // Map API results to our format
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const apiDiagnoses: DiagnosisResult[] = apiResults.map((disease: any) => ({
-                    condition: {
-                        id: `api_${disease.name.replace(/\s+/g, '_').toLowerCase()}`,
-                        name: disease.name || "Unknown Condition",
-                        description: `Possible condition identified by AI analysis. Likelihood: ${(disease.likelihood * 100).toFixed(1)}%`,
-                        matchCriteria: { locations: [], types: [] }, // Dummy
-                        severity: 'moderate',
-                        remedies: [
-                            {
-                                name: 'Consult Doctor',
-                                description: 'This condition was identified by our advanced AI model. Please consult a specialist for confirmation.',
-                                ingredients: [],
-                                method: 'Seek professional medical advice.',
-                                videoUrl: null,
-                                videoTitle: null
-                            }
-                        ],
-                        indianHomeRemedies: [],
-                        exercises: [],
-                        warnings: ['This is an AI-generated suggestion'],
-                        seekHelp: 'Consult a doctor for accurate diagnosis'
-                    },
-                    confidence: (disease.likelihood * 100) || 50,
-                    matchedKeywords: []
-                }));
-
-                // Add to results
-                results.push(...apiDiagnoses);
-
-                // RE-SORT results
-                results.sort((a, b) => b.confidence - a.confidence);
+            if (aiDiag.reasoningTrace) {
+                if (!result.reasoningTrace) result.reasoningTrace = [];
+                result.reasoningTrace.push({ factor: aiDiag.reasoningTrace, impact: 100, type: 'pattern' });
             }
-        } catch (e) {
-            console.error("API Diagnosis failed", e);
+
+            return { results: [result], alerts };
         }
+    } catch (e) {
+        console.error("AI diagnosis failed:", e);
     }
 
-    // --- ADVANCED 3: Uncertainty Quantification ---
-    // (Legacy block removed - now handled per-result above)
-    // We still expose the top result's uncertainty as the "main" one for backwards compatibility
-    const uncertainty = results.length > 0 ? results[0].uncertainty : undefined;
-
-    // Add rule interpretations to alerts if high confidence rules fired
-    if (results.length > 0) {
-        ruleResults.forEach(rule => {
-            if (rule.confidence > 0.5) {
-                if (!alerts.includes(rule.recommendation)) {
-                    alerts.push(`MEDICAL RULE (${rule.rule}): ${rule.interpretation}. ${rule.recommendation}`);
-                }
-            }
-        });
-    }
-
-    // Default: Return results directly
-    return { results, alerts, uncertainty, clinicalRules: ruleResults };
+    return { results: [], alerts };
 }

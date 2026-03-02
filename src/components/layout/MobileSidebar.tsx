@@ -17,39 +17,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { PHASE_CONFIG } from "@/lib/phaseConfig";
 
-const sidebarItems = [
+const allSidebarItems = [
     {
         title: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
+        visible: true,
     },
     {
         title: "New Consultation",
         href: "/dashboard/consult",
         icon: MessageSquarePlus,
+        visible: true,
     },
     {
         title: "History",
         href: "/dashboard/history",
         icon: History,
+        visible: true,
     },
     {
         title: "Profile",
         href: "/dashboard/profile",
         icon: UserCircle,
+        visible: true,
     },
     {
         title: "Settings",
         href: "/dashboard/settings",
         icon: Settings,
+        visible: true,
     },
+    // PHASE 2 — Learn Section
     {
         title: "Learn",
         href: "/dashboard/learn",
         icon: BookOpen,
+        visible: PHASE_CONFIG.showLearnSection,
     },
 ];
+
+const sidebarItems = allSidebarItems.filter(item => item.visible);
 
 interface MobileSidebarProps {
     isOpen: boolean;
