@@ -88,26 +88,32 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // Call Groq API with streaming
-        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${groqKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...messages,
-                ],
-                temperature: 0.7,
-                max_tokens: 1024,
-                stream: true,
-            }),
-        });
+        // Call Groq API with streaming — wrapped in try-catch for network errors
+        let groqResponse: Response | null = null;
+        try {
+            groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${groqKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        ...messages,
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1024,
+                    stream: true,
+                }),
+            });
+        } catch (groqError) {
+            console.error('Groq connection error:', groqError);
+            // Will fall through to Gemini fallback below
+        }
 
-        if (!groqResponse.ok) {
+        if (!groqResponse || !groqResponse.ok) {
             // Fallback to Gemini
             const geminiKey = process.env.GEMINI_API_KEY;
             if (!geminiKey) {
@@ -116,6 +122,8 @@ export async function POST(req: NextRequest) {
                     headers: { 'Content-Type': 'application/json' },
                 });
             }
+
+            console.log('Falling back to Gemini...');
 
             const geminiMessages = messages.map((m: { role: string; content: string }) => ({
                 role: m.role === 'assistant' ? 'model' : 'user',
@@ -136,6 +144,8 @@ export async function POST(req: NextRequest) {
             );
 
             if (!geminiResponse.ok) {
+                const errorText = await geminiResponse.text();
+                console.error('Gemini also failed:', geminiResponse.status, errorText);
                 return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
                     status: 503,
                     headers: { 'Content-Type': 'application/json' },
