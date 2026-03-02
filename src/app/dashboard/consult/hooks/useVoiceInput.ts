@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 interface UseVoiceInputReturn {
     isRecording: boolean;
@@ -16,10 +16,14 @@ export function useVoiceInput(): UseVoiceInputReturn {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState("");
     const recognitionRef = useRef<any>(null);
+    const [isSupported, setIsSupported] = useState(false);
 
-    const isSupported =
-        typeof window !== "undefined" &&
-        ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+    // Detect browser support client-side only to avoid SSR hydration mismatch
+    useEffect(() => {
+        setIsSupported(
+            "SpeechRecognition" in window || "webkitSpeechRecognition" in window
+        );
+    }, []);
 
     const startRecording = useCallback(() => {
         if (!isSupported || isRecording) return;
