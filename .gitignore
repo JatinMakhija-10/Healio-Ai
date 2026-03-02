@@ -99,3 +99,8 @@ build_error.log
 eslint.log
 lint_errors.log
 
+
+OpenHomeopath.sql
+OpenHomeopath.sql.gz
+import_final.txt
+retry_log.txt
