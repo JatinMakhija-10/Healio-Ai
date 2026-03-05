@@ -15,7 +15,7 @@ async function importSql() {
     }
 
     // CONNECTION_STRING should be in the format: postgres://postgres.[PROJECT-ID]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
-    const connectionString = process.env.SUPABASE_DB_CONNECTION_STRING;
+    const connectionString = process.env.SUPABASE_DB_CONNECTION_STRING as string | undefined;
 
     if (!connectionString) {
         console.error("Missing SUPABASE_DB_CONNECTION_STRING in .env.local");

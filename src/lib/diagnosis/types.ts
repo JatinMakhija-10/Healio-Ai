@@ -167,6 +167,7 @@ export interface UserSymptomData {
         // Computed profiles
         healthRiskProfile?: HealthRiskProfile;
         ayurvedicProfile?: AyurvedicProfile;
+        language?: 'en' | 'hi' | 'hinglish';
     };
 }
 

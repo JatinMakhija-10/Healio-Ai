@@ -12,7 +12,7 @@ import type { ConnectionQuality } from '@/stores/videoStore';
  */
 export function useVideoCall() {
     const store = useVideoStore();
-    const addNotification = useNotificationStore((s) => s.addNotification);
+    const addNotification = useNotificationStore((s) => s.addEphemeral);
     const formattedDuration = useVideoStore(selectFormattedDuration);
 
     // Refs survive re-renders and keep mutable state

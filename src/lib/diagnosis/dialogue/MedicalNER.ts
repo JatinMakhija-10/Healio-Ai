@@ -17,72 +17,225 @@ import { ExtractedEntity, EntityContext } from './DialogueState';
 
 const SYMPTOM_SYNONYMS: Record<string, string[]> = {
     // Pain descriptors
-    'headache': ['head hurts', 'head pain', 'head ache', 'my head is killing me', 'splitting headache'],
-    'migraine': ['sick headache', 'migrane', 'migraines'],
-    'abdominal_pain': ['stomach ache', 'stomachache', 'tummy ache', 'belly pain', 'gut pain', 'stomach hurts', 'abdomen hurts'],
-    'chest_pain': ['chest hurts', 'pain in chest', 'chest discomfort', 'heart hurts'],
-    'back_pain': ['backache', 'back ache', 'back hurts', 'spine pain', 'lower back'],
-    'joint_pain': ['joints hurt', 'achy joints', 'joint ache'],
-    'muscle_pain': ['sore muscles', 'muscle ache', 'muscles hurt', 'body aches'],
-    'sore_throat': ['throat hurts', 'throat pain', 'scratchy throat', 'painful throat'],
+    'headache': [
+        'head hurts', 'head pain', 'head ache', 'my head is killing me', 'splitting headache',
+        'sir dard', 'sir mein dard', 'sar dard', 'sir dukh raha hai', 'sar dukh raha hai',
+        'सिर दर्द', 'सिर में दर्द', 'सर दर्द', 'सिर दुख रहा है'
+    ],
+    'migraine': [
+        'sick headache', 'migrane', 'migraines', 'aadha sir dard', 'aadha sar dard', 'आधा सिर दर्द'
+    ],
+    'stomach_pain': [
+        'tummy ache', 'belly pain', 'stomach hurts', 'abdominal pain', 'stomach cramps',
+        'pet dard', 'pet mein dard', 'stomach ache', 'stomach pain', 'tummy hurts',
+        'पेट दर्द', 'पेट में दर्द'
+    ],
+    'chest_pain': [
+        'chest hurts', 'tightness in chest', 'heart pain', 'chest tension',
+        'seene mein dard', 'chhati mein dard', 'seena dukh raha hai', 'chhati dukh rahi hai',
+        'सीने में दर्द', 'छाती में दर्द'
+    ],
+    'back_pain': [
+        'back hurts', 'lower back pain', 'upper back pain', 'spine hurts',
+        'kamar dard', 'peeth dard', 'kamar mein dard', 'peeth mein dard',
+        'कमर दर्द', 'पीठ दर्द', 'कमर में दर्द'
+    ],
+    'joint_pain': [
+        'joints hurt', 'knees hurt', 'aching joints', 'arthritic pain',
+        'jodo mein dard', 'ghutne mein dard', 'ghutno mein dard',
+        'जोड़ों में दर्द', 'घुटनों में दर्द'
+    ],
+    'body_aches': [
+        'aching all over', 'body hurts', 'muscle pain', 'myalgia',
+        'badan dard', 'poore badan mein dard', 'jism mein dard',
+        'बदन दर्द', 'पूरे बदन में दर्द'
+    ],
+
+    // Fever & General
+    'fever': [
+        'high temperature', 'feverish', 'running a temperature', 'hot',
+        'bukhar', 'tapman', 'garam',
+        'बुखार', 'तापमान', 'गर्म'
+    ],
+    'chills': [
+        'shivering', 'feeling cold', 'shaking', 'freezing',
+        'thand', 'thandi', 'kampkampi', 'kapkapi',
+        'ठंड', 'ठंडी', 'कंपकंपी', 'कपकपी'
+    ],
+    'fatigue': [
+        'tired', 'exhausted', 'no energy', 'worn out', 'weakness', 'lethargic',
+        'thakan', 'thakawat', 'kamzori', 'kamjori', 'thaka hua',
+        'थकान', 'थकावट', 'कमज़ोरी', 'थका हुआ'
+    ],
+    'dizziness': [
+        'lightheaded', 'room spinning', 'vertigo', 'faint',
+        'chakkar', 'chakkar aana', 'sir ghoomna', 'sar ghoomna',
+        'चक्कर', 'चक्कर आना', 'सिर घूमना'
+    ],
 
     // Gastrointestinal
-    'nausea': ['feel sick', 'queasy', 'sick to stomach', 'feel like throwing up', 'want to vomit', 'nauseous'],
-    'vomiting': ['throwing up', 'puking', 'vomit', 'being sick', 'barfing'],
-    'diarrhea': ['loose stool', 'watery stool', 'runny stool', 'the runs', 'upset stomach'],
-    'constipation': ['can\'t poop', 'hard stool', 'blocked up', 'irregular bowel'],
-    'bloating': ['bloated', 'gas', 'gassy', 'distended', 'full feeling'],
-    'heartburn': ['acid reflux', 'acidity', 'burning chest', 'indigestion'],
-    'loss_of_appetite': ['not hungry', 'don\'t want to eat', 'no appetite', 'off food'],
+    'nausea': [
+        'sick to my stomach', 'queasy', 'want to throw up', 'nauseous',
+        'jee machlana', 'ulti aane ka man', 'matli', 'ubkai',
+        'जी मचलना', 'उल्टी आने का मन', 'मतली', 'उबकाई'
+    ],
+    'vomiting': [
+        'throwing up', 'puking', 'barfing', 'vomit',
+        'ulti', 'ultiyaan', 'vomit',
+        'उल्टी', 'उल्टियां'
+    ],
+    'diarrhea': [
+        'loose motions', 'runny poop', 'the runs', 'watery stool',
+        'dast', 'loose motion', 'patli latrine',
+        'दस्त', 'लूज मोशन'
+    ],
+    'constipation': [
+        'can\'t poop', 'blocked up', 'hard stool', 'no bowel movement',
+        'kabz', 'kabji', 'pakhana nahi aa raha',
+        'कब्ज़', 'कब्जी'
+    ],
+    'heartburn': [
+        'acid reflux', 'acidity', 'burning chest', 'indigestion',
+        'jalan', 'pet mein jalan', 'seene mein jalan', 'khatti dakar', 'gas',
+        'जलन', 'पेट में जलन', 'सीने में जलन', 'खट्टी डकार', 'गैस'
+    ],
+    'loss_of_appetite': [
+        'not hungry', 'don\'t want to eat', 'no appetite', 'off food',
+        'bhookh nahi', 'bhookh nahi lag rahi', 'khane ka man nahi',
+        'भूख नहीं', 'भूख नहीं लग रही', 'खाने का मन नहीं'
+    ],
 
     // Respiratory
-    'shortness_of_breath': ['can\'t breathe', 'difficulty breathing', 'breathless', 'hard to breathe', 'out of breath', 'dyspnea'],
-    'cough': ['coughing', 'hacking', 'hacky cough'],
-    'wheezing': ['whistling breath', 'breathing sounds'],
-    'congestion': ['stuffy nose', 'blocked nose', 'stuffed up', 'bunged up'],
-    'runny_nose': ['nose running', 'sniffly', 'runny'],
-    'sneezing': ['sneezy', 'achoo'],
+    'shortness_of_breath': [
+        'can\'t breathe', 'difficulty breathing', 'breathless', 'hard to breathe', 'out of breath', 'dyspnea',
+        'saans rukna', 'saans phoolna', 'saans lene me dikkat', 'dam ghutna',
+        'सांस रुकना', 'सांस फूलना', 'सांस लेने में दिक्कत', 'दम घुटना'
+    ],
+    'cough': [
+        'coughing', 'hacking', 'hacky cough',
+        'khasi', 'khaasi', 'khansi',
+        'खांसी', 'खासी'
+    ],
+    'wheezing': [
+        'whistling breath', 'breathing sounds',
+        'saans ki aawaz', 'seeti bajna saans mein',
+        'सांस की आवाज', 'सीटी बजना सांस में'
+    ],
+    'sore_throat': [
+        'throat hurts', 'scratchy throat', 'pain when swallowing',
+        'gala kharab', 'gale mein dard', 'gale mein kharash',
+        'गला खराब', 'गले में दर्द', 'गले में खराश'
+    ],
+    'runny_nose': [
+        'nose running', 'snotty', 'sniffles',
+        'behti naak', 'naak beh rahi', 'zukam',
+        'बहती नाक', 'नाक बह रही', 'जुकाम'
+    ],
+    'nasal_congestion': [
+        'stuffy nose', 'blocked nose', 'can\'t breathe through nose',
+        'band naak', 'naak band',
+        'बंद नाक', 'नाक बंद'
+    ],
 
-    // Neurological
-    'dizziness': ['dizzy', 'lightheaded', 'light headed', 'woozy', 'unsteady', 'room spinning'],
-    'vertigo': ['spinning', 'world spinning', 'balance problems'],
-    'numbness': ['numb', 'can\'t feel', 'tingling', 'pins and needles', 'prickling'],
-    'confusion': ['confused', 'disoriented', 'brain fog', 'can\'t think clearly'],
-    'memory_problems': ['forgetful', 'can\'t remember', 'memory loss'],
+    // Neurological & Mental
+    'anxiety': [
+        'anxious', 'worried', 'nervous', 'panic', 'stress',
+        'ghabrahat', 'bechaini', 'chinta', 'tension',
+        'घबराहट', 'बेचैनी', 'चिंता', 'टेंशन'
+    ],
+    'depression': [
+        'sad', 'depressed', 'down', 'hopeless', 'crying',
+        'udas', 'udasi', 'nirash', 'nirasha', 'rone ka man',
+        'उदास', 'उदासी', 'निराश', 'निराशा', 'रोने का मन'
+    ],
+    'confusion': [
+        'confused', 'muddled', 'disoriented', 'fuzzy brain', 'brain fog',
+        'uljhan', 'kuch samajh nahi aa raha',
+        'उलझन', 'कुछ समझ नहीं आ रहा'
+    ],
+    'numbness': [
+        'numb', 'can\'t feel', 'loss of sensation',
+        'sunn', 'sunn pad jana',
+        'सुन्न', 'सुन्न पड़ जाना'
+    ],
+    'tingling': [
+        'pins and needles', 'prickling',
+        'jhunjhuni', 'chun chun ahat',
+        'झुनझुनी', 'चुनचुनाहट'
+    ],
 
-    // General/Systemic
-    'fever': ['high temperature', 'temperature', 'burning up', 'feverish', 'hot', 'chills and fever'],
-    'chills': ['shivering', 'cold chills', 'rigors', 'shaky'],
-    'fatigue': ['tired', 'exhausted', 'no energy', 'worn out', 'drained', 'weak', 'lethargic', 'sluggish'],
-    'weakness': ['weak', 'feeble', 'no strength'],
-    'sweating': ['sweaty', 'perspiring', 'night sweats', 'cold sweats'],
-    'weight_loss': ['losing weight', 'lost weight', 'getting thinner'],
-    'weight_gain': ['gaining weight', 'putting on weight', 'getting heavier'],
+    // Other / Systemic
+    'palpitations': [
+        'heart racing', 'fast heart beat', 'heart pounding', 'fluttering chest',
+        'dil dhadakna', 'dil ki dhadkan tez', 'ghabrahat',
+        'दिल धड़कना', 'दिल की धड़कन तेज'
+    ],
+    'sweating': [
+        'sweaty', 'perspiring', 'night sweats', 'cold sweats',
+        'pasina', 'paseena',
+        'पसीना'
+    ],
+    'weight_loss': [
+        'losing weight', 'lost weight', 'getting thinner',
+        'vajan kam', 'wazan kam', 'patla hona',
+        'वजन कम', 'वज़न कम', 'पतला होना'
+    ],
+    'weight_gain': [
+        'gaining weight', 'putting on weight', 'getting heavier',
+        'vajan badhna', 'wazan badhna', 'mota hona',
+        'वजन बढ़ना', 'वज़न बढ़ना', 'मोटा होना'
+    ],
 
     // Skin
-    'rash': ['skin rash', 'red spots', 'bumps on skin', 'skin irritation', 'hives'],
-    'itching': ['itchy', 'scratchy skin', 'skin itches'],
-    'swelling': ['swollen', 'puffiness', 'puffy', 'inflammation'],
-    'bruising': ['bruise', 'black and blue'],
-
-    // Sensory
-    'blurred_vision': ['blurry vision', 'can\'t see clearly', 'fuzzy vision', 'vision problems'],
-    'sensitivity_to_light': ['light sensitive', 'photophobia', 'light hurts eyes', 'bright lights bother me'],
-    'ringing_ears': ['tinnitus', 'ears ringing', 'buzzing in ears'],
-    'hearing_loss': ['can\'t hear', 'hard of hearing', 'deaf'],
-
-    // Cardiac
-    'palpitations': ['heart racing', 'heart pounding', 'heart fluttering', 'heart skipping', 'rapid heartbeat'],
-    'irregular_heartbeat': ['arrhythmia', 'heart skips', 'irregular pulse'],
+    'rash': [
+        'skin rash', 'red spots', 'bumps on skin', 'skin irritation', 'hives',
+        'chakkate', 'daane', 'laal daane',
+        'चकत्ते', 'दाने', 'लाल दाने'
+    ],
+    'itching': [
+        'itchy', 'scratchy skin', 'skin itches',
+        'khujli', 'khujana',
+        'खुजली', 'खुजाना'
+    ],
+    'swelling': [
+        'swollen', 'puffiness', 'puffy', 'inflammation',
+        'sujan', 'soojan', 'phoola hua',
+        'सूजन', 'फूला हुआ'
+    ],
+    'bruising': [
+        'bruise', 'black and blue',
+        'neel', 'neel padna', 'chot',
+        'नील', 'नील पड़ना', 'चोट'
+    ],
 
     // Urinary
-    'frequent_urination': ['peeing a lot', 'urinating often', 'going to bathroom frequently'],
-    'painful_urination': ['hurts to pee', 'burning when urinating', 'dysuria'],
-    'blood_in_urine': ['bloody urine', 'red urine', 'hematuria'],
+    'frequent_urination': [
+        'peeing a lot', 'going to the bathroom constantly', 'frequent pee',
+        'baar baar peshab', 'baar baar toilet',
+        'बार-बार पेशाब', 'बार-बार टॉयलेट'
+    ],
+    'painful_urination': [
+        'burns when peeing', 'pain when urinating', 'dysuria',
+        'peshab me jalan', 'peshab karte waqt dard',
+        'पेशाब में जलन', 'पेशाब करते वक्त दर्द'
+    ],
+    'blood_in_urine': [
+        'bloody urine', 'red urine', 'hematuria',
+        'peshab me khoon', 'khooni peshab',
+        'पेशाब में खून', 'खूनी पेशाब'
+    ],
 
     // Sleep
-    'insomnia': ['can\'t sleep', 'trouble sleeping', 'sleepless', 'sleep problems'],
-    'sleep_apnea': ['stop breathing at night', 'snoring loudly']
+    'insomnia': [
+        'can\'t sleep', 'trouble sleeping', 'sleepless', 'sleep problems',
+        'neend nahi', 'neend nahi aati',
+        'नींद नहीं', 'नींद नहीं आती'
+    ],
+    'sleep_apnea': [
+        'stop breathing at night', 'snoring loudly',
+        'kharrate', 'neend me saans rukna',
+        'खर्राटे', 'नींद में सांस रुकना'
+    ]
 };
 
 // ============================================================================
@@ -90,10 +243,25 @@ const SYMPTOM_SYNONYMS: Record<string, string[]> = {
 // ============================================================================
 
 const NEGATION_CUES = [
-    'no', 'not', 'without', 'deny', 'denies', 'denied', 'negative for',
-    'don\'t have', 'doesn\'t have', 'do not have', 'does not have',
-    'haven\'t had', 'hasn\'t had', 'never had', 'no sign of', 'no evidence of',
-    'ruled out', 'absent', 'free of', 'lack of', 'lacks'
+    'no ', 'not ', 'never ', 'without ', 'don\'t ', 'doesn\'t ', 'didn\'t ', 'none ', 'zero ', 'nothing ',
+    'haven\'t ', 'hasn\'t ', 'cannot ', 'can\'t ', 'couldn\'t ', 'wouldn\'t ', 'shouldn\'t ',
+    'clear of ', 'free of ', 'denies ', 'negative for ', 'absent ',
+    // Hinglish
+    'nahi ', 'nai ', 'sirf ', 'bina ', 'matlab nahi ', 'kabhi nahi',
+    // Hindi
+    'नहीं ', 'बिना ', 'कभी नहीं ', 'ना '
+];
+
+// Special terms that might contain negation cues but aren't actually negations
+// e.g., "I can't breathe" (not negated symptom, actual symptom of shortness of breath)
+const PSEUDO_NEGATIONS = [
+    'can\'t breathe', 'cannot breathe', 'couldn\'t breathe',
+    'can\'t sleep', 'cannot sleep', 'couldn\'t sleep',
+    'not hungry',
+    'don\'t want to eat',
+    // Hindi/Hinglish pseudo-negations
+    'saans nahi', 'neend nahi', 'bhookh nahi', 'bhukh nahi',
+    'सांस नहीं', 'नींद नहीं', 'भूख नहीं'
 ];
 
 const NEGATION_WINDOW = 6; // tokens to look ahead/behind
@@ -118,7 +286,7 @@ const RECENT_INDICATORS = [
 // ============================================================================
 
 const SEVERITY_MODIFIERS: Record<string, EntityContext['severity']> = {
-    // Mild
+    // Mild (English)
     'mild': 'mild',
     'slight': 'mild',
     'minor': 'mild',
@@ -126,26 +294,55 @@ const SEVERITY_MODIFIERS: Record<string, EntityContext['severity']> = {
     'bit of': 'mild',
     'a little': 'mild',
     'somewhat': 'mild',
+    // Mild (Hinglish/Hindi)
+    'thoda': 'mild',
+    'thora': 'mild',
+    'halka': 'mild',
+    'kam': 'mild',
+    'थोड़ा': 'mild',
+    'हल्का': 'mild',
+    'कम': 'mild',
 
-    // Moderate
+    // Moderate (English)
     'moderate': 'moderate',
     'medium': 'moderate',
-    'noticeable': 'moderate',
-    'significant': 'moderate',
+    'average': 'moderate',
+    'tolerable': 'moderate',
+    'manageable': 'moderate',
+    'okay': 'moderate',
+    'some': 'moderate',
+    // Moderate (Hinglish/Hindi)
+    'theek thaak': 'moderate',
+    'chalega': 'moderate',
+    'thik thak': 'moderate',
+    'bich ka': 'moderate',
+    'ठीक ठाक': 'moderate',
 
-    // Severe
+    // Severe (English)
     'severe': 'severe',
     'extreme': 'severe',
+    'terrible': 'severe',
+    'horrible': 'severe',
+    'worst': 'severe',
+    'bad': 'severe',
+    'very bad': 'severe',
     'intense': 'severe',
     'unbearable': 'severe',
-    'excruciating': 'severe',
-    'worst': 'severe',
-    'terrible': 'severe',
-    'awful': 'severe',
-    'horrible': 'severe',
-    'agonizing': 'severe',
     'debilitating': 'severe',
-    'crippling': 'severe'
+    'crippling': 'severe',
+    // Severe (Hinglish/Hindi)
+    'bahut': 'severe',
+    'bohot': 'severe',
+    'bhot': 'severe',
+    'zyada': 'severe',
+    'jyada': 'severe',
+    'bhayanak': 'severe',
+    'tez': 'severe', 'tezz': 'severe',
+    'bohat': 'severe',
+    'बहुत': 'severe',
+    'ज्यादा': 'severe',
+    'तेज': 'severe',
+    'खराब': 'severe'
 };
 
 // ============================================================================
@@ -153,30 +350,63 @@ const SEVERITY_MODIFIERS: Record<string, EntityContext['severity']> = {
 // ============================================================================
 
 const FREQUENCY_MODIFIERS: Record<string, EntityContext['frequency']> = {
-    // Occasional
+    // Occasional (English)
     'sometimes': 'occasional',
     'occasionally': 'occasional',
     'now and then': 'occasional',
     'once in a while': 'occasional',
+    'off and on': 'occasional',
     'intermittent': 'occasional',
-    'sporadic': 'occasional',
+    'rarely': 'occasional',
+    'comes and goes': 'occasional',
+    // Occasional (Hinglish/Hindi)
+    'kabhi kabhi': 'occasional',
+    'kabhi-kabhi': 'occasional',
+    'kabhi': 'occasional',
+    'aata jata hai': 'occasional',
+    'kabhi kabaar': 'occasional',
+    'कभी कभी': 'occasional',
+    'आता जाता है': 'occasional',
 
-    // Frequent
-    'often': 'frequent',
+    // Frequent (English)
+    'frequent': 'frequent',
     'frequently': 'frequent',
-    'usually': 'frequent',
-    'most of the time': 'frequent',
+    'often': 'frequent',
+    'a lot': 'frequent',
     'regularly': 'frequent',
+    'many times': 'frequent',
+    'most of the time': 'frequent',
+    // Frequent (Hinglish/Hindi)
+    'aksar': 'frequent',
+    'baar baar': 'frequent',
+    'bar bar': 'frequent',
+    'bahut baar': 'frequent',
+    'bohot baar': 'frequent',
+    'अक्सर': 'frequent',
+    'बार बार': 'frequent',
+    'बार-बार': 'frequent',
 
-    // Constant
-    'always': 'constant',
+    // Constant (English)
+    'constant': 'constant',
     'constantly': 'constant',
+    'always': 'constant',
     'all the time': 'constant',
-    'continuous': 'constant',
-    'persistent': 'constant',
+    'nonstop': 'constant',
     'non-stop': 'constant',
+    'continuous': 'constant',
+    'continuously': 'constant',
     'never goes away': 'constant',
-    '24/7': 'constant'
+    '24/7': 'constant',
+    // Constant (Hinglish/Hindi)
+    'lagatar': 'constant',
+    'hamesha': 'constant',
+    'har waqt': 'constant',
+    'poore time': 'constant',
+    'roz': 'constant', // Can mean every day, treating as constant frequency
+    'rukta hi nahi': 'constant',
+    'लगातार': 'constant',
+    'हमेशा': 'constant',
+    'हर वक्त': 'constant'
 };
 
 // ============================================================================

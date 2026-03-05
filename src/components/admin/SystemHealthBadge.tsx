@@ -2,7 +2,8 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Server, AlertCircle, AlertTriangle, XCircle } from 'lucide-react';
-import { useAdminMetricsStore, SystemHealthStatus } from '@/stores/adminMetricsStore';
+import { useSystemHealth } from '@/lib/hooks/useApiQueries';
+import { SystemHealthStatus } from '@/stores/adminMetricsStore';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import {
@@ -14,10 +15,10 @@ import {
 } from '@/components/ui/dialog';
 
 export function SystemHealthBadge() {
-    const { systemHealth } = useAdminMetricsStore();
+    const { data: systemHealth, isLoading } = useSystemHealth();
     const [showDetails, setShowDetails] = useState(false);
 
-    if (!systemHealth) {
+    if (isLoading || !systemHealth) {
         return (
             <Badge variant="outline" className="gap-2">
                 <Server className="h-3 w-3" />

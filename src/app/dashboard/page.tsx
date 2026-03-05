@@ -303,7 +303,7 @@ export default function DashboardPage() {
                             <>
                                 <div className="text-xl font-medium text-slate-900">{getTimeAgo(lastSession.created_at)}</div>
                                 <p className="text-xs text-slate-500 mt-1 capitalize">
-                                    {lastSession.diagnosis.condition}
+                                    {lastSession.diagnosis?.condition ?? "Unknown"}
                                 </p>
                             </>
                         ) : (
@@ -389,12 +389,12 @@ export default function DashboardPage() {
                                                 <Activity className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <h3 className="font-medium text-slate-900">{session.diagnosis.condition}</h3>
+                                                <h3 className="font-medium text-slate-900">{session.diagnosis?.condition ?? "Unknown"}</h3>
                                                 <div className="flex items-center gap-2 text-sm text-slate-500 mt-0.5">
                                                     <Calendar className="h-3 w-3" />
                                                     {new Date(session.created_at).toLocaleDateString()}
                                                     <span className="text-slate-300">•</span>
-                                                    <span className="capitalize">{session.symptoms.location.join(", ")}</span>
+                                                    <span className="capitalize">{(session.symptoms?.location ?? []).join(", ")}</span>
                                                 </div>
                                             </div>
                                         </div>

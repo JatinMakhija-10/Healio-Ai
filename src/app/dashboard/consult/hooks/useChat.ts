@@ -29,6 +29,24 @@ export function useChat(): UseChatReturn {
 
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
+            // Try to extract structured diagnosis from AI's JSON block
+            let parsedDiagnosis: any = null;
+            let confidence = 0;
+
+            // Find the last assistant message containing ```json
+            const assistantMessages = allMessages.filter((m) => m.role === "assistant");
+            for (let i = assistantMessages.length - 1; i >= 0; i--) {
+                const jsonMatch = assistantMessages[i].content.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch) {
+                    try {
+                        parsedDiagnosis = JSON.parse(jsonMatch[1]);
+                        break;
+                    } catch {
+                        // Invalid JSON, continue searching
+                    }
+                }
+            }
+
             const consultation = {
                 id: generateId(),
                 created_at: new Date().toISOString(),
@@ -38,14 +56,26 @@ export function useChat(): UseChatReturn {
                         .map((m) => m.content)
                         .join("\n"),
                 },
-                diagnosis: {
-                    raw_conversation: allMessages
-                        .filter((m) => m.role === "assistant")
-                        .map((m) => m.content)
-                        .join("\n"),
-                    ai_generated: true,
-                },
-                confidence: 0,
+                diagnosis: parsedDiagnosis
+                    ? {
+                        condition: parsedDiagnosis.name || "Unknown Condition",
+                        description: parsedDiagnosis.description || "",
+                        severity: parsedDiagnosis.severity || "moderate",
+                        remedies: parsedDiagnosis.remedies || [],
+                        indianHomeRemedies: parsedDiagnosis.indianHomeRemedies || [],
+                        exercises: parsedDiagnosis.exercises || [],
+                        warnings: parsedDiagnosis.warnings || [],
+                        seekHelp: parsedDiagnosis.seekHelp || "",
+                        ai_generated: true,
+                    }
+                    : {
+                        condition: "Unknown Condition",
+                        raw_conversation: assistantMessages
+                            .map((m) => m.content)
+                            .join("\n"),
+                        ai_generated: true,
+                    },
+                confidence: parsedDiagnosis?.confidence || confidence,
             };
 
             // Save to localStorage backup

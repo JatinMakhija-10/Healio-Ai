@@ -19,10 +19,10 @@ import {
 
 const EMERGENCY_PATTERNS = [
     // Cardiac emergencies
-    /can'?t breathe|unable to breathe|difficulty breathing/i,
+    /can'?t breathe|unable to breathe|difficulty breathing|saans nahi aa|saans lene mein dikkat/i,
     /chest pain.*(sweat|arm|jaw|crush|pressure)/i,
     /(crushing|squeezing).*(chest|heart)/i,
-    /heart attack/i,
+    /heart attack|dil ka daura|dil ka doura/i,
 
     // Neurological emergencies
     /stroke|sudden numbness|face drooping|slurred speech/i,
@@ -37,8 +37,10 @@ const EMERGENCY_PATTERNS = [
 
     // Trauma/Injury
     /unconscious|passed out|unresponsive/i,
-    /severe bleeding|won'?t stop bleeding/i,
-    /bone.*sticking out|compound fracture/i,
+    // Bleeding
+    /bleeding.*(won'?t stop|heavy|excessive|coughing|vomiting|khoon)/i,
+    /coughing blood|khoon ki ulti/i,
+    /blood in stool|khooni dast|latrine mein khoon/i,
     /head injury.*vomiting/i,
 
     // Anaphylaxis
@@ -64,14 +66,15 @@ const CRISIS_PATTERNS = [
 const ADD_SYMPTOM_PATTERNS = [
     /also|and also|plus|along with|in addition/i,
     /another thing|i also have|there'?s also/i,
-    /additionally|moreover|on top of/i
+    /additionally|moreover|on top of/i,
+    /aur|aur bhi|iske sath|ye bhi|iske alawa/i // Hindi/Hinglish
 ];
 
 const CLARIFICATION_PATTERNS = [
-    /what do you mean|can you explain|don'?t understand/i,
-    /why are you asking|what does that mean/i,
-    /i'?m confused|unclear|not sure what/i,
-    /could you clarify|please explain/i
+    /what|how|why|can you explain/i,
+    /don'?t understand|not sure/i,
+    /what does.*mean/i,
+    /kya matlab|kaise|samajh nahi aaya|kya hota hai/i // Hindi/Hinglish
 ];
 
 const AFFIRMATIVE_PATTERNS = [
@@ -81,10 +84,10 @@ const AFFIRMATIVE_PATTERNS = [
 ];
 
 const NEGATIVE_PATTERNS = [
-    /^no\b|nope|nah|negative|not at all|don'?t have/i,
-    /i don'?t|i haven'?t|i'?m not|that'?s not|never/i,
-    /^n$/i,
-    /none of the above/i
+    /no|nope|not at all|none/i,
+    /don'?t have|don'?t feel/i,
+    /incorrect|wrong|that'?s not right/i,
+    /nahi|nai|bilkul nahi|aisa nahi hai/i // Hindi/Hinglish
 ];
 
 // ============================================================================

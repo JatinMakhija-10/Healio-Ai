@@ -6,11 +6,12 @@ import { searchConditions } from "./retrieval";
 import { symptomCorrelationDetector, DetectedPattern } from "./advanced/SymptomCorrelations";
 import { clinicalRules, RuleResult } from "./advanced/ClinicalDecisionRules";
 import { uncertaintyQuantifier, UncertaintyEstimate, EvidenceQualityMetrics } from "./advanced/UncertaintyQuantification";
+import { mcmcInfer, extractEvidence } from "./advanced/MCMCEngine";
 
 /**
  * Extracts a list of symptom keys from user input for correlation detection
  */
-function extractSymptomList(symptoms: UserSymptomData): string[] {
+export function extractSymptomList(symptoms: UserSymptomData): string[] {
     const list: string[] = [];
 
     // Add locations as potential symptoms
@@ -54,7 +55,7 @@ function extractSymptomList(symptoms: UserSymptomData): string[] {
 /**
  * Builds evidence quality metrics for uncertainty quantification
  */
-function buildEvidenceMetrics(symptoms: UserSymptomData, patterns: DetectedPattern[]): EvidenceQualityMetrics {
+export function buildEvidenceMetrics(symptoms: UserSymptomData, patterns: DetectedPattern[]): EvidenceQualityMetrics {
     const symptomList = extractSymptomList(symptoms);
 
     return {
@@ -73,18 +74,7 @@ function buildEvidenceMetrics(symptoms: UserSymptomData, patterns: DetectedPatte
  * Calculates a confidence score for a condition based on symptoms
  */
 
-// --- BAYESIAN INFERENCE HELPERS ---
-const PREVALENCE_PRIORS: Record<string, number> = {
-    'very_common': 0.1,    // e.g. Cold
-    'common': 0.05,        // e.g. Flu
-    'uncommon': 0.01,      // e.g. Dengue
-    'rare': 0.001,         // e.g. Meningitis
-    'very_rare': 0.0001
-};
 
-function getPrior(condition: Condition): number {
-    return PREVALENCE_PRIORS[condition.prevalence || 'uncommon'];
-}
 
 /**
  * Scans for Critical Red Flags that require immediate medical attention
@@ -224,278 +214,51 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
 
 
 /**
- * Calculates a posterior probability score using a simplified Bayesian approach
- * Posterior proportional to: Prior * Likelihood(Symptoms | Condition)
- * Now includes reasoning trace for explainability and advanced pattern multipliers
+ * Calculates a posterior probability score using MCMC Bayesian inference.
+ * 
+ * Runs Metropolis-Hastings sampling to compute proper posterior distributions
+ * over the condition probability space. Uses per-symptom likelihood ratios
+ * from sensitivity/specificity, Beta priors from prevalence, and clinical
+ * correlation patterns.
+ * 
+ * Backward-compatible signature — returns score (0-100), matched keywords,
+ * and reasoning trace.
  */
-function calculateBayesianScore(
+export function calculateBayesianScore(
     condition: Condition,
     symptoms: UserSymptomData,
     detectedPatterns: DetectedPattern[] = []
 ): {
     score: number,
     matchedKeywords: string[],
-    reasoningTrace: ReasoningTraceEntry[]
+    reasoningTrace: ReasoningTraceEntry[],
+    mcmcDiagnostics?: {
+        posteriorMean: number,
+        posteriorMedian: number,
+        credibleInterval: { lower: number; upper: number; width: number },
+        effectiveSampleSize: number,
+        gewekePValue: number,
+        converged: boolean,
+        acceptanceRate: number,
+    }
 } {
-    const matchedKeywords: string[] = [];
-    const reasoningTrace: ReasoningTraceEntry[] = [];
-    const criteria = condition.matchCriteria;
+    const evidence = extractEvidence(symptoms);
+    const result = mcmcInfer(condition, evidence, detectedPatterns);
 
-    // --- MANDATORY SYMPTOMS CHECK (Hard Constraint) ---
-    if (condition.mandatorySymptoms && condition.mandatorySymptoms.length > 0) {
-        const userText = `${symptoms.location.join(" ")} ${symptoms.painType || ""} ${symptoms.triggers || ""} ${symptoms.additionalNotes || ""}`.toLowerCase();
-        const hasMandatory = condition.mandatorySymptoms.every(m => userText.includes(m.toLowerCase()));
-        if (!hasMandatory) {
-            return { score: 0, matchedKeywords: [], reasoningTrace: [{ factor: 'Missing mandatory symptom', impact: -100, type: 'symptom' }] };
+    return {
+        score: result.score,
+        matchedKeywords: result.matchedKeywords,
+        reasoningTrace: result.reasoningTrace,
+        mcmcDiagnostics: {
+            posteriorMean: result.mcmc.posteriorMean,
+            posteriorMedian: result.mcmc.posteriorMedian,
+            credibleInterval: result.mcmc.credibleInterval,
+            effectiveSampleSize: result.mcmc.effectiveSampleSize,
+            gewekePValue: result.mcmc.gewekePValue,
+            converged: result.mcmc.converged,
+            acceptanceRate: result.mcmc.acceptanceRate,
         }
-    }
-
-    // 1. PRIOR PROBABILITY
-    const prior = getPrior(condition);
-    let currentLogProb = Math.log(prior);
-    reasoningTrace.push({ factor: `Prior (${condition.prevalence || 'uncommon'})`, impact: currentLogProb, type: 'prior' });
-
-    // Normalize input
-    const locationText = symptoms.location.join(" ").toLowerCase();
-
-    // Create "Safe Text" (Negation Handling)
-    const fullText = `${locationText} ${symptoms.painType || ""} ${symptoms.triggers || ""} ${symptoms.frequency || ""} ${symptoms.additionalNotes || ""}`.toLowerCase();
-    const negationRegex = /(?:no|not|without|doesn't have|dont have)\s+([a-z\s]+?)(?:[.,]|$)/gi;
-    const negatedTerms: string[] = [];
-    let match;
-    while ((match = negationRegex.exec(fullText)) !== null) {
-        if (match[1]) negatedTerms.push(match[1]);
-    }
-    let safeText = fullText;
-    negatedTerms.forEach(term => { safeText = safeText.replace(term, ""); });
-
-    // Synonym Mapping
-    const synonymMap: Record<string, string[]> = {
-        'nausea': ['vomit', 'puke', 'throw up', 'sick', 'queasy'],
-        'fever': ['high temp', 'hot', 'chills'], // Removed 'burning' to avoid confusion with burning pain
-        'pain': ['hurt', 'ache', 'sore', 'throbbing', 'agony'],
-        'stomach': ['belly', 'tummy', 'gut', 'abdomen'],
-        'cold': ['chilly', 'freezing', 'shivers'],
-        'cough': ['coughing', 'hack'],
-        'breathing': ['breath', 'gasping', 'air']
     };
-    Object.entries(synonymMap).forEach(([key, synonyms]) => {
-        if (synonyms.some(syn => safeText.includes(syn))) safeText += ` ${key}`;
-    });
-
-    // --- LIKELIHOOD UPDATES ---
-
-    // 0. Location Constraint (Hard Filter + Base Evidence)
-    if (criteria.locations && criteria.locations.length > 0) {
-        const locationMatches = criteria.locations.some(loc => {
-            const locLower = loc.toLowerCase();
-            return locationText.includes(locLower) || symptoms.location.some(userLoc => locLower.includes(userLoc.toLowerCase()));
-        });
-        if (!locationMatches) return { score: 0, matchedKeywords: [], reasoningTrace: [] };
-
-        currentLogProb += 2.0;
-        reasoningTrace.push({ factor: `Location: ${symptoms.location.join(", ")}`, impact: 2.0, type: 'location' });
-    }
-
-    // 0.5. Pain Type / Nature Match (Strong Evidence)
-    if (criteria.types && criteria.types.length > 0) {
-        const typeMatches = criteria.types.filter(t => safeText.includes(t.toLowerCase()));
-        if (typeMatches.length > 0) {
-            currentLogProb += 2.0; // Strong boost for matching pain nature (e.g. 'burning' for reflux)
-            typeMatches.forEach(m => matchedKeywords.push(`Type: ${m}`));
-            reasoningTrace.push({ factor: `Type Match: ${typeMatches.join(", ")}`, impact: 2.0, type: 'symptom' });
-        }
-    }
-
-    // 1. Symptom Matching & Weights
-    const handledSymptoms = new Set<string>();
-
-    // A. Weighted Symptoms (Sensitivity/Specificity Analysis)
-    if (criteria.symptomWeights) {
-        Object.entries(criteria.symptomWeights).forEach(([symptom, config]) => {
-            const symLower = symptom.toLowerCase();
-            const isPresent = safeText.includes(symLower);
-            const isExcluded = symptoms.excludedSymptoms?.some(ex => ex.toLowerCase().includes(symLower)) || negatedTerms.some(n => n.includes(symLower));
-
-            if (isPresent) {
-                // Base boost = 3.0. Modifiers: specificity.
-                let boost = 3.0;
-                if (config.specificity && config.specificity > 0.5) {
-                    // Specificity Boost: Log-odds-ish. 
-                    // 0.9 -> +2.0 boost over base. 0.5 -> 0.
-                    boost += (config.specificity - 0.5) * 4.0;
-                }
-                if (config.weight) boost *= config.weight;
-
-                currentLogProb += boost;
-                matchedKeywords.push(symptom);
-                handledSymptoms.add(symptom);
-                reasoningTrace.push({ factor: `Symptom (Weighted): ${symptom}`, impact: boost, type: 'symptom' });
-            } else {
-                // Missing... Should we penalize based on SENSITIVITY?
-                // If Sensitivity = 0.9 (90% of sick have it), and user lacks it => Penalize.
-
-                if (config.sensitivity && config.sensitivity > 0.7) {
-                    if (isExcluded) {
-                        // Explicitly absent -> LARGE PENALTY
-                        // e.g. 0.9 sensitivity -> 0.4 * 6 = 2.4 penalty
-                        const penalty = (config.sensitivity - 0.5) * 6.0;
-                        currentLogProb -= penalty;
-                        reasoningTrace.push({ factor: `Absent High-Sensitivity: ${symptom}`, impact: -penalty, type: 'absent' });
-                    } else {
-                        // Just missing from text -> Small penalty (maybe they forgot to mention)
-                        const penalty = (config.sensitivity - 0.5) * 1.5;
-                        currentLogProb -= penalty;
-                        reasoningTrace.push({ factor: `Missing Expected: ${symptom}`, impact: -penalty, type: 'symptom' });
-                    }
-                }
-            }
-        });
-    }
-
-    // B. Standard Special Symptoms (Fallback/Flat Weight)
-    if (criteria.specialSymptoms) {
-        const matches = criteria.specialSymptoms.filter(s => {
-            // Skip if already handled by weights
-            if (handledSymptoms.has(s)) return false;
-
-            const val = s.toLowerCase();
-            if (safeText.includes(val)) return true;
-            const words = val.split(' ').filter(w => w.length > 3);
-            if (words.length === 0) return false;
-            const genericWords = ['pain', 'severe', 'mild', 'high', 'low', 'loss', 'feeling', 'sensation', 'acute', 'chronic', 'chest', 'head', 'back', 'stomach', 'abdomen', 'leg', 'arm', 'skin', 'body', 'limb', 'area', 'part'];
-            const significantWords = words.filter(w => !genericWords.includes(w));
-            if (significantWords.length === 0) return false;
-            return significantWords.some(w => safeText.includes(w));
-        });
-
-        if (matches.length > 0) {
-            matches.forEach(m => {
-                currentLogProb += 3.0; // Standard flat boost
-                matchedKeywords.push(m);
-                reasoningTrace.push({ factor: `Symptom: ${m}`, impact: 3.0, type: 'symptom' });
-            });
-            if (matches.length > 1) {
-                currentLogProb += (matches.length * 0.5);
-            }
-        } else {
-            // Only penalize if NO symptoms matched and NO weighted symptoms matched either
-            if (handledSymptoms.size === 0) {
-                currentLogProb -= 0.5;
-            }
-        }
-    }
-
-    // 2. ABSENT SYMPTOMS (Positive Evidence - "No fever" supports conditions where fever is absent)
-    if (criteria.absentSymptoms && criteria.absentSymptoms.length > 0) {
-        const excluded = symptoms.excludedSymptoms?.map(s => s.toLowerCase()) || [];
-        const confirmedAbsent = criteria.absentSymptoms.filter(abs =>
-            excluded.includes(abs.toLowerCase()) || negatedTerms.some(term => term.includes(abs.toLowerCase()))
-        );
-
-        if (confirmedAbsent.length > 0) {
-            confirmedAbsent.forEach(abs => {
-                currentLogProb += 2.5; // Strong positive evidence
-                reasoningTrace.push({ factor: `Absent (confirms): ${abs}`, impact: 2.5, type: 'absent' });
-            });
-        }
-    }
-
-    // 3. Triggers (Contextual Evidence)
-    if (criteria.triggers && symptoms.triggers) {
-        const triggerMatch = criteria.triggers.find(t => symptoms.triggers!.toLowerCase().includes(t.toLowerCase()));
-        if (triggerMatch) {
-            currentLogProb += 2.0;
-            matchedKeywords.push(`Trigger: ${triggerMatch}`);
-            reasoningTrace.push({ factor: `Trigger: ${triggerMatch}`, impact: 2.0, type: 'trigger' });
-        }
-    }
-
-    // 4. Negation (Evidence to the Contrary)
-    if (symptoms.excludedSymptoms) {
-        const excluded = symptoms.excludedSymptoms.map(s => s.toLowerCase());
-        const contradicted = criteria.specialSymptoms?.filter(s => excluded.includes(s.toLowerCase()));
-        if (contradicted && contradicted.length > 0) {
-            contradicted.forEach(c => {
-                currentLogProb -= 5.0;
-                reasoningTrace.push({ factor: `Excluded: ${c}`, impact: -5.0, type: 'symptom' });
-            });
-        }
-    }
-
-    // 5. TEMPORAL REASONING (onset/progression)
-    if (symptoms.duration) {
-        const durationLower = symptoms.duration.toLowerCase();
-
-        // Onset matching
-        if (criteria.onset) {
-            if (criteria.onset === 'sudden' && (durationLower.includes('sudden') || durationLower.includes('hour'))) {
-                currentLogProb += 2.0;
-                reasoningTrace.push({ factor: 'Onset: sudden (matches)', impact: 2.0, type: 'temporal' });
-            } else if (criteria.onset === 'gradual' && (durationLower.includes('gradual') || durationLower.includes('month') || durationLower.includes('year'))) {
-                currentLogProb += 2.0;
-                reasoningTrace.push({ factor: 'Onset: gradual (matches)', impact: 2.0, type: 'temporal' });
-            }
-        }
-    }
-
-    if (symptoms.additionalNotes) {
-        const notesLower = symptoms.additionalNotes.toLowerCase();
-        if (criteria.progression) {
-            if (criteria.progression === 'worsening' && (notesLower.includes('worse') || notesLower.includes('getting bad'))) {
-                currentLogProb += 1.5;
-                reasoningTrace.push({ factor: 'Progression: worsening', impact: 1.5, type: 'temporal' });
-            } else if (criteria.progression === 'fluctuating' && (notesLower.includes('comes and goes') || notesLower.includes('episod'))) {
-                currentLogProb += 1.5;
-                reasoningTrace.push({ factor: 'Progression: fluctuating', impact: 1.5, type: 'temporal' });
-            }
-        }
-    }
-
-    // 6. Intuition / Name Match
-    if (safeText.includes(condition.name.toLowerCase()) || safeText.includes(condition.id.toLowerCase())) {
-        currentLogProb += 4.0;
-        matchedKeywords.push(`User mentioned: ${condition.name}`);
-        reasoningTrace.push({ factor: `User mentioned: ${condition.name}`, impact: 4.0, type: 'symptom' });
-    }
-
-    // 7. Ayurveda / Profile
-    if (symptoms.userProfile && symptoms.userProfile.ayurvedicProfile) {
-        const prakriti = symptoms.userProfile.ayurvedicProfile.prakriti.toLowerCase();
-        if (prakriti.includes('vata') && condition.name.toLowerCase().includes('vata')) {
-            currentLogProb += 1.0;
-            matchedKeywords.push(`Prakriti Match`);
-            reasoningTrace.push({ factor: 'Prakriti alignment', impact: 1.0, type: 'profile' });
-        }
-    }
-
-    // 8. Advanced Symptom Correlation Patterns
-    if (detectedPatterns.length > 0) {
-        for (const pattern of detectedPatterns) {
-            if (pattern.pattern.conditionId === condition.id) {
-                // Apply probability boost from pattern
-                // Log-odds boost: Multiplier -> Additive log term
-                // 2.0x multiplier -> +0.7 log boost
-                // 5.0x multiplier -> +1.6 log boost
-                const boost = Math.log(pattern.pattern.multiplier);
-                currentLogProb += boost;
-
-                const factorName = `Pattern: ${pattern.pattern.name}`;
-                matchedKeywords.push(factorName);
-                reasoningTrace.push({
-                    factor: factorName,
-                    impact: boost,
-                    type: 'pattern'
-                });
-            }
-        }
-    }
-
-    // CONVERT LOG PROB TO LINEAR SCORE (0-100)
-    const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
-    const finalScore = sigmoid(currentLogProb) * 100;
-
-    return { score: finalScore, matchedKeywords, reasoningTrace };
 }
 
 export async function diagnose(symptoms: UserSymptomData): Promise<{

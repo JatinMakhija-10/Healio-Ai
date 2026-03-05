@@ -30,6 +30,14 @@ export {
     intentEngine
 } from './IntentEngine';
 
+// Language Detection
+export {
+    LanguageDetector,
+    languageDetector,
+    type SupportedLanguage,
+    type LanguageDetectionResult
+} from './LanguageDetector';
+
 // Medical NER
 export {
     MedicalNER,

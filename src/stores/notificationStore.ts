@@ -1,5 +1,13 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+
+/**
+ * Notification UI Store — UI-only state.
+ *
+ * Server-fetched notification data is managed by React Query
+ * via `useNotifications()` in `src/lib/hooks/useApiQueries.ts`.
+ * This store only tracks panel visibility and ephemeral client-side
+ * notifications (e.g. realtime push events before they're persisted).
+ */
 
 export type NotificationType =
     | 'appointment_reminder'
@@ -9,85 +17,52 @@ export type NotificationType =
     | 'system'
     | 'video_call';
 
-export interface Notification {
+export interface EphemeralNotification {
     id: string;
     type: NotificationType;
     title: string;
     message: string;
     timestamp: Date;
-    isRead: boolean;
     actionUrl?: string;
-    metadata?: Record<string, any>;
 }
 
-interface NotificationState {
-    // Data
-    notifications: Notification[];
-
+interface NotificationUIState {
     // UI State
     isOpen: boolean;
 
-    // Actions
-    addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => void;
-    markAsRead: (id: string) => void;
-    markAllAsRead: () => void;
-    removeNotification: (id: string) => void;
-    clearAll: () => void;
+    // Ephemeral real-time notifications (not yet persisted to DB)
+    ephemeralNotifications: EphemeralNotification[];
 
     // UI Actions
     togglePanel: () => void;
     closePanel: () => void;
+
+    // Ephemeral actions (for Supabase Realtime push before DB persistence)
+    addEphemeral: (notification: Omit<EphemeralNotification, 'id' | 'timestamp'>) => void;
+    clearEphemeral: () => void;
 }
 
-export const useNotificationStore = create<NotificationState>()(
-    persist(
-        (set, get) => ({
-            notifications: [],
-            isOpen: false,
+export const useNotificationStore = create<NotificationUIState>((set) => ({
+    isOpen: false,
+    ephemeralNotifications: [],
 
-            addNotification: (notification) => {
-                const newNotification: Notification = {
-                    ...notification,
-                    id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                    timestamp: new Date(),
-                    isRead: false,
-                };
-                set((state) => ({
-                    notifications: [newNotification, ...state.notifications].slice(0, 50), // Keep last 50
-                }));
-            },
+    togglePanel: () => set((state) => ({ isOpen: !state.isOpen })),
+    closePanel: () => set({ isOpen: false }),
 
-            markAsRead: (id) => set((state) => ({
-                notifications: state.notifications.map((n) =>
-                    n.id === id ? { ...n, isRead: true } : n
-                ),
-            })),
+    addEphemeral: (notification) => {
+        const newNotif: EphemeralNotification = {
+            ...notification,
+            id: `eph-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: new Date(),
+        };
+        set((state) => ({
+            ephemeralNotifications: [newNotif, ...state.ephemeralNotifications].slice(0, 10),
+        }));
+    },
 
-            markAllAsRead: () => set((state) => ({
-                notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
-            })),
-
-            removeNotification: (id) => set((state) => ({
-                notifications: state.notifications.filter((n) => n.id !== id),
-            })),
-
-            clearAll: () => set({ notifications: [] }),
-
-            togglePanel: () => set((state) => ({ isOpen: !state.isOpen })),
-            closePanel: () => set({ isOpen: false }),
-        }),
-        {
-            name: 'healio-notifications',
-        }
-    )
-);
+    clearEphemeral: () => set({ ephemeralNotifications: [] }),
+}));
 
 // Selectors
-export const selectUnreadCount = (state: NotificationState) =>
-    state.notifications.filter((n) => !n.isRead).length;
-
-export const selectUnreadNotifications = (state: NotificationState) =>
-    state.notifications.filter((n) => !n.isRead);
-
-export const selectNotificationsByType = (type: NotificationType) => (state: NotificationState) =>
-    state.notifications.filter((n) => n.type === type);
+export const selectEphemeralCount = (state: NotificationUIState) =>
+    state.ephemeralNotifications.length;

@@ -120,6 +120,7 @@ export interface DialogueState {
         emotionalState: EmotionalState;
         communicationPreference: CommunicationStyle;
         turnsCount: number;
+        detectedLanguage?: 'en' | 'hi' | 'hinglish';
         lastTurnAt: number;
 
         /** Symptom knowledge graph - what we know vs. uncertain */

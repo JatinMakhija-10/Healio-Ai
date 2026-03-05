@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Condition } from "@/lib/diagnosis/types";
@@ -28,7 +28,6 @@ import { MedicalReportDocument } from "./MedicalReportPDF";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { useAuth } from "@/context/AuthContext";
-import { PHASE_CONFIG } from "@/lib/phaseConfig";
 
 interface DiagnosisResultCardProps {
     condition: Condition;
@@ -69,38 +68,7 @@ export function DiagnosisResultCard({
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const { user } = useAuth();
 
-    // Get care preferences: prop override > user metadata > default all
-    const carePreferences = useMemo(() => {
-        if (propCarePreferences && propCarePreferences.length > 0) return propCarePreferences;
-        const userPrefs = user?.user_metadata?.care_preferences;
-        if (Array.isArray(userPrefs) && userPrefs.length > 0) return userPrefs as string[];
-        return ['modern_medicine', 'ayurveda', 'yoga', 'home_remedies'];
-    }, [propCarePreferences, user]);
 
-    // Build available tabs based on preferences and available content
-    const availableTabs = useMemo(() => {
-        const tabs: { key: string; label: string }[] = [];
-        // PHASE 2 — Modern Medicine tab
-        // if (PHASE_CONFIG.showModernMedicine && carePreferences.includes('modern_medicine') && condition.remedies?.length > 0)
-        //     tabs.push({ key: 'modern_medicine', label: 'Modern Medicine' });
-        // PHASE 2 — Ayurveda tab
-        // if (PHASE_CONFIG.showAyurveda && carePreferences.includes('ayurveda') && condition.indianHomeRemedies?.length > 0)
-        //     tabs.push({ key: 'ayurveda', label: 'Ayurveda' });
-        // PHASE 2 — Yoga & Exercise tab
-        // if (PHASE_CONFIG.showYogaExercise && carePreferences.includes('yoga') && condition.exercises?.length > 0)
-        //     tabs.push({ key: 'yoga', label: 'Yoga & Exercise' });
-        // Phase 1 — Home Remedies always visible
-        if (condition.indianHomeRemedies?.length > 0)
-            tabs.push({ key: 'home_remedies', label: 'Home Remedies' });
-        return tabs;
-    }, [carePreferences, condition]);
-
-    // Set initial active tab to first available
-    useEffect(() => {
-        if (availableTabs.length > 0 && !availableTabs.find(t => t.key === activeTab)) {
-            setActiveTab(availableTabs[0].key);
-        }
-    }, [availableTabs, activeTab]);
 
     useEffect(() => {
         getSubscriptionStatus().then((status) => {
@@ -318,88 +286,55 @@ export function DiagnosisResultCard({
                         </div>
                     )}
 
-                    {/* 5. REMEDIES TABS */}
+                    {/* 5. REMEDIES TABS — Pill-Style */}
                     <div className="p-4 space-y-3">
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="font-semibold text-slate-900 flex items-center gap-2">
                                 Recommended Care
                             </h4>
-                            {availableTabs.length > 1 && (
-                                <div className="flex bg-slate-100 p-1 rounded-lg flex-wrap gap-0.5">
-                                    {availableTabs.map(tab => (
-                                        <button
-                                            key={tab.key}
-                                            onClick={() => setActiveTab(tab.key)}
-                                            className={`text-xs px-3 py-1 rounded-md transition-all ${activeTab === tab.key ? "bg-white text-teal-700 shadow-sm font-medium" : "text-slate-500 hover:text-slate-700"}`}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    ))}
-                                </div>
+                        </div>
+
+                        {/* Pill-style tab toggles */}
+                        <div className="flex flex-wrap gap-2">
+                            {(condition.indianHomeRemedies?.length ?? 0) > 0 && (
+                                <button
+                                    onClick={() => setActiveTab("home_remedies")}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "home_remedies"
+                                        ? "bg-amber-500 text-white shadow-sm"
+                                        : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                        }`}
+                                >
+                                    🌿 Home Remedies
+                                </button>
+                            )}
+                            {(condition.remedies?.length ?? 0) > 0 && (
+                                <button
+                                    onClick={() => setActiveTab("homeopathic")}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "homeopathic"
+                                        ? "bg-teal-600 text-white shadow-sm"
+                                        : "bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100"
+                                        }`}
+                                >
+                                    💊 Homeopathic Solution
+                                </button>
+                            )}
+                            {((condition.warnings?.length ?? 0) > 0 || (condition.exercises?.length ?? 0) > 0) && (
+                                <button
+                                    onClick={() => setActiveTab("exercise_warning")}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "exercise_warning"
+                                        ? "bg-red-500 text-white shadow-sm"
+                                        : "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                                        }`}
+                                >
+                                    ⚠️ Exercise Warning
+                                </button>
                             )}
                         </div>
 
-                        <div className="space-y-3">
-                            {/* PHASE 2 — Modern Medicine / Standard Remedies */}
-                            {/* {activeTab === 'modern_medicine' && condition.remedies?.slice(0, 3).map((remedy, idx) => (
-                                <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100 hover:border-teal-200 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <span className="font-medium text-slate-800 text-sm">{remedy.name}</span>
-                                        {remedy.videoUrl && (
-                                            <a href={remedy.videoUrl} target="_blank" rel="noreferrer" className="text-teal-600 hover:text-teal-700">
-                                                <Video size={16} />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-1">{remedy.description}</p>
-                                    {remedy.method && <p className="text-xs text-slate-700 mt-1 italic">Method: {remedy.method}</p>}
-                                </div>
-                            ))} */}
-
-                            {/* PHASE 2 — Ayurveda Remedies */}
-                            {/* {activeTab === 'ayurveda' && (condition.indianHomeRemedies || []).slice(0, 3).map((remedy, idx) => (
-                                <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-100 hover:border-green-200 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <span className="font-medium text-green-800 text-sm">{remedy.name}</span>
-                                        {remedy.videoUrl && (
-                                            <a href={remedy.videoUrl} target="_blank" rel="noreferrer" className="text-green-600 hover:text-green-700">
-                                                <Video size={16} />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-green-700 mt-1">{remedy.description}</p>
-                                    {remedy.method && <p className="text-xs text-green-800 mt-1 italic">Method: {remedy.method}</p>}
-                                </div>
-                            ))} */}
-
-                            {/* PHASE 2 — Yoga & Exercise */}
-                            {/* {activeTab === 'yoga' && condition.exercises?.slice(0, 4).map((exercise, idx) => (
-                                <div key={idx} className="bg-purple-50 p-3 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center gap-2">
-                                            <Dumbbell className="h-4 w-4 text-purple-600" />
-                                            <span className="font-medium text-purple-800 text-sm">{exercise.name}</span>
-                                        </div>
-                                        {exercise.videoUrl && (
-                                            <a href={exercise.videoUrl} target="_blank" rel="noreferrer" className="text-purple-600 hover:text-purple-700">
-                                                <Video size={16} />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-purple-700 mt-1">{exercise.description}</p>
-                                    <div className="flex gap-3 mt-2">
-                                        <span className="text-[10px] text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                            <Clock className="h-3 w-3" /> {exercise.duration}
-                                        </span>
-                                        <span className="text-[10px] text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">
-                                            {exercise.frequency}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))} */}
-
-                            {/* Phase 1 — Home Remedies (Always Visible) */}
-                            {activeTab === 'home_remedies' && (condition.indianHomeRemedies || []).slice(0, 5).map((remedy, idx) => (
+                        {/* Tab Content */}
+                        <div className="space-y-3 mt-2">
+                            {/* Home Remedies Tab */}
+                            {activeTab === "home_remedies" && (condition.indianHomeRemedies || []).slice(0, 5).map((remedy, idx) => (
                                 <div key={idx} className="bg-amber-50 p-3 rounded-lg border border-amber-100 hover:border-amber-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-amber-800 text-sm">{remedy.name}</span>
@@ -411,6 +346,86 @@ export function DiagnosisResultCard({
                                     )}
                                 </div>
                             ))}
+
+                            {/* Homeopathic Solution Tab */}
+                            {activeTab === "homeopathic" && (condition.remedies || []).slice(0, 5).map((remedy, idx) => (
+                                <div key={idx} className="bg-teal-50 p-3 rounded-lg border border-teal-100 hover:border-teal-200 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <span className="font-medium text-teal-800 text-sm">{remedy.name}</span>
+                                            {(remedy as any).potency && (
+                                                <span className="ml-2 text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">
+                                                    {(remedy as any).potency}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {remedy.videoUrl && (
+                                            <a href={remedy.videoUrl} target="_blank" rel="noreferrer" className="text-teal-600 hover:text-teal-700">
+                                                <Video size={16} />
+                                            </a>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-teal-700 mt-1">{remedy.description}</p>
+                                    {remedy.method && <p className="text-xs text-teal-800 mt-1 italic">How to take: {remedy.method}</p>}
+                                    {(remedy as any).source && (
+                                        <span className="inline-block mt-1.5 text-[10px] bg-teal-100/60 text-teal-600 px-2 py-0.5 rounded-full">
+                                            Source: {(remedy as any).source}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Exercise Warning Tab */}
+                            {activeTab === "exercise_warning" && (
+                                <div className="space-y-3">
+                                    {/* Warnings */}
+                                    {(condition.warnings || []).length > 0 && (
+                                        <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                                            <h5 className="text-xs font-bold text-red-700 mb-2 flex items-center gap-1.5">
+                                                <AlertTriangle className="h-3.5 w-3.5" />
+                                                Precautions & Contraindications
+                                            </h5>
+                                            <ul className="space-y-1.5">
+                                                {(condition.warnings || []).map((warning, idx) => (
+                                                    <li key={idx} className="text-xs text-red-700 flex items-start gap-2">
+                                                        <span className="text-red-400 mt-0.5">•</span>
+                                                        <span>{warning}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {/* Exercises (if any) */}
+                                    {(condition.exercises || []).length > 0 && (
+                                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                                            <h5 className="text-xs font-bold text-orange-700 mb-2 flex items-center gap-1.5">
+                                                <Dumbbell className="h-3.5 w-3.5" />
+                                                Exercise Recommendations
+                                            </h5>
+                                            <div className="space-y-2">
+                                                {(condition.exercises || []).slice(0, 4).map((exercise, idx) => (
+                                                    <div key={idx} className="flex items-center justify-between text-xs">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-orange-400">•</span>
+                                                            <span className="text-orange-800 font-medium">{exercise.name}</span>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            {exercise.duration && (
+                                                                <span className="text-[10px] text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                                    <Clock className="h-3 w-3" /> {exercise.duration}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(condition.warnings || []).length === 0 && (condition.exercises || []).length === 0 && (
+                                        <p className="text-xs text-slate-500 italic p-3">No specific exercise warnings for this condition.</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 

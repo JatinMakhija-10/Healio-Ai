@@ -14,3 +14,7 @@ export { ClinicalDecisionRules, clinicalRules, wellsScoreDVT, percRulePE, heartS
 // Uncertainty Quantification
 export type { UncertaintyEstimate, EvidenceQualityMetrics } from './UncertaintyQuantification';
 export { UncertaintyQuantifier, uncertaintyQuantifier, formatUncertaintyForUser } from './UncertaintyQuantification';
+
+// MCMC Bayesian Engine
+export type { MCMCResult, MCMCDiagnosisResult, MCMCConfig, EvidenceVector } from './MCMCEngine';
+export { mcmcInfer, mcmcDiagnoseAll, extractEvidence } from './MCMCEngine';
