@@ -29,10 +29,13 @@ export function InputBar({
     const [value, setValue] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Push transcript into the text box
+    // Append transcript into the text box
     useEffect(() => {
         if (transcript) {
-            setValue(transcript);
+            setValue((prev) => {
+                const space = prev && !prev.endsWith(" ") ? " " : "";
+                return prev + space + transcript;
+            });
             onClearTranscript();
         }
     }, [transcript, onClearTranscript]);
@@ -94,10 +97,10 @@ export function InputBar({
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Apni problem batayein... (Hindi or English)"
+                        placeholder="Apni problem batayein..."
                         disabled={disabled}
                         rows={1}
-                        className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-[15px] text-gray-800 placeholder:text-gray-400 placeholder:italic focus:outline-none disabled:opacity-50"
+                        className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-[15px] text-gray-800 placeholder:text-gray-400 focus:outline-none disabled:opacity-50"
                         style={{ maxHeight: "160px" }}
                     />
 
@@ -110,8 +113,8 @@ export function InputBar({
                                 onClick={handleMicToggle}
                                 disabled={disabled}
                                 className={`p-2 rounded-full transition-all ${isRecording
-                                        ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-200"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                                    ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-200"
+                                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                                     }`}
                                 aria-label={isRecording ? "Stop recording" : "Start voice input"}
                             >
@@ -125,8 +128,8 @@ export function InputBar({
                             onClick={handleSend}
                             disabled={disabled || !hasText}
                             className={`p-2 rounded-full transition-all ${hasText && !disabled
-                                    ? "bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 shadow-sm"
-                                    : "text-gray-300 cursor-not-allowed"
+                                ? "bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 shadow-sm"
+                                : "text-gray-300 cursor-not-allowed"
                                 }`}
                             aria-label="Send message"
                         >
@@ -135,6 +138,7 @@ export function InputBar({
                     </div>
                 </div>
             </div>
+            <p className="text-xs text-slate-400 text-center mt-2">Type in Hindi, English, or Hinglish</p>
         </div>
     );
 }

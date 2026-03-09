@@ -179,7 +179,18 @@ export async function POST(req: NextRequest) {
             });
         }
         const token = authHeader.slice(7);
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        // Create a per-request client that uses the user's JWT to verify identity
+        const authClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '',
+            {
+                global: {
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+            }
+        );
+        const { data: { user }, error: authError } = await authClient.auth.getUser();
         if (authError || !user) {
             return new Response(JSON.stringify({ error: 'Unauthorized — invalid token' }), {
                 status: 401,

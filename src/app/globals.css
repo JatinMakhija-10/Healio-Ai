@@ -2,15 +2,17 @@
 @import "tw-animate-css";
 @import "./tokens.css";
 
-
-
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: var(--font-dm-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  /* Specific Teal Tokens from Design System */
+  --color-teal-base: #0D9488;
+  --color-teal-dark: #0B7A70;
+  --color-teal-light: #F0FDFA;
+  --color-teal-mid: #CCFBF1;
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -123,47 +125,6 @@
   --sidebar-ring: oklch(0.705 0.015 290.61);
 }
 
-.dark {
-  /* Dark Mode: Deep Slate Blue */
-  --background: oklch(0.15 0.03 240);
-  --foreground: oklch(0.985 0 0);
-
-  --card: oklch(0.18 0.03 240);
-  --card-foreground: oklch(0.985 0 0);
-
-  --popover: oklch(0.18 0.03 240);
-  --popover-foreground: oklch(0.985 0 0);
-
-  --primary: oklch(0.55 0.13 185);
-  /* Lighter teal for dark mode */
-  --primary-foreground: oklch(1 0 0);
-
-  --secondary: oklch(0.25 0.03 240);
-  --secondary-foreground: oklch(0.985 0 0);
-
-  --muted: oklch(0.25 0.03 240);
-  --muted-foreground: oklch(0.7 0.02 240);
-
-  --accent: oklch(0.25 0.08 190);
-  --accent-foreground: oklch(0.985 0 0);
-
-  --destructive: oklch(0.4 0.2 25);
-  --destructive-foreground: oklch(0.985 0 0);
-
-  --border: oklch(0.25 0.03 240);
-  --input: oklch(0.25 0.03 240);
-  --ring: oklch(0.55 0.13 185);
-
-  --sidebar: oklch(0.18 0.03 240);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.25 0.03 240);
-  --sidebar-ring: oklch(0.448 0.16 264.38);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -172,4 +133,37 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.animate-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
 }

@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  weight: ["400", "500", "600", "700"],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  variable: "--font-dm-serif",
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "Healio.AI - Pain Management Assistant",
@@ -18,19 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Prevent FOIT (Flash of Incorrect Theme) by applying dark class
-            before React hydrates. Reads localStorage first, falls back
-            to system preference via prefers-color-scheme. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('healio-theme');if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches)){d.classList.add('dark')}else{d.classList.remove('dark')}}catch(e){}})();`,
-          }}
-        />
-      </head>
+    <html lang="en">
+      <head />
       <body
-        className={`${inter.className} min-h-screen bg-background antialiased`}
+        className={`${dmSans.variable} ${dmSerifDisplay.variable} font-sans min-h-screen bg-background antialiased`}
+        style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
         suppressHydrationWarning={true}
       >
         <QueryProvider>

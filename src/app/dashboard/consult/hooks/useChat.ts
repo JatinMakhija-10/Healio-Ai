@@ -144,9 +144,19 @@ export function useChat(): UseChatReturn {
                     content: m.content,
                 }));
 
+                // Get the current session token for API auth
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.access_token) {
+                    throw new Error("Not authenticated");
+                }
+
                 const response = await fetch("/api/chat", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    credentials: "omit", // Prevents sending cookies, fixes 431 Header Too Large error
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
                     body: JSON.stringify({ messages: apiMessages }),
                     signal: abortRef.current.signal,
                 });

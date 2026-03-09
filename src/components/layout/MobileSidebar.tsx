@@ -108,20 +108,23 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
                         {/* Navigation */}
                         <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-                            {sidebarItems.map((item) => (
-                                <Link key={item.href} href={item.href} onClick={onClose}>
-                                    <Button
-                                        variant="ghost"
-                                        className={cn(
-                                            "w-full justify-start gap-3 h-11 text-slate-600 hover:text-slate-900 hover:bg-slate-100 mb-1",
-                                            pathname === item.href && "bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-800 font-medium"
-                                        )}
-                                    >
-                                        <item.icon size={18} />
-                                        {item.title}
-                                    </Button>
-                                </Link>
-                            ))}
+                            {sidebarItems.map((item) => {
+                                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                                return (
+                                    <Link key={item.href} href={item.href} onClick={onClose}>
+                                        <Button
+                                            variant="ghost"
+                                            className={cn(
+                                                "w-full justify-start gap-3 h-11 text-slate-500 hover:text-slate-900 hover:bg-slate-100/60 mb-0.5 rounded-lg transition-all duration-150 border-l-[3px] border-transparent",
+                                                isActive && "border-l-teal-600 bg-teal-50/80 text-teal-700 hover:bg-teal-50 hover:text-teal-800 font-semibold"
+                                            )}
+                                        >
+                                            <item.icon size={18} />
+                                            {item.title}
+                                        </Button>
+                                    </Link>
+                                );
+                            })}
                         </div>
 
                         {/* Footer */}

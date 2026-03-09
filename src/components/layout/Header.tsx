@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Bell, Search, Menu, X, Heart, Droplets, Moon, Activity, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileSidebar } from "./MobileSidebar";
+
+const PAGE_TITLES: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/dashboard/consult": "New Consultation",
+    "/dashboard/history": "History",
+    "/dashboard/profile": "Profile",
+    "/dashboard/settings": "Settings",
+    "/dashboard/search": "Find Specialist",
+    "/dashboard/learn": "Learn",
+    "/dashboard/videos": "Videos",
+};
 
 // Sample notifications with health tips
 const sampleNotifications = [
@@ -49,9 +61,13 @@ const sampleNotifications = [
 
 export function Header() {
     const { user } = useAuth();
+    const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [notifications, setNotifications] = useState(sampleNotifications);
+
+    // Resolve page title from current route
+    const pageTitle = PAGE_TITLES[pathname] || pathname.split("/").pop()?.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Dashboard";
     const notificationRef = useRef<HTMLDivElement>(null);
 
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -92,7 +108,7 @@ export function Header() {
                     </Button>
 
                     {/* Title / Breadcrumb */}
-                    <h2 className="text-lg font-semibold text-slate-800">Overview</h2>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1E293B", letterSpacing: "-0.01em" }}>{pageTitle}</h2>
                 </div>
 
                 {/* Actions */}
@@ -194,11 +210,11 @@ export function Header() {
 
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden sm:block">
-                            <p className="text-sm font-medium text-slate-900 leading-none">
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#1E293B", lineHeight: 1 }}>
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"}
                             </p>
-                            <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 mt-1">
-                                Free Plan
+                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" as const, color: "#0D9488", marginTop: 3, display: "inline-block" }}>
+                                FREE PLAN
                             </span>
                         </div>
                         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 cursor-pointer">

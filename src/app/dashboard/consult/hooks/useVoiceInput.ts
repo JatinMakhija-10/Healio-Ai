@@ -25,8 +25,20 @@ export function useVoiceInput(): UseVoiceInputReturn {
         );
     }, []);
 
-    const startRecording = useCallback(() => {
+    const startRecording = useCallback(async () => {
         if (!isSupported || isRecording) return;
+
+        try {
+            // First explicitly request/check microphone permissions
+            // This forces the browser prompt if it hasn't been granted yet
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Immediately stop the stream tracks as we just needed permission, 
+            // the SpeechRecognition API handles its own stream
+            stream.getTracks().forEach(track => track.stop());
+        } catch (err) {
+            console.error("Microphone permission denied or error:", err);
+            return;
+        }
 
         const SpeechRecognitionAPI =
             (window as any).SpeechRecognition ||
@@ -36,7 +48,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
 
         const recognition = new SpeechRecognitionAPI();
         recognition.lang = "hi-IN"; // Hindi primary
-        recognition.interimResults = true;
+        recognition.interimResults = false; // Set to false since we only want final to avoid duplication
         recognition.continuous = false;
         recognition.maxAlternatives = 1;
 
@@ -45,31 +57,36 @@ export function useVoiceInput(): UseVoiceInputReturn {
         };
 
         recognition.onresult = (event: any) => {
-            let interim = "";
-            let final = "";
-            for (let i = 0; i < event.results.length; i++) {
+            let currentTranscript = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
-                    final += event.results[i][0].transcript;
+                    currentTranscript += event.results[i][0].transcript;
                 } else {
-                    interim += event.results[i][0].transcript;
+                    // We only want to set the transcript when it's final so it doesn't duplicate
+                    // while in interim mode. We ignore interim here.
                 }
             }
-            setTranscript(final || interim);
+            if (currentTranscript) {
+                setTranscript(currentTranscript);
+            }
         };
 
         recognition.onerror = (event: any) => {
             console.error("Speech recognition error:", event.error);
-            // If Hindi fails, try English
-            if (event.error === "no-speech" || event.error === "not-allowed") {
-                setIsRecording(false);
-                return;
+
+            // Only attempt language fallback if explicitly 'language-not-supported'
+            if (event.error === "language-not-supported" && recognition.lang === "hi-IN") {
+                recognition.lang = "en-IN";
+                try {
+                    recognition.start();
+                    return; // Successfully restarted in English
+                } catch {
+                    // Fall through to stop recording
+                }
             }
-            recognition.lang = "en-IN";
-            try {
-                recognition.start();
-            } catch {
-                setIsRecording(false);
-            }
+
+            // For all other errors (like 'network', 'not-allowed', 'no-speech'), abort cleanly
+            setIsRecording(false);
         };
 
         recognition.onend = () => {
