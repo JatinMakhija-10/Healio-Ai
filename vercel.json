@@ -1,3 +1,4 @@
 {
-    "buildCommand": "next build && echo '{\"version\":1,\"files\":[]}' > .next/server/middleware.js.nft.json"
+    "name": "healio-app-prod",
+    "buildCommand": "next build && node -e \"require('fs').writeFileSync('.next/server/middleware.js.nft.json', JSON.stringify({version:1,files:[]}))\""
 }

@@ -107,3 +107,5 @@ retry_log.txt
 
 # Log directory
 logs/
+
+.vercel
