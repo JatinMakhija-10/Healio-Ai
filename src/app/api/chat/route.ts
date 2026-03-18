@@ -6,7 +6,7 @@ import { AI_PHASE_CONFIG } from '@/lib/ai/config';
 // Admin Supabase client for RAG queries
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
 );
 
 // ── RAG retrieval helper ─────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
         // Create a per-request client that uses the user's JWT to verify identity
         const authClient = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '',
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '',
             {
                 global: {
                     headers: { Authorization: `Bearer ${token}` },
@@ -215,11 +215,11 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── RAG injection: after 5+ user turns, we have enough symptoms to retrieve context ──
+        // ── RAG injection: after 3+ user turns, we have enough symptoms to retrieve context ──
         let ragContext = '';
         const userTurns = countUserTurns(messages);
 
-        if (userTurns >= 5) {
+        if (userTurns >= 3) {
             const symptomSummary = extractSymptomSummary(messages);
             ragContext = await fetchBoerickeContext(symptomSummary);
         }
@@ -229,29 +229,54 @@ export async function POST(req: NextRequest) {
             ? SYSTEM_PROMPT + '\n\n' + ragContext + '\n\nUse the above Boericke Materia Medica reference to select the most matching remedies when generating the diagnosis JSON.'
             : SYSTEM_PROMPT;
 
-        // Call Groq API with streaming — wrapped in try-catch for network errors
+        // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
-        try {
-            groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${groqKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [
-                        { role: 'system', content: finalSystemPrompt },
-                        ...messages,
-                    ],
-                    temperature: 0.6,
-                    max_tokens: 1500,
-                    stream: true,
-                }),
-            });
-        } catch (groqError) {
-            console.error('Groq connection error:', groqError);
-            // Will fall through to Gemini fallback below
+        const maxRetries = AI_PHASE_CONFIG.generation.maxRetries;
+        const retryDelay = AI_PHASE_CONFIG.generation.retryDelayMs;
+        const timeoutMs = AI_PHASE_CONFIG.generation.timeoutMs;
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${groqKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: AI_PHASE_CONFIG.models.groq,
+                        messages: [
+                            { role: 'system', content: finalSystemPrompt },
+                            ...messages,
+                        ],
+                        temperature: AI_PHASE_CONFIG.generation.temperature,
+                        max_tokens: AI_PHASE_CONFIG.generation.maxTokens,
+                        stream: true,
+                    }),
+                    signal: controller.signal,
+                });
+
+                clearTimeout(timeoutId);
+
+                if (groqResponse.ok) break; // Success — exit retry loop
+
+                // If response is not ok but attempt < maxRetries, retry
+                if (attempt < maxRetries) {
+                    console.warn(`Groq attempt ${attempt + 1} failed (${groqResponse.status}), retrying in ${retryDelay}ms...`);
+                    groqResponse = null;
+                    await new Promise(r => setTimeout(r, retryDelay));
+                }
+            } catch (groqError) {
+                console.error(`Groq attempt ${attempt + 1} error:`, groqError);
+                groqResponse = null;
+                if (attempt < maxRetries) {
+                    await new Promise(r => setTimeout(r, retryDelay));
+                }
+                // Will fall through to Gemini fallback after all retries
+            }
         }
 
         if (!groqResponse || !groqResponse.ok) {
@@ -271,18 +296,27 @@ export async function POST(req: NextRequest) {
                 parts: [{ text: m.content }],
             }));
 
+            const geminiController = new AbortController();
+            const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
+
             const geminiResponse = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/${AI_PHASE_CONFIG.models.gemini}:generateContent?key=${geminiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         systemInstruction: { parts: [{ text: finalSystemPrompt }] },
                         contents: geminiMessages,
-                        generationConfig: { temperature: 0.6, maxOutputTokens: 1500 },
+                        generationConfig: {
+                            temperature: AI_PHASE_CONFIG.generation.temperature,
+                            maxOutputTokens: AI_PHASE_CONFIG.generation.maxTokens,
+                        },
                     }),
+                    signal: geminiController.signal,
                 }
             );
+
+            clearTimeout(geminiTimeoutId);
 
             if (!geminiResponse.ok) {
                 const errorText = await geminiResponse.text();
