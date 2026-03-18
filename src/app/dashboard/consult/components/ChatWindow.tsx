@@ -5,6 +5,7 @@ import { ChatMessage } from "../hooks/useChat";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { PainSliderWidget } from "./PainSliderWidget";
+import { PainLocationDropdown } from "./PainLocationDropdown";
 import { QuickReplyChips } from "./QuickReplyChips";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
@@ -14,14 +15,33 @@ interface ChatWindowProps {
     messages: ChatMessage[];
     isLoading: boolean;
     onSendMessage?: (text: string) => void;
+    onWidgetActive?: (active: boolean) => void;
 }
 
-export function ChatWindow({ messages, isLoading, onSendMessage }: ChatWindowProps) {
+export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isLoading]);
+
+    // Detect widget for the last assistant message
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const isLastAssistant =
+        lastMessage?.role === "assistant" &&
+        !isLoading &&
+        !lastMessage.content.includes("```json");
+
+    const widgetHint = isLastAssistant
+        ? detectWidget(lastMessage.content)
+        : { type: "none" as const };
+
+    const hasActiveWidget = widgetHint.type !== "none";
+
+    // Report widget state to parent
+    useEffect(() => {
+        onWidgetActive?.(hasActiveWidget);
+    }, [hasActiveWidget, onWidgetActive]);
 
     // Empty state — show a welcoming hero with starter prompts
     if (messages.length === 0 && !isLoading) {
@@ -86,17 +106,6 @@ export function ChatWindow({ messages, isLoading, onSendMessage }: ChatWindowPro
         );
     }
 
-    // Detect widget for the last assistant message
-    const lastMessage = messages[messages.length - 1];
-    const isLastAssistant =
-        lastMessage?.role === "assistant" &&
-        !isLoading &&
-        !lastMessage.content.includes("```json");
-
-    const widgetHint = isLastAssistant
-        ? detectWidget(lastMessage.content)
-        : { type: "none" as const };
-
     return (
         <div className="flex-1 overflow-y-auto py-6 space-y-4">
             {messages.map((msg, index) => {
@@ -114,6 +123,17 @@ export function ChatWindow({ messages, isLoading, onSendMessage }: ChatWindowPro
                                     className="pl-14 px-4 overflow-hidden"
                                 >
                                     <PainSliderWidget onSubmit={(val) => onSendMessage(`${val}/10`)} />
+                                </motion.div>
+                            )}
+
+                            {isLast && isLastAssistant && widgetHint.type === "pain_location" && onSendMessage && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="pl-14 px-4 overflow-hidden"
+                                >
+                                    <PainLocationDropdown onSubmit={(loc) => onSendMessage(loc)} />
                                 </motion.div>
                             )}
 

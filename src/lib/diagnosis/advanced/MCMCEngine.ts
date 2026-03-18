@@ -29,11 +29,11 @@ export interface MCMCConfig {
 }
 
 const DEFAULT_CONFIG: MCMCConfig = {
-    numSamples: 2000,
-    burnIn: 500,
-    proposalSigma: 0.15,
+    numSamples: 3000,
+    burnIn: 750,
+    proposalSigma: 0.12,
     thinning: 2,
-    numChains: 2,
+    numChains: 3,
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -93,16 +93,26 @@ const PREVALENCE_BETA_PRIORS: Record<string, BetaParams> = {
 // ─── Synonym Mapping ──────────────────────────────────────────────────────────
 
 const SYNONYM_MAP: Record<string, string[]> = {
-    'nausea': ['vomit', 'puke', 'throw up', 'sick', 'queasy'],
-    'fever': ['high temp', 'chills'],
-    'pain': ['hurt', 'ache', 'sore', 'throbbing', 'agony'],
-    'stomach': ['belly', 'tummy', 'gut', 'abdomen'],
-    'cold': ['chilly', 'freezing', 'shivers'],
-    'cough': ['coughing', 'hack'],
-    'breathing': ['breath', 'gasping', 'air'],
-    'headache': ['head pain', 'head ache', 'migraine'],
-    'dizziness': ['dizzy', 'lightheaded', 'vertigo', 'faint'],
-    'fatigue': ['tired', 'exhaustion', 'weakness', 'lethargy'],
+    'nausea': ['vomit', 'puke', 'throw up', 'sick', 'queasy', 'ji machlana', 'ulti', 'chakkar'],
+    'fever': ['high temp', 'chills', 'bukhar', 'tez bukhar', 'badan garam'],
+    'pain': ['hurt', 'ache', 'sore', 'throbbing', 'agony', 'dard', 'taklif', 'peeda'],
+    'stomach': ['belly', 'tummy', 'gut', 'abdomen', 'pet', 'pait'],
+    'cold': ['chilly', 'freezing', 'shivers', 'thand', 'sardi'],
+    'cough': ['coughing', 'hack', 'khansi', 'khaansi'],
+    'breathing': ['breath', 'gasping', 'air', 'saans', 'dum'],
+    'headache': ['head pain', 'head ache', 'migraine', 'sar dard', 'sir dard'],
+    'dizziness': ['dizzy', 'lightheaded', 'vertigo', 'faint', 'chakkar aana'],
+    'fatigue': ['tired', 'exhaustion', 'weakness', 'lethargy', 'thakan', 'kamzori'],
+    'swelling': ['swollen', 'puffy', 'edema', 'sujan', 'soojhan'],
+    'rash': ['dermatitis', 'skin rash', 'daane', 'khujli'],
+    'itching': ['itch', 'itchy', 'khujli', 'kharish'],
+    'palpitations': ['heart racing', 'heart pounding', 'dil ki dhadkan', 'tez dhadkan'],
+    'insomnia': ['can\'t sleep', 'sleepless', 'neend nahi', 'nind nahi'],
+    'anxiety': ['anxious', 'worried', 'nervous', 'ghabrahat', 'chinta'],
+    'constipation': ['constipated', 'kabz', 'pet saaf nahi'],
+    'diarrhea': ['loose motion', 'loose stool', 'dast', 'patlaa'],
+    'joint_pain': ['joint ache', 'arthritis', 'jod dard', 'gathiya'],
+    'muscle_pain': ['muscle ache', 'body ache', 'badan dard', 'maanspeshi dard'],
 };
 
 // ─── Evidence Extraction ──────────────────────────────────────────────────────
@@ -152,6 +162,12 @@ export function extractEvidence(symptoms: UserSymptomData): EvidenceVector {
         'stiff_neck', 'leg_swelling', 'calf_tenderness',
         'burning', 'numbness', 'tingling', 'rash', 'swelling',
         'bloating', 'constipation', 'diarrhea', 'weight_loss',
+        'itching', 'palpitations', 'sneezing', 'runny_nose',
+        'sore_throat', 'joint_pain', 'muscle_pain', 'anxiety',
+        'insomnia', 'loss_of_appetite', 'excessive_thirst',
+        'frequent_urination', 'blurred_vision', 'ear_pain',
+        'tinnitus', 'hoarseness', 'difficulty_swallowing',
+        'abdominal_cramps', 'blood_in_stool', 'blood_in_urine',
     ];
 
     for (const symptom of knownSymptoms) {

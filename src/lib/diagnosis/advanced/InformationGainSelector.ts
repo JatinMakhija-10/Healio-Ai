@@ -6,6 +6,16 @@
  */
 
 import { CONDITIONS } from '../conditions';
+import { Condition } from '../types';
+
+// Prevalence multipliers for prior-weighted information gain
+const PREVALENCE_MULTIPLIERS: Record<string, number> = {
+    'very_common': 1.5,
+    'common': 1.2,
+    'uncommon': 1.0,
+    'rare': 0.7,
+    'very_rare': 0.4,
+};
 
 export interface CandidateCondition {
     conditionName: string;
@@ -48,33 +58,77 @@ export class InformationGainSelector {
     /**
      * Simulates the updated probability distribution if a feature is present/absent
      */
+    /**
+     * Gets condition-specific sensitivity and specificity for a feature.
+     * Falls back to reasonable defaults if not specified in symptomWeights.
+     */
+    private getFeatureLikelihoods(
+        conditionDef: Condition,
+        featureLabel: string
+    ): { sensitivity: number; specificity: number; weight: number } {
+        // Check symptomWeights for condition-specific values
+        const weights = conditionDef.matchCriteria.symptomWeights;
+        if (weights) {
+            const normalizedLabel = featureLabel.toLowerCase();
+            for (const [symptom, config] of Object.entries(weights)) {
+                if (symptom.toLowerCase() === normalizedLabel) {
+                    return {
+                        sensitivity: config.sensitivity ?? 0.6,
+                        specificity: config.specificity ?? 0.7,
+                        weight: config.weight ?? 1.0,
+                    };
+                }
+            }
+        }
+
+        // Check if feature is associated with condition at all
+        const hasFeature =
+            conditionDef.matchCriteria.specialSymptoms?.some(s => s.toLowerCase() === featureLabel.toLowerCase()) ||
+            conditionDef.matchCriteria.locations?.some(l => l.toLowerCase() === featureLabel.toLowerCase()) ||
+            conditionDef.matchCriteria.types?.some(t => t.toLowerCase() === featureLabel.toLowerCase()) ||
+            conditionDef.matchCriteria.triggers?.some(t => t.toLowerCase() === featureLabel.toLowerCase());
+
+        return {
+            sensitivity: hasFeature ? 0.65 : 0.1,
+            specificity: hasFeature ? 0.75 : 0.9,
+            weight: 1.0,
+        };
+    }
+
+    /**
+     * Simulates the updated probability distribution if a feature is present/absent.
+     * Uses condition-specific sensitivity/specificity and prevalence-aware priors.
+     */
     private simulatePosterior(
         candidates: CandidateCondition[],
         featureLabel: string,
         featurePresent: boolean
     ): number[] {
         const simulatedScores = candidates.map(candidate => {
-            const conditionDef = Object.values(CONDITIONS).find(c => c.name === candidate.conditionName);
+            const conditionDef = Object.values(CONDITIONS).find(c => c.name === candidate.conditionName) as Condition | undefined;
             if (!conditionDef) return candidate.score;
 
-            // Check if feature is associated with condition
-            const hasFeature =
-                conditionDef.matchCriteria.specialSymptoms?.includes(featureLabel) ||
-                conditionDef.matchCriteria.locations?.includes(featureLabel) ||
-                conditionDef.matchCriteria.types?.includes(featureLabel) ||
-                conditionDef.matchCriteria.triggers?.includes(featureLabel);
+            const { sensitivity, specificity, weight } = this.getFeatureLikelihoods(conditionDef, featureLabel);
 
-            // Simple Bayesian update simulation:
-            // P(Condition | Feature present) ~ P(Feature | Condition) * P(Condition)
-            // If condition has feature, likelihood is high (e.g. 0.8), else low (e.g. 0.1)
-            let likelihood = 0.5;
+            // Prevalence-aware prior scaling
+            const prevalenceMultiplier = PREVALENCE_MULTIPLIERS[conditionDef.prevalence || 'uncommon'] || 1.0;
+
+            // Bayesian update using real sensitivity/specificity:
+            // P(Feature present | Condition)  = sensitivity
+            // P(Feature present | ¬Condition) = 1 - specificity
+            // P(Feature absent  | Condition)  = 1 - sensitivity
+            // P(Feature absent  | ¬Condition) = specificity
+            let likelihood: number;
             if (featurePresent) {
-                likelihood = hasFeature ? 0.8 : 0.1;
+                likelihood = sensitivity;
             } else {
-                likelihood = hasFeature ? 0.2 : 0.9;
+                likelihood = 1 - sensitivity;
             }
 
-            return candidate.score * likelihood;
+            // Weight the likelihood by symptom importance
+            const weightedLikelihood = Math.pow(likelihood, weight);
+
+            return candidate.score * weightedLikelihood * prevalenceMultiplier;
         });
 
         // Normalize back to probabilities
@@ -142,13 +196,24 @@ export class InformationGainSelector {
         let maxInfoGain = -1;
         let bestFeature: { label: string; type: 'symptom' | 'trigger' | 'type' } | null = null;
 
-        // Roughly estimate P(Feature is present) dynamically across all conditions
-        // A better approach would be user population priors, but we use uniform 0.5 for now
-        const pPresent = 0.5;
-        const pAbsent = 0.5;
+        // Calculate the total conditions count for prevalence-based P(feature present)
+        const totalConditions = Object.keys(CONDITIONS).length;
 
         for (const feature of allFeatures) {
             if (knownSet.has(feature.label.toLowerCase())) continue;
+
+            // Estimate P(Feature present) from how many top candidates have this feature
+            const conditionsWithFeature = candidates.filter(c => {
+                const def = Object.values(CONDITIONS).find(cd => cd.name === c.conditionName);
+                if (!def) return false;
+                return def.matchCriteria.specialSymptoms?.some(s => s.toLowerCase() === feature.label.toLowerCase()) ||
+                    def.matchCriteria.triggers?.some(t => t.toLowerCase() === feature.label.toLowerCase()) ||
+                    def.matchCriteria.types?.some(t => t.toLowerCase() === feature.label.toLowerCase());
+            });
+            // Use weighted estimate: blend between 0.5 and actual ratio
+            const rawRatio = conditionsWithFeature.length / Math.max(candidates.length, 1);
+            const pPresent = 0.3 * 0.5 + 0.7 * rawRatio; // Weighted blend
+            const pAbsent = 1 - pPresent;
 
             const probsIfPresent = this.simulatePosterior(candidates, feature.label, true);
             const probsIfAbsent = this.simulatePosterior(candidates, feature.label, false);

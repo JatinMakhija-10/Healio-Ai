@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface InputBarProps {
     onSend: (text: string) => void;
     disabled?: boolean;
+    widgetActive?: boolean;
     // Voice
     isRecording: boolean;
     voiceSupported: boolean;
@@ -19,6 +20,7 @@ interface InputBarProps {
 export function InputBar({
     onSend,
     disabled,
+    widgetActive,
     isRecording,
     voiceSupported,
     transcript,
@@ -28,6 +30,8 @@ export function InputBar({
 }: InputBarProps) {
     const [value, setValue] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const isInputDisabled = disabled || widgetActive;
 
     // Append transcript into the text box
     useEffect(() => {
@@ -49,7 +53,7 @@ export function InputBar({
     }, [value]);
 
     const handleSend = () => {
-        if (!value.trim() || disabled) return;
+        if (!value.trim() || isInputDisabled) return;
         onSend(value.trim());
         setValue("");
         // reset height
@@ -73,6 +77,10 @@ export function InputBar({
 
     const hasText = value.trim().length > 0;
 
+    const placeholderText = widgetActive
+        ? "👆 Select an option above"
+        : "Apni problem batayein...";
+
     return (
         <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-3 md:px-6 md:py-4 z-10">
             {/* Listening indicator */}
@@ -91,16 +99,16 @@ export function InputBar({
 
             <div className="flex items-end gap-2 max-w-3xl mx-auto">
                 {/* Text area */}
-                <div className="flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-100 transition-all">
+                <div className={`flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 transition-all ${widgetActive ? "opacity-60" : "focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-100"}`}>
                     <textarea
                         ref={textareaRef}
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Apni problem batayein..."
-                        disabled={disabled}
+                        placeholder={placeholderText}
+                        disabled={isInputDisabled}
                         rows={1}
-                        className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-[15px] text-gray-800 placeholder:text-gray-400 focus:outline-none disabled:opacity-50"
+                        className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-[15px] text-gray-800 placeholder:text-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ maxHeight: "160px" }}
                     />
 
@@ -111,11 +119,11 @@ export function InputBar({
                             <button
                                 type="button"
                                 onClick={handleMicToggle}
-                                disabled={disabled}
+                                disabled={isInputDisabled}
                                 className={`p-2 rounded-full transition-all ${isRecording
                                     ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-200"
                                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                                    }`}
+                                    } ${isInputDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
                                 aria-label={isRecording ? "Stop recording" : "Start voice input"}
                             >
                                 {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
@@ -126,8 +134,8 @@ export function InputBar({
                         <button
                             type="button"
                             onClick={handleSend}
-                            disabled={disabled || !hasText}
-                            className={`p-2 rounded-full transition-all ${hasText && !disabled
+                            disabled={isInputDisabled || !hasText}
+                            className={`p-2 rounded-full transition-all ${hasText && !isInputDisabled
                                 ? "bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 shadow-sm"
                                 : "text-gray-300 cursor-not-allowed"
                                 }`}
@@ -138,7 +146,10 @@ export function InputBar({
                     </div>
                 </div>
             </div>
-            <p className="text-xs text-slate-400 text-center mt-2">Type in Hindi, English, or Hinglish</p>
+            <p className="text-xs text-slate-400 text-center mt-2">
+                {widgetActive ? "Use the selection above to continue" : "Type in Hindi, English, or Hinglish"}
+            </p>
         </div>
     );
 }
+

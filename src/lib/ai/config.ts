@@ -52,6 +52,8 @@ export const AI_PHASE_CONFIG = {
         temperature: 0.2,          // Low temp → deterministic, medically appropriate
         maxRetries: 1,             // Retry once before fallback
         timeoutMs: 30_000,         // 30 s total timeout
+        maxTokens: 1500,           // Max output tokens per response
+        retryDelayMs: 1_000,       // Wait 1s before retry
     },
 } as const;
 

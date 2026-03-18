@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { ChatWindow } from "./components/ChatWindow";
 import { InputBar } from "./components/InputBar";
 import { useChat } from "./hooks/useChat";
@@ -7,6 +8,7 @@ import { useVoiceInput } from "./hooks/useVoiceInput";
 
 export default function ConsultPage() {
     const { messages, isLoading, sendMessage, resetChat } = useChat();
+    const [widgetActive, setWidgetActive] = useState(false);
     const {
         isRecording,
         transcript,
@@ -16,10 +18,19 @@ export default function ConsultPage() {
         clearTranscript,
     } = useVoiceInput();
 
+    const handleWidgetActive = useCallback((active: boolean) => {
+        setWidgetActive(active);
+    }, []);
+
     return (
         <div className="flex flex-col h-[calc(100dvh-64px)] bg-[#F7F8FA]">
             {/* Chat Messages */}
-            <ChatWindow messages={messages} isLoading={isLoading} onSendMessage={sendMessage} />
+            <ChatWindow
+                messages={messages}
+                isLoading={isLoading}
+                onSendMessage={sendMessage}
+                onWidgetActive={handleWidgetActive}
+            />
 
             {/* New Consultation button when chat has ended */}
             {messages.length > 0 &&
@@ -40,6 +51,7 @@ export default function ConsultPage() {
             <InputBar
                 onSend={sendMessage}
                 disabled={isLoading}
+                widgetActive={widgetActive}
                 isRecording={isRecording}
                 voiceSupported={isSupported}
                 transcript={transcript}
@@ -50,3 +62,4 @@ export default function ConsultPage() {
         </div>
     );
 }
+

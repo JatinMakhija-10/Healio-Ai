@@ -109,7 +109,8 @@ export default function ProfilePage() {
                                     Profile Complete
                                 </Badge>
                             )}
-                            {ayurvedic && (
+                            {/* Temporarily hidden for Phase 1 */}
+                            {false && ayurvedic && (
                                 <Badge className={`capitalize border ${getDoshaColor(ayurvedic.prakriti)}`}>
                                     Prakriti: {ayurvedic.prakriti}
                                 </Badge>
@@ -120,7 +121,8 @@ export default function ProfilePage() {
             </Card>
 
             {/* --- AYURVEDIC PROFILE SECTION (NEW) --- */}
-            {ayurvedic && (
+            {/* Temporarily hidden for Phase 1 */}
+            {false && ayurvedic && (
                 <div className="grid md:grid-cols-2 gap-6">
                     <Card className="border-teal-100 shadow-sm overflow-hidden">
                         <CardHeader className="bg-teal-50/50 pb-4">

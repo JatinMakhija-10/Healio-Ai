@@ -6,6 +6,17 @@ describe("detectWidget", () => {
         expect(detectWidget("On a scale of 1-10, how bad is your pain?").type).toBe("pain_slider");
         expect(detectWidget("1 se 10 mein kitna dard hai?").type).toBe("pain_slider");
         expect(detectWidget("How bad is the severity?").type).toBe("pain_slider");
+        expect(detectWidget("What is your pain level?").type).toBe("pain_slider");
+        expect(detectWidget("Rate your pain please").type).toBe("pain_slider");
+    });
+
+    it("detects pain location questions", () => {
+        const result = detectWidget("Which body part has pain?");
+        expect(result.type).toBe("pain_location");
+
+        expect(detectWidget("Point to the area where it hurts").type).toBe("pain_location");
+        expect(detectWidget("Sharir ka kaunsa hissa dard kar raha hai?").type).toBe("pain_location");
+        expect(detectWidget("Dard kahan ho raha hai — kis hisse mein?").type).toBe("pain_location");
     });
 
     it("detects location questions", () => {
@@ -32,6 +43,8 @@ describe("detectWidget", () => {
         if (result.type === "quick_reply") {
             expect(result.options).toContain("1-3 days");
         }
+
+        expect(detectWidget("Kitne din se ho raha hai?").type).toBe("quick_reply");
     });
 
     it("detects trigger questions", () => {
@@ -40,6 +53,30 @@ describe("detectWidget", () => {
         if (result.type === "quick_reply") {
             expect(result.options).toContain("Movement");
         }
+
+        expect(detectWidget("Kya karne se zyada hota hai?").type).toBe("quick_reply");
+    });
+
+    it("detects diet/food habit questions", () => {
+        const result = detectWidget("What is your diet like? Any eating habits?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Normal diet");
+            expect(result.options).toContain("Spicy food");
+        }
+
+        expect(detectWidget("Aap kya khate hain?").type).toBe("quick_reply");
+    });
+
+    it("detects medication history questions", () => {
+        const result = detectWidget("Are you taking any medication?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Yes, prescribed");
+            expect(result.options).toContain("No medication");
+        }
+
+        expect(detectWidget("Koi dawai le rahe hain?").type).toBe("quick_reply");
     });
 
     it("detects yes/no questions", () => {
@@ -49,6 +86,8 @@ describe("detectWidget", () => {
             expect(result.options).toContain("Yes");
             expect(result.options).toContain("No");
         }
+
+        expect(detectWidget("Kya aap ko pehle kabhi hua hai?").type).toBe("quick_reply");
     });
 
     it("returns none for generic text", () => {
@@ -66,6 +105,8 @@ describe("detectWidget", () => {
         if (result.type === "quick_reply") {
             expect(result.options).toContain("High stress");
         }
+
+        expect(detectWidget("Aapko chinta ya ghabrahat ho rahi hai?").type).toBe("quick_reply");
     });
 
     it("detects radiation questions", () => {
@@ -76,3 +117,4 @@ describe("detectWidget", () => {
         }
     });
 });
+
