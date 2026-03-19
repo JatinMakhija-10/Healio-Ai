@@ -19,7 +19,48 @@ function getDashboardRoute(role: UserRole): string {
     }
 }
 
+// PHASE 1 — Route Protection
+// Redirects all Phase 2 routes to /dashboard.
+// When Phase 2 launches, remove routes from these arrays.
+const PHASE2_DASHBOARD_ROUTES = [
+    '/dashboard/learn',
+    '/dashboard/wellness',
+    '/dashboard/meet',
+    '/dashboard/search',
+    '/dashboard/family',
+    '/dashboard/pathway',
+    '/dashboard/inbox',
+    '/dashboard/videos',
+    '/dashboard/assessment',
+];
+
+const PHASE2_TOP_LEVEL_ROUTES = [
+    '/doctor',
+    '/admin',
+    '/analytics',
+    '/epidemic',
+    '/marketplace',
+    '/learn',
+    '/wellness',
+    '/meet',
+    '/doctors',
+    '/inbox',
+];
+
 export async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Phase 2 route blocking — redirect to /dashboard
+    const isPhase2DashboardRoute = PHASE2_DASHBOARD_ROUTES.some(route =>
+        pathname.startsWith(route)
+    );
+    const isPhase2TopLevelRoute = PHASE2_TOP_LEVEL_ROUTES.some(route =>
+        pathname.startsWith(route)
+    );
+    if (isPhase2DashboardRoute || isPhase2TopLevelRoute) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -56,7 +97,6 @@ export async function proxy(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // --- RBAC Enforcement ---
-    const pathname = request.nextUrl.pathname;
     const protectedPrefixes = ['/admin', '/doctor', '/dashboard'];
     const isProtectedRoute = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
 

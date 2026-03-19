@@ -1,0 +1,105 @@
+﻿Γû▓ Next.js 16.2.0 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 11.6s
+  Running TypeScript ...
+  Finished TypeScript in 17.4s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/47) ...
+  Generating static pages using 15 workers (11/47) 
+node.exe : (node:9896) 
+Warning: 
+`--localstorage-file` 
+was provided without a 
+valid path
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Users\JATIN\AppData
+\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ((node:9896) W   
+ ar...ut a valid pa    
+th:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+  Generating static pages using 15 workers (23/47) 
+  Generating static pages using 15 workers (35/47) 
+Γ£ô Generating static pages using 15 workers (47/47) in 1469ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /admin
+Γö£ Γùï /admin/analytics
+Γö£ Γùï /admin/clinical-qna
+Γö£ Γùï /admin/compliance
+Γö£ Γùï /admin/doctors
+Γö£ Γùï /admin/features
+Γö£ Γùï /admin/insights
+Γö£ Γùï /admin/invoices
+Γö£ Γùï /admin/settings
+Γö£ Γùï /admin/transactions
+Γö£ Γùï /admin/users
+Γö£ ╞Æ /admin/users/[id]
+Γö£ Γùï /admin/videos
+Γö£ ╞Æ /api/admin/health
+Γö£ ╞Æ /api/admin/metrics
+Γö£ ╞Æ /api/analytics/epidemic
+Γö£ ╞Æ /api/chat
+Γö£ ╞Æ /api/diagnose
+Γö£ ╞Æ /api/embeddings
+Γö£ ╞Æ /api/rag/multi-query
+Γö£ ╞Æ /auth/callback
+Γö£ Γùï /dashboard
+Γö£ Γùï /dashboard/assessment/prakriti
+Γö£ Γùï /dashboard/consult
+Γö£ Γùï /dashboard/family
+Γö£ Γùï /dashboard/history
+Γö£ Γùï /dashboard/inbox
+Γö£ Γùï /dashboard/learn
+Γö£ ╞Æ /dashboard/meet/[id]
+Γö£ ╞Æ /dashboard/pathway/[id]
+Γö£ Γùï /dashboard/profile
+Γö£ Γùï /dashboard/search
+Γö£ Γùï /dashboard/settings
+Γö£ Γùï /dashboard/videos
+Γö£ Γùï /dashboard/wellness
+Γö£ Γùï /doctor
+Γö£ Γùï /doctor/analytics
+Γö£ ╞Æ /doctor/consult/[id]
+Γö£ ╞Æ /doctor/consultations/[id]/complete
+Γö£ Γùï /doctor/inbox
+Γö£ Γùï /doctor/patients
+Γö£ ╞Æ /doctor/patients/[id]
+Γö£ Γùï /doctor/pending
+Γö£ Γùï /doctor/register
+Γö£ Γùï /doctor/sandbox
+Γö£ Γùï /doctor/schedule
+Γö£ Γùï /doctor/settings
+Γö£ Γùï /doctor/signup
+Γö£ Γùï /doctor/videos
+Γö£ Γùï /login
+Γö£ Γùï /onboarding
+Γöö Γùï /signup
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

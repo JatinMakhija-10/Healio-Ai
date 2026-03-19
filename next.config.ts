@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['jspdf', 'fflate'],
   // Proxy API requests to backend during local development
   rewrites: async () => {
     return [
