@@ -183,11 +183,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Check if session exists (Auto-login) or if email confirmation is required
         if (data.session) {
-            // Doctors go to onboarding, patients go to onboarding
+            // Doctors complete onboarding first; patients land on dashboard and can build persona there
             if (signupRole === 'doctor') {
                 router.push("/doctor/onboarding");
             } else {
-                router.push("/onboarding");
+                router.push("/dashboard");
             }
         } else {
             // Email confirmation required
@@ -259,12 +259,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             router.push('/doctor');
         } else {
             // Patient
-            const hasCompletedOnboarding = user?.user_metadata?.onboarding_completed;
-            if (hasCompletedOnboarding) {
-                router.push("/dashboard");
-            } else {
-                router.push("/onboarding");
-            }
+            router.push("/dashboard");
         }
     };
 

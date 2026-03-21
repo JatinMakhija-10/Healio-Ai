@@ -36,9 +36,9 @@ export default function LoginPage() {
 
                 if (profileError) throw profileError;
 
-                // If no profile exists, redirect to onboarding
+                // If no profile exists yet, still allow patient dashboard access
                 if (!profile) {
-                    router.push('/onboarding');
+                    router.push('/dashboard');
                     return;
                 }
 

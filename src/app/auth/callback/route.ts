@@ -36,9 +36,10 @@ export async function GET(request: Request) {
 
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error && data?.session?.user) {
-            // Check if user has completed onboarding
+            // Keep doctor onboarding gate; patients can finish persona setup from dashboard.
             const metadata = data.session.user.user_metadata;
             const isOnboardingCompleted = metadata?.onboarding_completed === true;
+            const role = metadata?.role;
 
             // If not completed, redirect to onboarding
             // But allow doctors or explicit 'next' params to override if needed, 
@@ -46,8 +47,8 @@ export async function GET(request: Request) {
             // If the user explicitly requested a page (e.g. invite link), we might want to respect it,
             // but for a generic signup, we force onboarding.
 
-            if (!isOnboardingCompleted) {
-                return NextResponse.redirect(`${origin}/onboarding`)
+            if (role === 'doctor' && !isOnboardingCompleted) {
+                return NextResponse.redirect(`${origin}/doctor/onboarding`)
             }
 
             return NextResponse.redirect(`${origin}${next}`)
