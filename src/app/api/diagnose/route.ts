@@ -25,14 +25,16 @@ import { AI_PHASE_CONFIG } from "@/lib/ai/config";
 import { createClient } from "@supabase/supabase-js";
 import { infoGainSelector } from "@/lib/diagnosis/advanced/InformationGainSelector";
 
-// Admin Supabase client (RAG queries)
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-    ""
-);
+// Admin Supabase client factory — created lazily at runtime so build-time env absence doesn't crash
+function getSupabaseAdminClient() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+        ""
+    );
+}
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -144,6 +146,7 @@ async function fetchMultiQueryRAG(
         if (validEmbeddings.length === 0) throw new Error("No valid embeddings");
 
         // Retrieve Boericke chunks for each embedding in parallel
+        const supabase = getSupabaseAdminClient();
         const rpcResults = await Promise.allSettled(
             validEmbeddings.map((embedding) =>
                 supabase.rpc("match_boericke_embeddings", {
@@ -198,6 +201,7 @@ async function fetchMultiQueryRAG(
             const embedding = resp.embeddings?.[0]?.values;
             if (!embedding) return { context: "", remediesFound: [] };
 
+            const supabase = getSupabaseAdminClient();
             const { data } = await supabase.rpc("match_boericke_embeddings", {
                 query_embedding: embedding,
                 match_threshold: AI_PHASE_CONFIG.rag.singleQueryThreshold,
@@ -230,6 +234,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized — missing token' }, { status: 401 });
         }
         const token = authHeader.slice(7);
+        const supabase = getSupabaseAdminClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized — invalid token' }, { status: 401 });

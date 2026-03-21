@@ -3,17 +3,17 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG } from '@/lib/ai/config';
 
-// Admin Supabase client for RAG queries
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
-);
-
 // ── RAG retrieval helper ─────────────────────────────────────────────────────
 async function fetchBoerickeContext(symptomSummary: string): Promise<string> {
     try {
         const geminiKey = process.env.GEMINI_API_KEY;
         if (!geminiKey || !symptomSummary) return '';
+
+        // Admin Supabase client — created at runtime so build-time env absence doesn't crash
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
+        );
 
         const ai = new GoogleGenAI({ apiKey: geminiKey });
         const embResp = await ai.models.embedContent({
