@@ -31,7 +31,7 @@ export function InputBar({
     const [value, setValue] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const isInputDisabled = disabled || widgetActive;
+    const isInputDisabled = disabled;
 
     // Append transcript into the text box
     useEffect(() => {
@@ -78,7 +78,7 @@ export function InputBar({
     const hasText = value.trim().length > 0;
 
     const placeholderText = widgetActive
-        ? "👆 Select an option above"
+        ? "Select an option above or type here..."
         : "Apni problem batayein...";
 
     return (
@@ -99,7 +99,7 @@ export function InputBar({
 
             <div className="flex items-end gap-2 max-w-3xl mx-auto">
                 {/* Text area */}
-                <div className={`flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 transition-all ${widgetActive ? "opacity-60" : "focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-100"}`}>
+                <div className={`flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 transition-all focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-100`}>
                     <textarea
                         ref={textareaRef}
                         value={value}
@@ -147,7 +147,7 @@ export function InputBar({
                 </div>
             </div>
             <p className="text-xs text-slate-400 text-center mt-2">
-                {widgetActive ? "Use the selection above to continue" : "Type in Hindi, English, or Hinglish"}
+                {widgetActive ? "Use the selection above or type your answer" : "Type in Hindi, English, or Hinglish"}
             </p>
         </div>
     );
