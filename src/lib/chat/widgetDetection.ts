@@ -4,6 +4,11 @@
  * Determines which interactive widget (pain slider, quick-reply chips,
  * pain location picker) to show based on the content of the last
  * assistant message.
+ *
+ * IMPORTANT: Detection order matters — more specific/contextual questions
+ * (sensation, triggers, relief, duration) are checked BEFORE generic
+ * location questions to avoid keyword overlap (e.g. "pain" appearing in
+ * both "What reduces your pain?" and "Where is the pain?").
  */
 
 export type WidgetHint =
@@ -12,6 +17,48 @@ export type WidgetHint =
     | { type: "quick_reply"; options: string[] }
     | { type: "none" };
 
+// ── Negative guard sets ──────────────────────────────────────────────
+// Keywords that indicate the question is about relief / triggers / sensation
+// rather than asking WHERE the pain is.
+const RELIEF_KEYWORDS = [
+    "better", "relief", "aram", "kam hota", "soothe", "ease",
+    "kya karne se kam", "kaise aram", "thik hota", "rahat",
+    "sudhaar", "reduce", "lessen", "decrease", "helps",
+    "what helps", "kya se rahat", "kaise kam", "kam karta",
+    "relief milta", "ameliorat",
+];
+
+const TRIGGER_KEYWORDS = [
+    "makes it worse", "worse", "trigger", "aggravat", "badhta",
+    "kya karne se", "kisse badhta", "zyada hota", "worsen",
+    "increase", "kab badhta", "kis cheez se", "badh jata",
+];
+
+const SENSATION_KEYWORDS = [
+    "feel like", "type of pain", "kaisa dard", "kaisa lagta",
+    "sensation", "what kind", "nature of", "dard ki prakar",
+    "kis tarah ka dard", "chubhan", "dhadakta", "bharipan",
+];
+
+const DURATION_KEYWORDS = [
+    "how long", "kitne samay", "kitne dino", "kab se", "since when",
+    "duration", "started when", "shuru hua", "kitne din se",
+    "kitne waqt se", "time period", "kitni der se",
+];
+
+const FREQUENCY_KEYWORDS = [
+    "how often", "kitni baar", "frequency", "baar baar",
+    "recurring", "regularly", "hamesha", "constant",
+    "roz hota", "din mein kitni baar", "intermittent", "kabhi kabhi",
+];
+
+/**
+ * Returns true if the text contains any of the given keyword phrases.
+ */
+function hasAny(text: string, keywords: string[]): boolean {
+    return keywords.some(kw => text.includes(kw));
+}
+
 /**
  * Analyzes the last assistant message text and returns a hint for
  * which interactive widget should be rendered beneath it.
@@ -19,7 +66,7 @@ export type WidgetHint =
 export function detectWidget(text: string): WidgetHint {
     const t = text.toLowerCase();
 
-    // Pain scale (1-10)
+    // ─── 1. Pain scale (1-10) — very specific patterns ────────────────
     if (
         t.includes("1-10") ||
         t.includes("1 se 10") ||
@@ -36,91 +83,77 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "pain_slider" };
     }
 
-    // Pain Location (body region picker) — must come before generic location
-    if (
+    // ─── 2. Sensation / pain type — BEFORE location ───────────────────
+    if (hasAny(t, SENSATION_KEYWORDS) ||
+        // Additional patterns that indicate sensation question
+        (t.includes("burning") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("jalan") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        t.includes("dull") || t.includes("sharp")
+    ) {
+        return { type: "quick_reply", options: ["Burning", "Sharp / Stabbing", "Dull ache", "Throbbing", "Cramping", "Pressure"] };
+    }
+
+    // ─── 3. Relief / what makes it better — BEFORE triggers ───────────
+    // Relief is checked BEFORE triggers because some Hindi phrases like
+    // "kya karne se kam" overlap with trigger keywords ("kya karne se").
+    // By checking relief first, phrases containing "kam", "aram", "relief"
+    // correctly route to relief options.
+    if (hasAny(t, RELIEF_KEYWORDS)) {
+        return { type: "quick_reply", options: ["Rest", "Warm water", "Lying down", "Eating", "Medicine", "Nothing helps"] };
+    }
+
+    // ─── 4. Triggers / what makes it worse — BEFORE location ──────────
+    if (hasAny(t, TRIGGER_KEYWORDS)) {
+        return { type: "quick_reply", options: ["Eating", "Movement", "Cold", "Heat", "Stress", "Nothing specific"] };
+    }
+
+    // ─── 5. Duration — BEFORE location ────────────────────────────────
+    if (hasAny(t, DURATION_KEYWORDS)) {
+        return { type: "quick_reply", options: ["Today / Few hours", "1-3 days", "1 week", "2-4 weeks", "1+ month", "Chronic / Long time"] };
+    }
+
+    // ─── 6. Frequency — BEFORE location ───────────────────────────────
+    if (hasAny(t, FREQUENCY_KEYWORDS)) {
+        return { type: "quick_reply", options: ["Constant", "Comes & goes", "Morning only", "Night only", "After eating", "Weekly"] };
+    }
+
+    // ─── 7. Pain Location (body region picker) — with negative guards ─
+    // Only match if the question is actually asking WHERE/WHICH BODY PART,
+    // not about triggers, relief, duration, or sensation.
+    const isNotContextual = !hasAny(t, [
+        ...RELIEF_KEYWORDS, ...TRIGGER_KEYWORDS,
+        ...SENSATION_KEYWORDS, ...DURATION_KEYWORDS,
+        ...FREQUENCY_KEYWORDS,
+    ]);
+
+    if (isNotContextual && (
         t.includes("point to the area") || t.includes("body part") ||
         t.includes("sharir mein kahan") || t.includes("body mein kahan") ||
         (t.includes("location") && (t.includes("pain") || t.includes("dard"))) ||
+        (t.includes("located") && (t.includes("pain") || t.includes("dard") || t.includes("body"))) ||
         (t.includes("dard") && t.includes("kahan")) ||
         (t.includes("dard") && (t.includes("hissa") || t.includes("hisse"))) ||
         (t.includes("sharir") && t.includes("dard")) ||
         t.includes("kis hisse mein") || t.includes("konse ang mein") ||
         t.includes("which body") || t.includes("area of your body")
-    ) {
+    )) {
         return { type: "pain_location" };
     }
 
-    // Location (sub-location / upper-lower selection)
-    if (
+    // ─── 8. Sub-location (upper/lower/sides) — with negative guards ───
+    if (isNotContextual && (
         t.includes("where exactly") || t.includes("which area") || t.includes("which part") ||
-        t.includes("kahaan") || t.includes("kahan") || t.includes("kidhar") ||
-        t.includes("jagah") || t.includes("hissa") ||
+        t.includes("kahaan") || t.includes("kidhar") ||
+        t.includes("jagah") ||
         t.includes("oopar ya neeche") || (t.includes("oopar") && t.includes("neeche")) ||
         (t.includes("upper") && t.includes("lower")) ||
         t.includes("kis taraf") || t.includes("daayein ya baayein") ||
         t.includes("right side") || t.includes("left side")
-    ) {
+    )) {
         return { type: "quick_reply", options: ["Upper area", "Lower area", "Left side", "Right side", "Center", "All over"] };
     }
 
-    // Sensation type
-    if (
-        t.includes("feel like") || t.includes("type of pain") || t.includes("kaisa dard") ||
-        t.includes("kaisa lagta") || t.includes("sensation") ||
-        t.includes("burning") || t.includes("jalan") || t.includes("dull") || t.includes("sharp") ||
-        t.includes("what kind") || t.includes("nature of") ||
-        t.includes("dard ki prakar") || t.includes("kis tarah ka dard") ||
-        t.includes("chubhan") || t.includes("dhadakta") || t.includes("bharipan")
-    ) {
-        return { type: "quick_reply", options: ["Burning", "Sharp / Stabbing", "Dull ache", "Throbbing", "Cramping", "Pressure"] };
-    }
-
-    // Duration
-    if (
-        t.includes("how long") || t.includes("kitne samay") || t.includes("kitne dino") ||
-        t.includes("kab se") || t.includes("since when") || t.includes("duration") ||
-        t.includes("started when") || t.includes("shuru hua") ||
-        t.includes("kitne din se") || t.includes("kitne waqt se") ||
-        t.includes("time period") || t.includes("kitni der se")
-    ) {
-        return { type: "quick_reply", options: ["Today / Few hours", "1-3 days", "1 week", "2-4 weeks", "1+ month", "Chronic / Long time"] };
-    }
-
-    // Triggers / worse
-    if (
-        t.includes("makes it worse") || t.includes("badh jata hai") || t.includes("worse") ||
-        t.includes("trigger") || t.includes("aggravat") || t.includes("badhta") ||
-        t.includes("kya karne se") || t.includes("kisse badhta") ||
-        t.includes("kya karne se zyada hota") || t.includes("kisse zyada hota") ||
-        t.includes("worsen") || t.includes("increase") ||
-        t.includes("kab badhta") || t.includes("kis cheez se")
-    ) {
-        return { type: "quick_reply", options: ["Eating", "Movement", "Cold", "Heat", "Stress", "Nothing specific"] };
-    }
-
-    // Relief / better
-    if (
-        t.includes("makes it better") || t.includes("relief") || t.includes("aram") ||
-        t.includes("kam hota") || t.includes("better") || t.includes("soothe") ||
-        t.includes("kya karne se kam") || t.includes("ease") ||
-        t.includes("kaise aram milta") || t.includes("thik hota") ||
-        t.includes("kya se rahat milti") || t.includes("sudhaar")
-    ) {
-        return { type: "quick_reply", options: ["Rest", "Warm water", "Lying down", "Eating", "Medicine", "Nothing helps"] };
-    }
-
-    // Frequency
-    if (
-        t.includes("how often") || t.includes("kitni baar") || t.includes("frequency") ||
-        t.includes("baar baar") || t.includes("recurring") || t.includes("regularly") ||
-        t.includes("hamesha") || t.includes("constant") ||
-        t.includes("roz hota") || t.includes("din mein kitni baar") ||
-        t.includes("intermittent") || t.includes("kabhi kabhi")
-    ) {
-        return { type: "quick_reply", options: ["Constant", "Comes & goes", "Morning only", "Night only", "After eating", "Weekly"] };
-    }
-
-    // Onset / history
+    // ─── 9. Onset / history ───────────────────────────────────────────
     if (
         t.includes("how did it start") || t.includes("kaise shuru") || t.includes("suddenly") ||
         t.includes("achanak") || t.includes("gradually") || t.includes("onset") ||
@@ -132,7 +165,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Suddenly / Acute onset", "Gradually over time", "After an injury", "After physical activity", "Woke up with it", "Don't remember"] };
     }
 
-    // Associated symptoms
+    // ─── 10. Associated symptoms ──────────────────────────────────────
     if (
         t.includes("other symptom") || t.includes("aur koi taklif") || t.includes("along with") ||
         t.includes("saath mein") || t.includes("accompanied") || t.includes("besides") ||
@@ -142,7 +175,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Fever", "Nausea", "Headache", "Fatigue", "Vomiting", "None"] };
     }
 
-    // Diet / food habits
+    // ─── 11. Diet / food habits ───────────────────────────────────────
     if (
         t.includes("diet") || t.includes("eating habit") || t.includes("food") ||
         t.includes("khana") || t.includes("khaane") || t.includes("bhojan") ||
@@ -152,7 +185,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Normal diet", "Spicy food", "Irregular meals", "Loss of appetite", "Overeating", "Junk food"] };
     }
 
-    // Medication history
+    // ─── 12. Medication history ───────────────────────────────────────
     if (
         t.includes("medication") || t.includes("medicine") || t.includes("dawai") ||
         t.includes("dawa") || t.includes("taking any") || t.includes("koi dawai") ||
@@ -161,7 +194,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Yes, prescribed", "Yes, over-the-counter", "Homeopathic", "Ayurvedic", "No medication", "Home remedies only"] };
     }
 
-    // Stress / emotional
+    // ─── 13. Stress / emotional ───────────────────────────────────────
     if (
         t.includes("stress") || t.includes("tension") || t.includes("emotional") ||
         t.includes("mental") || t.includes("anxiety") || t.includes("pareshani") ||
@@ -173,7 +206,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["High stress", "Some stress", "No stress", "Poor sleep", "Everything is okay"] };
     }
 
-    // Radiation / spreading
+    // ─── 14. Radiation / spreading ────────────────────────────────────
     if (
         t.includes("spread") || t.includes("radiat") || t.includes("faila") ||
         t.includes("travel") || t.includes("other area") || t.includes("dusri jagah") ||
@@ -182,7 +215,7 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Yes, to back", "Yes, to shoulder", "Yes, to legs", "Yes, to arm", "No, stays in one place"] };
     }
 
-    // Generic yes/no
+    // ─── 15. Generic yes/no — last resort ─────────────────────────────
     if (
         t.endsWith("?") &&
         (t.includes("kya aapko") || t.includes("do you") || t.includes("have you") ||

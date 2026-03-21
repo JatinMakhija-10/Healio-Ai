@@ -116,5 +116,108 @@ describe("detectWidget", () => {
             expect(result.options).toContain("Yes, to back");
         }
     });
-});
 
+    // ═══════════════════════════════════════════════════════════════════
+    // MISMATCH FIX TESTS — These validate that the correct dropdown
+    // options appear for the correct questions, preventing overlap.
+    // ═══════════════════════════════════════════════════════════════════
+
+    it("shows RELIEF options (not location) for 'What reduces your pain?'", () => {
+        const result = detectWidget("What reduces your pain?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Rest");
+            expect(result.options).toContain("Nothing helps");
+            // Must NOT contain location options
+            expect(result.options).not.toContain("Upper area");
+            expect(result.options).not.toContain("All over");
+        }
+    });
+
+    it("shows RELIEF options (not location) for 'Kya karne se dard kam hota hai?'", () => {
+        const result = detectWidget("Kya karne se dard kam hota hai?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Rest");
+        }
+    });
+
+    it("shows RELIEF options for 'What makes it better or gives relief?'", () => {
+        const result = detectWidget("What makes it better or gives relief?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Rest");
+            expect(result.options).toContain("Warm water");
+        }
+    });
+
+    it("shows TRIGGER options (not location) for 'What makes your pain worse?'", () => {
+        const result = detectWidget("What makes your pain worse?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Eating");
+            expect(result.options).toContain("Movement");
+            // Must NOT contain location options
+            expect(result.options).not.toContain("Upper area");
+        }
+    });
+
+    it("shows TRIGGER options for 'Dard kisse badhta hai?'", () => {
+        const result = detectWidget("Dard kisse badhta hai?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Eating");
+            expect(result.options).toContain("Movement");
+        }
+    });
+
+    it("shows SENSATION options (not location) for 'What kind of pain do you feel?'", () => {
+        const result = detectWidget("What kind of pain do you feel?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Burning");
+            expect(result.options).toContain("Sharp / Stabbing");
+            expect(result.options).toContain("Dull ache");
+        }
+    });
+
+    it("shows SENSATION options for 'Dard kaisa hai — jalan ya tez chubhan?'", () => {
+        const result = detectWidget("Dard kaisa hai — jalan ya tez chubhan?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Burning");
+        }
+    });
+
+    it("shows DURATION options (not location) for 'How long have you been experiencing this pain?'", () => {
+        const result = detectWidget("How long have you been experiencing this pain?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Today / Few hours");
+            expect(result.options).toContain("1-3 days");
+        }
+    });
+
+    it("still shows PAIN LOCATION for pure location questions", () => {
+        expect(detectWidget("Where is the pain located in your body?").type).toBe("pain_location");
+        expect(detectWidget("Which body part hurts?").type).toBe("pain_location");
+        expect(detectWidget("Sharir mein kahan dard hai?").type).toBe("pain_location");
+    });
+
+    it("shows FREQUENCY options for 'How often does the pain occur?'", () => {
+        const result = detectWidget("How often does the pain occur?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Constant");
+            expect(result.options).toContain("Comes & goes");
+        }
+    });
+
+    it("shows RELIEF options for Hindi relief question with pain context", () => {
+        const result = detectWidget("Kaise aram milta hai aapko dard se?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Rest");
+        }
+    });
+});

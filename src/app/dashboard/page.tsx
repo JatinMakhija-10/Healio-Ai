@@ -159,7 +159,7 @@ export default function DashboardPage() {
     // Determine display name with fallbacks
     // Prioritize DB profile (updated via Settings) -> MetaData (from Onboarding) -> Local -> Email
     const userName = profile?.full_name || user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
-    const isPersonaBuilt = Boolean(user?.user_metadata?.onboarding_completed);
+    const isPersonaBuilt = Boolean(user?.user_metadata?.ayurvedic_profile);
 
     const lastSession = history[0];
 
