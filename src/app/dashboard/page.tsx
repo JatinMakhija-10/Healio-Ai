@@ -51,7 +51,6 @@ export default function DashboardPage() {
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [localName, setLocalName] = useState<string | null>(null);
-    const [showPersonaPopup, setShowPersonaPopup] = useState(false);
     // PHASE 2 — Care Pathways
     // const [activePathway, setActivePathway] = useState<PersonalizedPathway | null>(null);
     // PHASE 2 — Appointments
@@ -133,13 +132,6 @@ export default function DashboardPage() {
         // PHASE 2 — loadAppointments();
     }, [user]); // Re-run when user profile loads
 
-    useEffect(() => {
-        const popupDismissed = localStorage.getItem('healio_persona_popup_dismissed') === 'true';
-        if (!popupDismissed) {
-            setShowPersonaPopup(true);
-        }
-    }, []);
-
     // PHASE 2 — Fetch upcoming appointments - extracted for real-time updates
     // const loadAppointments = async () => {
     //     if (!user) return;
@@ -167,10 +159,7 @@ export default function DashboardPage() {
     // Determine display name with fallbacks
     // Prioritize DB profile (updated via Settings) -> MetaData (from Onboarding) -> Local -> Email
     const userName = profile?.full_name || user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
-    const closePersonaPopup = () => {
-        setShowPersonaPopup(false);
-        localStorage.setItem('healio_persona_popup_dismissed', 'true');
-    };
+    const isPersonaBuilt = Boolean(user?.user_metadata?.onboarding_completed);
 
     const lastSession = history[0];
 
@@ -220,6 +209,19 @@ export default function DashboardPage() {
                     </Button>
                 </Link>
             </div>
+
+            {!isPersonaBuilt && (
+                <div className="rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p className="text-sm text-teal-900">
+                        Build your persona to unlock more personalized health insights and recommendations.
+                    </p>
+                    <Link href="/dashboard/assessment/prakriti" className="shrink-0">
+                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white">
+                            Build Persona
+                        </Button>
+                    </Link>
+                </div>
+            )}
 
             {/* Stats / Quick Cards */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -273,36 +275,6 @@ export default function DashboardPage() {
                     </div>
                 </Card>
             </div>
-
-            {showPersonaPopup && (
-                <div className="fixed bottom-6 right-6 z-50 max-w-sm w-[calc(100vw-2rem)] sm:w-80">
-                    <Card className="border border-teal-200 bg-white shadow-xl">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-start justify-between gap-3">
-                                <CardTitle className="text-base text-slate-900">Build your persona</CardTitle>
-                                <button
-                                    type="button"
-                                    aria-label="Close persona popup"
-                                    className="text-slate-400 hover:text-slate-600 text-sm"
-                                    onClick={closePersonaPopup}
-                                >
-                                    x
-                                </button>
-                            </div>
-                            <p className="text-sm text-slate-600">
-                                Answer a few quick questions to personalize your care experience.
-                            </p>
-                        </CardHeader>
-                        <CardContent className="pt-1">
-                            <Link href="/onboarding" onClick={closePersonaPopup}>
-                                <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white">
-                                    Start Persona Builder
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
 
             {/* Recent Sessions */}
             <div className="pt-4">

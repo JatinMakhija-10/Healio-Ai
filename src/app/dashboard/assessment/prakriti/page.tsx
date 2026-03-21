@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { ONBOARDING_PRAKRITI_QUESTIONS } from "@/lib/ayurveda/prakriti/onboardingQuestions";
+import { PRAKRITI_QUESTIONS } from "@/lib/ayurveda/prakriti/prakritiQuestionnaire";
 import { Loader2, ArrowLeft, Leaf, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -53,7 +53,7 @@ export default function PrakritiAssessmentPage() {
     };
 
     const handleSubmit = async () => {
-        if (Object.keys(answers).length < ONBOARDING_PRAKRITI_QUESTIONS.length) return;
+        if (Object.keys(answers).length < PRAKRITI_QUESTIONS.length) return;
         setIsSubmitting(true);
 
         const result = calculatePrakritiLocal(answers);
@@ -119,7 +119,7 @@ export default function PrakritiAssessmentPage() {
                 </div>
 
                 <div className="space-y-6">
-                    {ONBOARDING_PRAKRITI_QUESTIONS.map((q, idx) => (
+                    {PRAKRITI_QUESTIONS.map((q, idx) => (
                         <Card key={q.id} className="border-slate-200 shadow-sm overflow-hidden">
                             <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
                                 <CardTitle className="text-lg font-medium text-slate-900 flex gap-3">
@@ -149,11 +149,11 @@ export default function PrakritiAssessmentPage() {
 
                 <div className="sticky bottom-4 bg-white/80 backdrop-blur-lg p-4 rounded-xl shadow-lg border border-slate-200 mt-8 flex justify-between items-center">
                     <p className="text-sm text-slate-500 font-medium">
-                        {Object.keys(answers).length} / {ONBOARDING_PRAKRITI_QUESTIONS.length} Answered
+                        {Object.keys(answers).length} / {PRAKRITI_QUESTIONS.length} Answered
                     </p>
                     <Button
                         onClick={handleSubmit}
-                        disabled={Object.keys(answers).length < ONBOARDING_PRAKRITI_QUESTIONS.length || isSubmitting}
+                        disabled={Object.keys(answers).length < PRAKRITI_QUESTIONS.length || isSubmitting}
                         className="bg-teal-600 hover:bg-teal-700 text-white min-w-[140px] shadow-lg shadow-teal-600/20"
                     >
                         {isSubmitting ? (
