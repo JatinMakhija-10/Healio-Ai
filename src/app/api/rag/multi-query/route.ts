@@ -28,13 +28,15 @@ import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { AI_PHASE_CONFIG } from "@/lib/ai/config";
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-        ""
-);
+function getSupabaseClient() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+            ""
+    );
+}
 
 interface BoerickeChunk {
     remedy_name: string;
@@ -86,6 +88,7 @@ export async function POST(req: Request) {
         }
 
         // ── Step 2: Query Boericke embeddings for each embedding in parallel ─────
+        const supabase = getSupabaseClient();
         const rpcResults = await Promise.allSettled(
             validEmbeddings.map((embedding) =>
                 supabase.rpc("match_boericke_embeddings", {
