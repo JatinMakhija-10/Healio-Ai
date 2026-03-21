@@ -21,9 +21,9 @@ export type WidgetHint =
 // Keywords that indicate the question is about relief / triggers / sensation
 // rather than asking WHERE the pain is.
 const RELIEF_KEYWORDS = [
-    "better", "relief", "aram", "kam hota", "soothe", "ease",
+    "better", "relief", "aram", "kam hota", "soothe", "ease the",
     "kya karne se kam", "kaise aram", "thik hota", "rahat",
-    "sudhaar", "reduce", "lessen", "decrease", "helps",
+    "sudhaar", "reduce", "lessen", "decrease",
     "what helps", "kya se rahat", "kaise kam", "kam karta",
     "relief milta", "ameliorat",
 ];
@@ -66,24 +66,7 @@ function hasAny(text: string, keywords: string[]): boolean {
 export function detectWidget(text: string): WidgetHint {
     const t = text.toLowerCase();
 
-    // ─── 1. Pain scale (1-10) — very specific patterns ────────────────
-    if (
-        t.includes("1-10") ||
-        t.includes("1 se 10") ||
-        t.includes("1 to 10") ||
-        t.includes("scale of 1") ||
-        t.includes("kitna dard") ||
-        t.includes("severity") ||
-        t.includes("how bad") ||
-        t.includes("kitni taklif") ||
-        t.includes("pain level") ||
-        t.includes("rate your pain") ||
-        t.includes("dard ka star")
-    ) {
-        return { type: "pain_slider" };
-    }
-
-    // ─── 2. Sensation / pain type — BEFORE location ───────────────────
+    // ─── 1. Sensation / pain type — HIGHEST PRIORITY ──────────────────
     if (hasAny(t, SENSATION_KEYWORDS) ||
         // Additional patterns that indicate sensation question
         (t.includes("burning") && !hasAny(t, TRIGGER_KEYWORDS)) ||
@@ -112,9 +95,26 @@ export function detectWidget(text: string): WidgetHint {
         return { type: "quick_reply", options: ["Today / Few hours", "1-3 days", "1 week", "2-4 weeks", "1+ month", "Chronic / Long time"] };
     }
 
-    // ─── 6. Frequency — BEFORE location ───────────────────────────────
+    // ─── 5. Frequency ─────────────────────────────────────────────────
     if (hasAny(t, FREQUENCY_KEYWORDS)) {
         return { type: "quick_reply", options: ["Constant", "Comes & goes", "Morning only", "Night only", "After eating", "Weekly"] };
+    }
+
+    // ─── 6. Pain scale (1-10) — AFTER contextual questions ────────────
+    if (
+        t.includes("1-10") ||
+        t.includes("1 se 10") ||
+        t.includes("1 to 10") ||
+        t.includes("scale of 1") ||
+        t.includes("kitna dard") ||
+        t.includes("severity") ||
+        t.includes("how bad") ||
+        t.includes("kitni taklif") ||
+        t.includes("pain level") ||
+        t.includes("rate your pain") ||
+        t.includes("dard ka star")
+    ) {
+        return { type: "pain_slider" };
     }
 
     // ─── 7. Pain Location (body region picker) — with negative guards ─

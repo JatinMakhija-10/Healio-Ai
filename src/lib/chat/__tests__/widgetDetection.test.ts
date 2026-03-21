@@ -171,6 +171,17 @@ describe("detectWidget", () => {
         }
     });
 
+    it("shows TRIGGER options (not pain scale) when AI acknowledges severity then asks about triggers", () => {
+        const text = "A moderate 5 out of 10. That helps me understand the severity. What makes the pressure and nausea worse - is it eating certain foods, moving around, stress, or something else?";
+        const result = detectWidget(text);
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Eating");
+            expect(result.options).toContain("Movement");
+            expect(result.options).toContain("Stress");
+        }
+    });
+
     it("shows SENSATION options (not location) for 'What kind of pain do you feel?'", () => {
         const result = detectWidget("What kind of pain do you feel?");
         expect(result.type).toBe("quick_reply");
