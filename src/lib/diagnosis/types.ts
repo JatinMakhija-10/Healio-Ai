@@ -64,9 +64,12 @@ export interface Condition {
     redFlags?: string[]; // Urgent symptoms requiring immediate triage (e.g. "chest pain + sweating")
     mandatorySymptoms?: string[]; // Must be present to consider this condition (hard constraint)
     mimics?: string[]; // Condition IDs that commonly mimic this one (force extra differentiation)
-    remedies: Remedy[];
-    indianHomeRemedies: Remedy[];
-    exercises: Exercise[];
+    remedies?: Remedy[]; 
+    indianHomeRemedies?: Remedy[];
+    homeopathic_remedies?: any[];
+    ayurvedic_remedies?: any[];
+    home_remedies?: any[];
+    exercises?: Exercise[];
     warnings: string[];
     seekHelp: string;
 }

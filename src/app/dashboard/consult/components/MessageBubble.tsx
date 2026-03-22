@@ -41,6 +41,30 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         displayText = message.content.split("```json")[0].trim();
     }
 
+    // Strip ui_hint JSON from displayText
+    const hintMatch = displayText.match(/\{"ui_hint"\s*:/);
+    if (hintMatch && hintMatch.index !== undefined) {
+        const startIndex = hintMatch.index;
+        const stringFromHint = displayText.substring(startIndex);
+        
+        let openBraces = 0;
+        let endIndex = -1;
+        for (let i = 0; i < stringFromHint.length; i++) {
+            if (stringFromHint[i] === '{') openBraces++;
+            if (stringFromHint[i] === '}') openBraces--;
+            if (openBraces === 0 && i > 0) {
+                endIndex = i;
+                break;
+            }
+        }
+        
+        if (endIndex !== -1) {
+            displayText = (displayText.substring(0, startIndex) + stringFromHint.substring(endIndex + 1)).trim();
+        } else {
+            displayText = displayText.substring(0, startIndex).trim();
+        }
+    }
+
     // Hide bubble completely if it's just an empty string after stripping JSON
     // but show it if it's generating the card
     if (!displayText && !parsedCondition && !isParsingJson && !isUser) {

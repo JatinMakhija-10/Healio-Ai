@@ -9,23 +9,42 @@ import { Bot, User } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DiagnosisMessage, UiHint } from "./useDiagnosisChat";
 
-// ── Parse ui_hint JSON from the end of an AI message ─────────────────────────
 function parseUiHint(content: string): { cleanText: string; hint: UiHint | null } {
-    // Look for a {"ui_hint": ...} object on its own line at the end
-    const hintMatch = content.match(/\n?(\{"ui_hint":[\s\S]*?\})\s*$/);
-    if (!hintMatch) return { cleanText: content.trim(), hint: null };
+    const hintMatch = content.match(/\{"ui_hint"\s*:/);
+    if (!hintMatch || hintMatch.index === undefined) return { cleanText: content.trim(), hint: null };
+    
+    const startIndex = hintMatch.index;
+    const stringFromHint = content.substring(startIndex);
+    
     try {
-        const parsed = JSON.parse(hintMatch[1]);
-        if (parsed?.ui_hint) {
-            return {
-                cleanText: content.replace(hintMatch[0], "").trim(),
-                hint: parsed.ui_hint as UiHint,
-            };
+        let openBraces = 0;
+        let endIndex = -1;
+        for (let i = 0; i < stringFromHint.length; i++) {
+            if (stringFromHint[i] === '{') openBraces++;
+            if (stringFromHint[i] === '}') openBraces--;
+            if (openBraces === 0 && i > 0) {
+                endIndex = i;
+                break;
+            }
         }
-    } catch {
-        // malformed JSON — ignore and show raw text
+        
+        if (endIndex !== -1) {
+            const validJsonStr = stringFromHint.substring(0, endIndex + 1);
+            const parsed = JSON.parse(validJsonStr);
+            if (parsed?.ui_hint) {
+                const cleanText = content.substring(0, startIndex) + stringFromHint.substring(endIndex + 1);
+                return {
+                    cleanText: cleanText.trim(),
+                    hint: parsed.ui_hint as UiHint,
+                };
+            }
+        }
+    } catch (e) {
+        console.error("Failed to parse ui_hint", e);
     }
-    return { cleanText: content.trim(), hint: null };
+    
+    // Fallback: strip anything from ui_hint onwards to prevent JSON text leak
+    return { cleanText: content.substring(0, startIndex).trim(), hint: null };
 }
 
 // ── Chip selector component ───────────────────────────────────────────────────

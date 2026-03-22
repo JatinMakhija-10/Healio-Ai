@@ -18,6 +18,34 @@ interface ChatWindowProps {
     onWidgetActive?: (active: boolean) => void;
 }
 
+function parseUiHint(content: string): any {
+    const hintMatch = content.match(/\{"ui_hint"\s*:/);
+    if (!hintMatch || hintMatch.index === undefined) return null;
+    
+    const startIndex = hintMatch.index;
+    const stringFromHint = content.substring(startIndex);
+    
+    try {
+        let openBraces = 0;
+        let endIndex = -1;
+        for (let i = 0; i < stringFromHint.length; i++) {
+            if (stringFromHint[i] === '{') openBraces++;
+            if (stringFromHint[i] === '}') openBraces--;
+            if (openBraces === 0 && i > 0) {
+                endIndex = i;
+                break;
+            }
+        }
+        if (endIndex !== -1) {
+            const validJsonStr = stringFromHint.substring(0, endIndex + 1);
+            return JSON.parse(validJsonStr)?.ui_hint || null;
+        }
+    } catch {
+        return null;
+    }
+    return null;
+}
+
 export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -32,9 +60,19 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
         !isLoading &&
         !lastMessage.content.includes("```json");
 
-    const widgetHint = isLastAssistant
-        ? detectWidget(lastMessage.content)
-        : { type: "none" as const };
+    let widgetHint: any = { type: "none" };
+    if (isLastAssistant) {
+        const explicitHint = parseUiHint(lastMessage.content);
+        if (explicitHint) {
+            if (explicitHint.type === "chips" || explicitHint.type === "dropdown") {
+                widgetHint = { type: "quick_reply", options: explicitHint.options || [] };
+            } else if (explicitHint.type === "slider") {
+                widgetHint = { type: "pain_slider" };
+            }
+        } else {
+            widgetHint = detectWidget(lastMessage.content);
+        }
+    }
 
     const hasActiveWidget = widgetHint.type !== "none";
 

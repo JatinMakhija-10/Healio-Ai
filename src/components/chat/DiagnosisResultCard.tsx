@@ -315,7 +315,7 @@ export function DiagnosisResultCard({
 
                         {/* Pill-style tab toggles */}
                         <div className="flex flex-wrap gap-2">
-                            {(condition.indianHomeRemedies?.length ?? 0) > 0 && (
+                            {((condition.indianHomeRemedies?.length ?? 0) > 0 || (condition.home_remedies?.length ?? 0) > 0) && (
                                 <button
                                     onClick={() => setActiveTab("home_remedies")}
                                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "home_remedies"
@@ -326,7 +326,18 @@ export function DiagnosisResultCard({
                                     🌿 Home Remedies
                                 </button>
                             )}
-                            {(condition.remedies?.length ?? 0) > 0 && (
+                            {(condition.ayurvedic_remedies?.length ?? 0) > 0 && (
+                                <button
+                                    onClick={() => setActiveTab("ayurvedic")}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "ayurvedic"
+                                        ? "bg-green-600 text-white shadow-sm"
+                                        : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+                                        }`}
+                                >
+                                    🍃 Ayurvedic Solutions
+                                </button>
+                            )}
+                            {((condition.remedies?.length ?? 0) > 0 || (condition.homeopathic_remedies?.length ?? 0) > 0) && (
                                 <button
                                     onClick={() => setActiveTab("homeopathic")}
                                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === "homeopathic"
@@ -353,28 +364,39 @@ export function DiagnosisResultCard({
                         {/* Tab Content */}
                         <div className="space-y-3 mt-2">
                             {/* Home Remedies Tab */}
-                            {activeTab === "home_remedies" && (condition.indianHomeRemedies || []).slice(0, 5).map((remedy, idx) => (
+                            {activeTab === "home_remedies" && (condition.home_remedies || condition.indianHomeRemedies || []).slice(0, 5).map((remedy: any, idx) => (
                                 <div key={idx} className="bg-amber-50 p-3 rounded-lg border border-amber-100 hover:border-amber-200 transition-colors">
                                     <div className="flex justify-between items-start">
-                                        <span className="font-medium text-amber-800 text-sm">{remedy.name}</span>
+                                        <span className="font-medium text-amber-800 text-sm">{remedy.name || remedy.remedy}</span>
                                     </div>
-                                    <p className="text-xs text-amber-700 mt-1">{remedy.description}</p>
-                                    {remedy.method && <p className="text-xs text-amber-800 mt-1 italic">How to use: {remedy.method}</p>}
+                                    {(remedy.description || remedy.indication) && <p className="text-xs text-amber-700 mt-1">{remedy.description || remedy.indication}</p>}
+                                    {(remedy.method || remedy.preparation) && <p className="text-xs text-amber-800 mt-1 italic">How to use: {remedy.method || remedy.preparation}</p>}
                                     {remedy.ingredients?.length > 0 && (
                                         <p className="text-xs text-amber-600 mt-1">Ingredients: {remedy.ingredients.join(', ')}</p>
                                     )}
                                 </div>
                             ))}
 
+                            {/* Ayurvedic Solution Tab */}
+                            {activeTab === "ayurvedic" && (condition.ayurvedic_remedies || []).slice(0, 5).map((remedy: any, idx) => (
+                                <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-100 hover:border-green-200 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <span className="font-medium text-green-800 text-sm">{remedy.name}</span>
+                                    </div>
+                                    {remedy.indication && <p className="text-xs text-green-700 mt-1">{remedy.indication}</p>}
+                                    {remedy.preparation && <p className="text-xs text-green-800 mt-1 italic">Preparation: {remedy.preparation}</p>}
+                                </div>
+                            ))}
+
                             {/* Homeopathic Solution Tab */}
-                            {activeTab === "homeopathic" && (condition.remedies || []).slice(0, 5).map((remedy, idx) => (
+                            {activeTab === "homeopathic" && (condition.homeopathic_remedies || condition.remedies || []).slice(0, 5).map((remedy: any, idx) => (
                                 <div key={idx} className="bg-teal-50 p-3 rounded-lg border border-teal-100 hover:border-teal-200 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <span className="font-medium text-teal-800 text-sm">{remedy.name}</span>
-                                            {(remedy as any).potency && (
+                                            {remedy.potency && (
                                                 <span className="ml-2 text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">
-                                                    {(remedy as any).potency}
+                                                    {remedy.potency}
                                                 </span>
                                             )}
                                         </div>
@@ -384,11 +406,11 @@ export function DiagnosisResultCard({
                                             </a>
                                         )}
                                     </div>
-                                    <p className="text-xs text-teal-700 mt-1">{remedy.description}</p>
-                                    {remedy.method && <p className="text-xs text-teal-800 mt-1 italic">How to take: {remedy.method}</p>}
-                                    {(remedy as any).source && (
+                                    {(remedy.description || remedy.indication) && <p className="text-xs text-teal-700 mt-1">{remedy.description || remedy.indication}</p>}
+                                    {(remedy.method || remedy.dosage) && <p className="text-xs text-teal-800 mt-1 italic">How to take: {remedy.method || remedy.dosage}</p>}
+                                    {remedy.source && (
                                         <span className="inline-block mt-1.5 text-[10px] bg-teal-100/60 text-teal-600 px-2 py-0.5 rounded-full">
-                                            Source: {(remedy as any).source}
+                                            Source: {remedy.source}
                                         </span>
                                     )}
                                 </div>
