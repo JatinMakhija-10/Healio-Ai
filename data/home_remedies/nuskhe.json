@@ -1,0 +1,679 @@
+[
+  {
+    "id": "nr001",
+    "ailment": "Common Cold",
+    "ailment_hindi": "Zukam / Sardi",
+    "symptoms_keywords": ["cold", "runny nose", "sneezing", "congestion", "zukam", "sardi", "naak behna"],
+    "remedies": [
+      {
+        "name": "Adrak-Tulsi Kadha",
+        "name_hindi": "अदरक-तुलसी काढ़ा",
+        "ingredients": ["Adrak (ginger) 1 inch piece", "Tulsi 8-10 leaves", "Kali mirch (black pepper) 4-5", "Laung (cloves) 2", "Honey 1 tsp", "Water 2 cups"],
+        "method": "Crush adrak and add all ingredients to water. Boil for 10 minutes until reduced to 1 cup. Strain, add honey, drink warm.",
+        "method_hindi": "Adrak kood ke sab cheez paani mein daalo. 10 minute ubalo. Chaan lo, shahad daalo, garam piyo.",
+        "frequency": "2-3 times daily",
+        "indication": "Sardi, naak behna, halki khansi",
+        "contraindications": [],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Haldi Doodh",
+        "name_hindi": "हल्दी दूध (Golden Milk)",
+        "ingredients": ["Warm milk 1 cup", "Haldi (turmeric) 1/4 tsp", "Kali mirch (black pepper) a pinch", "Ghee 1/2 tsp optional"],
+        "method": "Warm milk. Add haldi and black pepper. Stir well. Drink hot before bedtime.",
+        "method_hindi": "Doodh garam karo. Haldi aur kali mirch daalo. Achhi tarah gholo. Raat ko sone se pehle piyo.",
+        "frequency": "Once at bedtime",
+        "indication": "Sardi, khansi, immunity boost",
+        "contraindications": ["Lactose intolerance"],
+        "age_safe": "2+"
+      }
+    ]
+  },
+  {
+    "id": "nr002",
+    "ailment": "Cough",
+    "ailment_hindi": "Khansi",
+    "symptoms_keywords": ["cough", "khansi", "throat", "gala", "dry cough", "wet cough", "phlegm", "balgam"],
+    "remedies": [
+      {
+        "name": "Adrak-Shahad",
+        "name_hindi": "अदरक और शहद",
+        "ingredients": ["Fresh ginger juice 1 tsp", "Raw honey (Shahad) 1 tsp"],
+        "method": "Mix fresh ginger juice with raw honey. Lick slowly, do not swallow immediately. Let it coat the throat.",
+        "method_hindi": "Adrak ka ras nikaal ke shahad ke saath mix karo. Thoda thoda chatko, seedha mat niglo.",
+        "frequency": "3-4 times daily",
+        "indication": "Dry cough, sore throat, gale ki khansi",
+        "contraindications": ["Honey not for children under 1 year"],
+        "age_safe": "2+"
+      },
+      {
+        "name": "Mulethi (Licorice Root) Chew",
+        "name_hindi": "मुलेठी",
+        "ingredients": ["Mulethi stick (licorice root)"],
+        "method": "Chew a small piece of mulethi stick slowly. Alternatively, boil in water and drink as tea.",
+        "method_hindi": "Mulethi ki choti si dali ko dhire dhire chabao.",
+        "frequency": "2-3 times daily",
+        "indication": "Dry cough, hoarseness, gala baithe hone par",
+        "contraindications": ["High blood pressure", "Pregnancy"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Kali Mirch-Ghee",
+        "name_hindi": "काली मिर्च और घी",
+        "ingredients": ["Black pepper powder 1/4 tsp", "Desi ghee 1 tsp"],
+        "method": "Mix black pepper powder in warm ghee. Consume slowly. Best taken on empty stomach.",
+        "method_hindi": "Kali mirch powder ko garam ghee mein mila ke chaat lo. Khali pet khaao.",
+        "frequency": "Morning on empty stomach",
+        "indication": "Balgam wali khansi, chest congestion",
+        "contraindications": [],
+        "age_safe": "3+"
+      }
+    ]
+  },
+  {
+    "id": "nr003",
+    "ailment": "Sore Throat",
+    "ailment_hindi": "Gale Mein Dard / Kharaash",
+    "symptoms_keywords": ["sore throat", "throat pain", "gala dard", "gale mein kharaash", "tonsils"],
+    "remedies": [
+      {
+        "name": "Namak Paani Gargle",
+        "name_hindi": "नमक पानी गरारे",
+        "ingredients": ["Warm water 1 glass", "Salt (Namak) 1/2 tsp"],
+        "method": "Dissolve salt in warm water. Gargle for 30 seconds, spit out. Repeat 3-4 times.",
+        "method_hindi": "Garam paani mein namak gholo. 30 second garare karo. Thuko. 3-4 baar karo.",
+        "frequency": "3-4 times daily",
+        "indication": "Gale ki kharaash, dard, hafka",
+        "contraindications": ["High blood pressure patients — use less salt"],
+        "age_safe": "6+"
+      },
+      {
+        "name": "Haldi-Namak Gargle",
+        "name_hindi": "हल्दी-नमक गरारे",
+        "ingredients": ["Warm water 1 glass", "Haldi (turmeric) 1/4 tsp", "Salt 1/2 tsp"],
+        "method": "Mix turmeric and salt in warm water. Gargle deeply for 30 seconds.",
+        "method_hindi": "Garam paani mein haldi aur namak mila ke garare karo.",
+        "frequency": "3 times daily",
+        "indication": "Inflamed throat, tonsils, infection",
+        "contraindications": [],
+        "age_safe": "8+"
+      }
+    ]
+  },
+  {
+    "id": "nr004",
+    "ailment": "Indigestion / Acidity",
+    "ailment_hindi": "Acidity / Badan Bhari / Pet Bhari",
+    "symptoms_keywords": ["acidity", "indigestion", "bloating", "gas", "heartburn", "pet mein jalan", "gas", "bhuk nahi", "heaviness"],
+    "remedies": [
+      {
+        "name": "Ajwain Paani",
+        "name_hindi": "अजवाइन का पानी",
+        "ingredients": ["Ajwain (carom seeds) 1 tsp", "Water 1 cup", "Black salt (Kala namak) a pinch"],
+        "method": "Dry roast ajwain, boil in water for 5 minutes. Strain, add black salt. Drink warm.",
+        "method_hindi": "Ajwain ko halka bhuuno, paani mein 5 min ubalo. Chaan ke kala namak daalke piyo.",
+        "frequency": "After meals, 1-2 times daily",
+        "indication": "Gas, bloating, pet bhari feel, afara",
+        "contraindications": ["Pregnancy (in large amounts)"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Jeera Paani",
+        "name_hindi": "जीरा पानी",
+        "ingredients": ["Jeera (cumin seeds) 1 tsp", "Water 1 cup"],
+        "method": "Boil cumin seeds in water for 5 minutes. Strain and drink warm, preferably before meals.",
+        "method_hindi": "Jeera paani mein 5 min ubalo. Chaan ke piyo, khaane se pehle best hai.",
+        "frequency": "Before meals, 2 times daily",
+        "indication": "Indigestion, gas, bhaari pet",
+        "contraindications": [],
+        "age_safe": "3+"
+      },
+      {
+        "name": "Saunf Post-Meal",
+        "name_hindi": "सौंफ खाना",
+        "ingredients": ["Saunf (fennel seeds) 1 tsp"],
+        "method": "Chew a teaspoon of fennel seeds slowly after every meal.",
+        "method_hindi": "Khaane ke baad ek chammach saunf dhire dhire chabao.",
+        "frequency": "After every meal",
+        "indication": "Bloating, gas, khana pachana, munh ki baadboo",
+        "contraindications": [],
+        "age_safe": "2+"
+      },
+      {
+        "name": "Hing-Ajwain Water",
+        "name_hindi": "हींग-अजवाइन पानी",
+        "ingredients": ["Hing (asafoetida) a pinch", "Ajwain 1/2 tsp", "Water 1 cup", "Kala namak a pinch"],
+        "method": "Add hing and ajwain to boiling water. Boil 3 minutes. Strain and drink hot.",
+        "method_hindi": "Ubalta paani mein hing aur ajwain daalo. 3 min ubalo. Piyo.",
+        "frequency": "Once after a heavy meal",
+        "indication": "Immediate gas relief, pet mein dard from gas",
+        "contraindications": [],
+        "age_safe": "5+"
+      }
+    ]
+  },
+  {
+    "id": "nr005",
+    "ailment": "Headache",
+    "ailment_hindi": "Sar Dard",
+    "symptoms_keywords": ["headache", "sar dard", "migraine", "head pain", "sir mein dard", "tension headache"],
+    "remedies": [
+      {
+        "name": "Peppermint Oil Temple Massage",
+        "name_hindi": "पुदीना तेल मालिश",
+        "ingredients": ["Peppermint essential oil 2-3 drops", "Carrier oil (coconut/til) 1 tsp"],
+        "method": "Mix oils and massage gently on temples and forehead in circular motions. Inhale deeply.",
+        "method_hindi": "Dono oil mix karo. Mathe aur kanak pe gol gol maalish karo. Gehri saansein lo.",
+        "frequency": "As needed",
+        "indication": "Tension headache, migraine",
+        "contraindications": ["Not near eyes"],
+        "age_safe": "6+"
+      },
+      {
+        "name": "Adrak Paste Forehead",
+        "name_hindi": "अदरक का लेप",
+        "ingredients": ["Fresh ginger 1 inch piece"],
+        "method": "Grind fresh ginger to a paste. Apply gently on forehead. Wash off after 15 minutes.",
+        "method_hindi": "Adrak pees ke paste banao. Mathe pe lagao. 15 min baad dholo.",
+        "frequency": "Once during episode",
+        "indication": "Sinus headache, cold-related headache",
+        "contraindications": ["Sensitive skin — patch test first"],
+        "age_safe": "10+"
+      },
+      {
+        "name": "Giloy Juice",
+        "name_hindi": "गिलोय का रस",
+        "ingredients": ["Giloy stem 6 inches", "Water 1 cup"],
+        "method": "Boil giloy stem in water for 10 minutes. Strain and drink. Also available as giloy tablets.",
+        "method_hindi": "Giloy ki dandi paani mein 10 min ubalo. Chaan ke piyo.",
+        "frequency": "Once daily in morning",
+        "indication": "Recurring headaches, fever, immunity",
+        "contraindications": ["Autoimmune diseases", "Pregnancy"],
+        "age_safe": "5+"
+      }
+    ]
+  },
+  {
+    "id": "nr006",
+    "ailment": "Fever",
+    "ailment_hindi": "Bukhar",
+    "symptoms_keywords": ["fever", "bukhar", "temperature", "body heat", "thandi lagana", "garmi lagana"],
+    "remedies": [
+      {
+        "name": "Tulsi-Giloy Kadha",
+        "name_hindi": "तुलसी-गिलोय काढ़ा",
+        "ingredients": ["Tulsi 10-12 leaves", "Giloy stem 5 inches", "Adrak 1 small piece", "Water 2 cups"],
+        "method": "Boil all ingredients for 15 minutes until water reduces to 1 cup. Strain, drink warm.",
+        "method_hindi": "Sab kuch 2 cup paani mein 15 min ubalo. Chaan ke piyo.",
+        "frequency": "Twice daily",
+        "indication": "Viral fever, dengue fever support, immunity",
+        "contraindications": [],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Cold Wet Cloth on Forehead",
+        "name_hindi": "Mathe pe Thanda Kapda",
+        "ingredients": ["Cold water", "Soft cloth"],
+        "method": "Soak cloth in cold water. Wring out and place on forehead. Change every 5-10 minutes.",
+        "method_hindi": "Kapda thande paani mein bhigao. Nicho ke mathe pe rakho. 5-10 min mein badlo.",
+        "frequency": "As needed during high fever",
+        "indication": "High fever immediate relief",
+        "contraindications": ["Ice-cold water not recommended — use room temp cold water"],
+        "age_safe": "0+"
+      }
+    ]
+  },
+  {
+    "id": "nr007",
+    "ailment": "Nausea / Vomiting",
+    "ailment_hindi": "Ji Machlana / Ulti",
+    "symptoms_keywords": ["nausea", "ji machlana", "vomiting", "ulti", "motion sickness", "queasy"],
+    "remedies": [
+      {
+        "name": "Adrak Saunf Mix",
+        "name_hindi": "अदरक-सौंफ मिश्रण",
+        "ingredients": ["Dry ginger powder (Sonth) 1/4 tsp", "Saunf powder 1/4 tsp", "Honey 1/2 tsp"],
+        "method": "Mix all together. Lick slowly. Follow with small sips of warm water.",
+        "method_hindi": "Sab mix karo. Dhire chatko. Thoda garam paani piyo.",
+        "frequency": "As needed",
+        "indication": "Ji machlana, ulti ka man, motion sickness",
+        "contraindications": [],
+        "age_safe": "3+"
+      },
+      {
+        "name": "Nimbu Paani with Kaala Namak",
+        "name_hindi": "नींबू-काला नमक पानी",
+        "ingredients": ["Lemon juice (Nimbu) half lemon", "Water 1 glass", "Kala namak 1/4 tsp", "Sugar (optional) 1 tsp"],
+        "method": "Mix lemon juice, black salt and sugar in water. Sip slowly in small amounts.",
+        "method_hindi": "Nimbu ka ras, kala namak aur cheeni paani mein gholo. Thoda thoda piyo.",
+        "frequency": "As needed",
+        "indication": "Nausea, dehydration from vomiting, pet kharab",
+        "contraindications": [],
+        "age_safe": "3+"
+      }
+    ]
+  },
+  {
+    "id": "nr008",
+    "ailment": "Loose Motions / Diarrhoea",
+    "ailment_hindi": "Dast / Loose Motion",
+    "symptoms_keywords": ["diarrhea", "diarrhoea", "loose stool", "dast", "loose motion", "pet kharab", "watery stool"],
+    "remedies": [
+      {
+        "name": "ORS Ghar Pe",
+        "name_hindi": "घर पर ORS",
+        "ingredients": ["Boiled water (cooled) 1 litre", "Salt 1/2 tsp", "Sugar 6 tsp"],
+        "method": "Dissolve salt and sugar in water. Drink 200-250 ml after every loose motion.",
+        "method_hindi": "Namak aur cheeni paani mein gholo. Har dast ke baad 1 glass piyo.",
+        "frequency": "After every loose stool episode",
+        "indication": "Dehydration from loose motions",
+        "contraindications": [],
+        "age_safe": "0+"
+      },
+      {
+        "name": "Curd with Kela",
+        "name_hindi": "दही-केला",
+        "ingredients": ["Plain curd (Dahi) 1 bowl", "Ripe banana (Kela) 1"],
+        "method": "Mash banana into curd and eat slowly. Best eaten at room temperature.",
+        "method_hindi": "Kele ko dahi mein massal ke khao.",
+        "frequency": "2-3 times daily",
+        "indication": "Loose motions, gut recovery",
+        "contraindications": [],
+        "age_safe": "1+"
+      },
+      {
+        "name": "Isabgol",
+        "name_hindi": "इसबगोल",
+        "ingredients": ["Isabgol (psyllium husk) 1 tsp", "Curd or water 1 glass"],
+        "method": "Mix isabgol in curd or water immediately and drink before it thickens.",
+        "method_hindi": "Isabgol dahi ya paani mein mila ke jaldi piyo warna gaadha ho jaata hai.",
+        "frequency": "1-2 times daily",
+        "indication": "Both loose motions and constipation",
+        "contraindications": ["Drink plenty of water with it"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Adrak-Jeera Chawal Paani",
+        "name_hindi": "चावल का पानी (Kanji)",
+        "ingredients": ["Rice 1/4 cup", "Water 2 cups", "Adrak (ginger) small piece", "Jeera 1/2 tsp", "Salt a pinch"],
+        "method": "Boil rice with ginger and cumin until mushy. Drink the starchy water, eat the rice too.",
+        "method_hindi": "Chawal, adrak, jeera namak ke saath 2 cup paani mein pakao. Paani piyo, chawal bhi khao.",
+        "frequency": "2-3 times daily",
+        "indication": "Loose motions, weak digestion, gut recovery",
+        "contraindications": [],
+        "age_safe": "1+"
+      }
+    ]
+  },
+  {
+    "id": "nr009",
+    "ailment": "Constipation",
+    "ailment_hindi": "Kabz",
+    "symptoms_keywords": ["constipation", "kabz", "hard stool", "no bowel movement", "toilet nahi hona", "pet saaf nahi"],
+    "remedies": [
+      {
+        "name": "Warm Water with Nimbu-Shahad",
+        "name_hindi": "गुनगुना नींबू-शहद पानी",
+        "ingredients": ["Warm water 1 glass", "Lemon juice half lemon", "Honey 1 tsp"],
+        "method": "Mix and drink first thing in the morning on empty stomach.",
+        "method_hindi": "Subah uthke khali pet sabse pehle piyo.",
+        "frequency": "Every morning",
+        "indication": "Chronic constipation, pet saaf karna",
+        "contraindications": [],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Triphala before Bed",
+        "name_hindi": "त्रिफला",
+        "ingredients": ["Triphala powder 1/2 tsp", "Warm water 1 glass"],
+        "method": "Mix triphala in warm water. Drink at bedtime.",
+        "method_hindi": "Raat ko sone se pehle garam paani mein triphala mila ke piyo.",
+        "frequency": "Nightly",
+        "indication": "Chronic kabz, digestion, detox",
+        "contraindications": ["Pregnancy", "Diarrhea"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Kela aur Doodh",
+        "name_hindi": "केला-दूध",
+        "ingredients": ["Ripe banana 2", "Warm milk 1 glass"],
+        "method": "Eat 2 ripe bananas before bedtime, followed by a glass of warm milk.",
+        "method_hindi": "Raat ko 2 pake kele khao, saath mein ek glass garam doodh piyo.",
+        "frequency": "Nightly",
+        "indication": "Mild to moderate constipation",
+        "contraindications": [],
+        "age_safe": "3+"
+      }
+    ]
+  },
+  {
+    "id": "nr010",
+    "ailment": "Joint Pain / Arthritis",
+    "ailment_hindi": "Jodo Mein Dard / Gathiya",
+    "symptoms_keywords": ["joint pain", "arthritis", "jodo mein dard", "gathiya", "knee pain", "ghutne ka dard", "swollen joints"],
+    "remedies": [
+      {
+        "name": "Sarso Tel Maalish",
+        "name_hindi": "सरसों तेल मालिश",
+        "ingredients": ["Sarso tel (mustard oil) 2 tbsp", "Lehsun (garlic) 3-4 cloves", "Ajwain 1 tsp"],
+        "method": "Heat mustard oil with garlic and ajwain until garlic turns golden. Cool to warm temp. Massage on painful joints for 10-15 mins.",
+        "method_hindi": "Sarso tel mein lehsun aur ajwain daalo. Garlic sone jaisi ho tab tak pakao. Thanda karo. Jodo pe 15 min maalish karo.",
+        "frequency": "Once or twice daily",
+        "indication": "Joint pain, stiffness, arthritis",
+        "contraindications": ["Open wounds", "Inflamed hot joints"],
+        "age_safe": "10+"
+      },
+      {
+        "name": "Haldi-Adrak Anti-Inflammatory Milk",
+        "name_hindi": "हल्दी-अदरक दूध",
+        "ingredients": ["Warm milk 1 cup", "Haldi 1/2 tsp", "Adrak powder (sonth) 1/4 tsp", "Kali mirch a pinch"],
+        "method": "Stir all into warm milk. Drink before bed.",
+        "method_hindi": "Sab garam doodh mein mila ke sone se pehle piyo.",
+        "frequency": "Nightly",
+        "indication": "Arthritis, joint inflammation, soojan",
+        "contraindications": [],
+        "age_safe": "6+"
+      }
+    ]
+  },
+  {
+    "id": "nr011",
+    "ailment": "Back Pain",
+    "ailment_hindi": "Kamar Dard",
+    "symptoms_keywords": ["back pain", "kamar dard", "lower back", "backache", "disc", "spine"],
+    "remedies": [
+      {
+        "name": "Warm Sarso Tel Maalish",
+        "name_hindi": "गरम सरसों तेल",
+        "ingredients": ["Sarso tel 3 tbsp", "Sendha namak (rock salt) 1 tsp"],
+        "method": "Warm mustard oil and dissolve rock salt. Massage on lower back with firm circular strokes. Wrap with a warm cloth after.",
+        "method_hindi": "Sarso tel garam karo, namak gholo. Kamar pe gol maalish karo. Baad mein garam kapda bando.",
+        "frequency": "Once daily before bath",
+        "indication": "Lower back pain, muscle stiffness",
+        "contraindications": [],
+        "age_safe": "10+"
+      },
+      {
+        "name": "Methi Dana Kadha",
+        "name_hindi": "मेथी दाना काढ़ा",
+        "ingredients": ["Methi dana (fenugreek seeds) 1 tsp", "Water 2 cups"],
+        "method": "Soak methi overnight. Boil in the morning for 10 minutes. Strain and drink.",
+        "method_hindi": "Raat ko methi bhigo do. Subah 10 min ubaal ke chaan lo piyo.",
+        "frequency": "Once every morning",
+        "indication": "Chronic back pain, inflammation",
+        "contraindications": ["Pregnancy", "Blood thinners"],
+        "age_safe": "12+"
+      }
+    ]
+  },
+  {
+    "id": "nr012",
+    "ailment": "Skin Rash / Itching",
+    "ailment_hindi": "Kharish / Daane / Khujli",
+    "symptoms_keywords": ["itching", "khujli", "rash", "daane", "skin irritation", "urticaria", "eczema", "pimples", "acne"],
+    "remedies": [
+      {
+        "name": "Neem Paste",
+        "name_hindi": "नीम का लेप",
+        "ingredients": ["Neem leaves 10-15"],
+        "method": "Grind neem leaves to a paste with a little water. Apply to affected area. Wash after 20 minutes.",
+        "method_hindi": "Neem ki pattiyan pees ke paste banao. Prabhavit jagah pe lagao. 20 min baad dholo.",
+        "frequency": "Once or twice daily",
+        "indication": "Skin rash, itching, infection, acne",
+        "contraindications": [],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Multani Mitti-Rose Water Pack",
+        "name_hindi": "मुल्तानी मिट्टी",
+        "ingredients": ["Multani mitti 2 tbsp", "Gulab jal (rose water) enough to make paste"],
+        "method": "Mix into a paste. Apply on face/skin. Leave until dry (15-20 min). Wash with cool water.",
+        "method_hindi": "Gulab jal mein multani mitti milao. Chehra pe lagao. Sukne tak rakho. Thande paani se dholo.",
+        "frequency": "2-3 times per week",
+        "indication": "Oily skin, acne, tan, pimples",
+        "contraindications": ["Very dry skin"],
+        "age_safe": "12+"
+      }
+    ]
+  },
+  {
+    "id": "nr013",
+    "ailment": "Toothache",
+    "ailment_hindi": "Daant Dard",
+    "symptoms_keywords": ["toothache", "daant dard", "tooth pain", "cavity pain", "gum pain"],
+    "remedies": [
+      {
+        "name": "Laung (Clove) on Tooth",
+        "name_hindi": "लौंग दाँत पर",
+        "ingredients": ["Laung (cloves) 1-2"],
+        "method": "Place a clove directly on the painful tooth and bite gently. Keep for 10-15 minutes. The eugenol in cloves is a natural anesthetic.",
+        "method_hindi": "Ek laung dard wale daant pe rakh ke dhire dabao. 10-15 min rakho.",
+        "frequency": "As needed for pain relief",
+        "indication": "Toothache, temporary pain relief",
+        "contraindications": ["Not a replacement for dental treatment"],
+        "age_safe": "8+"
+      },
+      {
+        "name": "Clove Oil",
+        "name_hindi": "लौंग का तेल",
+        "ingredients": ["Clove oil 2-3 drops", "Cotton bud"],
+        "method": "Apply clove oil to a cotton bud. Dab directly on the aching tooth and surrounding gums.",
+        "method_hindi": "Laung ka tel cotton bud pe lagao. Dard wali jagah pe lagao.",
+        "frequency": "As needed",
+        "indication": "Toothache, gum pain",
+        "contraindications": ["Dilute before use — can burn if pure"],
+        "age_safe": "12+"
+      }
+    ]
+  },
+  {
+    "id": "nr014",
+    "ailment": "Eye Strain / Tired Eyes",
+    "ailment_hindi": "Aankhen Thakna / Aankhon Mein Jalan",
+    "symptoms_keywords": ["eye strain", "tired eyes", "aankh mein jalan", "red eyes", "lal aankh", "puffy eyes"],
+    "remedies": [
+      {
+        "name": "Rose Water Eye Drops",
+        "name_hindi": "गुलाब जल आँखों में",
+        "ingredients": ["Pure gulab jal (rose water)"],
+        "method": "Use a dropper or cotton pad. Apply 1-2 drops of pure rose water in eyes, or place soaked cotton pads on closed eyelids for 10 minutes.",
+        "method_hindi": "Shudh gulab jal ki 1-2 boond aankhon mein daalo ya cotton pad aankhon pe rakho.",
+        "frequency": "1-2 times daily",
+        "indication": "Eye strain, redness, irritation, dryness",
+        "contraindications": ["Use only pure, filtered rose water"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Palming (Cold Water)",
+        "name_hindi": "आँखों को ठंडा पानी",
+        "ingredients": ["Cold water"],
+        "method": "Splash cold water on closed eyes. Then rub palms together, cup them over closed eyes and rest in darkness.",
+        "method_hindi": "Bandh aankhon pe thanda paani maro. Haath ki hatheli aankh pe rakh ke andhere mein aaram karo.",
+        "frequency": "As needed",
+        "indication": "Screen fatigue, tired eyes, red eyes",
+        "contraindications": [],
+        "age_safe": "5+"
+      }
+    ]
+  },
+  {
+    "id": "nr015",
+    "ailment": "Insomnia / Sleep Problems",
+    "ailment_hindi": "Neend Na Aana",
+    "symptoms_keywords": ["insomnia", "sleep", "neend nahi", "raat ko jaagna", "sleeplessness", "anxiety", "restless"],
+    "remedies": [
+      {
+        "name": "Warm Milk with Jaiphal",
+        "name_hindi": "जायफल वाला दूध",
+        "ingredients": ["Warm milk 1 cup", "Jaiphal (nutmeg) a pinch (1/8 tsp max)", "Honey 1 tsp"],
+        "method": "Add a tiny pinch of nutmeg to warm milk with honey. Drink 30 minutes before bed.",
+        "method_hindi": "Garam doodh mein bahut thoda jaiphal aur shahad daalo. Sone se 30 min pehle piyo.",
+        "frequency": "Nightly",
+        "indication": "Insomnia, anxiety-related sleep issues",
+        "contraindications": ["Do NOT use more than a pinch — nutmeg is toxic in large amounts"],
+        "age_safe": "10+"
+      },
+      {
+        "name": "Brahmi Tel Head Massage",
+        "name_hindi": "ब्राह्मी तेल",
+        "ingredients": ["Brahmi tel (oil) 1-2 tsp"],
+        "method": "Warm oil slightly. Massage into scalp gently for 10 minutes before bedtime. Leave overnight.",
+        "method_hindi": "Thoda garam brahmi tel sir mein 10 min maalish karo. Raat bhar rakho.",
+        "frequency": "3-4 nights per week",
+        "indication": "Stress, poor sleep, anxiety, mind shant karna",
+        "contraindications": [],
+        "age_safe": "5+"
+      }
+    ]
+  },
+  {
+    "id": "nr016",
+    "ailment": "Diabetes Management (Supportive)",
+    "ailment_hindi": "Madhumeh / Sugar (Support)",
+    "symptoms_keywords": ["diabetes", "sugar", "madhumeh", "blood sugar", "high glucose"],
+    "remedies": [
+      {
+        "name": "Karela Juice",
+        "name_hindi": "करेले का रस",
+        "ingredients": ["Bitter gourd (Karela) 1 medium", "Water 1/4 cup"],
+        "method": "Blend karela, strain the juice. Drink 30 ml on empty stomach in the morning.",
+        "method_hindi": "Karela ka juice nikaal ke subah khali pet piyo.",
+        "frequency": "Once daily in morning",
+        "indication": "Blood sugar management support",
+        "contraindications": ["Pregnancy", "Low blood pressure", "Not a replacement for medication"],
+        "age_safe": "18+"
+      },
+      {
+        "name": "Methi Dana Soaked",
+        "name_hindi": "भिगी हुई मेथी",
+        "ingredients": ["Methi dana (fenugreek seeds) 1-2 tsp", "Water"],
+        "method": "Soak methi in water overnight. Eat the seeds and drink the water in the morning on an empty stomach.",
+        "method_hindi": "Raat ko methi paani mein bhigao. Subah khali pet daane khao aur paani piyo.",
+        "frequency": "Every morning",
+        "indication": "Blood sugar control, digestion",
+        "contraindications": ["Pregnancy (large amounts)", "Blood thinners"],
+        "age_safe": "18+"
+      }
+    ]
+  },
+  {
+    "id": "nr017",
+    "ailment": "Stress / Anxiety",
+    "ailment_hindi": "Tension / Chinta / Ghabrahat",
+    "symptoms_keywords": ["stress", "anxiety", "tension", "chinta", "ghabrahat", "nervous", "panic", "overthinking"],
+    "remedies": [
+      {
+        "name": "Ashwagandha Milk",
+        "name_hindi": "अश्वगंधा दूध",
+        "ingredients": ["Warm milk 1 cup", "Ashwagandha powder 1/4 to 1/2 tsp", "Honey 1 tsp"],
+        "method": "Mix ashwagandha in warm milk. Add honey. Drink at bedtime.",
+        "method_hindi": "Ashwagandha powder garam doodh mein milo. Shahad daalo. Raat ko piyo.",
+        "frequency": "Nightly",
+        "indication": "Stress, anxiety, fatigue, neend na aana",
+        "contraindications": ["Pregnancy", "Autoimmune disease", "Thyroid medication"],
+        "age_safe": "16+"
+      },
+      {
+        "name": "Warm Sesame Oil Foot Massage",
+        "name_hindi": "पैरों की तिल तेल मालिश",
+        "ingredients": ["Til tel (sesame oil) 2-3 tbsp"],
+        "method": "Warm sesame oil. Massage feet thoroughly, especially the soles, for 10 minutes before bed.",
+        "method_hindi": "Til tel garam karo. Sone se pehle pair, khaas ke talave ki 10 min maalish karo.",
+        "frequency": "Nightly",
+        "indication": "Stress, insomnia, nervous system calming ('vata pacifying')",
+        "contraindications": [],
+        "age_safe": "5+"
+      }
+    ]
+  },
+  {
+    "id": "nr018",
+    "ailment": "Hair Fall",
+    "ailment_hindi": "Baal Jhadna / Baal Girna",
+    "symptoms_keywords": ["hair fall", "hair loss", "baal girna", "baal jhadna", "baldness", "thinning hair"],
+    "remedies": [
+      {
+        "name": "Amla-Brahmi Hair Mask",
+        "name_hindi": "आँवला-ब्राह्मी हेयर मास्क",
+        "ingredients": ["Amla (Indian gooseberry) powder 2 tbsp", "Brahmi powder 1 tbsp", "Coconut oil enough to make paste"],
+        "method": "Mix powders with coconut oil to form paste. Apply to scalp, massage. Leave 30-45 mins, wash off.",
+        "method_hindi": "Dono powder nariyal tel mein milao. Sir ki jad mein lagao, maalish karo. 45 min baad dholo.",
+        "frequency": "Once or twice weekly",
+        "indication": "Hair fall, scalp nourishment, dandruff",
+        "contraindications": [],
+        "age_safe": "10+"
+      },
+      {
+        "name": "Pyaaz ka Ras (Onion Juice)",
+        "name_hindi": "प्याज का रस",
+        "ingredients": ["Red onion (Pyaaz) 1 medium"],
+        "method": "Blend and strain onion. Apply juice to scalp with cotton. Leave 30 minutes, wash with mild shampoo.",
+        "method_hindi": "Pyaaz ka ras nikalo. Cotton se sir ki jad mein lagao. 30 min baad dholo.",
+        "frequency": "2-3 times per week",
+        "indication": "Hair fall, hair regrowth",
+        "contraindications": ["Strong smell — use at home"],
+        "age_safe": "12+"
+      }
+    ]
+  },
+  {
+    "id": "nr019",
+    "ailment": "Sunburn",
+    "ailment_hindi": "Dhoop se Jalna",
+    "symptoms_keywords": ["sunburn", "dhoop se jalna", "sun rash", "red skin from sun", "skin burn"],
+    "remedies": [
+      {
+        "name": "Aloevera Gel",
+        "name_hindi": "एलोवेरा जेल",
+        "ingredients": ["Fresh aloe vera gel from plant"],
+        "method": "Slice aloe leaf, scoop out gel. Apply directly to sunburned skin. Leave on.",
+        "method_hindi": "Aloe vera ka gel seedha sunburned jaga pe lagao. Rehne do.",
+        "frequency": "As needed, multiple times daily",
+        "indication": "Sunburn, skin inflammation, redness",
+        "contraindications": ["Aloe allergy (rare)"],
+        "age_safe": "All ages"
+      },
+      {
+        "name": "Cold Dahi (Yoghurt) Pack",
+        "name_hindi": "ठंडी दही लेप",
+        "ingredients": ["Plain cold dahi (yoghurt)"],
+        "method": "Apply cold plain yoghurt to sunburned area. The lactic acid soothes burn. Leave 15 minutes, rinse gently.",
+        "method_hindi": "Thanda sada dahi sunburn pe lagao. 15 min den ke baad thande paani se dholo.",
+        "frequency": "2-3 times daily",
+        "indication": "Sunburn, skin cooling",
+        "contraindications": [],
+        "age_safe": "All ages"
+      }
+    ]
+  },
+  {
+    "id": "nr020",
+    "ailment": "Urinary Tract Infection (Mild)",
+    "ailment_hindi": "Peshab Mein Jalan (Mild)",
+    "symptoms_keywords": ["UTI", "urinary", "peshab mein jalan", "burning urination", "frequent urination", "peshab baar baar"],
+    "remedies": [
+      {
+        "name": "Coriander (Dhaniya) Seed Water",
+        "name_hindi": "धनिया पानी",
+        "ingredients": ["Dhaniya beej (coriander seeds) 1 tsp", "Water 2 cups"],
+        "method": "Boil coriander seeds in water for 10 minutes. Cool to warm. Drink throughout the day.",
+        "method_hindi": "Dhaniya beej paani mein 10 min ubalo. Thanda karo. Din mein thoda thoda piyo.",
+        "frequency": "3-4 glasses daily",
+        "indication": "Mild UTI, peshab mein jalan",
+        "contraindications": ["Seek doctor for severe UTI — this is supportive only"],
+        "age_safe": "5+"
+      },
+      {
+        "name": "Coconut Water",
+        "name_hindi": "नारियल पानी",
+        "ingredients": ["Fresh coconut water (Nariyal paani)"],
+        "method": "Drink 2-3 glasses of fresh coconut water daily. Acts as a natural diuretic and soother.",
+        "method_hindi": "Din mein 2-3 glass nariyal paani piyo.",
+        "frequency": "2-3 glasses daily",
+        "indication": "UTI, dehydration, kidney support",
+        "contraindications": ["Kidney disease — check potassium levels"],
+        "age_safe": "3+"
+      }
+    ]
+  }
+]

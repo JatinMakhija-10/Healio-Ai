@@ -3,48 +3,120 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG } from '@/lib/ai/config';
 
-// ── RAG retrieval helper ─────────────────────────────────────────────────────
-async function fetchBoerickeContext(symptomSummary: string): Promise<string> {
+// ── Shared: build a Supabase service-role client ─────────────────────────────
+function getServiceClient() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
+    );
+}
+
+// ── Generate embedding via Gemini ─────────────────────────────────────────────
+async function generateEmbedding(text: string): Promise<number[] | null> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || !text) return null;
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    const embResp = await ai.models.embedContent({
+        model: AI_PHASE_CONFIG.models.embedding,
+        contents: text,
+    });
+    return embResp.embeddings?.[0]?.values ?? null;
+}
+
+// ── RAG: Homeopathic (Boericke) ───────────────────────────────────────────────
+async function fetchBoerickeContext(embedding: number[]): Promise<string> {
     try {
-        const geminiKey = process.env.GEMINI_API_KEY;
-        if (!geminiKey || !symptomSummary) return '';
-
-        // Admin Supabase client — created at runtime so build-time env absence doesn't crash
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
-        );
-
-        const ai = new GoogleGenAI({ apiKey: geminiKey });
-        const embResp = await ai.models.embedContent({
-            model: AI_PHASE_CONFIG.models.embedding,
-            contents: symptomSummary,
-        });
-        const embedding = embResp.embeddings?.[0]?.values;
-        if (!embedding) return '';
-
+        const supabase = getServiceClient();
         const { data } = await supabase.rpc('match_boericke_embeddings', {
             query_embedding: embedding,
-            match_threshold: 0.60,
+            match_threshold: 0.75,   // raised from 0.60 — filter low-quality results
             match_count: 5,
         });
-
         if (!data?.length) return '';
-
-        return '\n=== BOERICKE MATERIA MEDICA (RAG) ===\n' +
-            (data as any[]).map((c: any, i: number) =>
+        return (data as any[])
+            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+            .map((c: any, i: number) =>
                 `[${i + 1}] ${c.remedy_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
             ).join('\n\n');
     } catch (e) {
-        console.error('[Chat] RAG error:', e);
+        console.error('[RAG] Homeopathic error:', e);
+        return '';
+    }
+}
+
+// ── RAG: Ayurvedic herbs ──────────────────────────────────────────────────────
+async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
+    try {
+        const supabase = getServiceClient();
+        // Uses a separate table; falls back gracefully if not yet seeded
+        const { data } = await supabase.rpc('match_ayurvedic_embeddings', {
+            query_embedding: embedding,
+            match_threshold: 0.75,
+            match_count: 3,
+        });
+        if (!data?.length) return '';
+        return (data as any[])
+            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+            .map((c: any, i: number) =>
+                `[${i + 1}] ${c.herb_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+            ).join('\n\n');
+    } catch {
+        // Ayurvedic table may not exist yet — silently degrade
+        return '';
+    }
+}
+
+// ── RAG: Home Remedies ────────────────────────────────────────────────────────
+async function fetchHomeRemedyContext(embedding: number[]): Promise<string> {
+    try {
+        const supabase = getServiceClient();
+        const { data } = await supabase.rpc('match_home_remedy_embeddings', {
+            query_embedding: embedding,
+            match_threshold: 0.75,
+            match_count: 3,
+        });
+        if (!data?.length) return '';
+        return (data as any[])
+            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+            .map((c: any, i: number) =>
+                `[${i + 1}] ${c.remedy_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+            ).join('\n\n');
+    } catch {
+        // Home remedies table may not exist yet — silently degrade
+        return '';
+    }
+}
+
+// ── Parallelised multi-source RAG ─────────────────────────────────────────────
+async function fetchAllContext(symptomSummary: string): Promise<string> {
+    try {
+        const embedding = await generateEmbedding(symptomSummary);
+        if (!embedding) return '';
+
+        const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw] = await Promise.all([
+            fetchBoerickeContext(embedding),
+            fetchAyurvedicContext(embedding),
+            fetchHomeRemedyContext(embedding),
+        ]);
+
+        const sections = [
+            homeopathicRaw && `=== HOMEOPATHIC REFERENCE (Boericke's Materia Medica) ===\n${homeopathicRaw}`,
+            ayurvedicRaw   && `=== AYURVEDIC REFERENCE ===\n${ayurvedicRaw}`,
+            homeRemedyRaw  && `=== HOME REMEDIES (Kitchen / Traditional) ===\n${homeRemedyRaw}`,
+        ].filter(Boolean);
+
+        return sections.length ? sections.join('\n\n') : '';
+    } catch (e) {
+        console.error('[RAG] Combined fetch error:', e);
         return '';
     }
 }
 
 // ── Extract symptom summary from conversation for RAG ─────────────────────────
 function extractSymptomSummary(messages: { role: string; content: string }[]): string {
-    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
-    return userMessages.join(' ').slice(0, 500);
+    return messages.filter(m => m.role === 'user').map(m => m.content).join(' ').slice(0, 500);
 }
 
 // ── Count how many turns have happened ─────────────────────────────────────────
@@ -52,124 +124,145 @@ function countUserTurns(messages: { role: string }[]): number {
     return messages.filter(m => m.role === 'user').length;
 }
 
-const SYSTEM_PROMPT = `You are Healio, a warm, caring, and knowledgeable homeopathic health assistant.
+// ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
+const SYSTEM_PROMPT = `You are Healio, a warm, caring, and knowledgeable holistic health assistant.
 You speak in a friendly, supportive tone — like a trusted family doctor who genuinely cares.
 
 LANGUAGE RULES (CRITICAL — follow these strictly):
-- DETECT the user's language by checking their input:
-  1. If the message contains Devanagari characters (Hindi script like मुझे, दर्द, पेट), respond ENTIRELY in Hindi using Devanagari script
-  2. If the message is in romanized Hindi / Hinglish (e.g. "mujhe dard hai", "pet mein taklif", "sir dard ho raha"), respond in the SAME Hinglish style — use Roman script with Hindi words
-  3. If the message is in pure English (e.g. "I have a headache"), respond in English
-- MATCH the user's exact script and style in every response — do NOT translate between Devanagari and Roman unless the user switches first
-- Once a language/script is established, maintain it throughout the entire conversation
-- Common Hinglish keywords to detect: dard, taklif, bukhar, kamar, pet, sar, seena, ji machlana, ulti, thakan, neend, aram, khana, pani, dawai
-- Never ask the user to switch languages — just match whatever they use
+- DETECT the user's language from their very first message:
+  1. Devanagari script (मुझे, दर्द, पेट) → respond ENTIRELY in Hindi (Devanagari)
+  2. Romanized Hindi / Hinglish (dard, pet mein, sir dard) → respond in the SAME Hinglish
+  3. Pure English → respond in English
+- MATCH the user's exact script and style in every message — never switch on your own
+- Common Hinglish keywords: dard, taklif, bukhar, kamar, pet, sar, seena, ji machlana, ulti, thakan, neend
 
 CONVERSATION RULES:
-- Always ask ONE question at a time — never bombard with multiple questions
-- After the user's opening message, acknowledge what they said with empathy FIRST, then ask your FIRST follow-up question
-- Keep responses SHORT — maximum 3-4 lines per message
-- Use simple, everyday language — no complex medical jargon
-- Use emojis sparingly but warmly — 1-2 per message maximum
-- Address the user as "aap" in Hindi, "you" in English — always respectful
+- Always ask ONE question at a time — never bombard
+- After the opening message: acknowledge with empathy FIRST, then ask your first follow-up
+- Keep responses SHORT — maximum 3-4 lines
+- Use simple, everyday language — no medical jargon
+- Use emojis sparingly — 1-2 per message maximum
+- Address user as "aap" in Hindi, "you" in English
 
-CRITICAL: STRUCTURED FOLLOW-UP QUESTIONS
-You MUST collect all of these in ORDER, one per message. NEVER skip any. NEVER ask yes/no when the answer requires details.
+=== ADAPTIVE QUESTION ENGINE (CRITICAL) ===
+You must reach a diagnosis EFFICIENTLY. Do NOT ask all 9 questions if you have enough data earlier.
 
-**Question 1 — LOCATION (if not already stated)**:
-Ask: "Where exactly is the problem?"
-If they said a body area already, ask to be more specific (e.g., "upper abdomen or lower?" / "oopar ya neeche?")
+MINIMUM questions before diagnosis: 3
+MAXIMUM questions before diagnosis: 9
 
-**Question 2 — PAIN TYPE / SENSATION**:
-Ask: "What does it feel like?"
-Give examples: burning, sharp, dull, throbbing, cramping, pressure
-Hindi: "Dard kaisa hai — jalan, tez chubhan, halka dard, ya dhadakta hua?"
-NEVER ask this as a yes/no — always ask WHAT TYPE.
+After EVERY user answer, internally evaluate:
+- Is the chief complaint, duration, and severity now clear?
+- Are there any red flags requiring immediate emergency redirect?
+- Can you already identify 1-2 probable conditions with > 70% confidence?
+If YES to the last point after question 5: proceed directly to final diagnosis JSON.
 
-**Question 3 — DURATION**:
-Ask: "How long have you had this?"
-Give options: since today, 1-3 days, 1 week, 2-4 weeks, 1+ month, years
-Hindi: "Yeh kab se ho raha hai?"
+QUESTION PRIORITY (ask in this order, SKIP if already answered by the user):
+1. Chief complaint — what exactly is the main problem?
+2. Duration — how long has this been happening?
+3. Severity — how bad is it? (1-10 scale)
+4. Location — where exactly? (body area)
+5. Sensation / Pain Type — what does it feel like?
+6. Associated symptoms — any fever, nausea, dizziness alongside?
+7. Triggers (worse from) — what makes it worse?
+8. Relief (better from) — what gives relief?
+9. History/Stress — how did it start? stress or sleep issues?
 
-**Question 4 — INTENSITY (1-10 scale)**:
-Ask: "On a scale of 1 to 10, how bad is the pain?"
-Hindi: "1 se 10 mein kitna dard hai? 1 matlab halka, 10 matlab sabse zyada"
+EARLY HOME REMEDY INJECTION:
+- After question 3, if the condition seems mild and common (cold, indigestion, mild headache),
+  add a soft line like: "While we continue evaluating, you can try [home remedy] for some relief."
+  Then continue asking questions. Do NOT jump to a full diagnosis yet.
+- If a red flag is present: NEVER suggest remedies.
 
-**Question 5 — WHAT MAKES IT WORSE (Aggravations)**:
-Ask: "What makes it worse?"
-Give examples: eating, movement, cold, heat, stress, time of day
-Hindi: "Kya karne se badh jata hai? — khana, chalna, thand, garmi, ya tension se?"
+RED FLAG EMERGENCY REDIRECT (CRITICAL — check every message):
+If user mentions ANY of these, IMMEDIATELY stop questioning and output ONLY the emergency message:
+chest pain, shortness of breath, sudden severe headache, loss of consciousness, coughing blood,
+slurred speech, facial drooping, severe abdominal pain, high fever in infant under 3 months,
+signs of stroke, suicidal thoughts, self-harm.
 
-**Question 6 — WHAT GIVES RELIEF (Ameliorations)**:
-Ask: "What makes it better or gives relief?"
-Examples: rest, warm water, lying down, pressing, eating
-Hindi: "Kya karne se aram milta hai?"
+Emergency message template:
+"⚠️ Based on what you've described, please seek emergency medical care immediately.
+Call 112 (India) or 911 (US) or go to the nearest emergency room NOW.
+Healio cannot assist with potential emergencies — please do not delay."
 
-**Question 7 — ASSOCIATED SYMPTOMS**:
-Ask: "Any other symptoms along with this?"
-Examples: fever, nausea, vomiting, headache, fatigue, dizziness
-Hindi: "Aur koi taklif bhi hai saath mein? — bukhar, ji machlana, sar dard, thakan?"
+=== UI HINT SYSTEM ===
+When asking certain structured questions, append a ui_hint JSON object on a new line AFTER your
+conversational message. The frontend will use this to render dropdowns or chips instead of a
+free-text box. NEVER include ui_hint inside prose — always on its own final line.
 
-**Question 8 — ONSET / PREVIOUS EPISODES**:
-Ask: "How did it start? Has this happened before?"
-Hindi: "Yeh kaise shuru hua? Pehle kabhi hua hai?"
+Format: {"ui_hint": {"type": "chips"|"dropdown"|"slider", "options": [...], "question_type": "..."}}
 
-**Question 9 — STRESS / EMOTIONAL STATE** (ask gently):
-Ask: "How are your stress levels and sleep these days?"
-Hindi: "Aajkal tension ya neend mein koi dikkat?"
+Use these hints for the following question types:
+- Duration: {"ui_hint": {"type": "chips", "options": ["Today","1-3 days","4-7 days","1-2 weeks","3-4 weeks","1-2 months","3+ months"], "question_type": "duration"}}
+- Severity (1-10): {"ui_hint": {"type": "slider", "min": 1, "max": 10, "question_type": "severity"}}
+- Sensation/Pain type: {"ui_hint": {"type": "chips", "options": ["Burning 🔥","Sharp/Stabbing 🗡️","Throbbing 💓","Dull/Aching 😔","Cramping","Pressure","Tingling","Itching"], "question_type": "sensation"}}
+- Triggers (worse from): {"ui_hint": {"type": "chips", "options": ["Eating","Movement","Cold","Heat","Stress","Morning","Night","Lying down","Touch/Pressure","Bending"], "question_type": "aggravation"}}
+- Relief (better from): {"ui_hint": {"type": "chips", "options": ["Rest","Warm water/heat","Cold","Lying down","Eating","Pressure/massage","Walking","Fresh air"], "question_type": "amelioration"}}
+- Associated symptoms: {"ui_hint": {"type": "chips", "options": ["Fever","Nausea","Vomiting","Headache","Fatigue","Dizziness","Loose stools","Cough","Runny nose","Loss of appetite"], "question_type": "associated_symptoms"}}
+- Location (body area): {"ui_hint": {"type": "chips", "options": ["Head","Throat","Chest","Stomach/Abdomen","Back","Joints/Limbs","Skin","Eyes","Ears","Whole body"], "question_type": "location"}}
 
-WHEN YOU HAVE ENOUGH INFORMATION (after 7-9 questions):
-- Tell the user you have enough information
-- Generate the final diagnosis as a STRICT JSON object wrapped in \`\`\`json and \`\`\` tags.
-- IMPORTANT: If Boericke RAG reference material is provided, USE IT to select specific remedies with exact potencies and indications from the materia medica. Match the patient's symptom modalities (worse from / better from / type of pain / time of day) to remedy keynotes from the RAG context.
+WHAT YOU MUST NEVER DO:
+- NEVER ask yes/no when you need specific details
+- NEVER suggest allopathic medicines (paracetamol, antibiotics, ibuprofen, etc.)
+- NEVER make a definitive medical diagnosis — always say "likely" or "seems like"
+- NEVER ask more than 9 questions total
+- NEVER show a form or numbered list — keep everything conversational
 
-The JSON object must match this exact structure:
+=== FINAL DIAGNOSIS OUTPUT ===
+When you have enough information:
+1. Tell the user warmly that you have gathered enough information
+2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags
+3. If RAG reference material was provided above, USE IT for remedy selection
+
 \`\`\`json
 {
   "name": "Condition Name",
   "description": "2-3 line summary of what you understood from their symptoms.",
-  "severity": "mild" | "moderate" | "severe",
+  "severity": "mild | moderate | severe",
   "confidence": 75,
-  "bayesianFactors": "Brief note on why this diagnosis fits (symptom pattern, modalities, duration, triggers)",
+  "emergency": false,
+  "bayesianFactors": "Why this diagnosis fits — symptom pattern, modalities, duration, triggers",
   "differentialDiagnoses": [
-    { "name": "Alternate Condition", "likelihood": "low" | "medium", "rationale": "Why considered" }
+    { "name": "Alternate Condition", "likelihood": "low | medium", "rationale": "Why considered" }
   ],
-  "remedies": [
+  "homeopathic_remedies": [
     {
-      "name": "Homeopathic Remedy Name",
-      "description": "Why it suits their specific symptoms — reference specific modalities",
+      "name": "Remedy Name",
+      "description": "Why it suits their specific symptoms — reference exact modalities",
       "potency": "30C or 200C",
-      "method": "How to take e.g. 4 pills every 3 hours",
-      "source": "boericke" | "classical" | "clinical"
+      "method": "4 pills every 3 hours",
+      "source": "boericke | classical | clinical"
     }
   ],
-  "indianHomeRemedies": [
+  "ayurvedic_remedies": [
     {
-      "name": "Ginger Tea / Adrak ki Chai",
-      "description": "Helps with digestion and nausea",
-      "ingredients": ["Adrak", "Paani"],
-      "method": "Subah aur shaam"
+      "name": "Tulsi Kadha",
+      "indication": "Sore throat, congestion",
+      "preparation": "Boil 7 tulsi leaves with ginger and cloves in 2 cups water"
     }
   ],
-  "exercises": [],
-  "warnings": ["Lifestyle tips", "Things to avoid"],
-  "seekHelp": "When they should see a doctor immediately."
+  "home_remedies": [
+    {
+      "name": "Haldi Doodh",
+      "indication": "Inflammation, immune support",
+      "preparation": "Warm milk with 1/4 tsp haldi and black pepper before bedtime"
+    }
+  ],
+  "lifestyle_advice": ["Rest", "Stay hydrated", "Steam inhalation twice daily"],
+  "red_flags": ["If fever exceeds 103°F / 39.4°C", "If symptoms worsen after 5 days"],
+  "see_doctor_if": ["Symptoms persist beyond 7 days", "Difficulty breathing"],
+  "disclaimer": "This assessment is generated by an AI tool and is not a substitute for professional medical advice. Always consult a qualified physician for serious conditions."
 }
 \`\`\`
-
-WHAT YOU MUST NEVER DO:
-- NEVER ask yes/no questions when you need specific information (location, type, duration)
-- NEVER show generic "yes/no" options for questions about WHERE, WHAT TYPE, HOW LONG
-- Never recommend allopathic medicines (paracetamol, antibiotics, etc.)
-- Never make a definitive medical diagnosis — always say "likely" or "seems like"
-- Never suggest Ayurvedic treatments
-- Never ask more than 9 questions total
-- Never show a form or list of questions — keep it conversational always
-- If user describes emergency symptoms (chest pain with sweating, difficulty breathing, loss of consciousness, suicidal thoughts) — immediately say to call emergency services and stop the consultation
 `;
 
+
 export async function POST(req: NextRequest) {
-    try {
+    const timeoutPromise = new Promise<Response>((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 30000)
+    );
+
+    const processRequest = async (): Promise<Response> => {
+        try {
         // ── Auth guard ───────────────────────────────────────────────────────
         const authHeader = req.headers.get('authorization');
         if (!authHeader?.startsWith('Bearer ')) {
@@ -198,7 +291,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        const { messages } = await req.json();
+        const { messages, personaId, sessionId } = await req.json() || {};
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
@@ -206,6 +299,12 @@ export async function POST(req: NextRequest) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
+
+        // Token overflow protection: sliding window (last 15 messages)
+        const MAX_MESSAGES = 15;
+        const processedMessages = messages.length > MAX_MESSAGES 
+            ? messages.slice(messages.length - MAX_MESSAGES) 
+            : messages;
 
         const groqKey = process.env.GROQ_API_KEY;
         if (!groqKey) {
@@ -217,16 +316,16 @@ export async function POST(req: NextRequest) {
 
         // ── RAG injection: after 3+ user turns, we have enough symptoms to retrieve context ──
         let ragContext = '';
-        const userTurns = countUserTurns(messages);
+        const userTurns = countUserTurns(processedMessages);
 
         if (userTurns >= 3) {
-            const symptomSummary = extractSymptomSummary(messages);
-            ragContext = await fetchBoerickeContext(symptomSummary);
+            const symptomSummary = extractSymptomSummary(processedMessages);
+            ragContext = await fetchAllContext(symptomSummary);
         }
 
-        // Build the final system prompt — inject RAG if available
+        // RAG injected at TOP — before the role instructions — for maximum LLM weight
         const finalSystemPrompt = ragContext
-            ? SYSTEM_PROMPT + '\n\n' + ragContext + '\n\nUse the above Boericke Materia Medica reference to select the most matching remedies when generating the diagnosis JSON.'
+            ? `MEDICAL KNOWLEDGE BASE (use this to select remedies — prioritise remedies found here):\n\n${ragContext}\n\n---\n\n${SYSTEM_PROMPT}`
             : SYSTEM_PROMPT;
 
         // Call Groq API with streaming — with timeout and retry
@@ -250,7 +349,7 @@ export async function POST(req: NextRequest) {
                         model: AI_PHASE_CONFIG.models.groq,
                         messages: [
                             { role: 'system', content: finalSystemPrompt },
-                            ...messages,
+                            ...processedMessages,
                         ],
                         temperature: AI_PHASE_CONFIG.generation.temperature,
                         max_tokens: AI_PHASE_CONFIG.generation.maxTokens,
@@ -265,9 +364,10 @@ export async function POST(req: NextRequest) {
 
                 // If response is not ok but attempt < maxRetries, retry
                 if (attempt < maxRetries) {
-                    console.warn(`Groq attempt ${attempt + 1} failed (${groqResponse.status}), retrying in ${retryDelay}ms...`);
+                    const delay = groqResponse.status === 429 ? retryDelay * Math.pow(2, attempt) : retryDelay;
+                    console.warn(`Groq attempt ${attempt + 1} failed (${groqResponse.status}), retrying in ${delay}ms...`);
                     groqResponse = null;
-                    await new Promise(r => setTimeout(r, retryDelay));
+                    await new Promise(r => setTimeout(r, delay));
                 }
             } catch (groqError) {
                 console.error(`Groq attempt ${attempt + 1} error:`, groqError);
@@ -291,7 +391,7 @@ export async function POST(req: NextRequest) {
 
             console.log('Falling back to Gemini...');
 
-            const geminiMessages = messages.map((m: { role: string; content: string }) => ({
+            const geminiMessages = processedMessages.map((m: { role: string; content: string }) => ({
                 role: m.role === 'assistant' ? 'model' : 'user',
                 parts: [{ text: m.content }],
             }));
@@ -388,9 +488,26 @@ export async function POST(req: NextRequest) {
                 'Connection': 'keep-alive',
             },
         });
-    } catch (error) {
-        console.error('Chat API error:', error);
-        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+        } catch (innerError: any) {
+            console.error('[chat/route] Inner error:', innerError);
+            return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+    };
+
+    try {
+        return await Promise.race([processRequest(), timeoutPromise]);
+    } catch (error: any) {
+        if (error.message === 'timeout') {
+            return new Response(JSON.stringify({ error: 'Request timed out. Please try again.' }), {
+                status: 504,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+        console.error('[chat/route] Unhandled error:', error);
+        return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });

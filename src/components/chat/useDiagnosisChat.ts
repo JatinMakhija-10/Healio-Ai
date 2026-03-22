@@ -20,12 +20,24 @@ import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 
 // ─── Types ───────────────────────────────────────────────────
 
+// ── UI Hint types (parsed from AI streaming messages) ────────────────────────
+export type UiHintType = 'chips' | 'dropdown' | 'slider';
+
+export interface UiHint {
+    type: UiHintType;
+    options?: string[];        // for chips / dropdown
+    min?: number;              // for slider
+    max?: number;              // for slider
+    question_type?: string;    // e.g. 'duration', 'severity', 'sensation'
+}
+
 export type DiagnosisMessage = {
     id: string;
     role: "user" | "assistant";
     content: string;
     type?: "text" | "diagnosis_card" | "options";
     options?: string[];
+    ui_hint?: UiHint;          // structured input control from AI
     diagnosis?: DiagnosisResult;
     uncertainty?: UncertaintyEstimate;
     clinicalRules?: RuleResult[];

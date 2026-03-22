@@ -39,7 +39,11 @@ export default function ConsultPage() {
                 messages[messages.length - 1]?.content.includes("```json") && (
                     <div className="flex justify-center py-3">
                         <button
-                            onClick={resetChat}
+                            onClick={() => {
+                                if (window.confirm("Are you sure? Your current chat will be saved.")) {
+                                    resetChat();
+                                }
+                            }}
                             className="px-6 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-full hover:bg-teal-700 transition-all hover:scale-105 shadow-md"
                         >
                             ✨ Start New Consultation

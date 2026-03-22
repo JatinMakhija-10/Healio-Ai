@@ -131,11 +131,13 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                 </Button>
                             </div>
 
-                            {/* Free Plan (Secondary) */}
                             <div className="text-center pt-2">
                                 <button
                                     className="text-sm text-slate-500 hover:text-slate-800 underline decoration-slate-300 underline-offset-4"
-                                    onClick={() => onOpenChange(false)}
+                                    onClick={() => {
+                                        localStorage.setItem("paywall_dismissed_at", new Date().toISOString());
+                                        onOpenChange(false);
+                                    }}
                                 >
                                     Continue with {PLANS.free.name}
                                 </button>

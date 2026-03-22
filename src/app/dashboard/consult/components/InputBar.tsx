@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Send, Mic, MicOff } from "lucide-react";
+import { Send, Mic, MicOff, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface InputBarProps {
@@ -141,7 +141,7 @@ export function InputBar({
                                 }`}
                             aria-label="Send message"
                         >
-                            <Send size={18} />
+                            {isInputDisabled ? <Loader2 size={18} className="animate-spin text-teal-600" /> : <Send size={18} />}
                         </button>
                     </div>
                 </div>

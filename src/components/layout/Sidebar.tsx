@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { PHASE_CONFIG } from "@/lib/phaseConfig";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const allSidebarItems = [
     {
@@ -77,6 +79,16 @@ const sidebarItems = allSidebarItems.filter(item => item.visible);
 export function Sidebar() {
     const pathname = usePathname();
     const { logout } = useAuth();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            await logout();
+        } finally {
+            setIsLoggingOut(false); // Might unmount before hitting this, which is fine
+        }
+    };
 
     return (
         <div className="flex h-full flex-col border-r border-slate-200 bg-white w-64 hidden md:flex">
@@ -133,12 +145,13 @@ export function Sidebar() {
             {/* Footer */}
             <div className="px-4 py-4 border-t border-slate-100">
                 <button
-                    className="w-full flex items-center gap-3 rounded-lg text-left text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150"
+                    className="w-full flex items-center gap-3 rounded-lg text-left text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ padding: "10px 12px", fontSize: "13.5px", fontWeight: 500 }}
-                    onClick={logout}
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
                 >
-                    <LogOut size={18} />
-                    Sign Out
+                    {isLoggingOut ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                    {isLoggingOut ? "Signing Out..." : "Sign Out"}
                 </button>
             </div>
         </div>

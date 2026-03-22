@@ -17,7 +17,8 @@ import {
     ArrowRight,
     Lock,
     Dumbbell,
-    Clock
+    Clock,
+    Copy
 } from "lucide-react";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,11 @@ export function DiagnosisResultCard({
             setIsPremium(status === 'plus' || status === 'pro');
         });
     }, []);
+
+    // Null check to prevent crashes if payload is incomplete
+    if (!condition) {
+        return null;
+    }
 
     // Gather all critical warnings (condition-specific + general alerts)
     const allWarnings = [
@@ -162,7 +168,20 @@ export function DiagnosisResultCard({
                             <p className="text-sm text-teal-700 mt-1 opacity-90">{condition.description}</p>
                         </div>
                         {/* Premium Report Download Button */}
-                        <div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const text = `Condition: ${condition.name}\nDescription: ${condition.description}\n\nDisclaimer: Healio is an AI health assistant for informational purposes only.`;
+                                    navigator.clipboard.writeText(text);
+                                }}
+                                className="bg-white text-teal-700 hover:bg-teal-50 border-teal-200 gap-2 h-9"
+                                aria-label="Copy to clipboard"
+                            >
+                                <Copy className="h-4 w-4" />
+                                <span className="hidden sm:inline">Copy</span>
+                            </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -180,7 +199,7 @@ export function DiagnosisResultCard({
                                 ) : (
                                     <Share2 className="h-4 w-4" />
                                 )}
-                                {isGenerating ? "Exporting..." : !isPremium ? "Unlock Report" : "Share Report"}
+                                {isGenerating ? "Exporting..." : !isPremium ? "Unlock Report" : "Share"}
                             </Button>
                         </div>
                     </div>

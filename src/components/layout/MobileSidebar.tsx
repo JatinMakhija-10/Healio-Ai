@@ -12,8 +12,10 @@ import {
     LogOut,
     Stethoscope,
     X,
-    BookOpen
+    BookOpen,
+    Loader2
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,6 +71,17 @@ interface MobileSidebarProps {
 export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     const pathname = usePathname();
     const { logout } = useAuth();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            await logout();
+            onClose(); // Close sidebar after logout
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -131,14 +144,12 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                         <div className="p-4 border-t border-slate-100">
                             <Button
                                 variant="ghost"
-                                className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                    logout();
-                                    onClose();
-                                }}
+                                className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                onClick={handleLogout}
+                                disabled={isLoggingOut}
                             >
-                                <LogOut size={18} />
-                                Sign Out
+                                {isLoggingOut ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                                {isLoggingOut ? "Signing Out..." : "Sign Out"}
                             </Button>
                         </div>
                     </motion.div>

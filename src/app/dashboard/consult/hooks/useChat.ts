@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -26,6 +26,29 @@ export function useChat(): UseChatReturn {
     const [isLoading, setIsLoading] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
     const { user } = useAuth();
+
+    // Load session persistence on mount
+    useEffect(() => {
+        try {
+            const saved = sessionStorage.getItem("healio_current_chat");
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Convert string dates back to Date objects
+                const withDates = parsed.map((m: any) => ({
+                    ...m,
+                    timestamp: new Date(m.timestamp)
+                }));
+                setMessages(withDates);
+            }
+        } catch (e) {
+            console.error("Failed to load session chat", e);
+        }
+    }, []);
+
+    // Save to session persistence whenever messages change
+    useEffect(() => {
+        sessionStorage.setItem("healio_current_chat", JSON.stringify(messages));
+    }, [messages]);
 
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
@@ -256,6 +279,7 @@ export function useChat(): UseChatReturn {
         if (abortRef.current) abortRef.current.abort();
         setMessages([]);
         setIsLoading(false);
+        sessionStorage.removeItem("healio_current_chat");
     }, []);
 
     return { messages, isLoading, sendMessage, resetChat };
