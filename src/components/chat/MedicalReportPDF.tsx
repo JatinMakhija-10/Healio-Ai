@@ -335,7 +335,7 @@ export const MedicalReportDocument = ({
                 <View style={styles.section}>
                     <Text style={styles.columnTitle}>Suggested Management</Text>
                     <View style={styles.remedyGrid}>
-                        {condition.remedies.map((rem, i) => (
+                        {(condition.remedies || []).map((rem, i) => (
                             <View key={i} style={styles.remedyCard}>
                                 <Text style={styles.remedyTitle}>{rem.name}</Text>
                                 <Text style={styles.remedyDescription}>{rem.description}</Text>

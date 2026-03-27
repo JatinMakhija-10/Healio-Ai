@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+
 export type SubscriptionPlan = 'free' | 'plus' | 'pro';
 
 export interface PlanDetails {
@@ -18,7 +20,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
         currency: 'INR',
         features: [
             'Basic AI Diagnosis',
-            '3 Daily Consultations',
+            '10 Monthly Consultations',
             'Community Support'
         ]
     },
@@ -53,30 +55,50 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
 };
 
 export async function createCheckoutSession(planId: string): Promise<{ url: string }> {
-    // Mock network delay
+    // Mock network delay — replace with real Stripe integration later
     await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // In a real app, this would call your backend endpoint responsible for 
-    // creating a Stripe Checkout Session
     console.log(`[MOCK STRIPE] Creating checkout session for plan: ${planId}`);
-
     return {
-        // For testing, we just simulate a success URL callback
         url: `/dashboard/billing/success?plan=${planId}`
     };
 }
 
 export async function getSubscriptionStatus(): Promise<SubscriptionPlan> {
-    // Mock network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return 'free';
 
-    // Randomly return 'free' or 'plus' for demo, or read from localStorage
-    // For now, default to free
-    return 'free';
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('subscription_plan')
+            .eq('id', user.id)
+            .single();
+
+        if (error || !profile?.subscription_plan) return 'free';
+        return profile.subscription_plan as SubscriptionPlan;
+    } catch {
+        // Fallback to free if DB query fails (e.g., column not yet migrated)
+        return 'free';
+    }
 }
 
 export async function cancelSubscription(): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(`[MOCK STRIPE] Subscription cancelled`);
-    return true;
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({ subscription_plan: 'free' })
+            .eq('id', user.id);
+
+        if (error) {
+            console.error('Failed to cancel subscription:', error);
+            return false;
+        }
+        return true;
+    } catch {
+        console.error('[cancelSubscription] Error');
+        return false;
+    }
 }

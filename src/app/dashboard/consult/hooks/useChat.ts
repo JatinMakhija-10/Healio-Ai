@@ -185,6 +185,24 @@ export function useChat(): UseChatReturn {
                 });
 
                 if (!response.ok) {
+                    // Handle usage limit (429)
+                    if (response.status === 429) {
+                        const errorData = await response.json().catch(() => ({}));
+                        if (errorData.code === 'USAGE_LIMIT') {
+                            setMessages((prev) =>
+                                prev.map((m) =>
+                                    m.id === assistantId
+                                        ? {
+                                            ...m,
+                                            content: `You've used all ${errorData.limit} free consultations this month. 🌟\n\nUpgrade to **Healio Plus** for unlimited consultations, PDF reports, and family profiles.\n\nYour limit resets on ${errorData.resets_at ? new Date(errorData.resets_at).toLocaleDateString() : 'next month'}.`,
+                                        }
+                                        : m
+                                )
+                            );
+                            setIsLoading(false);
+                            return;
+                        }
+                    }
                     throw new Error(`API error: ${response.status}`);
                 }
 

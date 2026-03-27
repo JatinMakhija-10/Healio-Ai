@@ -505,9 +505,12 @@ export function DiagnosisResultCard({
 
                     {/* Phase 1 — Disclaimer (Always Visible) */}
                     <div className="p-4 border-t border-amber-100 bg-amber-50/50">
-                        <p className="text-xs text-amber-700 leading-relaxed">
+                        <p className="text-xs text-amber-700 leading-relaxed italic">
                             <AlertTriangle className="h-3 w-3 inline mr-1" />
-                            <strong>Disclaimer:</strong> Healio is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment. These suggestions are for informational purposes only — please consult a qualified homeopathic practitioner before taking any remedy.
+                            <strong>Disclaimer:</strong>{" "}
+                            {(condition as any).disclaimer
+                                ? (condition as any).disclaimer
+                                : "Healio is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment. These suggestions are for informational purposes only — please consult a qualified practitioner before taking any remedy."}
                         </p>
                     </div>
 

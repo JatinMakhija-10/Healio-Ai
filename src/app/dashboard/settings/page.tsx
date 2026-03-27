@@ -19,7 +19,8 @@ import {
     Clock,
     ChevronUp,
     Activity,
-    User
+    User,
+    Mic
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -55,6 +56,9 @@ export default function SettingsPage() {
     const [showUncertainty, setShowUncertainty] = useState(true);
     const [detailedExplanations, setDetailedExplanations] = useState(true);
 
+    // Voice Input Language State
+    const [speechLang, setSpeechLang] = useState("en-IN");
+
     // Emergency Contact State
     const [emergencyContact, setEmergencyContact] = useState({ name: "", phone: "" });
 
@@ -85,6 +89,9 @@ export default function SettingsPage() {
         if (savedEmergency) {
             setEmergencyContact(JSON.parse(savedEmergency));
         }
+
+        const savedSpeechLang = localStorage.getItem("healio_speech_lang");
+        if (savedSpeechLang) setSpeechLang(savedSpeechLang);
     }, [profile]);
 
     const handleSaveProfile = async () => {
@@ -483,6 +490,40 @@ export default function SettingsPage() {
                             <p className="text-sm text-slate-500">Show reasoning behind the diagnosis.</p>
                         </div>
                         <Switch checked={detailedExplanations} onToggle={toggleDetailed} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Voice Input */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <Mic className="h-5 w-5 text-teal-600" />
+                        <CardTitle>Voice Input</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="speechLang">Speech Recognition Language</Label>
+                        <p className="text-sm text-slate-500">Choose the language used when you tap the mic button during consultations.</p>
+                        <select
+                            id="speechLang"
+                            value={speechLang}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setSpeechLang(val);
+                                localStorage.setItem("healio_speech_lang", val);
+                            }}
+                            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        >
+                            <option value="en-IN">English (India)</option>
+                            <option value="hi-IN">Hindi (हिन्दी)</option>
+                            <option value="ta-IN">Tamil (தமிழ்)</option>
+                            <option value="te-IN">Telugu (తెలుగు)</option>
+                        </select>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+                        💡 Tip: Tap the microphone icon in the chat to speak your symptoms instead of typing. Works best in Chrome.
                     </div>
                 </CardContent>
             </Card>

@@ -47,7 +47,11 @@ export function useVoiceInput(): UseVoiceInputReturn {
         if (!SpeechRecognitionAPI) return;
 
         const recognition = new SpeechRecognitionAPI();
-        recognition.lang = "hi-IN"; // Hindi primary
+        // Read user's preferred language from Settings, default to en-IN
+        const preferredLang = typeof window !== "undefined"
+            ? localStorage.getItem("healio_speech_lang") || "en-IN"
+            : "en-IN";
+        recognition.lang = preferredLang;
         recognition.interimResults = false; // Set to false since we only want final to avoid duplication
         recognition.continuous = false;
         recognition.maxAlternatives = 1;
@@ -75,7 +79,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
             console.error("Speech recognition error:", event.error);
 
             // Only attempt language fallback if explicitly 'language-not-supported'
-            if (event.error === "language-not-supported" && recognition.lang === "hi-IN") {
+            if (event.error === "language-not-supported" && recognition.lang !== "en-IN") {
                 recognition.lang = "en-IN";
                 try {
                     recognition.start();

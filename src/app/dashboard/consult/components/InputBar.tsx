@@ -79,7 +79,7 @@ export function InputBar({
 
     const placeholderText = widgetActive
         ? "Select an option above or type here..."
-        : "Apni problem batayein...";
+        : "Describe your symptoms here...";
 
     return (
         <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-3 md:px-6 md:py-4 z-10">
@@ -92,7 +92,7 @@ export function InputBar({
                         exit={{ opacity: 0, y: 4 }}
                         className="text-center text-xs text-red-500 font-medium mb-2"
                     >
-                        🎤 Sun raha hoon... (Listening...)
+                        🎤 Listening...
                     </motion.div>
                 )}
             </AnimatePresence>

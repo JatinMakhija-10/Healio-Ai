@@ -291,6 +291,30 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        // ── Usage gating ─────────────────────────────────────────────────────
+        const serviceClient = getServiceClient();
+        try {
+            const { data: usageResult, error: usageError } = await serviceClient
+                .rpc('increment_chat_count', { p_user_id: user.id });
+            
+            if (!usageError && usageResult && !usageResult.allowed) {
+                return new Response(JSON.stringify({
+                    error: 'Monthly consultation limit reached',
+                    code: 'USAGE_LIMIT',
+                    current_count: usageResult.current_count,
+                    limit: usageResult.limit,
+                    plan: usageResult.plan,
+                    resets_at: usageResult.resets_at,
+                }), {
+                    status: 429,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+        } catch (usageErr) {
+            // If RPC doesn't exist yet (migration not run), allow the request through
+            console.warn('[chat/route] Usage check skipped:', usageErr);
+        }
+
         const { messages, personaId, sessionId } = await req.json() || {};
 
         if (!messages || !Array.isArray(messages)) {
@@ -298,6 +322,39 @@ export async function POST(req: NextRequest) {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
+        }
+
+        // ── Persona injection ────────────────────────────────────────────────
+        let personaContext = '';
+        if (personaId) {
+            try {
+                const { data: persona } = await serviceClient
+                    .from('personas')
+                    .select('name, age, gender, relation, conditions, allergies')
+                    .eq('id', personaId)
+                    .eq('user_id', user.id)
+                    .single();
+                
+                if (persona) {
+                    const parts = [
+                        `Patient Profile: ${persona.name}`,
+                        persona.age ? `Age: ${persona.age} years` : null,
+                        persona.gender ? `Gender: ${persona.gender}` : null,
+                        persona.relation ? `Relation: ${persona.relation}` : null,
+                        persona.conditions?.length ? `Pre-existing conditions: ${persona.conditions.join(', ')}` : null,
+                        persona.allergies ? `Allergies: ${persona.allergies}` : null,
+                    ].filter(Boolean).join(', ');
+                    
+                    personaContext = `\n\n=== PATIENT CONTEXT ===\n${parts}\n`;
+                    
+                    // Child-safe mode for young patients
+                    if (persona.age && persona.age <= 12) {
+                        personaContext += `IMPORTANT: This patient is a child (${persona.age} years old). Use gentle, age-appropriate language. Always emphasize consulting a pediatrician. Avoid suggesting any adult-dose remedies.\n`;
+                    }
+                }
+            } catch (personaErr) {
+                console.warn('[chat/route] Persona fetch skipped:', personaErr);
+            }
         }
 
         // Token overflow protection: sliding window (last 15 messages)
@@ -324,9 +381,14 @@ export async function POST(req: NextRequest) {
         }
 
         // RAG injected at TOP — before the role instructions — for maximum LLM weight
-        const finalSystemPrompt = ragContext
+        // Persona context appended after system prompt for patient-specific adaptation
+        let finalSystemPrompt = ragContext
             ? `MEDICAL KNOWLEDGE BASE (use this to select remedies — prioritise remedies found here):\n\n${ragContext}\n\n---\n\n${SYSTEM_PROMPT}`
             : SYSTEM_PROMPT;
+        
+        if (personaContext) {
+            finalSystemPrompt += personaContext;
+        }
 
         // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
