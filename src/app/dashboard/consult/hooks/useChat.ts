@@ -194,12 +194,21 @@ export function useChat(): UseChatReturn {
                                     m.id === assistantId
                                         ? {
                                             ...m,
-                                            content: `You've used all ${errorData.limit} free consultations this month. 🌟\n\nUpgrade to **Healio Plus** for unlimited consultations, PDF reports, and family profiles.\n\nYour limit resets on ${errorData.resets_at ? new Date(errorData.resets_at).toLocaleDateString() : 'next month'}.`,
+                                            content: `___JSON_USAGE_LIMIT___\n${JSON.stringify({
+                                                limit: errorData.limit,
+                                                resets_at: errorData.resets_at,
+                                                current_count: errorData.current_count
+                                            })}`,
                                         }
                                         : m
                                 )
                             );
                             setIsLoading(false);
+                            // Set short timeout then trigger modal
+                            setTimeout(() => {
+                                // We can trigger the global PlanSelectionModal event here if needed,
+                                // but for now, the card itself will have the upgrade button
+                            }, 500);
                             return;
                         }
                     }

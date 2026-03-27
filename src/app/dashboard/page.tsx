@@ -215,7 +215,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-teal-900">
                         Build your persona to unlock more personalized health insights and recommendations.
                     </p>
-                    <Link href="/dashboard/assessment/prakriti" className="shrink-0">
+                    <Link href="/dashboard/family" className="shrink-0">
                         <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white">
                             Build Persona
                         </Button>

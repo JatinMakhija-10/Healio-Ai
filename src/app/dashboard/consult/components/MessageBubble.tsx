@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChatMessage } from "../hooks/useChat";
 import { DiagnosisResultCard } from "@/components/chat/DiagnosisResultCard";
 import { Condition } from "@/lib/diagnosis/types";
+import { UsageLimitCard } from "./UsageLimitCard";
 
 interface MessageBubbleProps {
     message: ChatMessage;
@@ -24,6 +25,18 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     let parsedCondition: Condition | null = null;
     let isParsingJson = false;
 
+    // Usage limit detection
+    let usageLimitData: { limit: number; resets_at: string; current_count: number } | null = null;
+    if (message.content.startsWith("___JSON_USAGE_LIMIT___\n")) {
+        try {
+            const jsonText = message.content.replace("___JSON_USAGE_LIMIT___\n", "");
+            usageLimitData = JSON.parse(jsonText);
+            displayText = ""; // Hide plain text
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     const jsonMatch = message.content.match(/```json\n([\s\S]*?)\n```/);
     if (jsonMatch) {
         // Fully formed JSON block
@@ -35,7 +48,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             // Invalid JSON, just hide it while it streams
             displayText = message.content.split("```json")[0].trim();
         }
-    } else if (message.content.includes("```json")) {
+    } else if (message.content.includes("```json") && !usageLimitData) {
         // Currently streaming the JSON block, hide everything after the marker
         isParsingJson = true;
         displayText = message.content.split("```json")[0].trim();
@@ -66,8 +79,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     }
 
     // Hide bubble completely if it's just an empty string after stripping JSON
-    // but show it if it's generating the card
-    if (!displayText && !parsedCondition && !isParsingJson && !isUser) {
+    // but show it if it's generating the card or if it's a usage limit card
+    if (!displayText && !parsedCondition && !isParsingJson && !isUser && !usageLimitData) {
         return null;
     }
 
@@ -89,6 +102,21 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             <div
                 className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full max-w-[90%] md:max-w-[75%]`}
             >
+                {/* Usage Limit Card */}
+                {usageLimitData && (
+                    <div className="mb-2 w-full">
+                        <UsageLimitCard 
+                            limit={usageLimitData.limit} 
+                            resetsAt={usageLimitData.resets_at} 
+                            onUpgradeClick={() => {
+                                // Will trigger modal if PlanSelectionModal supports global event
+                                // Assuming page will handle layout upgrade logic for now
+                                console.log("Upgrade clicked");
+                            }}
+                        />
+                    </div>
+                )}
+
                 {/* Text Bubble */}
                 {displayText && (
                     <div
