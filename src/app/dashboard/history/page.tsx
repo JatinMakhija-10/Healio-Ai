@@ -112,17 +112,20 @@ export default function HistoryPage() {
                 }
             }
 
-            // Also check localStorage for local history
-            try {
-                const localHistory = JSON.parse(localStorage.getItem('healio_consultation_history') || '[]');
-                // Merge and deduplicate by id
-                const existingIds = new Set(consultations.map(c => c.id));
-                const uniqueLocalHistory = localHistory.filter((c: Consultation) => !existingIds.has(c.id));
-                consultations = [...consultations, ...uniqueLocalHistory];
-                // Sort by date
-                consultations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            } catch (e) {
-                console.error('Failed to load local history:', e);
+            // Also check localStorage for local history (user-specific)
+            if (user) {
+                try {
+                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    // Merge and deduplicate by id
+                    const existingIds = new Set(consultations.map(c => c.id));
+                    const uniqueLocalHistory = localHistory.filter((c: Consultation) => !existingIds.has(c.id));
+                    consultations = [...consultations, ...uniqueLocalHistory];
+                    // Sort by date
+                    consultations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                } catch (e) {
+                    console.error('Failed to load local history:', e);
+                }
             }
 
             setHistory(consultations);

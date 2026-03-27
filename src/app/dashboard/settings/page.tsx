@@ -35,7 +35,7 @@ const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void 
 );
 
 export default function SettingsPage() {
-    const { logout, profile, updateProfile } = useAuth();
+    const { logout, profile, updateProfile, user } = useAuth();
 
     // Profile Editing State
     const [fullName, setFullName] = useState("");
@@ -63,36 +63,42 @@ export default function SettingsPage() {
     const [emergencyContact, setEmergencyContact] = useState({ name: "", phone: "" });
 
     useEffect(() => {
+        // Skip if no user
+        if (!user) return;
+
         // Load profile data from context
         if (profile) {
             setFullName(profile.full_name || "");
             setPhone(profile.phone || "");
         }
 
-        // Load preferences from local storage
-        const savedEmail = localStorage.getItem("settings_email_notif");
-        const savedPush = localStorage.getItem("settings_push_notif");
+        // User-specific key suffix
+        const keySuffix = `_${user.id}`;
+
+        // Load preferences from local storage (user-specific)
+        const savedEmail = localStorage.getItem(`settings_email_notif${keySuffix}`);
+        const savedPush = localStorage.getItem(`settings_push_notif${keySuffix}`);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
         if (savedEmail !== null) setEmailNotif(savedEmail === "true");
         if (savedPush !== null) setPushNotif(savedPush === "true");
 
-        const savedAyurvedic = localStorage.getItem("healio_pref_ayurvedic");
-        const savedUncertainty = localStorage.getItem("healio_pref_uncertainty");
-        const savedDetailed = localStorage.getItem("healio_pref_detailed");
+        const savedAyurvedic = localStorage.getItem(`healio_pref_ayurvedic${keySuffix}`);
+        const savedUncertainty = localStorage.getItem(`healio_pref_uncertainty${keySuffix}`);
+        const savedDetailed = localStorage.getItem(`healio_pref_detailed${keySuffix}`);
 
         if (savedAyurvedic !== null) setAyurvedicMode(savedAyurvedic === "true");
         if (savedUncertainty !== null) setShowUncertainty(savedUncertainty === "true");
         if (savedDetailed !== null) setDetailedExplanations(savedDetailed === "true");
 
-        const savedEmergency = localStorage.getItem("healio_emergency_contact");
+        const savedEmergency = localStorage.getItem(`healio_emergency_contact${keySuffix}`);
         if (savedEmergency) {
             setEmergencyContact(JSON.parse(savedEmergency));
         }
 
-        const savedSpeechLang = localStorage.getItem("healio_speech_lang");
+        const savedSpeechLang = localStorage.getItem(`healio_speech_lang${keySuffix}`);
         if (savedSpeechLang) setSpeechLang(savedSpeechLang);
-    }, [profile]);
+    }, [profile, user]);
 
     const handleSaveProfile = async () => {
         setIsSavingProfile(true);
@@ -118,52 +124,64 @@ export default function SettingsPage() {
     };
 
     const handleSaveEmergency = () => {
-        localStorage.setItem("healio_emergency_contact", JSON.stringify(emergencyContact));
+        if (!user) return;
+        localStorage.setItem(`healio_emergency_contact_${user.id}`, JSON.stringify(emergencyContact));
         alert("Emergency contact saved.");
     };
 
     const toggleEmail = () => {
+        if (!user) return;
         const newVal = !emailNotif;
         setEmailNotif(newVal);
-        localStorage.setItem("settings_email_notif", String(newVal));
+        localStorage.setItem(`settings_email_notif_${user.id}`, String(newVal));
     };
 
     const togglePush = () => {
+        if (!user) return;
         const newVal = !pushNotif;
         setPushNotif(newVal);
-        localStorage.setItem("settings_push_notif", String(newVal));
+        localStorage.setItem(`settings_push_notif_${user.id}`, String(newVal));
     };
 
     const toggleAyurvedic = () => {
+        if (!user) return;
         const newVal = !ayurvedicMode;
         setAyurvedicMode(newVal);
-        localStorage.setItem("healio_pref_ayurvedic", String(newVal));
+        localStorage.setItem(`healio_pref_ayurvedic_${user.id}`, String(newVal));
     };
 
     const toggleUncertainty = () => {
+        if (!user) return;
         const newVal = !showUncertainty;
         setShowUncertainty(newVal);
-        localStorage.setItem("healio_pref_uncertainty", String(newVal));
+        localStorage.setItem(`healio_pref_uncertainty_${user.id}`, String(newVal));
     };
 
     const toggleDetailed = () => {
+        if (!user) return;
         const newVal = !detailedExplanations;
         setDetailedExplanations(newVal);
-        localStorage.setItem("healio_pref_detailed", String(newVal));
+        localStorage.setItem(`healio_pref_detailed_${user.id}`, String(newVal));
     };
 
     const handleClearData = () => {
+        if (!user) return;
         if (confirm("⚠️ Are you sure you want to clear all local history?\n\nThis will permanently delete:\n• All consultation records\n• Diagnosis history\n• Profile data\n\nThis action CANNOT be undone!")) {
             try {
-                // Clear all Healio.AI data from localStorage
+                // Clear all user-specific Healio.AI data from localStorage
+                const keySuffix = `_${user.id}`;
                 const keysToRemove = [
-                    "healio_history",
-                    "healio_user_profile",
-                    "healio_pending_profile",
-                    "healio_pref_ayurvedic",
-                    "healio_pref_uncertainty",
-                    "healio_pref_detailed",
-                    "healio_emergency_contact"
+                    `healio_history${keySuffix}`,
+                    `healio_user_profile${keySuffix}`,
+                    `healio_pending_profile${keySuffix}`,
+                    `healio_pref_ayurvedic${keySuffix}`,
+                    `healio_pref_uncertainty${keySuffix}`,
+                    `healio_pref_detailed${keySuffix}`,
+                    `healio_emergency_contact${keySuffix}`,
+                    `healio_consultation_history${keySuffix}`,
+                    `settings_email_notif${keySuffix}`,
+                    `settings_push_notif${keySuffix}`,
+                    `healio_speech_lang${keySuffix}`
                 ];
 
                 keysToRemove.forEach(key => localStorage.removeItem(key));
@@ -182,10 +200,12 @@ export default function SettingsPage() {
     };
 
     const handleExportData = async () => {
+        if (!user) return;
         try {
-            const historyData = localStorage.getItem("healio_history");
-            const profileData = localStorage.getItem("healio_user_profile");
-            const pendingProfile = localStorage.getItem("healio_pending_profile");
+            const keySuffix = `_${user.id}`;
+            const historyData = localStorage.getItem(`healio_consultation_history${keySuffix}`);
+            const profileData = localStorage.getItem(`healio_user_profile${keySuffix}`);
+            const pendingProfile = localStorage.getItem(`healio_pending_profile${keySuffix}`);
 
             if (!historyData && !profileData && !pendingProfile) {
                 alert("No health data found to export.\n\nPlease complete a consultation first.");
@@ -510,9 +530,10 @@ export default function SettingsPage() {
                             id="speechLang"
                             value={speechLang}
                             onChange={(e) => {
+                                if (!user) return;
                                 const val = e.target.value;
                                 setSpeechLang(val);
-                                localStorage.setItem("healio_speech_lang", val);
+                                localStorage.setItem(`healio_speech_lang_${user.id}`, val);
                             }}
                             className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >

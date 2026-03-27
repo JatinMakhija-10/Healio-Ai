@@ -104,12 +104,14 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
     });
 
     useEffect(() => {
+        // Load preferences - use user-specific keys if user is logged in
+        const prefSuffix = user?.id ? `_${user.id}` : '';
         setPreferences({
-            ayurvedicMode: localStorage.getItem("healio_pref_ayurvedic") !== "false",
-            showUncertainty: localStorage.getItem("healio_pref_uncertainty") !== "false",
-            detailedExplanations: localStorage.getItem("healio_pref_detailed") !== "false",
+            ayurvedicMode: localStorage.getItem(`healio_pref_ayurvedic${prefSuffix}`) !== "false",
+            showUncertainty: localStorage.getItem(`healio_pref_uncertainty${prefSuffix}`) !== "false",
+            detailedExplanations: localStorage.getItem(`healio_pref_detailed${prefSuffix}`) !== "false",
         });
-    }, []);
+    }, [user?.id]);
 
     const addMessage = useCallback((msg: DiagnosisMessage) => {
         setMessages((prev) => [...prev, msg]);
@@ -143,17 +145,21 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
                 clinicalRules: rules,
             };
 
-            try {
-                const existing = JSON.parse(
-                    localStorage.getItem("healio_consultation_history") || "[]"
-                );
-                existing.unshift(consultationData);
-                localStorage.setItem(
-                    "healio_consultation_history",
-                    JSON.stringify(existing.slice(0, 20))
-                );
-            } catch (e) {
-                console.error("Failed to save to localStorage:", e);
+            // Save to localStorage backup (user-specific)
+            if (user) {
+                try {
+                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const existing = JSON.parse(
+                        localStorage.getItem(storageKey) || "[]"
+                    );
+                    existing.unshift(consultationData);
+                    localStorage.setItem(
+                        storageKey,
+                        JSON.stringify(existing.slice(0, 20))
+                    );
+                } catch (e) {
+                    console.error("Failed to save to localStorage:", e);
+                }
             }
 
             if (user) {

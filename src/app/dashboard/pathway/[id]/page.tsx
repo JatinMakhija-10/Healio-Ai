@@ -57,7 +57,9 @@ export default function PathwayPage() {
                 // Initialize day and start date
                 let day = 1;
                 try {
-                    const stored = localStorage.getItem('healio_consultation_history');
+                    // Use user-specific storage key
+                    const storageKey = user?.id ? `healio_consultation_history_${user.id}` : 'healio_consultation_history';
+                    const stored = localStorage.getItem(storageKey);
                     if (stored) {
                         const history = JSON.parse(stored);
                         if (history.length > 0) {

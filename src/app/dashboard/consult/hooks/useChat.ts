@@ -27,10 +27,22 @@ export function useChat(): UseChatReturn {
     const abortRef = useRef<AbortController | null>(null);
     const { user } = useAuth();
 
-    // Load session persistence on mount
+    // Get user-specific storage key
+    const getStorageKey = useCallback(() => {
+        return user?.id ? `healio_current_chat_${user.id}` : null;
+    }, [user?.id]);
+
+    // Load session persistence on mount (user-specific)
     useEffect(() => {
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            // No user logged in, clear any messages
+            setMessages([]);
+            return;
+        }
+
         try {
-            const saved = sessionStorage.getItem("healio_current_chat");
+            const saved = sessionStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 // Convert string dates back to Date objects
@@ -39,16 +51,23 @@ export function useChat(): UseChatReturn {
                     timestamp: new Date(m.timestamp)
                 }));
                 setMessages(withDates);
+            } else {
+                // New user session, start fresh
+                setMessages([]);
             }
         } catch (e) {
             console.error("Failed to load session chat", e);
+            setMessages([]);
         }
-    }, []);
+    }, [getStorageKey]);
 
-    // Save to session persistence whenever messages change
+    // Save to session persistence whenever messages change (user-specific)
     useEffect(() => {
-        sessionStorage.setItem("healio_current_chat", JSON.stringify(messages));
-    }, [messages]);
+        const storageKey = getStorageKey();
+        if (!storageKey) return; // Don't save if no user
+
+        sessionStorage.setItem(storageKey, JSON.stringify(messages));
+    }, [messages, getStorageKey]);
 
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
@@ -101,18 +120,21 @@ export function useChat(): UseChatReturn {
                 confidence: parsedDiagnosis?.confidence || confidence,
             };
 
-            // Save to localStorage backup
-            try {
-                const existing = JSON.parse(
-                    localStorage.getItem("healio_consultation_history") || "[]"
-                );
-                existing.unshift(consultation);
-                localStorage.setItem(
-                    "healio_consultation_history",
-                    JSON.stringify(existing.slice(0, 20))
-                );
-            } catch (e) {
-                console.error("Failed to save to localStorage:", e);
+            // Save to localStorage backup (user-specific)
+            if (user) {
+                try {
+                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const existing = JSON.parse(
+                        localStorage.getItem(storageKey) || "[]"
+                    );
+                    existing.unshift(consultation);
+                    localStorage.setItem(
+                        storageKey,
+                        JSON.stringify(existing.slice(0, 20))
+                    );
+                } catch (e) {
+                    console.error("Failed to save to localStorage:", e);
+                }
             }
 
             // Save to Supabase if authenticated
@@ -306,8 +328,11 @@ export function useChat(): UseChatReturn {
         if (abortRef.current) abortRef.current.abort();
         setMessages([]);
         setIsLoading(false);
-        sessionStorage.removeItem("healio_current_chat");
-    }, []);
+        const storageKey = getStorageKey();
+        if (storageKey) {
+            sessionStorage.removeItem(storageKey);
+        }
+    }, [getStorageKey]);
 
     return { messages, isLoading, sendMessage, resetChat };
 }

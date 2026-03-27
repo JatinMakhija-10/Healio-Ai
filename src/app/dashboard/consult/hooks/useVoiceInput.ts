@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface UseVoiceInputReturn {
     isRecording: boolean;
@@ -17,6 +18,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
     const [transcript, setTranscript] = useState("");
     const recognitionRef = useRef<any>(null);
     const [isSupported, setIsSupported] = useState(false);
+    const { user } = useAuth();
 
     // Detect browser support client-side only to avoid SSR hydration mismatch
     useEffect(() => {
@@ -47,9 +49,10 @@ export function useVoiceInput(): UseVoiceInputReturn {
         if (!SpeechRecognitionAPI) return;
 
         const recognition = new SpeechRecognitionAPI();
-        // Read user's preferred language from Settings, default to en-IN
+        // Read user's preferred language from Settings (user-specific), default to en-IN
+        const langKey = user?.id ? `healio_speech_lang_${user.id}` : "healio_speech_lang";
         const preferredLang = typeof window !== "undefined"
-            ? localStorage.getItem("healio_speech_lang") || "en-IN"
+            ? localStorage.getItem(langKey) || "en-IN"
             : "en-IN";
         recognition.lang = preferredLang;
         recognition.interimResults = false; // Set to false since we only want final to avoid duplication
@@ -105,7 +108,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
             console.error("Failed to start speech recognition:", e);
             setIsRecording(false);
         }
-    }, [isSupported, isRecording]);
+    }, [isSupported, isRecording, user?.id]);
 
     const stopRecording = useCallback(() => {
         if (recognitionRef.current) {

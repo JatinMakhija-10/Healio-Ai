@@ -79,14 +79,17 @@ export default function DashboardPage() {
     }, [user, loading, router]);
 
     useEffect(() => {
-        // Try to recover name from local storage
-        const storedProfile = localStorage.getItem('healio_pending_profile');
-        if (storedProfile) {
-            try {
-                const parsed = JSON.parse(storedProfile);
-                // eslint-disable-next-line
-                if (parsed.full_name) setLocalName(parsed.full_name);
-            } catch (e) { /* ignore */ }
+        // Try to recover name from local storage only if user is logged in
+        if (user) {
+            const storageKey = `healio_pending_profile_${user.id}`;
+            const storedProfile = localStorage.getItem(storageKey);
+            if (storedProfile) {
+                try {
+                    const parsed = JSON.parse(storedProfile);
+                    // eslint-disable-next-line
+                    if (parsed.full_name) setLocalName(parsed.full_name);
+                } catch (e) { /* ignore */ }
+            }
         }
 
         // Fetch history
@@ -97,8 +100,9 @@ export default function DashboardPage() {
                 const parsed = await api.getPatientConsultations(user.id);
                 setHistory(parsed as any[]); // Cast to Consultation type
 
-                // Also update localStorage for backup/offline if needed (optional)
-                localStorage.setItem('healio_consultation_history', JSON.stringify(parsed));
+                // Also update localStorage for backup/offline if needed (user-specific)
+                const historyKey = `healio_consultation_history_${user.id}`;
+                localStorage.setItem(historyKey, JSON.stringify(parsed));
 
                 // PHASE 2 — Care Pathway loading
                 // if (parsed.length > 0) {

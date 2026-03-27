@@ -123,8 +123,9 @@ export default function OnboardingWizard() {
 
         console.log("Phase 1 Profile:", profileData);
 
-        // Always save to localStorage (works even without auth)
-        localStorage.setItem('healio_pending_profile', JSON.stringify(profileData));
+        // Save to localStorage with user-specific key if user is logged in, otherwise use generic key
+        const storageKey = user ? `healio_pending_profile_${user.id}` : 'healio_pending_profile';
+        localStorage.setItem(storageKey, JSON.stringify(profileData));
         console.log("Saved profile to localStorage:", profileData);
 
         if (!user) {
@@ -155,7 +156,7 @@ export default function OnboardingWizard() {
             }
 
             // Clear pending profile from localStorage since it's now saved
-            localStorage.removeItem('healio_pending_profile');
+            localStorage.removeItem(`healio_pending_profile_${user.id}`);
 
             // Force session refresh to ensure AuthContext picks up the new metadata
             const { error: refreshError } = await supabase.auth.refreshSession();

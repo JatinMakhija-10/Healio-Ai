@@ -58,12 +58,13 @@ export default function PrakritiAssessmentPage() {
 
         const result = calculatePrakritiLocal(answers);
 
-        // Update Local Storage
-        const pendingProfile = localStorage.getItem('healio_pending_profile');
+        // Update Local Storage (user-specific)
+        const pendingKey = user?.id ? `healio_pending_profile_${user.id}` : 'healio_pending_profile';
+        const pendingProfile = localStorage.getItem(pendingKey);
         if (pendingProfile) {
             const profile = JSON.parse(pendingProfile);
             profile.ayurvedic_profile = { ...profile.ayurvedic_profile, ...result };
-            localStorage.setItem('healio_pending_profile', JSON.stringify(profile));
+            localStorage.setItem(pendingKey, JSON.stringify(profile));
         }
 
         // Update Supabase

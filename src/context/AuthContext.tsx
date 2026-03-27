@@ -51,11 +51,39 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
+// Utility to clear ALL user-specific data from storage
+// This prevents data leakage between accounts
+const clearAllUserData = () => {
+    // Clear all healio and settings localStorage items (both generic and user-specific patterns)
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('healio_') || key.startsWith('settings_'))) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Also clear known non-prefixed keys
+    localStorage.removeItem('paywall_dismissed_at');
+
+    // Clear all healio sessionStorage items
+    const sessionKeysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('healio_')) {
+            sessionKeysToRemove.push(key);
+        }
+    }
+    sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null);
+    const [previousUserId, setPreviousUserId] = useState<string | null>(null);
     const router = useRouter();
 
     // Derive role from user
@@ -96,6 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
+            setPreviousUserId(session?.user?.id ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
             }
@@ -106,6 +135,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const {
             data: { subscription: authSubscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
+            const newUserId = session?.user?.id ?? null;
+
+            // If user changed (different user logged in), clear all previous user data
+            if (newUserId && previousUserId && newUserId !== previousUserId) {
+                clearAllUserData();
+            }
+
+            // If logged out, also clear data
+            if (!newUserId && previousUserId) {
+                clearAllUserData();
+            }
+
+            setPreviousUserId(newUserId);
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
@@ -297,12 +339,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { error } = await supabase.auth.signOut();
         if (error) console.error("Error signing out", error);
 
-        // Clear application data to prevent leakage between users
-        localStorage.removeItem('healio_consultation_history');
-        localStorage.removeItem('healio_pending_profile');
-        localStorage.removeItem('healio_pref_ayurvedic');
-        localStorage.removeItem('healio_pref_uncertainty');
-        localStorage.removeItem('healio_pref_detailed');
+        // Clear ALL application data to prevent leakage between users
+        clearAllUserData();
 
         router.push("/");
     };

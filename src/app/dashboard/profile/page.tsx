@@ -20,8 +20,12 @@ export default function ProfilePage() {
     const [latestConsultation, setLatestConsultation] = useState<any>(null);
 
     useEffect(() => {
-        // 1. Get Profile Data
-        const pending = localStorage.getItem('healio_pending_profile');
+        // Skip if no user
+        if (!user) return;
+
+        // 1. Get Profile Data (user-specific)
+        const pendingKey = `healio_pending_profile_${user.id}`;
+        const pending = localStorage.getItem(pendingKey);
         if (pending) {
             try {
                 // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,11 +50,12 @@ export default function ProfilePage() {
                 if (data && data.length > 0) consultations = data;
             }
 
-            // From LocalStorage (merge if needed, but for 'latest' we just need the newest)
+            // From LocalStorage (user-specific)
             try {
-                const localHistory = JSON.parse(localStorage.getItem('healio_consultation_history') || '[]');
+                const storageKey = `healio_consultation_history_${user.id}`;
+                const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
                 if (localHistory.length > 0) {
-                    // If we have local history, compare dates. 
+                    // If we have local history, compare dates.
                     // Simple check: if local history has a newer item than supabase (or supabase empty)
                     consultations = [...consultations, ...localHistory];
                     consultations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
