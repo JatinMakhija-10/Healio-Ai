@@ -44,6 +44,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             parsedCondition = JSON.parse(jsonMatch[1]) as Condition;
             // Remove the JSON block from the displayed text
             displayText = message.content.replace(/```json\n[\s\S]*?\n```/, "").trim();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             // Invalid JSON, just hide it while it streams
             displayText = message.content.split("```json")[0].trim();
