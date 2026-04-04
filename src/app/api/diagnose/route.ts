@@ -412,9 +412,11 @@ Based on all of the above, generate the diagnosis JSON.`;
 
         // ── 4. Parse & Return ──────────────────────────────────────────────────
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let jsonResult: Record<string, any> = {};
         try {
             jsonResult = JSON.parse(aiResponseContent);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (parseError) {
             console.error("[Diagnose] AI returned invalid JSON:", aiResponseContent.slice(0, 500));
             return NextResponse.json(
