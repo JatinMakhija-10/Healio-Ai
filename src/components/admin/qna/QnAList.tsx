@@ -25,6 +25,7 @@ import { supabase } from "@/lib/supabase";
 import { QnADialog, QnAItem } from "./QnADialog";
 import { Search, Plus, MoreHorizontal, Pencil, Trash2, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format } from "date-fns";
 
 export function QnAList() {
