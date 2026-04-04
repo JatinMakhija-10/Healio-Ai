@@ -116,6 +116,7 @@ export function BookingModal({
     // Reset all form fields whenever the modal opens
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setDate(selectedDate || new Date());
             setTime('09:00');
             setDuration(30);
@@ -632,6 +633,7 @@ export function BookingModal({
                             <div className="grid grid-cols-2 gap-4 pt-2 animate-in fade-in slide-in-from-top-2">
                                 <div className="space-y-2">
                                     <Label className="text-xs">Pattern</Label>
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     <Select value={recurringPattern} onValueChange={(v) => setRecurringPattern(v as any)}>
                                         <SelectTrigger>
                                             <SelectValue />
