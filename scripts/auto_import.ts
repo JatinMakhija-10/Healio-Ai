@@ -87,6 +87,7 @@ async function main() {
                 failures.push(`${file}: ${shortError}`);
                 failCount++;
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.log('❌ Network error');
             console.log(`   ${err.message}`);
