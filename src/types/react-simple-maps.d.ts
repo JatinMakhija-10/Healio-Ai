@@ -25,6 +25,7 @@ declare module 'react-simple-maps' {
         rsmKey: string;
         properties: {
             name?: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             [key: string]: any;
         };
         geometry: object;
