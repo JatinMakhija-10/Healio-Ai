@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const readline = require('readline');
 
 // --- Config ---
