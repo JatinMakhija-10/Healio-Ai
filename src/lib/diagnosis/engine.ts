@@ -1,10 +1,15 @@
 import { Condition, DiagnosisResult, UserSymptomData, ClarificationQuestion, ReasoningTraceEntry } from "./types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ENGINE_CONFIG, getBestQuestion, PRECOMPUTE_STATS } from "./precompute";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { searchConditions } from "./retrieval";
 
 // Advanced diagnosis modules
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { symptomCorrelationDetector, DetectedPattern } from "./advanced/SymptomCorrelations";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { clinicalRules, RuleResult } from "./advanced/ClinicalDecisionRules";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { uncertaintyQuantifier, UncertaintyEstimate, EvidenceQualityMetrics } from "./advanced/UncertaintyQuantification";
 import { mcmcInfer, extractEvidence } from "./advanced/MCMCEngine";
 
