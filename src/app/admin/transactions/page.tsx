@@ -132,9 +132,11 @@ export default function TransactionsPage() {
                 .in("id", patientIds);
 
             const doctorMap = Object.fromEntries(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (doctorsData || []).map((d: any) => [d.id, d.profiles?.full_name || "Unknown Doctor"])
             );
             const patientMap = Object.fromEntries(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (patientsData || []).map((p: any) => [p.id, p.full_name || "Unknown Patient"])
             );
 
