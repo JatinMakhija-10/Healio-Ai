@@ -41,6 +41,7 @@ function sanitize(sql: string): string {
         .replace(/\r/g, '\n');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function sendChunk(sql: string, filename: string): Promise<boolean> {
     const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
 
@@ -98,7 +99,8 @@ async function main() {
 
         if (statements.length > 1) {
             // Try each statement individually to isolate errors
-            let chunkSuccess = true;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const chunkSuccess = true;
             let errorCount = 0;
 
             for (const stmt of statements) {
