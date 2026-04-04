@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, Mail, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
