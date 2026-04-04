@@ -30,6 +30,7 @@ import {
     FileText,
     X,
     Mic,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Star,
     Filter,
     RefreshCw,
@@ -261,6 +262,7 @@ export default function InboxPage() {
     }, [router]);
 
     // ── Load Chats ────────────────────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const loadChats = useCallback(async (doctorId: string, userId?: string) => {
         try {
             const real = await chatService.getInboxChats(doctorId);
