@@ -36,6 +36,8 @@ export function InputBar({
     // Append transcript into the text box
     useEffect(() => {
         if (transcript) {
+             
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setValue((prev) => {
                 const space = prev && !prev.endsWith(" ") ? " " : "";
                 return prev + space + transcript;
