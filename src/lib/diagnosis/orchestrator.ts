@@ -53,6 +53,7 @@ export interface BayesianCandidate {
     score: number;
     matchedKeywords: string[];
     reasoningTrace: ReasoningTraceEntry[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remedies: any[]; // Or import the full Remedy type
     mcmcDiagnostics?: { // Preserved strictly in memory, maybe mapped out below
         effectiveSampleSize: number;
@@ -78,6 +79,7 @@ export interface OrchestratedResult {
             conditionId: string;
             conditionName: string;
             priorScore: number;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             remedies: any[];
         }>;
         ragApplied: boolean;
