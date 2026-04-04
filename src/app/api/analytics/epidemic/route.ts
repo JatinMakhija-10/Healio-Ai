@@ -33,8 +33,9 @@ export async function GET() {
         // Aggregate counts by state
         const stateCounts: Record<string, number> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.forEach((profile: any) => {
-            let state = profile.state;
+            const state = profile.state;
             if (state) {
                 // Normalize state name: trim and ensure consistent casing if needed
                 // But for now keeping it simple as we want to match TopoJSON
@@ -61,6 +62,7 @@ export async function GET() {
 
         return NextResponse.json(heatmapData);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error('Unexpected error in epidemic route:', error);
         return NextResponse.json([], { status: 200 });
