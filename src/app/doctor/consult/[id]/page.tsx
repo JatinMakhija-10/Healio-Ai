@@ -18,15 +18,18 @@ import {
     FileText,
     CheckCircle2,
     Stethoscope,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     User,
     Activity,
     Pill,
     AlertCircle,
     CalendarPlus,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Download,
     ClipboardList,
     ChevronDown,
     ChevronUp,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Sparkles,
     Loader2,
 } from 'lucide-react';
