@@ -1,5 +1,5 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Font, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import { Condition } from "@/lib/diagnosis/types";
 import { UncertaintyEstimate } from "@/lib/diagnosis/advanced";
 import { format } from "date-fns";
@@ -252,6 +252,7 @@ interface MedicalReportPDFProps {
     alerts: string[];
     symptoms: string[];
     userName?: string;
+    reportId?: string;
 }
 
 export const MedicalReportDocument = ({
@@ -260,7 +261,8 @@ export const MedicalReportDocument = ({
     uncertainty,
     alerts,
     symptoms,
-    userName = "Patient"
+    userName = "Patient",
+    reportId = "HA-REPORT"
 }: MedicalReportPDFProps) => (
     <Document>
         <Page size="A4" style={styles.page}>
@@ -286,7 +288,7 @@ export const MedicalReportDocument = ({
                     <View style={styles.patientInfoItem}>
                         <Text style={styles.patientInfoLabel}>Report ID</Text>
                         <Text style={[styles.patientInfoValue, { fontFamily: 'Courier' }]}>
-                            HA-{Math.random().toString(36).substr(2, 9).toUpperCase()}
+                            {reportId}
                         </Text>
                     </View>
                 </View>
