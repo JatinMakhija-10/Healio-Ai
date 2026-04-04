@@ -1,7 +1,10 @@
 
 import { diagnose } from './engine';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { symptomCorrelationDetector } from './advanced/SymptomCorrelations';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { clinicalRules } from './advanced/ClinicalDecisionRules';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { uncertaintyQuantifier } from './advanced/UncertaintyQuantification';
 import { UserSymptomData } from './types';
 
