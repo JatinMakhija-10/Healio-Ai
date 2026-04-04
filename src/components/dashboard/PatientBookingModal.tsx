@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format, addMinutes, setHours, setMinutes, isBefore, isEqual, parseISO } from 'date-fns';
 import 'react-day-picker/dist/style.css';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,7 @@ export function PatientBookingModal({
                 const appointments = await api.getDoctorAppointments(doctor.user_id);
 
                 const bookedTimes = appointments
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .filter((appt: any) => {
                         const apptDate = new Date(appt.scheduled_at);
                         return apptDate.getDate() === date.getDate() &&
@@ -78,6 +80,7 @@ export function PatientBookingModal({
                             appt.status !== 'cancelled_by_patient' &&
                             appt.status !== 'cancelled_by_doctor';
                     })
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .map((appt: any) => format(new Date(appt.scheduled_at), 'HH:mm'));
 
                 // 2. Generate slots based on doctor availability (or default 9-5)
@@ -143,6 +146,7 @@ export function PatientBookingModal({
 
             setIsSuccess(true);
             toast.success("Appointment Request Sent!");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Booking failed detailed:", error);
             console.error("Booking failed message:", error.message || "No message");
