@@ -71,7 +71,7 @@ async function resume() {
     const rawData: NuskheEntry[] = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 
     // Fetch existing records in chunks to bypass 1000 row limits
-    let existingChunks = new Set<string>();
+    const existingChunks = new Set<string>();
     let start = 0;
     const limit = 1000;
     while(true) {
@@ -87,7 +87,7 @@ async function resume() {
 
         if (!existing || existing.length === 0) break;
         
-        for(let row of existing) {
+        for(const row of existing) {
             existingChunks.add(row.chunk_text);
         }
 
@@ -97,6 +97,7 @@ async function resume() {
 
     console.log(`Found ${existingChunks.size} existing embeddings in Supabase.`);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows: any[] = [];
     for (const entry of rawData) {
         for (const remedy of entry.remedies) {
@@ -150,6 +151,7 @@ async function resume() {
                 console.log(`  ✅ Inserted`);
                 succeeded++;
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             console.error(`  ❌ Embedding error for ${row.remedy_name}:`, e.message);
             failed++;
