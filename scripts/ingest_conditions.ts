@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import fs from 'fs';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import path from 'path';
 
 // --- CONFIGURATION ---
@@ -25,6 +26,7 @@ interface RawCondition {
     prevalence?: string;
     severity?: string;
     symptoms_text: string; // Used to generate embedding
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     match_criteria: any;
     red_flags?: string[];
 }
