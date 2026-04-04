@@ -108,6 +108,7 @@ export class InformationGainSelector {
             const conditionDef = Object.values(CONDITIONS).find(c => c.name === candidate.conditionName) as Condition | undefined;
             if (!conditionDef) return candidate.score;
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { sensitivity, specificity, weight } = this.getFeatureLikelihoods(conditionDef, featureLabel);
 
             // Prevalence-aware prior scaling
@@ -197,6 +198,7 @@ export class InformationGainSelector {
         let bestFeature: { label: string; type: 'symptom' | 'trigger' | 'type' } | null = null;
 
         // Calculate the total conditions count for prevalence-based P(feature present)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const totalConditions = Object.keys(CONDITIONS).length;
 
         for (const feature of allFeatures) {
