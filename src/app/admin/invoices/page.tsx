@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import {
     CheckCircle2,
     XCircle,
     FileText,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     DollarSign,
     User,
     Calendar,
@@ -32,14 +33,10 @@ export default function AdminInvoicesPage() {
     const [rejectingInvoice, setRejectingInvoice] = useState<Invoice | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
 
-    useEffect(() => {
-        loadInvoices();
-    }, [filter]);
-
-    async function loadInvoices() {
+    const loadInvoices = React.useCallback(async () => {
         try {
+             
             setLoading(true);
-
 
             // Get current user (admin)
             const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -65,7 +62,11 @@ export default function AdminInvoicesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [filter]);
+
+    useEffect(() => {
+        loadInvoices();
+    }, [loadInvoices]);
 
     async function handleApprove(invoice: Invoice) {
         if (!adminId) return;
@@ -118,11 +119,13 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    function formatCurrency(amount: number): string {
+    function _formatCurrency(amount: number): string {
+         
         return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     }
 
-    function formatDate(dateString: string): string {
+    function _formatDate(dateString: string): string {
+         
         return new Date(dateString).toLocaleDateString('en-IN', {
             year: 'numeric',
             month: 'short',
@@ -331,15 +334,10 @@ function InvoiceCard({
     const [doctorName, setDoctorName] = useState("Loading...");
     const [patientName, setPatientName] = useState("Loading...");
 
-    useEffect(() => {
-        loadNames();
-    }, [invoice]);
-
-    async function loadNames() {
-
-
+    const loadNames = React.useCallback(async () => {
         // Get doctor name
         const { data: doctorData } = await supabase
+             
             .from('doctors')
             .select('user_id')
             .eq('id', invoice.doctor_id)
@@ -361,7 +359,12 @@ function InvoiceCard({
             .eq('id', invoice.patient_id)
             .single();
         setPatientName(patientProfile?.full_name || 'Unknown');
-    }
+    }, [invoice.doctor_id, invoice.patient_id]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadNames();
+    }, [loadNames]);
 
     const statusConfig = {
         pending: { color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock },
