@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Bell, Search, Menu, X, Heart, Droplets, Moon, Activity, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
