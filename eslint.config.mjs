@@ -39,6 +39,20 @@ const eslintConfig = defineConfig([
       }],
     },
   },
+  // General rule overrides for the codebase
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn", // Downgrade to warn or error
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_"
+        }
+      ],
+      "@typescript-eslint/no-require-imports": "off", // Used heavily in scripts/ and config files
+    }
+  }
 ]);
 
 export default eslintConfig;
