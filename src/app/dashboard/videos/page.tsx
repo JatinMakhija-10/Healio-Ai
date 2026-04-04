@@ -5,6 +5,7 @@ import { api, WellnessVideo } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -20,6 +21,7 @@ import {
     Film,
     Loader2,
     User,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     X,
     ExternalLink,
 } from "lucide-react";
@@ -204,12 +206,14 @@ export default function PatientVideosPage() {
                                 {/* Thumbnail */}
                                 <div className="relative aspect-video bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
                                     {video.thumbnail_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={video.thumbnail_url}
                                             alt={video.title}
                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
+                                        </>
                                     ) : null}
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
 
@@ -366,12 +370,14 @@ export default function PatientVideosPage() {
                                                     >
                                                         <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100">
                                                             {video.thumbnail_url ? (
-                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <>
+                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                 <img
                                                                     src={video.thumbnail_url}
                                                                     alt={video.title}
                                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                                 />
+                                                                </>
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center bg-slate-200">
                                                                     <Film className="h-6 w-6 text-slate-400" />
