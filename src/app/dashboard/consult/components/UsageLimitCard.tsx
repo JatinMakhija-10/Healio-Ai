@@ -1,4 +1,5 @@
 import { Star, Droplets } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
 
 interface UsageLimitCardProps {
