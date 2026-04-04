@@ -53,6 +53,7 @@ export default function SearchPage() {
                     schema: 'public',
                     table: 'doctors'
                 },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (payload: any) => {
                     console.log('Doctor update received, refreshing list...', payload);
                     fetchDoctors();
@@ -221,7 +222,7 @@ export default function SearchPage() {
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2">No doctors found</h3>
                         <p className="text-slate-500 max-w-sm mx-auto mb-6">
-                            We couldn't find any specialists matching "{searchTerm || selectedSpecialty}". Try adjusting your filters.
+                            We couldn&apos;t find any specialists matching &quot;{searchTerm || selectedSpecialty}&quot;. Try adjusting your filters.
                         </p>
                         <Button variant="outline" onClick={() => { setSearchTerm(""); setSelectedSpecialty("All"); }} className="border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-300">
                             Clear All Filters
