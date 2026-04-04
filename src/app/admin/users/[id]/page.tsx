@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     User,
     Mail,
     Phone,
