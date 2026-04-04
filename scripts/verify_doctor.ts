@@ -38,6 +38,7 @@ async function verifyDoctor() {
     console.log(`Found user: ${user.id}`);
 
     // 2. Update Auth Metadata
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
         user.id,
         { user_metadata: { ...user.user_metadata, doctor_verified: true, role: 'doctor' } }
