@@ -14,6 +14,7 @@ import {
     BookOpen,
     Video
 } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { PHASE_CONFIG } from "@/lib/phaseConfig";
