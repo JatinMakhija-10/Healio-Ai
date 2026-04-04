@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { addMinutes, isSameDay, isWithinInterval } from 'date-fns';
 import { Appointment } from '@/stores/appointmentStore';
 
@@ -110,7 +111,7 @@ export function findNextAvailableSlot(
     workingHours = { start: 9, end: 18 }
 ): Date | null {
     const maxDays = 30; // Look up to 30 days ahead
-    let currentDate = new Date(afterTime);
+    const currentDate = new Date(afterTime);
 
     for (let day = 0; day < maxDays; day++) {
         const suggestions = suggestTimeSlots(
