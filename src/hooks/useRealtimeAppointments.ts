@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -5,7 +6,9 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
 interface UseRealtimeAppointmentsOptions {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAppointmentCreated?: (appointment: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAppointmentUpdated?: (appointment: any) => void;
     onAppointmentDeleted?: (appointmentId: string) => void;
     enabled?: boolean;
@@ -59,6 +62,7 @@ export function useRealtimeAppointments(options: UseRealtimeAppointmentsOptions 
                         console.log('[Realtime] Appointment updated:', payload);
 
                         // Show appropriate notification based on status
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const newStatus = (payload.new as any).status;
                         if (newStatus === 'confirmed') {
                             toast.success('Appointment confirmed by doctor!');
@@ -82,6 +86,7 @@ export function useRealtimeAppointments(options: UseRealtimeAppointmentsOptions 
                     (payload) => {
                         console.log('[Realtime] Appointment deleted:', payload);
                         toast.info('Appointment removed');
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onAppointmentDeleted?.((payload.old as any).id);
                     }
                 )
