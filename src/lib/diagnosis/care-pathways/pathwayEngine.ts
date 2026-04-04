@@ -143,6 +143,7 @@ function applyAdjustments(
  */
 function determineUrgency(
     pathway: CarePathway,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     diagnosis: DiagnosisResult
 ): 'emergency' | 'urgent' | 'routine' | 'self-care' {
     // Check for emergency red flags
