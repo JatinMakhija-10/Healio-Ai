@@ -50,12 +50,14 @@ describe("DiagnosisResultCard disclaimer rendering", () => {
     it("renders dynamic disclaimer when provided", () => {
         const dynamicDisclaimer = "Custom AI-generated disclaimer for this specific condition.";
         // Simulate the logic from DiagnosisResultCard
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const condition = { disclaimer: dynamicDisclaimer } as any;
         const rendered = condition.disclaimer || DEFAULT_DISCLAIMER;
         expect(rendered).toBe(dynamicDisclaimer);
     });
 
     it("falls back to default when no dynamic disclaimer present", () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const condition = {} as any;
         const rendered = condition.disclaimer || DEFAULT_DISCLAIMER;
         expect(rendered).toBe(DEFAULT_DISCLAIMER);
