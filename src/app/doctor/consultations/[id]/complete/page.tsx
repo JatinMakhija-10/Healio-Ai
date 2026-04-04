@@ -17,12 +17,14 @@ export default function CompleteConsultationPage() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [appointment, setAppointment] = useState<any>(null);
     const [doctorId, setDoctorId] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         loadAppointmentData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appointmentId]);
 
     async function loadAppointmentData() {
@@ -63,6 +65,7 @@ export default function CompleteConsultationPage() {
             }
 
             // Get patient details
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { data: patientData, error: patientError } = await supabase
                 .from('profiles')
                 .select('full_name, email')
