@@ -129,6 +129,7 @@ async function ingest() {
                 console.log(`  ✅ Inserted`);
                 succeeded++;
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             console.error(`  ❌ Embedding error for ${row.remedy_name}:`, e.message);
             failed++;
