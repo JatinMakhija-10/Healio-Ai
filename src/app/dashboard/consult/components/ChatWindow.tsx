@@ -18,6 +18,7 @@ interface ChatWindowProps {
     onWidgetActive?: (active: boolean) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseUiHint(content: string): any {
     const hintMatch = content.match(/\{"ui_hint"\s*:/);
     if (!hintMatch || hintMatch.index === undefined) return null;
@@ -60,6 +61,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
         !isLoading &&
         !lastMessage.content.includes("```json");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let widgetHint: any = { type: "none" };
     if (isLastAssistant) {
         const explicitHint = parseUiHint(lastMessage.content);
