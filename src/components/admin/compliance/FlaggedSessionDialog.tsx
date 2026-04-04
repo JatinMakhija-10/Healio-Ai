@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AlertTriangle, CheckCircle, XCircle, ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
