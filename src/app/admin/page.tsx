@@ -67,6 +67,7 @@ function AdminDashboardContent() {
     const { user } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { metrics, systemHealth } = useRealtimeMetrics({ enabled: true });
 
     useEffect(() => {
