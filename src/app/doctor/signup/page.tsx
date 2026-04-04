@@ -52,6 +52,7 @@ export default function DoctorSignupPage() {
         try {
             // Pass 'doctor' as the role
             await signup(data.email, data.password, 'doctor');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setAuthError(err.message || "Failed to create account. Please try again.");
             console.error(err);
