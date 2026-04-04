@@ -27,6 +27,7 @@ import {
     EyeOff,
     Loader2,
     Play,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Clock,
     User,
     ExternalLink,
@@ -64,6 +65,7 @@ const CATEGORY_COLORS: Record<string, string> = {
     other: "bg-slate-100 text-slate-700",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function formatDuration(seconds: number | null) {
     if (!seconds) return "—";
     const m = Math.floor(seconds / 60);
@@ -289,6 +291,7 @@ export default function AdminVideosPage() {
                         ))}
                     </SelectContent>
                 </Select>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
                     <SelectTrigger className="w-40">
                         <SelectValue />
