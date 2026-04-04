@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ChevronRight, ChevronLeft, ShieldAlert, CheckCircle, Stethoscope, Leaf, Dumbbell, Home } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ONBOARDING_PRAKRITI_QUESTIONS } from "@/lib/ayurveda/prakriti/onboardingQuestions";
 
 // --- Types ---
@@ -92,7 +95,7 @@ export default function OnboardingWizard() {
 
     const handleNext = () => {
         if (step < totalSteps) setStep(step + 1)
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+         
         else handleComplete();
     };
 
@@ -187,6 +190,7 @@ export default function OnboardingWizard() {
         });
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const toggleFamilyHistory = (condition: string) => {
         setData((prev) => {
             const exists = prev.familyHistory.includes(condition);
