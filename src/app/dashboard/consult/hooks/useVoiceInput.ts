@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 interface UseVoiceInputReturn {
@@ -22,12 +22,15 @@ export function useVoiceInput(): UseVoiceInputReturn {
 
     // Detect browser support client-side only to avoid SSR hydration mismatch
     useEffect(() => {
+         
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsSupported(
             "SpeechRecognition" in window || "webkitSpeechRecognition" in window
         );
     }, []);
+ 
 
-    const startRecording = useCallback(async () => {
+    const startRecording = async () => {
         if (!isSupported || isRecording) return;
 
         try {
@@ -108,19 +111,19 @@ export function useVoiceInput(): UseVoiceInputReturn {
             console.error("Failed to start speech recognition:", e);
             setIsRecording(false);
         }
-    }, [isSupported, isRecording, user?.id]);
+    };
 
-    const stopRecording = useCallback(() => {
+    const stopRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
         setIsRecording(false);
-    }, []);
+    };
 
-    const clearTranscript = useCallback(() => {
+    const clearTranscript = () => {
         setTranscript("");
-    }, []);
+    };
 
     return {
         isRecording,
