@@ -63,6 +63,7 @@ export default function LoginPage() {
                     router.push('/dashboard');
                 }
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -73,6 +74,7 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         try {
             await signInWithGoogle();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             setError(error.message || 'Failed to sign in with Google');
         }
@@ -173,7 +175,7 @@ export default function LoginPage() {
                 </button>
 
                 <p className="text-center text-xs text-slate-500 mt-5">
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <Link href="/signup" className="text-teal-600 font-semibold hover:text-teal-700 hover:underline">
                         Sign up
                     </Link>
