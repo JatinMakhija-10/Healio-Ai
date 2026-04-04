@@ -31,6 +31,7 @@ export default function SignupPage() {
 
         try {
             await signup(email, password, 'patient');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message || 'Failed to create account. Please try again.');
         } finally {
@@ -41,6 +42,7 @@ export default function SignupPage() {
     const handleGoogleSignup = async () => {
         try {
             await signInWithGoogle('patient');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             setError(error.message || 'Failed to sign up with Google');
         }
