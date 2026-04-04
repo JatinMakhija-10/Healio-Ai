@@ -460,7 +460,8 @@ export function DailyTipCard() {
     useEffect(() => {
         // Randomize on mount
         const randomTip = TIPS[Math.floor(Math.random() * TIPS.length)];
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTip(randomTip);
     }, []);
 
