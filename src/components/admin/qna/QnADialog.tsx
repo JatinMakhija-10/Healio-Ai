@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Plus, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
