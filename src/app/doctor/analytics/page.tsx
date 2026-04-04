@@ -42,10 +42,12 @@ export default function DoctorRevenuePage() {
     const [recentPayouts, setRecentPayouts] = useState<Transaction[]>([]);
     const [totalConsultations, setTotalConsultations] = useState(0);
     const [period, setPeriod] = useState("30d");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [doctorId, setDoctorId] = useState<string | null>(null);
 
     useEffect(() => {
         loadDoctorData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [period]);
 
     async function loadDoctorData() {
@@ -107,7 +109,7 @@ export default function DoctorRevenuePage() {
     function getDateRange(period: string) {
         const now = new Date();
         const endDate = now.toISOString();
-        let startDate = new Date();
+        const startDate = new Date();
 
         switch (period) {
             case '7d':
