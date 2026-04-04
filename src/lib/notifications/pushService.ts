@@ -72,6 +72,7 @@ export async function subscribeToPush(
 
         subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             applicationServerKey: convertedVapidKey as any as BufferSource, // Explicit cast to satisfy TS
         });
 
