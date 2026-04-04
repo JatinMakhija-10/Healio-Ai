@@ -11,6 +11,7 @@ async function importSql() {
     }
 
     // The direct IPv4 connection string we found from the CLI docs
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const connectionString = "postgres://postgres.jqtfqseimrqusumznnpv:Jatin#123OP@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
     console.log("Starting psql import...");
