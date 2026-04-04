@@ -80,6 +80,7 @@ export function VideoRoom({
     const containerRef = useRef<HTMLDivElement>(null);
     const [layoutMode, setLayoutMode] = useState<LayoutMode>('spotlight');
     const [reconnectCountdown, setReconnectCountdown] = useState(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [pipPosition, setPipPosition] = useState({ x: 0, y: 0 }); // for draggable PiP
     const [isDragging, setIsDragging] = useState(false);
 
