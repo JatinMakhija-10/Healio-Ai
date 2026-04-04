@@ -77,6 +77,7 @@ const rateLimiter = new ClientRateLimiter();
  * @param limitMs - Minimum milliseconds between calls
  * @returns Throttled function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttle<T extends (...args: any[]) => any>(
     func: T,
     limitMs: number
@@ -84,6 +85,7 @@ export function throttle<T extends (...args: any[]) => any>(
     let lastCall = 0;
     let timeoutId: NodeJS.Timeout | null = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function (this: any, ...args: Parameters<T>) {
         const now = Date.now();
         const timeSinceLastCall = now - lastCall;
@@ -112,12 +114,14 @@ export function throttle<T extends (...args: any[]) => any>(
  * @param delayMs - Delay in milliseconds
  * @returns Debounced function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
     func: T,
     delayMs: number
 ): (...args: Parameters<T>) => void {
     let timeoutId: NodeJS.Timeout;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function (this: any, ...args: Parameters<T>) {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
@@ -162,6 +166,7 @@ export function resetRateLimit(actionKey: string): void {
  * @param options - Rate limit configuration
  * @returns Rate-limited function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withRateLimit<T extends (...args: any[]) => Promise<any>>(
     func: T,
     options: {
@@ -173,6 +178,7 @@ export function withRateLimit<T extends (...args: any[]) => Promise<any>>(
 ): (...args: Parameters<T>) => Promise<ReturnType<T> | null> {
     const { key, maxRequests = 10, windowMs = 60000, onLimitExceeded } = options;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async function (this: any, ...args: Parameters<T>): Promise<ReturnType<T> | null> {
         const { allowed } = checkRateLimit(key, maxRequests, windowMs);
 
