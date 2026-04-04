@@ -10,6 +10,7 @@ const supabase = createClient(
 );
 
 async function verify() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, count, error } = await supabase
     .from('home_remedy_embeddings')
     .select('*', { count: 'exact', head: true })
