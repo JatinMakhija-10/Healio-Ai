@@ -22,6 +22,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
     return res.embeddings[0].values;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildChunkText(ailment: string, ailment_hindi: string, remedy: any): string {
     const lines = [
         `Ailment: ${ailment} / ${ailment_hindi}`,
