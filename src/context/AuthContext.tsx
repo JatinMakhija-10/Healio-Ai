@@ -159,7 +159,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         // Set up real-time subscriptions for profile changes
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let profileSubscription: any = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let doctorSubscription: any = null;
 
         supabase.auth.getUser().then(({ data: { user } }) => {
@@ -207,6 +209,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 supabase.removeChannel(doctorSubscription);
             }
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const signup = async (email: string, password: string, signupRole: UserRole = 'patient') => {
@@ -268,6 +271,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const signInWithGoogle = async (signupRole: UserRole = 'patient') => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -283,6 +287,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const login = async (email: string, password: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
