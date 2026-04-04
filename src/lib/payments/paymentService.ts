@@ -12,10 +12,12 @@ export interface Transaction {
     currency: string;
     payment_method?: string;
     gateway_transaction_id?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gateway_response?: any;
     status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
     processed_at?: string;
     failed_reason?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata?: any;
     created_at: string;
     updated_at: string;
@@ -29,6 +31,7 @@ export interface CreateTransactionData {
     transaction_type: 'payment' | 'payout' | 'refund' | 'fee';
     amount: number;
     payment_method?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata?: any;
 }
 
