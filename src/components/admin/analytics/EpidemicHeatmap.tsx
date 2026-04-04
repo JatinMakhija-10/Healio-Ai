@@ -14,6 +14,7 @@ interface HeatmapData {
 }
 
 export function EpidemicHeatmap() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [data, setData] = useState<any[][]>([["State", "Users"]]);
     const [loading, setLoading] = useState(true);
 
