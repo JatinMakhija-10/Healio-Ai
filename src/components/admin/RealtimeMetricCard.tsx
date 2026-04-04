@@ -82,6 +82,7 @@ export function RealtimeMetricCard({
 
     useEffect(() => {
         if (value !== prevValue && isLive) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowFlash(true);
             setPrevValue(value);
             const timer = setTimeout(() => setShowFlash(false), 500);
