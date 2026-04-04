@@ -6,6 +6,7 @@ import path from 'path';
 // Load environment variables from .env.local
 const envPath = path.resolve(process.cwd(), '.env.local');
 console.log(`Loading env from: ${envPath}`);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const result = dotenv.config({ path: envPath });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
