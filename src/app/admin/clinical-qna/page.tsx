@@ -1,6 +1,7 @@
 "use client";
 
 import { QnAList } from "@/components/admin/qna/QnAList";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FileText, HelpCircle } from "lucide-react";
 
 export default function ClinicalQnAPage() {
