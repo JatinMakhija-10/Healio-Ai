@@ -14,6 +14,7 @@ import {
     Search,
     Filter,
     ChevronRight,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Activity,
     UserX,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function PatientListPage() {
     const { user, doctorProfile } = useAuth();
     const [searchTerm, setSearchTerm] = useState("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -156,7 +158,7 @@ export default function PatientListPage() {
                         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                             <UserX className="h-12 w-12 mb-4 text-slate-300" />
                             <h3 className="text-lg font-medium text-slate-700">No patients found</h3>
-                            <p className="text-sm">You haven't consulted with any patients yet.</p>
+                            <p className="text-sm">You haven&apos;t consulted with any patients yet.</p>
                         </div>
                     )}
                 </CardContent>
