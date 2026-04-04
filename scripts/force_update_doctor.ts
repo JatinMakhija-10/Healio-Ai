@@ -21,6 +21,7 @@ async function forceUpdate() {
     console.log(`Force updating user: ${email}`);
 
     // 1. Sign in
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
