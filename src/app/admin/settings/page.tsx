@@ -58,6 +58,7 @@ export default function AdminSettingsPage() {
 
             if (error) throw error;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const map: Record<string, any> = {};
             (data || []).forEach((row) => {
                 map[row.key] = row.value;
