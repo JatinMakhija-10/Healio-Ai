@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Brain, TrendingUp, AlertCircle, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
