@@ -1,6 +1,7 @@
 // Healio.AI Service Worker for Push Notifications
 // Handles push events and displays notifications
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 self.addEventListener('install', (event) => {
     console.log('✅ Service Worker installed');
     self.skipWait();
@@ -89,6 +90,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Handle notification close (optional analytics)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 self.addEventListener('notificationclose', (event) => {
     console.log('🔕 Notification closed');
     // You can track dismissals here if needed
