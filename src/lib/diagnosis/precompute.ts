@@ -204,6 +204,7 @@ export async function fetchConditionsForLocations(userLocations: string[]): Prom
             // Or we just fetch ALL conditions for now if < 1000? No, scalability.
 
             // Scalable approach: Text Search on 'locations' column.
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const queryTerms = bucketsArray.join(' | '); // 'head | chest'
 
             // Note: This relies on Supabase Text Search or Filter.
@@ -211,6 +212,7 @@ export async function fetchConditionsForLocations(userLocations: string[]): Prom
             // Let's use the user's RAW location inputs for search
 
             if (supabase) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { data, error } = await supabase
                     .from('conditions')
                     .select('*');
