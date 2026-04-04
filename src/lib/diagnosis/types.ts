@@ -66,8 +66,11 @@ export interface Condition {
     mimics?: string[]; // Condition IDs that commonly mimic this one (force extra differentiation)
     remedies?: Remedy[]; 
     indianHomeRemedies?: Remedy[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     homeopathic_remedies?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ayurvedic_remedies?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     home_remedies?: any[];
     exercises?: Exercise[];
     warnings: string[];
