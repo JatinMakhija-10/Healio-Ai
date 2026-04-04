@@ -238,6 +238,7 @@ function calculateWeightedScores(
         if (weight) {
             const contribution = weight.weight * weight.confidence;
             rawScores[weight.factor as DoshaType] += contribution;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             totalWeight += weight.weight;
             totalConfidence += weight.confidence;
             factorCount++;
@@ -276,6 +277,7 @@ function determinePrakritiType(scores: DoshaScores): PrakritiType {
 
     const [first, firstScore] = sorted[0];
     const [second, secondScore] = sorted[1];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [third, thirdScore] = sorted[2];
 
     // Tridoshic: All three doshas within 10% of each other
