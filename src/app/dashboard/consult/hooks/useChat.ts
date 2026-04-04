@@ -46,6 +46,7 @@ export function useChat(): UseChatReturn {
             if (saved) {
                 const parsed = JSON.parse(saved);
                 // Convert string dates back to Date objects
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const withDates = parsed.map((m: any) => ({
                     ...m,
                     timestamp: new Date(m.timestamp)
@@ -72,8 +73,9 @@ export function useChat(): UseChatReturn {
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
             // Try to extract structured diagnosis from AI's JSON block
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let parsedDiagnosis: any = null;
-            let confidence = 0;
+            const confidence = 0;
 
             // Find the last assistant message containing ```json
             const assistantMessages = allMessages.filter((m) => m.role === "assistant");
