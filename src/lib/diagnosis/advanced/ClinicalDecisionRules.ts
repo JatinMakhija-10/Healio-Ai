@@ -141,6 +141,7 @@ export function percRulePE(symptoms: string[], demographics: DemographicData): R
         unilateral_leg_swelling: symptoms.includes('one_leg_swelling')
     };
 
+     
     const failedCriteria = Object.entries(criteria).filter(([_, v]) => v);
     const allNegative = failedCriteria.length === 0;
 
@@ -282,6 +283,7 @@ export function nexusCriteria(symptoms: string[]): RuleResult {
 
     const allCriteriaMet = Object.values(criteria).every(v => v);
     const failedCriteria = Object.entries(criteria)
+         
         .filter(([_, v]) => !v)
         .map(([k]) => k);
 
