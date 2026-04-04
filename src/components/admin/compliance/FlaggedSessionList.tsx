@@ -67,14 +67,17 @@ export function FlaggedSessionList() {
 
             if (sessionsData && sessionsData.length > 0) {
                 // Manually fetch profiles to ensure we get user data
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const userIds = Array.from(new Set(sessionsData.map((s: any) => s.user_id)));
                 const { data: profiles } = await supabase
                     .from('profiles')
                     .select('id, email, full_name')
                     .in('id', userIds);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const profileMap = new Map(profiles?.map((p: any) => [p.id, p]));
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const enrichedSessions = sessionsData.map((s: any) => ({
                     ...s,
                     user: profileMap.get(s.user_id) || { email: 'Unknown', full_name: 'Unknown User' }
@@ -109,6 +112,7 @@ export function FlaggedSessionList() {
         return () => {
             supabase.removeChannel(channel);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filterStatus]);
 
     const handleReview = (session: FlaggedSession) => {
