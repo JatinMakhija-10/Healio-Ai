@@ -304,6 +304,7 @@ export interface ScoringWeight {
  */
 export interface ValidationCase {
     id: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     questionnaire: any; // Will be defined in prakritiQuestionnaire.ts
     expertDiagnosis: PrakritiType;
     expertConfidence: number;
