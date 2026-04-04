@@ -109,3 +109,17 @@ retry_log.txt
 logs/
 
 .vercel
+
+.cursor/
+.cursorrules
+.mcp.json
+.opencode.json
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+build_*.txt
+lint_*.json
+lint_*.txt
+tmp_*.js
+tmp_*.txt
