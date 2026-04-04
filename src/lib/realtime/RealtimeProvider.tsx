@@ -93,6 +93,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
             setIsConnected(false);
             setConnectionStatus('disconnected');
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [liveViewEnabled, setConnectionStatus]);
 
     // Auto-reconnection logic with exponential backoff
