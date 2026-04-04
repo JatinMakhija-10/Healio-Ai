@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Appointment } from "@/lib/api";
 
 // ─── Query Keys ──────────────────────────────────────────────
