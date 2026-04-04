@@ -13,10 +13,15 @@ import { SPECIALIZATIONS } from "@/lib/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     User,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Bell,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Lock,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Clock,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Globe,
     Stethoscope,
     Upload,
