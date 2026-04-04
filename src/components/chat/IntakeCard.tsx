@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UserSymptomData } from "@/lib/diagnosis/types";
 import { Info, AlertCircle } from "lucide-react";
