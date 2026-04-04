@@ -25,6 +25,7 @@ async function importSql() {
     }
 
     console.log("Connecting to Supabase...");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dbConfig: any = { ssl: { rejectUnauthorized: false } };
 
     // We parse the string manually to handle passwords with #, ?, [, ] 
@@ -65,6 +66,7 @@ async function importSql() {
             connectionTimeoutMillis: 10000
         };
         console.log("Parsed connection string securely.");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
         console.log("Failed to parse manually, reverting to raw pg string parser...");
         dbConfig.connectionString = connectionString;
