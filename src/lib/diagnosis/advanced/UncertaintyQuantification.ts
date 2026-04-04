@@ -45,6 +45,7 @@ export class UncertaintyQuantifier {
 
         // Assess evidence quality
         const evidenceQuality = this.assessEvidenceQuality(evidenceMetrics);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const evidenceBonus = this.getEvidenceBonus(evidenceQuality);
 
         // Calculate interval width based on evidence quality
