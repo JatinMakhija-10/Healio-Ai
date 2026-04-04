@@ -12,6 +12,7 @@ import {
     EmotionalState,
     CommunicationStyle,
     DialogueState,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ConversationPhase
 } from './DialogueState';
 
@@ -109,6 +110,7 @@ const STYLE_ADAPTERS: Record<CommunicationStyle, StyleAdapter> = {
             .replace(/moderate/g, 'medium')
             .replace(/acute/g, 'sudden')
             .replace(/chronic/g, 'long-term'),
+         
         addDetail: (text, _detail) => text // Skip technical details
     },
     layperson: {
@@ -188,6 +190,7 @@ export class EmpatheticResponseGenerator {
         confidence: number,
         state: DialogueState
     ): string {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { emotionalState, communicationPreference, detectedLanguage = 'en' } = state.context;
 
         // Base response varies by confidence and language
