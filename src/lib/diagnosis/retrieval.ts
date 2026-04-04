@@ -48,12 +48,14 @@ export async function searchConditions(symptoms: UserSymptomData): Promise<Condi
         if (!error && vectorResults) {
             // Fetch full details for these IDs (if RPC didn't return everything)
             // RPC returns id, name, description. We need match_criteria etc.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const ids = vectorResults.map((r: any) => r.id);
             const { data: fullConditions } = await supabase
                 .from('conditions')
                 .select('*')
                 .in('id', ids);
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (fullConditions) candidates = fullConditions as any[];
         }
     }
