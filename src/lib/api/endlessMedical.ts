@@ -4,8 +4,11 @@ const BASE_URL = 'http://api-prod.endlessmedical.com/v1/dx';
 interface APIResponse {
     status: string;
     SessionID?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Diseases?: Array<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     VariableImportances?: Array<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }
 
@@ -46,6 +49,7 @@ export class EndlessMedicalAPI {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     static async analyze(symptoms: string[]): Promise<any[]> {
         if (!this.sessionId) {
             await this.initSession();
