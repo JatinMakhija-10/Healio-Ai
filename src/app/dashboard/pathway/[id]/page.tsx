@@ -107,7 +107,7 @@ export default function PathwayPage() {
             <div className="bg-white p-8 rounded-xl shadow-sm text-center max-w-md">
                 <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-slate-900 mb-2">Care plan not found</h2>
-                <p className="text-slate-500 mb-6">We couldn't locate the requested care plan. It may have been removed or you may have followed an invalid link.</p>
+                <p className="text-slate-500 mb-6">We couldn&apos;t locate the requested care plan. It may have been removed or you may have followed an invalid link.</p>
                 <Link href="/dashboard" className="text-teal-600 hover:text-teal-700 font-medium">
                     Return to Dashboard
                 </Link>
@@ -134,6 +134,7 @@ export default function PathwayPage() {
         id: `task-${idx}`,
         text: action.action,
         category: action.category,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         priority: action.priority as any,
         frequency: action.frequency,
         isCompleted: !!checkedItems[`task-${idx}`],
