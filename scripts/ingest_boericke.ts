@@ -49,7 +49,7 @@ function parseChunks(text: string) {
     let currentChunk = "";
 
     // Very simplistic parsing block:
-    for (let line of lines) {
+    for (const line of lines) {
         // If line is short and all caps, it MIGHT be a remedy name
         if (line.trim().length > 2 && line.trim().length < 30 && line === line.toUpperCase() && !(/[0-9]/.test(line))) {
             if (currentChunk.length > 200) { // Only save if we gathered enough text
