@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const fs = require("fs");
 
 const TOKEN = process.env.BEARER_TOKEN;
