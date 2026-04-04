@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Plus, FileText, Send, Save } from "lucide-react";
 import { Prescription, LabTest } from "@/lib/clinical-notes/clinicalNotesService";
 
@@ -30,6 +31,7 @@ export interface ClinicalNoteFormData {
 }
 
 export default function PostConsultationForm({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     appointmentId,
     patientName,
     onSave,
@@ -158,7 +160,7 @@ export default function PostConsultationForm({
                     <div>
                         <Label htmlFor="subjective" className="text-base font-semibold text-slate-700 mb-2 flex items-center gap-2">
                             <span className="px-2 py-1 bg-teal-100 text-teal-700 rounded text-sm">S</span>
-                            Subjective (Patient's Complaint)
+                            Subjective (Patient&apos;s Complaint)
                         </Label>
                         <Textarea
                             id="subjective"
