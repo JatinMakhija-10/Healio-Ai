@@ -100,6 +100,7 @@ export function getAyurvedicTreatmentModifiers(
     prakriti: PrakritiProfile | null,
     vikriti: VikritiProfile,
     agni: AgniAssessment,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     condition: Condition
 ): {
     dietaryAdjustments: string[];
