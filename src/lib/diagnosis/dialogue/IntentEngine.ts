@@ -10,6 +10,7 @@ import {
     IntentUnderstanding,
     EmotionalState,
     UrgencyLevel,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ExtractedEntity
 } from './DialogueState';
 
