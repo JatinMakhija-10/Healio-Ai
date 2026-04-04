@@ -312,6 +312,7 @@ function generateAllPathways() {
 /**
  * Create full pathway from compact template
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createPathwayFromTemplate(compact: any): any {
     return {
         conditionId: compact.id,
