@@ -301,6 +301,7 @@ function calculateVikritiScores(data: VikritiAssessmentData): DoshaScores {
 function calculateImbalanceSeverity(scores: DoshaScores): number {
     const sorted = Object.values(scores).sort((a, b) => b - a);
     const dominance = sorted[0];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const balance = sorted[2];
 
     // Severity = how far the dominant dosha is from balance (33.33%)
