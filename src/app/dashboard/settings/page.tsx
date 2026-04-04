@@ -79,7 +79,7 @@ export default function SettingsPage() {
         const savedEmail = localStorage.getItem(`settings_email_notif${keySuffix}`);
         const savedPush = localStorage.getItem(`settings_push_notif${keySuffix}`);
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
         if (savedEmail !== null) setEmailNotif(savedEmail === "true");
         if (savedPush !== null) setPushNotif(savedPush === "true");
 
@@ -286,6 +286,7 @@ export default function SettingsPage() {
                 doc.text('Consultation History', margin, y);
                 y += 10;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 consultations.slice(0, 10).forEach((consultation: any, index: number) => {
                     checkPageBreak(50);
 
