@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Badge } from "@/components/ui/badge";
 import {
-    Search,
+
     Beaker,
     GitBranch,
     Brain,
@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function ClinicalSandboxPage() {
     const [query, setQuery] = useState("");
     const [analyzing, setAnalyzing] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [result, setResult] = useState<any>(null); // Mock result
     const [confidenceThreshold, setConfidenceThreshold] = useState([50]);
 
@@ -161,6 +162,7 @@ export default function ClinicalSandboxPage() {
                                     <div className="mt-4">
                                         <TabsContent value="differentials" className="mt-0">
                                             <div className="space-y-3">
+                                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                 {result.differentials.map((diff: any, i: number) => (
                                                     <div key={i} className="p-4 bg-white rounded-xl border border-slate-200 hover:border-purple-200 transition-colors">
                                                         <div className="flex justify-between items-start mb-1">
@@ -227,7 +229,8 @@ export default function ClinicalSandboxPage() {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function VideoIcon(props: any) {
     return null; // Used elsewhere, avoiding check errors
 }
