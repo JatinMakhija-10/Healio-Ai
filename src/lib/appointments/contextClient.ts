@@ -103,6 +103,7 @@ function parseSnapshotToContext(snapshot: Record<string, unknown>): PatientConte
 /**
  * Get patient's full consultation history
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getPatientHistory(patientId: string): Promise<Array<{
     id: string;
     date: string;
