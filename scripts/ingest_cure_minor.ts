@@ -67,6 +67,7 @@ async function ingest() {
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   // Read with header 1 so we get arrays of values per row
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawData: any[][] = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
   const rows: {
@@ -142,6 +143,7 @@ async function ingest() {
         console.log(`  ✅ Inserted`);
         succeeded++;
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       console.error(`  ❌ Embedding error for ${row.ailment}:`, e.message);
       failed++;
