@@ -5,6 +5,7 @@
  * For a dataset of ~1000 remedies, seq-scan exact search is completely fine.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
