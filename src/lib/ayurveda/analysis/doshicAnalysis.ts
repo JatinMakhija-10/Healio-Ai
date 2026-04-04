@@ -138,6 +138,7 @@ function generateLimitations(confidence: number): string[] {
  */
 export function generateBalancingPlan(
     assessment: DoshicAssessment,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     currentSeason: string
 ): TherapeuticPlan {
     // Determine which dosha needs balancing most
