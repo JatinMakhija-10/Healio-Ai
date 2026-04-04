@@ -149,7 +149,7 @@ export default function LearnPage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <p className="text-slate-600">
-                                In Ayurveda, a consistent daily routine aligns your biological clock with nature's rhythms, promoting optimal health and immunity.
+                                In Ayurveda, a consistent daily routine aligns your biological clock with nature&apos;s rhythms, promoting optimal health and immunity.
                             </p>
 
                             <div className="space-y-4">
