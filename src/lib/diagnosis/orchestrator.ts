@@ -1,33 +1,32 @@
 /**
- * DiagnosisOrchestrator (v2 — Convergence-Gated Pipeline)
+ * DiagnosisOrchestrator (v3 — Math-First Architecture)
  *
- * The unified pipeline that fuses all three intelligence layers:
+ * The Bayesian MCMC engine has TOTAL AUTHORITY over the diagnosis.
+ * The LLM (Groq / Gemini) is a Natural Language Formatter ONLY.
  *
  *  ┌─────────────────────────────────────────────────────────────────────┐
  *  │  SYMPTOMS                                                           │
  *  │     │                                                               │
  *  │     ▼                                                               │
- *  │  [1] BAYESIAN ENGINE  ──── multi-chain MCMC with R̂ ───────────┐  │
- *  │     │                       + covariate priors + sensitivity    │  │
- *  │     ▼                                                           │  │
- *  │  [1b] CONVERGENCE GATE ── if R̂ > 1.05 or ESS < 100: ────────┤  │
- *  │     │                       force info-gain question + warn     │  │
- *  │     ▼                                                           │  │
- *  │  [2] MULTI-QUERY RAG  ──── fetches Boericke context per ────────┤  │
- *  │     │                       candidate + general symptoms         │  │
- *  │     ▼                                                           │  │
- *  │  [3] LLM (Groq / Gemini)  ─── enriched prompt containing: ─────┤  │
- *  │     │                           · Bayesian top-K priors         │  │
- *  │     │                           · RAG Boericke passages         │  │
- *  │     │                           · Clinical rule alerts           │  │
- *  │     ▼                                                           │  │
- *  │  [4] BAYESIAN CALIBRATION  – blends AI confidence (70%) ────────┘  │
- *  │     │                         with Bayesian posterior (30%)         │
+ *  │  [1] BAYESIAN ENGINE  ──── multi-chain MCMC with R̂ ─────────────┐ │
+ *  │     │       100% authority over: conditionName + confidence score │ │
+ *  │     ▼                                                             │ │
+ *  │  [1b] CONVERGENCE GATE ── R̂ > 1.05 or ESS < 100: ─────────────┤ │
+ *  │     │                       block output, ask info-gain question  │ │
+ *  │     ▼                                                             │ │
+ *  │  [2] CLINICAL RULES  ──── Wells / PERC / Ottawa / HEART ─────────┤ │
+ *  │     │                                                             │ │
+ *  │     ▼                                                             │ │
+ *  │  [3] LLM FORMATTER  ────── given MCMC diagnosis, AI writes: ─────┘ │
+ *  │     │                           · Compassionate description          │
+ *  │     │                           · Symptom rationale                  │
+ *  │     │                           · Formats pre-verified DB remedies    │
+ *  │     │                           · Uses Boericke RAG for enrichment    │
  *  │     ▼                                                               │
- *  │  [5] UNCERTAINTY QUANTIFICATION  – confidence intervals             │
+ *  │  [4] UNCERTAINTY QUANTIFICATION  – confidence intervals             │
  *  │     │                                                               │
  *  │     ▼                                                               │
- *  │  FUSED RESULT                                                       │
+ *  │  FINAL RESULT  (Bayesian-authoritative, AI-articulated)            │
  *  └─────────────────────────────────────────────────────────────────────┘
  */
 
