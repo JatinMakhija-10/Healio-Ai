@@ -262,25 +262,25 @@ export default function ProfilePage() {
                             <div className="space-y-2">
                                 <Label>Age</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.age || "Not set"}
+                                    {metadata.age || medical.age || "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Gender</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100 capitalize">
-                                    {metadata.gender || "Not set"}
+                                    {metadata.gender || medical.gender || "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Height</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.height ? `${metadata.height} cm` : "Not set"}
+                                    {metadata.height || medical.height ? `${metadata.height || medical.height} cm` : "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Weight</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.weight ? `${metadata.weight} kg` : "Not set"}
+                                    {metadata.weight || medical.weight ? `${metadata.weight || medical.weight} kg` : "Not set"}
                                 </div>
                             </div>
                         </div>
@@ -328,16 +328,16 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {(medical.pregnant || medical.kidney_liver_disease || medical.recent_surgery) && (
+                        {(medical.pregnant || medical.isPregnant || medical.kidney_liver_disease || medical.hasKidneyLiverDisease || medical.recent_surgery) && (
                             <div className="space-y-2">
                                 <Label>Safety Flags & History</Label>
                                 <div className="flex flex-wrap gap-2">
-                                    {medical.pregnant && (
+                                    {(medical.pregnant || medical.isPregnant) && (
                                         <Badge variant="destructive" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200">
                                             Pregnant
                                         </Badge>
                                     )}
-                                    {medical.kidney_liver_disease && (
+                                    {(medical.kidney_liver_disease || medical.hasKidneyLiverDisease) && (
                                         <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 border-red-200">
                                             Kidney/Liver Disease
                                         </Badge>
