@@ -1,11 +1,12 @@
 # MCMC Bayesian Inference Engine — Healio.AI
 
-> **Version 2.0** — Full Checkpoint Implementation
+> **Version 3.0** — Math-First Architecture
 > Last updated: 2026-04-05
+> **Status:** ALL CHECKPOINTS IMPLEMENTED 🚀
 
 ## Architecture Overview
 
-The Healio MCMC Bayesian Engine provides clinically-safe probabilistic diagnosis through a 10-checkpoint pipeline. Every diagnosis passes through multi-chain Markov Chain Monte Carlo inference before being fused with RAG-retrieved Boericke Materia Medica and AI reasoning.
+The Healio MCMC Bayesian Engine provides clinically-safe probabilistic diagnosis through an authoritative 11-checkpoint pipeline. Every diagnosis passes through multi-chain Markov Chain Monte Carlo inference. The Large Language Model is strictly relegated to Natural Language Formatting—it cannot invent or calculate diagnoses.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -183,6 +184,14 @@ interface MCMCResult {
     samples: number[];              // Raw posterior samples
 }
 ```
+
+### 11. Orchestrator: Math-First Hard Pivot (v3)
+**Goal:** Completely strip the LLM of diagnosis authority to eliminate AI hallucinations.
+**Implementation details:**
+- [x] Deleted the 70/30 Bayesian Calibration blend. The engine's score represents 100% of the statistical confidence.
+- [x] Refactored `route.ts` JSON schema. AI no longer predicts `conditionName` or `confidence`.
+- [x] Forced LLM into strict "Formatter Mode", injecting the single authoritative diagnosis computed by the `MCMCEngine`.
+- [x] AI focuses purely on compassionate `description`, `rationale` for the symptoms, and selecting/formatting pre-verified `structuredRemedies` using Boericke RAG.
 
 ---
 

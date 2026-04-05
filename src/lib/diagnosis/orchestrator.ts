@@ -301,10 +301,9 @@ export async function diagnose(
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // STAGE 3 — AI Inference (with Bayesian priors injected into prompt)
-    //           Server handles multi-query RAG internally
+    // STAGE 3 — AI Formatting (Bridge to Natural Language)
     // ═══════════════════════════════════════════════════════════════════════
-    const topCandidates = bayesianCandidates.slice(0, TOP_K);
+    const primaryCandidate = bayesianCandidates[0];
 
     let aiResult: DiagnosisResult | null = null;
     let provider = "unknown";
@@ -319,23 +318,15 @@ export async function diagnose(
             body: JSON.stringify({
                 symptoms,
                 userProfile: symptoms.userProfile,
-                bayesianPriors: topCandidates.map((c) => ({
-                    condition: c.conditionName,
-                    bayesianScore: Math.round(c.score),
-                    matchedKeywords: c.matchedKeywords.slice(0, 5),
-                    structuredRemedies: (c.remedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
+                primaryDiagnosis: {
+                    condition: primaryCandidate.conditionName,
+                    bayesianScore: Math.round(primaryCandidate.score),
+                    matchedKeywords: primaryCandidate.matchedKeywords.slice(0, 5),
+                    structuredRemedies: (primaryCandidate.remedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
                         name: r.name,
                         description: r.description,
                     })),
-                    mcmcStats: c.mcmcDiagnostics ? {
-                        credibleInterval: c.mcmcDiagnostics.credibleInterval,
-                        converged: c.mcmcDiagnostics.converged,
-                        effectiveSampleSize: c.mcmcDiagnostics.effectiveSampleSize,
-                        rHat: c.mcmcDiagnostics.rHat,
-                        priorDominated: c.mcmcDiagnostics.priorDominated,
-                        posteriorPredictiveP: c.mcmcDiagnostics.posteriorPredictiveP,
-                    } : undefined,
-                })),
+                },
                 clinicalRuleAlerts: clinicalRuleResults
                     .map((r) => `${r.rule}: ${r.interpretation}`),
                 posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
@@ -356,35 +347,34 @@ export async function diagnose(
             const aiDiag = data.diagnosis;
             aiResult = {
                 condition: {
-                    id: "ai_orchestrated",
-                    name: aiDiag.conditionName || "Homeopathic Assessment",
+                    id: primaryCandidate.conditionId || "gated_diagnostic",
+                    name: primaryCandidate.conditionName,
                     description: aiDiag.description || "",
-                    severity: aiDiag.severity || "moderate",
+                    severity: "moderate",
                     matchCriteria: { locations: [], types: [] },
                     remedies: aiDiag.remedies || [],
                     indianHomeRemedies: aiDiag.indianHomeRemedies || [],
                     exercises: [],
                     warnings: aiDiag.warnings || [],
-                    seekHelp: aiDiag.seekHelp ? "Please consult a doctor immediately." : "",
+                    seekHelp: aiDiag.seekHelp ? (aiDiag.seekHelpReason || "Please consult a doctor immediately.") : "",
                 },
-                confidence: aiDiag.confidence || 75,
-                matchedKeywords: [],
+                confidence: Math.round(primaryCandidate.score), // Bayesian Score Authority
+                matchedKeywords: primaryCandidate.matchedKeywords,
                 reasoningTrace: [
-                    { factor: "AI + RAG + Bayesian Pipeline", impact: 100, type: "prior" },
+                    { factor: "Bayesian MCMC Engine Diagnosis", impact: Math.round(primaryCandidate.score), type: "prior" },
                 ],
             };
 
-            // Append AI reasoning trace
-            if (aiDiag.reasoningTrace) {
+            if (aiDiag.rationale) {
                 aiResult.reasoningTrace!.push({
-                    factor: aiDiag.reasoningTrace,
+                    factor: aiDiag.rationale,
                     impact: 100,
                     type: "pattern",
                 });
             }
         }
     } catch (e) {
-        console.error("[Orchestrator] AI inference stage error:", e);
+        console.error("[Orchestrator] AI formatting stage error:", e);
     }
 
     if (!aiResult) {
@@ -396,23 +386,14 @@ export async function diagnose(
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // STAGE 4 — Bayesian Calibration of AI Confidence
-    //           Blends 70% AI confidence + 30% Bayesian posterior
-    //           Agreement → confidence boost · Disagreement → moderate penalty
-    // ═══════════════════════════════════════════════════════════════════════
-    const calibratedResult = calibrateWithBayesian(aiResult, bayesianCandidates);
-    completedStages.push("bayesian_calibration");
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // STAGE 5 — Uncertainty Quantification
-    //           Converts point estimate → confidence interval
+    // STAGE 4 — Uncertainty Quantification
     // ═══════════════════════════════════════════════════════════════════════
     let uncertainty: UncertaintyEstimate | undefined;
     try {
         const symptomList = extractSymptomList(symptoms);
         const evidenceMetrics = buildEvidenceMetrics(symptoms, detectedPatterns);
         uncertainty = uncertaintyQuantifier.quantify(
-            calibratedResult.confidence,
+            aiResult.confidence,
             symptomList,
             evidenceMetrics
         );
@@ -421,19 +402,14 @@ export async function diagnose(
         console.error("[Orchestrator] Uncertainty quantification error:", e);
     }
 
-    // Determine fusion method
-    const fusionMethod: OrchestratedResult["orchestrationMeta"]["fusionMethod"] =
-        ragApplied && bayesianCandidates.length > 0
-            ? "ensemble"
-            : bayesianCandidates.length > 0
-                ? "bayesian_dominant"
-                : "ai_dominant";
+    // Always Bayesian dominant now
+    const fusionMethod: OrchestratedResult["orchestrationMeta"]["fusionMethod"] = "bayesian_dominant";
 
     // Merge posterior red flags into main alerts
     const mergedAlerts = [...alerts, ...new Set(allPosteriorRedFlags)];
 
     const orchestrationMeta: OrchestratedResult["orchestrationMeta"] = {
-        bayesianTopK: topCandidates.slice(0, 3).map((c) => ({
+        bayesianTopK: bayesianCandidates.slice(0, 3).map((c) => ({
             conditionId: c.conditionId,
             conditionName: c.conditionName,
             priorScore: Math.round(c.score),
@@ -443,7 +419,7 @@ export async function diagnose(
         ragRemediesFound,
         aiProvider: provider,
         aiLatencyMs: latencyMs,
-        bayesianCalibratedConfidence: calibratedResult.confidence,
+        bayesianCalibratedConfidence: aiResult.confidence,
         fusionMethod,
         pipelineStages: completedStages,
         convergenceGated,
@@ -462,7 +438,7 @@ export async function diagnose(
     };
 
     return {
-        results: [calibratedResult],
+        results: [aiResult],
         alerts: mergedAlerts,
         uncertainty,
         clinicalRules: clinicalRuleResults,
@@ -472,75 +448,4 @@ export async function diagnose(
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────
 
-/**
- * Bayesian Confidence Calibration
- *
- * Implements a weighted blend of AI confidence and Bayesian posterior:
- *   calibrated = 0.70 × AI_confidence + 0.30 × Bayesian_score
- *
- * When AI condition matches a top Bayesian candidate  → confidence boosted
- * When AI condition doesn't appear in Bayesian top-K → mild penalisation
- */
-function calibrateWithBayesian(
-    aiResult: DiagnosisResult,
-    bayesianCandidates: BayesianCandidate[]
-): DiagnosisResult {
-    if (bayesianCandidates.length === 0) return aiResult;
-
-    const aiName = aiResult.condition.name.toLowerCase();
-
-    // Find matching Bayesian candidate (fuzzy name match)
-    const match = bayesianCandidates.find(
-        (c) =>
-            aiName.includes(c.conditionName.toLowerCase()) ||
-            c.conditionName.toLowerCase().includes(aiName) ||
-            // partial word overlap (≥1 significant word)
-            aiName
-                .split(" ")
-                .filter((w) => w.length > 4)
-                .some((w) => c.conditionName.toLowerCase().includes(w))
-    );
-
-    let calibratedConfidence: number;
-    let traceNote: string;
-
-    if (match) {
-        const bayesWeight = Math.min(match.score, 100);
-        calibratedConfidence = Math.round(0.70 * aiResult.confidence + 0.30 * bayesWeight);
-        traceNote = `Bayesian calibration: ensemble blend with "${match.conditionName}" (Bayesian: ${Math.round(match.score)}, AI: ${aiResult.confidence}) → ${calibratedConfidence}`;
-
-        // CP5: If the matching candidate is prior-dominated, note it
-        if (match.mcmcDiagnostics?.priorDominated) {
-            traceNote += ` ⚠ Note: Bayesian score is prior-dominated (driven by prevalence, not symptoms)`;
-        }
-    } else {
-        // AI disagrees with Bayesian top candidates — apply mild penalty
-        calibratedConfidence = Math.round(aiResult.confidence * 0.87);
-        const topNames = bayesianCandidates
-            .slice(0, 3)
-            .map((c) => c.conditionName)
-            .join(", ");
-        traceNote = `Bayesian calibration: AI diagnosis not in top Bayesian candidates [${topNames}] → confidence reduced to ${calibratedConfidence}`;
-    }
-
-    const clampedConfidence = Math.min(96, Math.max(10, calibratedConfidence));
-
-    const updatedTrace: ReasoningTraceEntry[] = [
-        ...(aiResult.reasoningTrace || []),
-        {
-            factor: traceNote,
-            impact: clampedConfidence - aiResult.confidence,
-            type: "pattern",
-        },
-    ];
-
-    // Attach matched Bayesian keywords to the result
-    const extraKeywords = match?.matchedKeywords?.slice(0, 8) || [];
-
-    return {
-        ...aiResult,
-        confidence: clampedConfidence,
-        matchedKeywords: [...(aiResult.matchedKeywords || []), ...extraKeywords],
-        reasoningTrace: updatedTrace,
-    };
-}
+// ─── Private Helpers ──────────────────────────────────────────────────────────
