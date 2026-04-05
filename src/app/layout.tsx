@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
+import "../bones/registry";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],

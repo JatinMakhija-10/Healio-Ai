@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton as BoneyardSkeleton } from "boneyard-js/react";
 import {
     Plus,
     RefreshCw,
@@ -238,14 +239,19 @@ export default function SchedulePage() {
 
             {/* Calendar */}
             <div className="flex-1 min-h-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {isLoading ? (
-                    <div className="h-full flex items-center justify-center">
-                        <div className="text-center space-y-3">
-                            <div className="w-12 h-12 rounded-full border-4 border-teal-200 border-t-teal-600 animate-spin mx-auto" />
-                            <p className="text-sm text-slate-500">Loading schedule...</p>
-                        </div>
-                    </div>
-                ) : (
+                <BoneyardSkeleton 
+                    name="doctor-calendar" 
+                    loading={isLoading} 
+                    fixture={
+                        <CalendarViewComponent
+                            appointments={[]}
+                            onSelectSlot={handleSelectSlot}
+                            onSelectEvent={handleEventSelect}
+                            onReschedule={handleReschedule}
+                            className="h-full border-0 shadow-none rounded-none"
+                        />
+                    }
+                >
                     <CalendarViewComponent
                         appointments={appointments}
                         onSelectSlot={handleSelectSlot}
@@ -253,7 +259,7 @@ export default function SchedulePage() {
                         onReschedule={handleReschedule}
                         className="h-full border-0 shadow-none rounded-none"
                     />
-                )}
+                </BoneyardSkeleton>
             </div>
 
             {/* Appointment List Panel */}
@@ -306,74 +312,88 @@ export default function SchedulePage() {
                         </div>
 
                         {/* List */}
-                        {isLoading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map(i => (
-                                    <Card key={i}>
-                                        <CardContent className="p-4">
-                                            <div className="flex items-start gap-4">
-                                                <Skeleton className="h-12 w-12 rounded-full" />
-                                                <div className="flex-1 space-y-2">
-                                                    <Skeleton className="h-5 w-32" />
-                                                    <Skeleton className="h-4 w-48" />
-                                                    <Skeleton className="h-10 w-full" />
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        ) : filteredAppointments.length > 0 ? (
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                                {filteredAppointments.map(apt => (
+                        <BoneyardSkeleton
+                            name="appointments-list"
+                            loading={isLoading}
+                            fixture={
+                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
                                     <AppointmentCard
-                                        key={apt.id}
-                                        id={apt.id}
-                                        patientName={apt.patientName}
-                                        patientAvatar={apt.patientAvatar}
-                                        scheduledAt={new Date(apt.scheduledAt)}
-                                        duration={apt.duration}
-                                        status={apt.status}
-                                        chiefComplaint={apt.chiefComplaint}
-                                        aiDiagnosis={apt.aiDiagnosis}
-                                        aiConfidence={apt.aiConfidence}
-                                        hasRedFlags={apt.hasRedFlags}
-                                        isUrgent={apt.isUrgent}
+                                        id="mock-1"
+                                        patientName="Jane Doe"
+                                        scheduledAt={new Date()}
+                                        duration={30}
+                                        status="scheduled"
+                                        chiefComplaint="Routine Follow Up"
                                         onCancel={handleCancel}
                                         onComplete={handleComplete}
                                         onStatusChange={handleStatusChange}
                                     />
-                                ))}
-                            </div>
-                        ) : (
-                            <Card className="border-dashed">
-                                <CardContent className="p-10 text-center">
-                                    <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                                        <Calendar className="h-6 w-6 text-slate-400" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-slate-700">
-                                        {statusFilter !== 'all' || searchQuery
-                                            ? 'No matching appointments'
-                                            : 'No Appointments Yet'}
-                                    </h3>
-                                    <p className="text-slate-500 mt-1 text-sm">
-                                        {statusFilter !== 'all' || searchQuery
-                                            ? 'Try adjusting your filters or search query.'
-                                            : 'Click "New Appointment" to schedule your first consultation.'}
-                                    </p>
-                                    {(statusFilter !== 'all' || searchQuery) && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="mt-4"
-                                            onClick={() => { setStatusFilter('all'); setSearchQuery(''); }}
-                                        >
-                                            Clear Filters
-                                        </Button>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
+                                    <AppointmentCard
+                                        id="mock-2"
+                                        patientName="John Smith"
+                                        scheduledAt={new Date()}
+                                        duration={45}
+                                        status="scheduled"
+                                        chiefComplaint="Back Pain"
+                                        onCancel={handleCancel}
+                                        onComplete={handleComplete}
+                                        onStatusChange={handleStatusChange}
+                                    />
+                                </div>
+                            }
+                        >
+                            {filteredAppointments.length > 0 ? (
+                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                                    {filteredAppointments.map(apt => (
+                                        <AppointmentCard
+                                            key={apt.id}
+                                            id={apt.id}
+                                            patientName={apt.patientName}
+                                            patientAvatar={apt.patientAvatar}
+                                            scheduledAt={new Date(apt.scheduledAt)}
+                                            duration={apt.duration}
+                                            status={apt.status}
+                                            chiefComplaint={apt.chiefComplaint}
+                                            aiDiagnosis={apt.aiDiagnosis}
+                                            aiConfidence={apt.aiConfidence}
+                                            hasRedFlags={apt.hasRedFlags}
+                                            isUrgent={apt.isUrgent}
+                                            onCancel={handleCancel}
+                                            onComplete={handleComplete}
+                                            onStatusChange={handleStatusChange}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <Card className="border-dashed">
+                                    <CardContent className="p-10 text-center">
+                                        <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                                            <Calendar className="h-6 w-6 text-slate-400" />
+                                        </div>
+                                        <h3 className="text-lg font-medium text-slate-700">
+                                            {statusFilter !== 'all' || searchQuery
+                                                ? 'No matching appointments'
+                                                : 'No Appointments Yet'}
+                                        </h3>
+                                        <p className="text-slate-500 mt-1 text-sm">
+                                            {statusFilter !== 'all' || searchQuery
+                                                ? 'Try adjusting your filters or search query.'
+                                                : 'Click "New Appointment" to schedule your first consultation.'}
+                                        </p>
+                                        {(statusFilter !== 'all' || searchQuery) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="mt-4"
+                                                onClick={() => { setStatusFilter('all'); setSearchQuery(''); }}
+                                            >
+                                                Clear Filters
+                                            </Button>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </BoneyardSkeleton>
                     </>
                 )}
             </div>
