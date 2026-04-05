@@ -31,7 +31,6 @@ const PHASE2_DASHBOARD_ROUTES = [
     '/dashboard/pathway',
     '/dashboard/inbox',
     '/dashboard/videos',
-    '/dashboard/assessment',
 ];
 
 const PHASE2_TOP_LEVEL_ROUTES = [
