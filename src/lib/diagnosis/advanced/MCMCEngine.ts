@@ -41,8 +41,8 @@ const DEFAULT_CONFIG: MCMCConfig = {
     proposalSigma: 0.12,
     thinning: 2,
     numChains: 3,
-    rHatThreshold: 1.05,
-    minESS: 100,
+    rHatThreshold: 1.01,
+    minESS: 400,
     runPriorSensitivity: true,
 };
 
