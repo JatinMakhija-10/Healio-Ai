@@ -1,19 +1,22 @@
 /**
  * /api/diagnose
  *
- * Enhanced diagnosis endpoint — v2 with full Bayesian + RAG + AI pipeline.
+ * Enhanced diagnosis endpoint — v2 with full Bayesian + RAG + AI pipeline
+ * and convergence-gated safety controls (CP10).
  *
  * Accepts:
  *   · symptoms          — UserSymptomData (required)
  *   · userProfile       — patient profile (optional)
  *   · bayesianPriors    — top-K candidates from client Bayesian engine (optional)
- *                          [{ condition, bayesianScore, matchedKeywords }]
+ *                          [{ condition, bayesianScore, matchedKeywords, mcmcStats }]
  *   · clinicalRuleAlerts — triggered clinical rule names (optional)
+ *   · posteriorRedFlags — posterior-based escalation alerts from MCMC (optional)
  *
  * Server-side pipeline:
  *   1. Multi-Query RAG    — embeds (symptoms + per-candidate condition names)
  *                           → retrieves unique Boericke chunks, ranked by similarity
- *   2. Enriched Prompt    — injects Bayesian priors + RAG context into system prompt
+ *   2. Enriched Prompt    — injects Bayesian priors + RAG context + convergence
+ *                           warnings + posterior red flags into system prompt
  *   3. AI Inference       — Groq (primary) → Gemini (fallback)
  *   4. Response           — structured JSON + metadata
  */
@@ -46,6 +49,8 @@ INSTRUCTIONS:
 - Use the Boericke RAG context (if provided) as your PRIMARY reference for remedy selection.
 - Use Bayesian priors (if provided) as a STARTING HYPOTHESIS — confirm or refute them with the symptoms.
 - If Bayesian candidates align with symptoms, choose from them; if they do not, override with your best assessment.
+- If the MCMC engine flagged non-convergence or prior-dominated results, be EXTRA CAUTIOUS and conservative.
+- If posterior red flag alerts are provided, address them explicitly in your assessment.
 - Be specific: link each remedy to exact symptom modalities (worse from, better from, time, side).
 - Respond ONLY with valid JSON that can be parsed by JSON.parse().
 
@@ -87,6 +92,9 @@ interface BayesianPrior {
         credibleInterval?: { lower: number; upper: number; width: number };
         converged?: boolean;
         effectiveSampleSize?: number;
+        rHat?: number;
+        priorDominated?: boolean;
+        posteriorPredictiveP?: number;
     };
 }
 
@@ -246,6 +254,7 @@ export async function POST(req: Request) {
             userProfile,
             bayesianPriors = [] as BayesianPrior[],
             clinicalRuleAlerts = [] as string[],
+            posteriorRedFlags = [] as string[],
             detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
         } = body;
 
@@ -277,10 +286,10 @@ export async function POST(req: Request) {
 
         // ── 2. Build Enriched Prompt (Symphony Knowledge Fusion) ────────────────
 
-        // Bayesian priors section with MCMC uncertainty
+        // Bayesian priors section with full MCMC v2 uncertainty data
         const bayesianSection =
             bayesianPriors.length > 0
-                ? `=== BAYESIAN MCMC ENGINE OUTPUT (Metropolis-Hastings posterior inference) ===
+                ? `=== BAYESIAN MCMC ENGINE OUTPUT (Multi-Chain Metropolis-Hastings posterior inference) ===
 Top differential candidates ranked by posterior probability:
 ${bayesianPriors
                     .map(
@@ -289,8 +298,17 @@ ${bayesianPriors
                             (p.mcmcStats?.credibleInterval
                                 ? `\n     95% Credible Interval: [${(p.mcmcStats.credibleInterval.lower * 100).toFixed(1)}%, ${(p.mcmcStats.credibleInterval.upper * 100).toFixed(1)}%] (Width: ${(p.mcmcStats.credibleInterval.width * 100).toFixed(1)}%)`
                                 : "") +
+                            (p.mcmcStats?.rHat != null
+                                ? `\n     R̂ (Gelman-Rubin): ${p.mcmcStats.rHat.toFixed(3)}`
+                                : "") +
                             (p.mcmcStats?.converged === false
-                                ? `\n     ⚠ MCMC chain did NOT converge — treat this score with caution`
+                                ? `\n     ⚠ MCMC chains did NOT converge (R̂ > threshold) — treat this score with EXTREME CAUTION`
+                                : "") +
+                            (p.mcmcStats?.priorDominated
+                                ? `\n     ⚠ PRIOR-DOMINATED: This score is driven by disease prevalence, NOT by patient symptoms`
+                                : "") +
+                            (p.mcmcStats?.posteriorPredictiveP != null && p.mcmcStats.posteriorPredictiveP < 0.3
+                                ? `\n     ⚠ POOR MODEL FIT (PPP=${p.mcmcStats.posteriorPredictiveP.toFixed(2)}): expected symptoms do not match presentation`
                                 : "") +
                             (p.matchedKeywords?.length
                                 ? `\n     Matched features: ${p.matchedKeywords.join(", ")}`
@@ -298,7 +316,10 @@ ${bayesianPriors
                     )
                     .join("\n")}
 
-Note: These are MCMC posterior estimates. Wide credible intervals indicate diagnostic uncertainty — consider asking follow-up questions. Narrow intervals mean the statistical engine is confident.\n`
+Note: These are multi-chain MCMC posterior estimates with Gelman-Rubin convergence diagnostics.
+- Wide credible intervals or R̂ > 1.05 indicate diagnostic uncertainty — be conservative.
+- Prior-dominated results mean the data is insufficient — DO NOT present high confidence for these.
+- Narrow intervals + R̂ ≈ 1.0 mean the statistical engine is confident.\n`
                 : "";
 
         // Structured remedies from conditions database
@@ -324,7 +345,33 @@ Note: These are pre-verified remedies from the database. Use them as a strong re
 ${clinicalRuleAlerts.map((r: string) => `  ⚠ ${r}`).join("\n")}\n`
                 : "";
 
-        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}
+        // CP8: Posterior red flag escalation section
+        const posteriorRedFlagSection =
+            posteriorRedFlags.length > 0
+                ? `=== ⚠ POSTERIOR-BASED RED FLAG ALERTS (from MCMC engine) ===
+${posteriorRedFlags.map((f: string) => `  ${f}`).join("\n")}
+
+CRITICAL: The MCMC engine detected non-trivial posterior probability for one or more life-threatening conditions.
+Even if these are not your primary diagnosis, you MUST address them in your response:
+- Mention them in your differential diagnoses
+- Include appropriate warnings
+- Set seekHelp=true if any posterior red flag is present\n`
+                : "";
+
+        // CP10: Non-convergence warning injection
+        const allNonConverged = bayesianPriors.length > 0 &&
+            bayesianPriors.every((p: BayesianPrior) => p.mcmcStats?.converged === false);
+        const convergenceWarningSection = allNonConverged
+            ? `=== ⚠ CONVERGENCE WARNING ===
+ALL MCMC chains failed to converge. The statistical engine could not reach a reliable posterior estimate.
+You MUST:
+- Be extremely conservative in your confidence score (cap at 60)
+- Rely heavily on Boericke RAG references for remedy selection
+- Recommend the patient provide more information or seek professional consultation
+- DO NOT present any diagnosis with high confidence\n`
+            : "";
+
+        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}${posteriorRedFlagSection}${convergenceWarningSection}
 === PATIENT PRESENTATION ===
 
 Symptoms:
@@ -337,16 +384,34 @@ ${ragContext}
 
 Based on all of the above, generate the diagnosis JSON.`;
 
-        // ── 3. AI Inference (Symphony: Dynamic Temperature) ─────────────────────
+        // ── 3. AI Inference (Symphony: Dynamic Temperature with R̂ awareness) ──
 
-        // SYMPHONY: dynamically adjust LLM temperature based on MCMC confidence
+        // SYMPHONY: dynamically adjust LLM temperature based on MCMC confidence + convergence
         const topScore = bayesianPriors[0]?.bayesianScore ?? 0;
         const mcmcConverged = bayesianPriors[0]?.mcmcStats?.converged ?? false;
-        const dynamicTemperature =
-            topScore > 85 && mcmcConverged ? 0.1   // High confidence + converged → strict adherence
-                : topScore > 60 ? 0.2   // Moderate confidence → standard
-                    : topScore > 40 ? 0.3   // Low confidence → slightly creative
-                        : 0.4;  // Very uncertain → let AI explore
+        const topRHat = bayesianPriors[0]?.mcmcStats?.rHat ?? 1.0;
+        const hasPosteriorRedFlags = posteriorRedFlags.length > 0;
+
+        let dynamicTemperature: number;
+        if (allNonConverged) {
+            // All chains failed — force ultra-conservative
+            dynamicTemperature = 0.1;
+        } else if (hasPosteriorRedFlags) {
+            // Posterior red flags detected — be cautious
+            dynamicTemperature = 0.15;
+        } else if (topScore > 85 && mcmcConverged && topRHat < 1.02) {
+            // High confidence + excellent convergence → strict adherence
+            dynamicTemperature = 0.1;
+        } else if (topScore > 60 && mcmcConverged) {
+            // Moderate confidence + converged → standard
+            dynamicTemperature = 0.2;
+        } else if (topScore > 40) {
+            // Low confidence → slightly creative
+            dynamicTemperature = 0.3;
+        } else {
+            // Very uncertain → let AI explore
+            dynamicTemperature = 0.4;
+        }
 
         let aiResponseContent = "";
         let provider: string = AI_PHASE_CONFIG.primary;
@@ -425,6 +490,22 @@ Based on all of the above, generate the diagnosis JSON.`;
             );
         }
 
+        // CP10: If all MCMC chains failed to converge, cap AI confidence
+        if (allNonConverged && jsonResult.confidence > 60) {
+            jsonResult.confidence = 60;
+            jsonResult.warnings = [
+                ...(jsonResult.warnings || []),
+                "Statistical confidence is limited — MCMC chains did not fully converge. Consider providing additional symptom details."
+            ];
+        }
+
+        // CP8: If posterior red flags exist, force seekHelp
+        if (hasPosteriorRedFlags && !jsonResult.seekHelp) {
+            jsonResult.seekHelp = true;
+            jsonResult.seekHelpReason = jsonResult.seekHelpReason ||
+                "The statistical engine detected non-trivial probability for serious conditions. Professional evaluation is recommended.";
+        }
+
         // ── 5. Smart Question Override (Information Gain) ──────────────────────
 
         let questionOverridden = false;
@@ -473,9 +554,15 @@ Based on all of the above, generate the diagnosis JSON.`;
                 ragChunks: ragContext.length > 0 ? (ragContext.match(/\[\d+\]/g)?.length ?? 1) : 0,
                 bayesianPriorsUsed: bayesianPriors.length,
                 clinicalRuleAlertsUsed: clinicalRuleAlerts.length,
+                posteriorRedFlagsCount: posteriorRedFlags.length,
                 dynamicTemperature,
                 structuredRemediesInjected: bayesianPriors.filter((p: BayesianPrior) => p.structuredRemedies?.length).length > 0,
                 mcmcUncertaintyInjected: bayesianPriors.some((p: BayesianPrior) => p.mcmcStats?.credibleInterval != null),
+                mcmcConvergenceStatus: {
+                    allConverged: bayesianPriors.every((p: BayesianPrior) => p.mcmcStats?.converged !== false),
+                    allNonConverged,
+                    topRHat,
+                },
                 questionOverridden,
             },
         });
@@ -484,4 +571,3 @@ Based on all of the above, generate the diagnosis JSON.`;
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
-

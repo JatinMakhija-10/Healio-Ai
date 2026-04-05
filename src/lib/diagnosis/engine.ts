@@ -219,15 +219,18 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
 
 
 /**
- * Calculates a posterior probability score using MCMC Bayesian inference.
- * 
- * Runs Metropolis-Hastings sampling to compute proper posterior distributions
- * over the condition probability space. Uses per-symptom likelihood ratios
- * from sensitivity/specificity, Beta priors from prevalence, and clinical
- * correlation patterns.
- * 
+ * Calculates a posterior probability score using MCMC Bayesian inference (v2).
+ *
+ * Runs multi-chain Metropolis-Hastings sampling with:
+ *   - Covariate-conditioned priors (age/sex/comorbidities)
+ *   - R̂ (Gelman-Rubin) convergence diagnostic
+ *   - Prior sensitivity analysis
+ *   - Posterior predictive checks
+ *   - Posterior-based red flag escalation
+ *   - Missing data marginalisation
+ *
  * Backward-compatible signature — returns score (0-100), matched keywords,
- * and reasoning trace.
+ * and reasoning trace, plus full MCMC diagnostics.
  */
 export function calculateBayesianScore(
     condition: Condition,
@@ -237,14 +240,19 @@ export function calculateBayesianScore(
     score: number,
     matchedKeywords: string[],
     reasoningTrace: ReasoningTraceEntry[],
+    posteriorRedFlags: string[],
     mcmcDiagnostics?: {
         posteriorMean: number,
         posteriorMedian: number,
         credibleInterval: { lower: number; upper: number; width: number },
         effectiveSampleSize: number,
         gewekePValue: number,
+        rHat: number,
+        numChains: number,
         converged: boolean,
         acceptanceRate: number,
+        priorDominated: boolean,
+        posteriorPredictiveP: number,
     }
 } {
     const evidence = extractEvidence(symptoms);
@@ -254,14 +262,19 @@ export function calculateBayesianScore(
         score: result.score,
         matchedKeywords: result.matchedKeywords,
         reasoningTrace: result.reasoningTrace,
+        posteriorRedFlags: result.posteriorRedFlags,
         mcmcDiagnostics: {
             posteriorMean: result.mcmc.posteriorMean,
             posteriorMedian: result.mcmc.posteriorMedian,
             credibleInterval: result.mcmc.credibleInterval,
             effectiveSampleSize: result.mcmc.effectiveSampleSize,
             gewekePValue: result.mcmc.gewekePValue,
+            rHat: result.mcmc.rHat,
+            numChains: result.mcmc.numChains,
             converged: result.mcmc.converged,
             acceptanceRate: result.mcmc.acceptanceRate,
+            priorDominated: result.mcmc.priorDominated,
+            posteriorPredictiveP: result.mcmc.posteriorPredictiveP,
         }
     };
 }

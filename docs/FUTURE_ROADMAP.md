@@ -396,3 +396,7 @@ CREATE TABLE chat_sessions (
     *   **Internal Hosting**: Support for high-quality Yoga and meditation videos hosted directly on our platform.
     *   **Social Integration**: Curated YouTube playlists and video embeds for specialized Yoga therapy sessions.
     *   **Smart Recommendations**: Auto-suggest specific Yoga videos based on the user's current Vikriti (imbalance).
+
+### D. Homeopathic Integration & Content Framework
+*   **5.7. Safe Homeopathy Content Framework**: Build a trusted and safe framework for suggesting homeopathic remedies, grounded in classical texts (Materia Medica, Repertories).
+*   **5.8. Viral Educational Content**: Convert traditional remedy recommendations into engaging, medically safe content (e.g., for Instagram posts/Reels), always integrating hydration, first-aid, and necessary doctor warnings alongside the homeopathic advice.

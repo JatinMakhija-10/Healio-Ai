@@ -1,5 +1,5 @@
 /**
- * DiagnosisOrchestrator
+ * DiagnosisOrchestrator (v2 — Convergence-Gated Pipeline)
  *
  * The unified pipeline that fuses all three intelligence layers:
  *
@@ -7,8 +7,11 @@
  *  │  SYMPTOMS                                                           │
  *  │     │                                                               │
  *  │     ▼                                                               │
- *  │  [1] BAYESIAN ENGINE  ──── scores all retrieved conditions ─────┐  │
- *  │     │                       returns top-K ranked candidates     │  │
+ *  │  [1] BAYESIAN ENGINE  ──── multi-chain MCMC with R̂ ───────────┐  │
+ *  │     │                       + covariate priors + sensitivity    │  │
+ *  │     ▼                                                           │  │
+ *  │  [1b] CONVERGENCE GATE ── if R̂ > 1.05 or ESS < 100: ────────┤  │
+ *  │     │                       force info-gain question + warn     │  │
  *  │     ▼                                                           │  │
  *  │  [2] MULTI-QUERY RAG  ──── fetches Boericke context per ────────┤  │
  *  │     │                       candidate + general symptoms         │  │
@@ -44,6 +47,7 @@ import {
 import { symptomCorrelationDetector, DetectedPattern } from "./advanced/SymptomCorrelations";
 import { clinicalRules, RuleResult } from "./advanced/ClinicalDecisionRules";
 import { uncertaintyQuantifier, UncertaintyEstimate } from "./advanced/UncertaintyQuantification";
+import { infoGainSelector } from "./advanced/InformationGainSelector";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,12 +58,17 @@ export interface BayesianCandidate {
     matchedKeywords: string[];
     reasoningTrace: ReasoningTraceEntry[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    remedies: any[]; // Or import the full Remedy type
-    mcmcDiagnostics?: { // Preserved strictly in memory, maybe mapped out below
+    remedies: any[];
+    posteriorRedFlags: string[];
+    mcmcDiagnostics?: {
         effectiveSampleSize: number;
         gewekePValue: number;
         acceptanceRate: number;
         converged: boolean;
+        rHat: number;
+        numChains: number;
+        priorDominated: boolean;
+        posteriorPredictiveP: number;
         credibleInterval: { lower: number; upper: number; width: number };
     };
 }
@@ -89,11 +98,17 @@ export interface OrchestratedResult {
         bayesianCalibratedConfidence: number;
         fusionMethod: "ai_dominant" | "bayesian_dominant" | "ensemble";
         pipelineStages: string[];
+        convergenceGated: boolean;
+        posteriorRedFlags: string[];
         mcmcConvergence?: {
             effectiveSampleSize: number;
             gewekePValue: number;
             acceptanceRate: number;
             converged: boolean;
+            rHat: number;
+            numChains: number;
+            priorDominated: boolean;
+            posteriorPredictiveP: number;
             credibleInterval: { lower: number; upper: number; width: number };
         };
     };
@@ -112,8 +127,12 @@ const TOP_K = 5;
 const MIN_BAYESIAN_SCORE = 8;
 
 /**
- * Runs the full 5-stage diagnosis pipeline.
- * This is the new recommended entry-point for client-side diagnosis.
+ * Runs the full convergence-gated diagnosis pipeline.
+ * This is the recommended entry-point for client-side diagnosis.
+ *
+ * CP10: If MCMC fails to converge (R̂ > 1.05, ESS < 100),
+ * the pipeline forces a follow-up question via InformationGainSelector
+ * instead of proceeding to unreliable AI inference.
  */
 export async function diagnose(
     symptoms: UserSymptomData
@@ -126,6 +145,8 @@ export async function diagnose(
     orchestrationMeta?: OrchestratedResult["orchestrationMeta"];
 }> {
     const completedStages: string[] = [];
+    let convergenceGated = false;
+    const allPosteriorRedFlags: string[] = [];
 
     // ═══════════════════════════════════════════════════════════════════════
     // STAGE 0 — Safety Red-Flag Scan (always runs first)
@@ -134,7 +155,7 @@ export async function diagnose(
     completedStages.push("red_flags");
 
     // ═══════════════════════════════════════════════════════════════════════
-    // STAGE 1 — Bayesian Candidate Scoring
+    // STAGE 1 — Bayesian Candidate Scoring (Multi-Chain MCMC)
     // ═══════════════════════════════════════════════════════════════════════
     let bayesianCandidates: BayesianCandidate[] = [];
     let detectedPatterns: DetectedPattern[] = [];
@@ -146,11 +167,17 @@ export async function diagnose(
 
         bayesianCandidates = conditions
             .map((condition) => {
-                const { score, matchedKeywords, reasoningTrace, mcmcDiagnostics } = calculateBayesianScore(
+                const { score, matchedKeywords, reasoningTrace, mcmcDiagnostics, posteriorRedFlags } = calculateBayesianScore(
                     condition,
                     symptoms,
                     detectedPatterns
                 );
+
+                // Aggregate posterior red flags
+                if (posteriorRedFlags.length > 0) {
+                    allPosteriorRedFlags.push(...posteriorRedFlags);
+                }
+
                 return {
                     conditionId: condition.id,
                     conditionName: condition.name,
@@ -158,16 +185,107 @@ export async function diagnose(
                     matchedKeywords,
                     reasoningTrace,
                     remedies: condition.remedies || [],
+                    posteriorRedFlags,
                     mcmcDiagnostics,
                 };
             })
             .filter((c) => c.score >= MIN_BAYESIAN_SCORE)
             .sort((a, b) => b.score - a.score);
 
-        completedStages.push("bayesian");
+        completedStages.push("bayesian_mcmc");
     } catch (e) {
         console.error("[Orchestrator] Bayesian stage error:", e);
-        // Continue without Bayesian context
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 1b — CONVERGENCE GATE (CP10)
+    //
+    // If the top candidate's MCMC chain didn't converge (R̂ > threshold,
+    // ESS too low, or CrI too wide), the statistical engine is unreliable.
+    // Instead of feeding garbage to the AI, force a follow-up question.
+    // ═══════════════════════════════════════════════════════════════════════
+    const topCandidate = bayesianCandidates[0];
+    const topMcmc = topCandidate?.mcmcDiagnostics;
+
+    if (topMcmc && !topMcmc.converged && bayesianCandidates.length >= 2) {
+        // MCMC did not converge — try to ask a disambiguating question
+        try {
+            const candidates = bayesianCandidates.slice(0, 5).map((c) => ({
+                conditionName: c.conditionName,
+                score: c.score,
+            }));
+
+            const knownSymptoms = [
+                ...(symptoms.location || []),
+                ...(symptoms.additionalNotes?.split(',').map((s: string) => s.trim()) || []),
+                symptoms.painType,
+            ].filter(Boolean) as string[];
+
+            const excludedSymptoms = symptoms.excludedSymptoms || [];
+            const detectedLanguage = symptoms.userProfile?.language || 'en';
+
+            const bestQuestion = infoGainSelector.selectBestQuestion(
+                candidates,
+                knownSymptoms,
+                excludedSymptoms,
+                detectedLanguage
+            );
+
+            if (bestQuestion) {
+                convergenceGated = true;
+                completedStages.push("convergence_gate_triggered");
+
+                console.warn(
+                    `[Orchestrator] CONVERGENCE GATE: R̂=${topMcmc.rHat.toFixed(3)}, ` +
+                    `ESS=${topMcmc.effectiveSampleSize.toFixed(0)} — forcing follow-up question`
+                );
+
+                // Merge posterior red flags into main alerts
+                const mergedAlerts = [...alerts, ...new Set(allPosteriorRedFlags)];
+
+                return {
+                    results: [],
+                    question: {
+                        type: 'clarification',
+                        question: bestQuestion.question,
+                        options: bestQuestion.options,
+                        symptomKey: bestQuestion.symptomKey,
+                        relatedConditions: bayesianCandidates.slice(0, 3).map(c => c.conditionId),
+                    },
+                    alerts: mergedAlerts,
+                    orchestrationMeta: {
+                        bayesianTopK: bayesianCandidates.slice(0, 3).map((c) => ({
+                            conditionId: c.conditionId,
+                            conditionName: c.conditionName,
+                            priorScore: Math.round(c.score),
+                            remedies: c.remedies || [],
+                        })),
+                        ragApplied: false,
+                        ragRemediesFound: [],
+                        aiProvider: "none",
+                        aiLatencyMs: 0,
+                        bayesianCalibratedConfidence: 0,
+                        fusionMethod: "bayesian_dominant",
+                        pipelineStages: completedStages,
+                        convergenceGated: true,
+                        posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
+                        mcmcConvergence: topMcmc ? {
+                            effectiveSampleSize: topMcmc.effectiveSampleSize,
+                            gewekePValue: topMcmc.gewekePValue,
+                            acceptanceRate: topMcmc.acceptanceRate,
+                            converged: topMcmc.converged,
+                            rHat: topMcmc.rHat,
+                            numChains: topMcmc.numChains,
+                            priorDominated: topMcmc.priorDominated,
+                            posteriorPredictiveP: topMcmc.posteriorPredictiveP,
+                            credibleInterval: topMcmc.credibleInterval,
+                        } : undefined,
+                    },
+                };
+            }
+        } catch (e) {
+            console.error("[Orchestrator] Convergence gate question generation failed:", e);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -201,26 +319,26 @@ export async function diagnose(
             body: JSON.stringify({
                 symptoms,
                 userProfile: symptoms.userProfile,
-                // SYMPHONY: inject structured remedies + MCMC stats alongside Bayesian priors
                 bayesianPriors: topCandidates.map((c) => ({
                     condition: c.conditionName,
                     bayesianScore: Math.round(c.score),
                     matchedKeywords: c.matchedKeywords.slice(0, 5),
-                    // Forward structured remedies from database conditions
                     structuredRemedies: (c.remedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
                         name: r.name,
                         description: r.description,
                     })),
-                    // Forward MCMC convergence stats so API can adjust temperature + inject uncertainty
                     mcmcStats: c.mcmcDiagnostics ? {
                         credibleInterval: c.mcmcDiagnostics.credibleInterval,
                         converged: c.mcmcDiagnostics.converged,
                         effectiveSampleSize: c.mcmcDiagnostics.effectiveSampleSize,
+                        rHat: c.mcmcDiagnostics.rHat,
+                        priorDominated: c.mcmcDiagnostics.priorDominated,
+                        posteriorPredictiveP: c.mcmcDiagnostics.posteriorPredictiveP,
                     } : undefined,
                 })),
-                // Forward all applied clinical rule names + interpretations
                 clinicalRuleAlerts: clinicalRuleResults
                     .map((r) => `${r.rule}: ${r.interpretation}`),
+                posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
                 detectedLanguage: symptoms.userProfile?.language || 'en'
             }),
         });
@@ -270,7 +388,11 @@ export async function diagnose(
     }
 
     if (!aiResult) {
-        return { results: [], alerts, clinicalRules: clinicalRuleResults };
+        return {
+            results: [],
+            alerts: [...alerts, ...new Set(allPosteriorRedFlags)],
+            clinicalRules: clinicalRuleResults,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -307,14 +429,8 @@ export async function diagnose(
                 ? "bayesian_dominant"
                 : "ai_dominant";
 
-    // Attach MCMC convergence info from top candidate
-    const topMcmc = (topCandidates[0] as unknown as Record<string, unknown>)?.mcmcDiagnostics as {
-        effectiveSampleSize: number;
-        gewekePValue: number;
-        acceptanceRate: number;
-        converged: boolean;
-        credibleInterval: { lower: number; upper: number; width: number };
-    } | undefined;
+    // Merge posterior red flags into main alerts
+    const mergedAlerts = [...alerts, ...new Set(allPosteriorRedFlags)];
 
     const orchestrationMeta: OrchestratedResult["orchestrationMeta"] = {
         bayesianTopK: topCandidates.slice(0, 3).map((c) => ({
@@ -330,18 +446,24 @@ export async function diagnose(
         bayesianCalibratedConfidence: calibratedResult.confidence,
         fusionMethod,
         pipelineStages: completedStages,
+        convergenceGated,
+        posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
         mcmcConvergence: topMcmc ? {
             effectiveSampleSize: topMcmc.effectiveSampleSize,
             gewekePValue: topMcmc.gewekePValue,
             acceptanceRate: topMcmc.acceptanceRate,
             converged: topMcmc.converged,
+            rHat: topMcmc.rHat,
+            numChains: topMcmc.numChains,
+            priorDominated: topMcmc.priorDominated,
+            posteriorPredictiveP: topMcmc.posteriorPredictiveP,
             credibleInterval: topMcmc.credibleInterval,
         } : undefined,
     };
 
     return {
         results: [calibratedResult],
-        alerts,
+        alerts: mergedAlerts,
         uncertainty,
         clinicalRules: clinicalRuleResults,
         orchestrationMeta,
@@ -386,6 +508,11 @@ function calibrateWithBayesian(
         const bayesWeight = Math.min(match.score, 100);
         calibratedConfidence = Math.round(0.70 * aiResult.confidence + 0.30 * bayesWeight);
         traceNote = `Bayesian calibration: ensemble blend with "${match.conditionName}" (Bayesian: ${Math.round(match.score)}, AI: ${aiResult.confidence}) → ${calibratedConfidence}`;
+
+        // CP5: If the matching candidate is prior-dominated, note it
+        if (match.mcmcDiagnostics?.priorDominated) {
+            traceNote += ` ⚠ Note: Bayesian score is prior-dominated (driven by prevalence, not symptoms)`;
+        }
     } else {
         // AI disagrees with Bayesian top candidates — apply mild penalty
         calibratedConfidence = Math.round(aiResult.confidence * 0.87);
