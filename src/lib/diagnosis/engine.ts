@@ -301,27 +301,30 @@ export async function diagnose(symptoms: UserSymptomData): Promise<{
         if (data.diagnosis) {
             const aiDiag = data.diagnosis;
 
+            // NOTE: In Math-First v3, conditionName and confidence are no longer
+            // returned by the AI formatter. We use safe fallbacks here.
             const result: DiagnosisResult = {
                 condition: {
                     id: 'ai_diagnosis',
-                    name: aiDiag.conditionName || 'Homeopathic Assessment',
+                    name: aiDiag.conditionName || 'Homeopathic Assessment', // kept for UI compatibility
                     description: aiDiag.description || '',
                     severity: aiDiag.severity || 'moderate',
                     matchCriteria: { locations: [], types: [] },
                     remedies: aiDiag.remedies || [],
-                    indianHomeRemedies: [],
+                    indianHomeRemedies: aiDiag.indianHomeRemedies || [],
                     exercises: [],
                     warnings: aiDiag.warnings || [],
-                    seekHelp: aiDiag.seekHelp ? 'Please consult a doctor immediately.' : ''
+                    seekHelp: aiDiag.seekHelp ? (aiDiag.seekHelpReason || 'Please consult a doctor immediately.') : ''
                 },
-                confidence: aiDiag.confidence || 85,
+                // Confidence is Math-driven — not from AI. Use 0 as safe default.
+                confidence: 0,
                 matchedKeywords: [],
-                reasoningTrace: [{ factor: 'AI Assessment', impact: 100, type: 'prior' }]
+                reasoningTrace: [{ factor: 'Bayesian MCMC Engine (formatter fallback)', impact: 0, type: 'prior' }]
             };
 
-            if (aiDiag.reasoningTrace) {
+            if (aiDiag.rationale) {
                 if (!result.reasoningTrace) result.reasoningTrace = [];
-                result.reasoningTrace.push({ factor: aiDiag.reasoningTrace, impact: 100, type: 'pattern' });
+                result.reasoningTrace.push({ factor: aiDiag.rationale, impact: 100, type: 'pattern' });
             }
 
             return { results: [result], alerts };

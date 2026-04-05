@@ -304,6 +304,21 @@ export async function diagnose(
     // ═══════════════════════════════════════════════════════════════════════
     const primaryCandidate = bayesianCandidates[0];
 
+    // BUG GUARD: If no conditions scored above MIN_BAYESIAN_SCORE, the
+    // MCMC engine found no plausible diagnosis. Return early with alerts.
+    if (!primaryCandidate) {
+        console.warn("[Orchestrator] No Bayesian candidates above threshold — insufficient data.");
+        return {
+            results: [],
+            alerts: [
+                ...alerts,
+                ...new Set(allPosteriorRedFlags),
+                "Insufficient symptom data to determine a diagnosis. Please provide more detail about your symptoms."
+            ],
+            clinicalRules: clinicalRuleResults,
+        };
+    }
+
     let aiResult: DiagnosisResult | null = null;
     let provider = "unknown";
     let latencyMs = 0;
