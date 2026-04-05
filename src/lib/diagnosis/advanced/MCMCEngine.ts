@@ -616,7 +616,7 @@ function logPosterior(
     priorParams: BetaParams,
     logLikCache: number
 ): number {
-    return computeLogPrior(theta, priorParams) + logLikCache * theta;
+    return computeLogPrior(theta, priorParams) + logLikCache;
 }
 
 // ─── CP7: Multi-Chain MCMC Sampler ────────────────────────────────────────────
