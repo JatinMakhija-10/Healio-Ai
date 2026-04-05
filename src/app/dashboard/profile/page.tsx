@@ -80,6 +80,7 @@ export default function ProfilePage() {
         : (localProfile || user?.user_metadata || {});
     const medical = metadata.medical_profile || {};
     const ayurvedic = metadata.ayurvedic_profile;
+    const isPersonaBuilt = Boolean(medical?.persona_built);
 
     // Helper to get Dosha Color
     const getDoshaColor = (dosha: string) => {
@@ -118,13 +119,21 @@ export default function ProfilePage() {
                                     Profile Complete
                                 </Badge>
                             )}
-                            {/* Temporarily hidden for Phase 1 */}
-                            {false && ayurvedic && (
-                                <Badge className={`capitalize border ${getDoshaColor(ayurvedic.prakriti)}`}>
-                                    Prakriti: {ayurvedic.prakriti}
+                            {isPersonaBuilt && (
+                                <Badge className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+                                    ✓ Persona Built
                                 </Badge>
                             )}
                         </div>
+                        {isPersonaBuilt && (
+                            <div className="mt-3">
+                                <Link href="/dashboard/assessment/prakriti">
+                                    <Button size="sm" variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50">
+                                        Edit Your Persona
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
