@@ -75,6 +75,7 @@ export interface MCMCDiagnosisResult {
     matchedKeywords: string[];
     reasoningTrace: ReasoningTraceEntry[];
     posteriorRedFlags: string[];    // CP8: posterior-based escalation alerts
+    voiTests?: string[];            // CP8: value of information analysis (tests to order next)
 }
 
 export interface EvidenceVector {
@@ -991,6 +992,34 @@ function posteriorPredictiveCheck(
     return clamp(1.0 - discrepancy * 2, 0, 1);
 }
 
+// ─── CP8: Value of Information (VOI) Analysis ─────────────────────────────────
+
+/**
+ * Identifies which unknown symptoms/tests would yield the highest information gain.
+ */
+function computeValueOfInformation(
+    condition: Condition,
+    evidence: EvidenceVector
+): string[] {
+    const weights = condition.matchCriteria.symptomWeights;
+    if (!weights) return [];
+
+    const candidates: { symptom: string; weight: number }[] = [];
+    for (const symptom of evidence.unknownSymptoms) {
+        if (weights[symptom]) {
+            candidates.push({
+                symptom,
+                weight: weights[symptom].weight ?? 1.0
+            });
+        }
+    }
+
+    // Sort by descending weight to find the most informative next tests
+    candidates.sort((a, b) => b.weight - a.weight);
+    return candidates.slice(0, 3).map(c => c.symptom);
+}
+
+
 // ─── CP8: Posterior-Based Red Flag Escalation ─────────────────────────────────
 
 /**
@@ -1119,6 +1148,9 @@ export function mcmcInfer(
     // CP8: Posterior-based red flag escalation
     const posteriorRedFlags = checkPosteriorRedFlags(condition.id, mcmc.posteriorMean);
 
+    // CP8: Value of Information (VOI) tests to order next
+    const voiTests = computeValueOfInformation(condition, evidence);
+
     // Add prior info to trace
     const fullTrace: ReasoningTraceEntry[] = [
         {
@@ -1165,6 +1197,7 @@ export function mcmcInfer(
         matchedKeywords: likResult.matchedKeywords,
         reasoningTrace: fullTrace,
         posteriorRedFlags,
+        voiTests,
     };
 }
 
