@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
 import "../bones/registry";
+import { Analytics } from "@vercel/analytics/next";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -48,6 +49,7 @@ export default function RootLayout({
             className: 'font-sans',
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
