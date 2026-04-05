@@ -1154,14 +1154,8 @@ export function mcmcInfer(
         });
     }
 
-    // Convert posterior mean to 0-100 score (backward compatible)
-    const priorMean = priorParams.alpha / (priorParams.alpha + priorParams.beta);
-    const posteriorLiftRatio = mcmc.posteriorMean / Math.max(priorMean, 1e-6);
-    const score = clamp(
-        (1 / (1 + Math.exp(-Math.log(posteriorLiftRatio)))) * 100,
-        0,
-        99
-    );
+    // Convert posterior mean to 0-100 score
+    const score = clamp(mcmc.posteriorMean * 100, 0, 100);
 
     return {
         conditionId: condition.id,
