@@ -1214,9 +1214,16 @@ export function mcmcDiagnoseAll(
 ): MCMCDiagnosisResult[] {
     const evidence = extractEvidence(symptoms);
 
-    const results = conditions.map(condition =>
+    let results = conditions.map(condition =>
         mcmcInfer(condition, evidence, detectedPatterns, config)
     );
+
+    // CP10: Pipeline Gate
+    // Block condition results that didn't converge
+    const convergedResults = results.filter(r => r.mcmc.converged);
+    if (convergedResults.length > 0) {
+        results = convergedResults;
+    }
 
     // Sort by score descending
     results.sort((a, b) => b.score - a.score);
