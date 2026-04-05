@@ -999,14 +999,19 @@ function posteriorPredictiveCheck(
  */
 const POSTERIOR_RED_FLAG_THRESHOLDS: Array<{ pattern: RegExp; threshold: number; alert: string }> = [
     {
+        pattern: /sepsis|septicemia|septic_shock/i,
+        threshold: 0.05,
+        alert: "⚠️ POSTERIOR ALERT: P(Sepsis) > 5% — consider immediate broad-spectrum antibiotics and fluid resuscitation"
+    },
+    {
+        pattern: /stemi|st_elevation|heart_attack|myocardial_infarction|mi$/i,
+        threshold: 0.05,
+        alert: "⚠️ POSTERIOR ALERT: P(STEMI/MI) > 5% — activate cath lab, consider aspirin and heparin"
+    },
+    {
         pattern: /pulmonary_embolism|pe$/i,
         threshold: 0.05,
         alert: "⚠️ POSTERIOR ALERT: P(Pulmonary Embolism) > 5% — consider D-dimer or CTPA workup"
-    },
-    {
-        pattern: /heart_attack|myocardial_infarction|mi$/i,
-        threshold: 0.05,
-        alert: "⚠️ POSTERIOR ALERT: P(MI) > 5% — consider troponin and ECG"
     },
     {
         pattern: /stroke|cerebrovascular/i,
