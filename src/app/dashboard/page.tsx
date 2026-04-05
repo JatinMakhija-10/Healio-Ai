@@ -174,7 +174,7 @@ export default function DashboardPage() {
     // Determine display name with fallbacks
     // Prioritize DB profile (updated via Settings) -> MetaData (from Onboarding) -> Local -> Email
     const userName = profile?.full_name || user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
-    const isPersonaBuilt = Boolean(user?.user_metadata?.ayurvedic_profile?.prakriti);
+    const isPersonaBuilt = Boolean(user?.user_metadata?.medical_profile?.persona_built);
 
     const lastSession = history[0];
 
@@ -226,7 +226,18 @@ export default function DashboardPage() {
                 </Link>
             </div>
 
-            {!isPersonaBuilt && (
+            {isPersonaBuilt ? (
+                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p className="text-sm text-green-800 font-medium">
+                        ✓ Health persona built. Consultations are now personalised to you.
+                    </p>
+                    <Link href="/dashboard/assessment/prakriti" className="shrink-0">
+                        <Button size="sm" variant="outline" className="border-green-300 text-green-800 hover:bg-green-100">
+                            Edit Persona
+                        </Button>
+                    </Link>
+                </div>
+            ) : (
                 <div className="rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-sm text-teal-900">
                         Build your persona to unlock more personalized health insights and recommendations.
