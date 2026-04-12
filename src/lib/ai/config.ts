@@ -9,7 +9,7 @@ export const AI_PHASE_CONFIG = {
     models: {
         groq: 'llama-3.3-70b-versatile',
         gemini: 'gemini-2.5-flash',
-        embedding: 'text-embedding-004', // Gemini embeddings (free tier)
+        embedding: 'gemini-embedding-2-preview', // Bypasses recent 404 & quota traps
     },
 
     // API Endpoints
