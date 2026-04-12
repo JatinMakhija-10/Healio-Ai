@@ -107,7 +107,17 @@ export default function PersonaBuilderPage() {
             const { error } = await supabase.auth.updateUser({
                 data: { medical_profile: medicalProfile },
             });
-            if (error) console.error("Error saving persona:", error);
+            if (error) {
+                console.error("Error saving persona:", error);
+            } else {
+                try {
+                    localStorage.removeItem(`healio_pending_profile_${user.id}`);
+                } catch {
+                    /* ignore */
+                }
+                const { error: refreshError } = await supabase.auth.refreshSession();
+                if (refreshError) console.error("Error refreshing session after persona:", refreshError);
+            }
         }
 
         setIsSubmitting(false);

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Leaf, Flame, Droplets, Activity, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatFamilyHistory, resolveHealthPersona } from "@/lib/healthPersona";
 
 export default function ProfilePage() {
     const { user } = useAuth();
@@ -22,20 +23,26 @@ export default function ProfilePage() {
     const [latestConsultation, setLatestConsultation] = useState<any>(null);
 
     useEffect(() => {
-        // Skip if no user
         if (!user) return;
 
-        // 1. Get Profile Data (user-specific)
+        let cancelled = false;
+        (async () => {
+            const { error } = await supabase.auth.refreshSession();
+            if (error) console.error("Profile: refresh session failed:", error);
+        })();
+
+        // 1. Pending onboarding blob (merged in resolveHealthPersona; server medical wins when authoritative)
         const pendingKey = `healio_pending_profile_${user.id}`;
         const pending = localStorage.getItem(pendingKey);
         if (pending) {
             try {
-                 
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setLocalProfile(JSON.parse(pending));
+                const parsed = JSON.parse(pending);
+                if (!cancelled) setLocalProfile(parsed);
             } catch (e) {
                 console.error("Failed to parse pending profile:", e);
             }
+        } else if (!cancelled) {
+            setLocalProfile(null);
         }
 
         // 2. Get Vikriti (Latest Consultation)
@@ -66,21 +73,42 @@ export default function ProfilePage() {
                 }
             } catch (e) { console.error(e); }
 
-            if (consultations.length > 0) {
+            if (!cancelled && consultations.length > 0) {
                 setLatestConsultation(consultations[0]);
             }
         };
 
         fetchHistory();
+
+        return () => {
+            cancelled = true;
+        };
     }, [user]);
 
-    // Data Resolution
-    const metadata = user?.user_metadata?.onboarding_completed
-        ? user.user_metadata
-        : (localProfile || user?.user_metadata || {});
-    const medical = metadata.medical_profile || {};
-    const ayurvedic = metadata.ayurvedic_profile;
-    const isPersonaBuilt = Boolean(medical?.persona_built);
+    const {
+        metadata: rawMeta,
+        medical,
+        ayurvedic,
+        isPersonaBuilt,
+        age,
+        gender,
+        weight,
+        height,
+    } = resolveHealthPersona(user ?? null, localProfile);
+    const metadata = rawMeta as {
+        avatar_url?: string;
+        full_name?: string;
+        onboarding_completed?: boolean;
+        ayurvedic_profile?: unknown;
+    };
+    const familyHistoryDisplay = formatFamilyHistory(medical.family_history);
+
+    type AyurvedicProfileUi = {
+        primaryDosha: string;
+        doshicTendencies: { vata: number; pitta: number; kapha: number };
+        characteristics: string[];
+    };
+    const ayurvedicUi = ayurvedic as AyurvedicProfileUi | undefined;
 
     // Helper to get Dosha Color
     const getDoshaColor = (dosha: string) => {
@@ -102,7 +130,7 @@ export default function ProfilePage() {
             <Card>
                 <CardContent className="p-6 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
                     <Avatar className="h-24 w-24 border-4 border-slate-50">
-                        <AvatarImage src={metadata.avatar_url} />
+                        <AvatarImage src={metadata.avatar_url ?? ""} />
                         <AvatarFallback className="text-2xl bg-teal-100 text-teal-700">
                             {(metadata.full_name || user?.email || "U").charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -140,7 +168,7 @@ export default function ProfilePage() {
 
             {/* --- AYURVEDIC PROFILE SECTION (NEW) --- */}
             {/* Temporarily hidden for Phase 1 */}
-            {false && ayurvedic && (
+            {false && ayurvedicUi && (
                 <div className="grid md:grid-cols-2 gap-6">
                     <Card className="border-teal-100 shadow-sm overflow-hidden">
                         <CardHeader className="bg-teal-50/50 pb-4">
@@ -155,8 +183,8 @@ export default function ProfilePage() {
                         <CardContent className="pt-6 space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-500">Dominant Dosha</span>
-                                <Badge className={`text-base px-3 py-1 capitalize ${getDoshaColor(ayurvedic.primaryDosha)}`}>
-                                    {ayurvedic.primaryDosha}
+                                <Badge className={`text-base px-3 py-1 capitalize ${getDoshaColor(ayurvedicUi!.primaryDosha)}`}>
+                                    {ayurvedicUi!.primaryDosha}
                                 </Badge>
                             </div>
 
@@ -166,30 +194,30 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-3 text-sm">
                                         <span className="w-12 font-medium text-blue-600">Vata</span>
                                         <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-blue-400" style={{ width: `${ayurvedic.doshicTendencies.vata}%` }} />
+                                            <div className="h-full bg-blue-400" style={{ width: `${ayurvedicUi!.doshicTendencies.vata}%` }} />
                                         </div>
-                                        <span className="w-8 text-right text-slate-500">{ayurvedic.doshicTendencies.vata}%</span>
+                                        <span className="w-8 text-right text-slate-500">{ayurvedicUi!.doshicTendencies.vata}%</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm">
                                         <span className="w-12 font-medium text-orange-600">Pitta</span>
                                         <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-orange-400" style={{ width: `${ayurvedic.doshicTendencies.pitta}%` }} />
+                                            <div className="h-full bg-orange-400" style={{ width: `${ayurvedicUi!.doshicTendencies.pitta}%` }} />
                                         </div>
-                                        <span className="w-8 text-right text-slate-500">{ayurvedic.doshicTendencies.pitta}%</span>
+                                        <span className="w-8 text-right text-slate-500">{ayurvedicUi!.doshicTendencies.pitta}%</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm">
                                         <span className="w-12 font-medium text-green-600">Kapha</span>
                                         <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-green-400" style={{ width: `${ayurvedic.doshicTendencies.kapha}%` }} />
+                                            <div className="h-full bg-green-400" style={{ width: `${ayurvedicUi!.doshicTendencies.kapha}%` }} />
                                         </div>
-                                        <span className="w-8 text-right text-slate-500">{ayurvedic.doshicTendencies.kapha}%</span>
+                                        <span className="w-8 text-right text-slate-500">{ayurvedicUi!.doshicTendencies.kapha}%</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-2">
                                 <p className="text-sm text-slate-600 italic">
-                                    &quot;{ayurvedic.characteristics[0]}&quot;
+                                    &quot;{ayurvedicUi!.characteristics[0]}&quot;
                                 </p>
                             </div>
                         </CardContent>
@@ -230,7 +258,7 @@ export default function ProfilePage() {
                                         <div className="flex items-start gap-2">
                                             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                                             <p>
-                                                This condition may be aggravating your <strong>{ayurvedic.primaryDosha}</strong> dosha.
+                                                This condition may be aggravating your <strong>{ayurvedicUi!.primaryDosha}</strong> dosha.
                                             </p>
                                         </div>
                                     </div>
@@ -271,25 +299,25 @@ export default function ProfilePage() {
                             <div className="space-y-2">
                                 <Label>Age</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.age || medical.age || "Not set"}
+                                    {age != null && age !== "" ? String(age) : "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Gender</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100 capitalize">
-                                    {metadata.gender || medical.gender || "Not set"}
+                                    {gender || "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Height</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.height || medical.height ? `${metadata.height || medical.height} cm` : "Not set"}
+                                    {height != null && height !== "" ? `${height} cm` : "Not set"}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Weight</Label>
                                 <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100">
-                                    {metadata.weight || medical.weight ? `${metadata.weight || medical.weight} kg` : "Not set"}
+                                    {weight != null && weight !== "" ? `${weight} kg` : "Not set"}
                                 </div>
                             </div>
                         </div>
@@ -313,6 +341,12 @@ export default function ProfilePage() {
                                 ) : (
                                     <span className="text-sm text-slate-400">None listed</span>
                                 )}
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Family history</Label>
+                            <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100 text-sm">
+                                {familyHistoryDisplay ?? "None listed"}
                             </div>
                         </div>
                         <div className="space-y-2">
