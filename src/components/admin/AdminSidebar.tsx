@@ -18,6 +18,7 @@ import {
     ChevronRight,
     Zap,
     Video,
+    BarChart2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -100,8 +101,8 @@ export function AdminSidebar() {
         {
             label: "Strategic",
             items: [
-                { label: "Epidemic Heatmap", href: "/admin/insights", icon: Map, badge: 0 },
-                { label: "Analytics", href: "/admin/analytics", icon: Activity, badge: 0 },
+                { label: "Outbreak Radar Map", href: "/admin/map",       icon: Map,       badge: 0 },
+                { label: "Analytics",          href: "/admin/analytics",  icon: BarChart2, badge: 0 },
             ],
         },
         {
