@@ -142,7 +142,7 @@ async function fetchMultiQueryRAG(
         // Retrieve Boericke and Ayurvedic chunks for each embedding in parallel
         const supabase = getSupabaseAdminClient();
         
-        const rpcPromises: Promise<any>[] = [];
+        const rpcPromises: PromiseLike<any>[] = [];
         validEmbeddings.forEach(embedding => {
             // 1. Fetch Boericke
             rpcPromises.push(
