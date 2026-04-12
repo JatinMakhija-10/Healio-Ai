@@ -1,0 +1,1303 @@
+# All Medicines Database (1301 items)
+
+- 12 Hour Cold Maximum Strength
+- 12 Hour Nasal
+- 12 Hour Nasal Decongestant
+- 13c urea and citric acid
+- 14c urea
+- 2 in 1 Dandruff
+- 3M Skin and Nasal Antiseptic
+- 4-Way
+- 4-Way Long Lasting
+- 5-HTP
+- 5-HTP Mood and Stress
+- 5-hydroxytryptophan
+- 5-hydroxytryptophan, melatonin, and pyridoxine
+- 60 Second Fluoride Gel
+- 60-Second Fluoride Foam
+- 7T Gummy ES Chewable Tablets
+- 8-Mop
+- Abecma
+- Abilify
+- Abilify Asimtufii
+- Abilify Maintena
+- Abiraterone
+- Acetaminophen
+- Acetylcysteine
+- Actemra
+- Acyclovir
+- Adalimumab
+- Adderall
+- Adderall XR
+- Advair Diskus
+- Advil
+- Afinitor
+- Agamree
+- Aimovig
+- Ajovy
+- Albuterol
+- Aldactone
+- Alecensa
+- Alendronate
+- Alfuzosin
+- Allegra
+- Allopurinol
+- Alprazolam
+- Alprolix
+- Alunbrig
+- Amantadine
+- Ambien
+- Ambroxol
+- Amiodarone
+- Amitriptyline
+- Amlodipine
+- Amoxicillin
+- Amoxicillin and Clavulanate
+- Amphetamine and dextroamphetamine
+- Ampicillin
+- Amvuttra
+- Anastrozole
+- AndroGel
+- Annovera
+- Apalutamide
+- Apixaban
+- Apokyn
+- Apriso
+- Aptiom
+- Arikayce
+- Arimidex
+- Aripiprazole
+- Aristada
+- Aromasin
+- Aspirin
+- Atarax
+- Atenolol
+- Ativan
+- Atogepant
+- Atomoxetine
+- Atorvastatin
+- Aubagio
+- Augmentin
+- Austedo
+- Auvelity
+- Auvi-Q
+- Avonex
+- Avsola
+- Azathioprine
+- Azelastine
+- Azilect
+- Azithromycin
+- Azulfidine
+- Bacitracin
+- Baclofen
+- Bactrim
+- Bactroban
+- Balsalazide
+- Banzel
+- Baqsimi
+- Basaglar
+- Bavencio
+- Belbuca
+- Belsomra
+- Benadryl
+- Benazepril
+- Bendeka
+- Benicar
+- Benlysta
+- Bentyl
+- Benzonatate
+- Benztropine
+- Berinert
+- Betamethasone
+- Betaseron
+- Bevacizumab
+- Beyfortus
+- Bicalutamide
+- Biktarvy
+- Biotin
+- Bisacodyl
+- Bismuth subsalicylate
+- Bisoprolol
+- Black Cohosh
+- Blincyto
+- Botox
+- Breo Ellipta
+- Breyanzi
+- Breyna
+- Breztri
+- Breztri Aerosphere
+- Brilinta
+- Brimonidine
+- Briumvi
+- Briviact
+- Bromfed DM
+- Brukinsa
+- Bryhali
+- Budesonide
+- Budesonide and formoterol
+- Bumetanide
+- Bumex
+- Bunavail
+- Bupivacaine
+- Buprenex
+- Buprenorphine
+- Buprenorphine/naloxone
+- Bupropion
+- Buspar
+- Buspirone
+- Cabenuva
+- Cabometyx
+- Calcitriol
+- Calquence
+- Camzyos
+- Canasa
+- Candesartan
+- Caplyta
+- Captopril
+- Carbamazepine
+- Carbidopa and levodopa
+- Carvedilol
+- Carvykti
+- Casodex
+- Cefadroxil
+- Cefazolin
+- Cefdinir
+- Cefixime
+- Ceftriaxone
+- Cefuroxime
+- Celebrex
+- Celecoxib
+- Celexa
+- Cephalexin
+- Cequa
+- Cetirizine
+- Chlorpheniramine
+- Chlorthalidone
+- Cholecalciferol
+- Cialis
+- Cimzia
+- Cinryze
+- Cipro
+- Ciprofloxacin
+- Citalopram
+- Clarithromycin
+- Claritin
+- Clindamycin
+- Clobetasol
+- Clobex
+- Clodan
+- Clonazepam
+- Clonidine
+- Clopidogrel
+- Clotrimazole
+- Cobenfy
+- Codeine
+- Colace
+- Colazal
+- Colchicine
+- Concerta
+- Coreg
+- Cosentyx
+- Crestor
+- Cyanocobalamin
+- Cyclobenzaprine
+- Cymbalta
+- Dabigatran
+- Dapagliflozin
+- Darzalex
+- Dayvigo
+- Decadron
+- Degarelix
+- Delzicol
+- Denosumab
+- Depakote
+- Descovy
+- Desloratadine
+- Desmopressin
+- Desvenlafaxine
+- Desyrel
+- Deutetrabenazine
+- Dexamethasone
+- Dexmethylphenidate
+- Dextroamphetamine
+- Dextromethorphan
+- Dextrose
+- Diacomit
+- Diastat
+- Diazepam
+- Diclofenac
+- Dicyclomine
+- Diflucan
+- Digoxin
+- Dilantin
+- Dilaudid
+- Diltiazem
+- Dipentum
+- Diphenhydramine
+- Diprolene
+- Divalproex
+- Divalproex sodium
+- Docusate Sodium
+- Domperidone
+- Donepezil
+- Doxazosin
+- Doxepin
+- Doxycycline
+- Doxycycline Hyclate
+- Doxylamine
+- Dulaglutide
+- Dulcolax
+- Duloxetine
+- DuoNeb
+- Duopa
+- Dupixent
+- Dutasteride
+- Ebglyss
+- Effexor
+- Effexor XR
+- Elagolix
+- Elavil
+- Elevidys
+- Eligard
+- Eliquis
+- Emgality
+- Empagliflozin
+- Empaveli
+- Enalapril
+- Enbrel
+- Enhertu
+- Enoxaparin
+- Enspryng
+- Entecavir
+- Entresto
+- Entyvio
+- Epclusa
+- Ephedrine
+- EpiPen
+- Epidiolex
+- Epinephrine
+- Eplerenone
+- Ergocalciferol
+- Erleada
+- Ertapenem
+- Erythromycin
+- Escitalopram
+- Esomeprazole
+- Estrace
+- Estradiol
+- Estradiol Patch
+- Eszopiclone
+- Etanercept
+- Ethosuximide
+- Etodolac
+- Eulexin
+- Euthyrox
+- Evenity
+- Evista
+- Evkeeza
+- Evolocumab
+- Evusheld
+- Excedrin
+- Excedrin Migraine
+- Exemestane
+- Extavia
+- Eylea
+- Eysuvis
+- Ezetimibe
+- Ezetimibe and rosuvastatin
+- Famotidine
+- Farxiga
+- Fasenra
+- Faslodex
+- Febuxostat
+- Felodipine
+- Femara
+- Fenofibrate
+- Fentanyl
+- FeroSul
+- Ferrous Sulfate
+- Fexofenadine
+- Finasteride
+- Finerenone
+- Fintepla
+- Fioricet
+- Firazyr
+- Firmagon
+- Fish Oil
+- Flagyl
+- Flecainide
+- Flexeril
+- Flomax
+- Flonase
+- Flovent
+- Flovent HFA
+- FluMist Vaccine
+- Fluconazole
+- Fludrocortisone
+- Fluocinolone
+- Fluocinonide
+- Fluorouracil
+- Fluoxetine
+- Fluphenazine
+- Flutamide
+- Fluticasone
+- Fluticasone and salmeterol
+- Fluticasone nasal
+- Fluvoxamine
+- Focalin
+- Folic Acid
+- Formoterol
+- Forteo
+- Fosamax
+- Fosfomycin
+- Fulvestrant
+- Furosemide
+- Fycompa
+- Gabapentin
+- Gabapentin enacarbil
+- Galantamine
+- Galcanezumab
+- Garlic
+- Gattex
+- GaviLyte G
+- Gaviscon
+- Gavreto
+- Gazyva
+- Gemcitabine
+- Gemfibrozil
+- Gemtesa
+- Gemzar
+- Genotropin
+- Gentamicin
+- Genvoya
+- Geodon
+- Giazo
+- Ginger
+- Ginkgo Biloba
+- Ginseng
+- Glatiramer
+- Gleevec
+- Glimepiride
+- Glipizide
+- Glucagon
+- Glucophage
+- Glucosamine
+- Glucose
+- Glucotrol
+- Glutathione
+- Glyburide
+- Glycerin
+- Glycine
+- GlycoLax
+- Glycopyrrolate
+- Glyxambi
+- GoLYTELY
+- Gocovri
+- Golimumab
+- Griseofulvin
+- Guaifenesin
+- Guanfacine
+- Guselkumab
+- Gvoke HypoPen
+- Hadlima
+- Haegarda
+- Haldol
+- Halobetasol
+- Haloperidol
+- Harvoni
+- Hemabate
+- Hemgenix
+- Heparin
+- Hepatitis B adult vaccine
+- Herceptin
+- Hibiclens
+- Hiprex
+- Histrelin
+- Hizentra
+- Humalog
+- Humira
+- Humulin N
+- Humulin R
+- Humulin RU 500
+- Hydralazine
+- Hydrea
+- Hydrochlorothiazide
+- Hydrochlorothiazide and irbesartan
+- Hydrochlorothiazide and lisinopril
+- Hydrochlorothiazide and losartan
+- Hydrochlorothiazide and triamterene
+- Hydrochlorothiazide and valsartan
+- Hydrocodone
+- Hydrocodone and Acetaminophen
+- Hydrocodone and ibuprofen
+- Hydrocortisone
+- Hydrocortisone (Topical)
+- Hydrocortisone Cream
+- Hydromorphone
+- Hydroxychloroquine
+- Hydroxyurea
+- Hydroxyzine
+- Hydroxyzine Pamoate
+- Hyoscyamine
+- Hyosyne
+- Hyrimoz
+- Hytrin
+- Hyzaar
+- Ibandronate
+- Ibrance
+- Ibsrela
+- Ibu
+- Ibuprofen
+- Iclusig
+- Icosapent
+- Idhifa
+- Ilumya
+- Imatinib
+- Imbruvica
+- Imdelltra
+- Imdur
+- Imfinzi
+- Imipramine
+- Imiquimod
+- Imitrex
+- Imodium
+- Impoyz
+- Imuran
+- Inbrija
+- Indapamide
+- Inderal
+- Indomethacin
+- Infed
+- Inflectra
+- Infliximab
+- Ingrezza
+- Injectafer
+- Inlyta
+- Inrebic
+- Insulin Aspart
+- Insulin Detemir
+- Insulin Glargine
+- Insulin Lispro
+- Insulin Regular
+- Insulin degludec
+- Intuniv
+- Invega
+- Invega Sustenna
+- Iohexol
+- Iopamidol
+- Ipratropium
+- Ipratropium and albuterol
+- Irbesartan
+- Isoniazid
+- Isosorbide
+- Isosorbide Mononitrate
+- Isosorbide dinitrate
+- Isotretinoin
+- Itraconazole
+- Ivabradine
+- Ivermectin
+- Izervay
+- Jadenu
+- Jaimiess
+- Jakafi
+- Jalyn
+- Jantoven
+- Janumet
+- Janumet XR
+- Januvia
+- Jardiance
+- Jascayd
+- Jasmiel
+- Jatenzo
+- Javadin
+- Jaypirca
+- Jemperli
+- Jencycla
+- Jentadueto
+- Jentadueto XR
+- Jesduvroq
+- Jevtana
+- Jiaogulan
+- Jinteli
+- Joenja
+- Jolessa
+- Jolivette
+- Jornay PM
+- Journavx
+- Jubbonti
+- Jublia
+- Juluca
+- Junel
+- Junel 1.5/30
+- Junel 1/20
+- Junel Fe 24
+- Juniper
+- Juvederm
+- Juxtapid
+- Jynarque
+- Jynneos
+- K-Dur
+- Kadcyla
+- Kaopectate
+- Kapvay
+- Kariva
+- Kava
+- Kayexalate
+- Keflex
+- Kenalog
+- Kenalog-40
+- Keppra
+- Keppra XR
+- Kerendia
+- Kesimpta
+- Ketalar
+- Ketamine
+- Ketoconazole
+- Ketoconazole (Topical)
+- Ketoconazole Shampoo
+- Ketoprofen
+- Ketorolac
+- Ketorolac Tromethamine
+- Ketorolac ophthalmic
+- Ketotifen
+- Ketotifen ophthalmic
+- Kevzara
+- Keytruda
+- Keytruda Qlex
+- Kineret
+- Kisqali
+- Kisunla
+- Klayesta
+- Klisyri
+- Klonopin
+- Klor-Con
+- Koselugo
+- Kratom
+- Krazati
+- Krill Oil
+- Kurvelo
+- Kyleena
+- Kynmobi
+- Labetalol
+- Lacosamide
+- Lactulose
+- Lamictal
+- Lamotrigine
+- Lanadelumab
+- Lansoprazole
+- Lantus
+- Lasix
+- Latanoprost
+- Latuda
+- Leflunomide
+- Lenvatinib
+- Lenvima
+- Leqembi
+- Letrozole
+- Leukeran
+- Leuprolide
+- Levalbuterol
+- Levaquin
+- Levetiracetam
+- Levocetirizine
+- Levodopa
+- Levofloxacin
+- Levonorgestrel
+- Levothyroxine
+- Lexapro
+- Lexette
+- Lialda
+- Lidex
+- Lidocaine
+- Liletta
+- Linezolid
+- Linzess
+- Liothyronine
+- Lipitor
+- Liraglutide
+- Lisdexamfetamine
+- Lisinopril
+- Lithium
+- Loestrin 24 Fe
+- Lofexidine
+- Lokelma
+- Loperamide
+- Lopressor
+- Loqtorzi
+- Loratadine
+- Lorazepam
+- Lorlatinib
+- Losartan
+- Lovastatin
+- Lovenox
+- Lubiprostone
+- Lunesta
+- Lupron Depot
+- Lurasidone
+- Lutathera
+- Luxiq
+- Lybalvi
+- Lyrica
+- Lyumjev
+- Macrobid
+- Magnesium
+- Magnesium citrate
+- Magnesium oxide
+- MariTide
+- Mavenclad
+- Mavyret
+- Mayzent
+- Meclizine
+- Medrol
+- Medroxyprogesterone
+- Melatonin
+- Meloxicam
+- Memantine
+- Meropenem
+- Mesalamine
+- Metformin
+- Methadone
+- Methamphetamine
+- Methimazole
+- Methocarbamol
+- Methotrexate
+- Methylphenidate
+- Methylprednisolone
+- Metoclopramide
+- Metoprolol
+- Metoprolol Succinate
+- Metronidazole
+- Midazolam
+- Midodrine
+- Minoxidil
+- MiraLAX
+- Mirabegron
+- Mirtazapine
+- Mobic
+- Modafinil
+- Montelukast
+- Morphine
+- Motrin
+- Mounjaro
+- Mucinex
+- Mupirocin
+- Mycapssa
+- Mycophenolate mofetil
+- Myfembree
+- Mylotarg
+- Myrbetriq
+- NAC
+- NP Thyroid
+- NPlate
+- Nabumetone
+- Nadolol
+- Naloxone
+- Naltrexone
+- Namenda
+- Naprosyn
+- Naproxen
+- Narcan
+- Nasacort
+- Nayzilam
+- Nebivolol
+- Neffy
+- Neomycin
+- Neosporin
+- Nerlynx
+- Neupro
+- Neurontin
+- Nexium
+- Nexletol
+- Nexlizet
+- Nexplanon
+- Ngenla
+- Niacin
+- Nicardipine
+- Nicotine
+- Nifedipine
+- Nilandron
+- Nilutamide
+- Ninlaro
+- Nitrofurantoin
+- Nitroglycerin
+- Nitrostat
+- Nivolumab
+- Norco
+- Norepinephrine
+- Norethindrone
+- Nortriptyline
+- Norvasc
+- Nourianz
+- NovoLog
+- Nubeqa
+- Nucala
+- Nurtec ODT
+- NuvaRing
+- Nuvigil
+- Nystatin
+- Nystatin topical
+- Ocrelizumab
+- Ocrevus
+- Octreotide
+- Odefsey
+- Ofev
+- Ofloxacin
+- Ofloxacin ophthalmic
+- Ohtuvayre
+- Ojjaara
+- Olanzapine
+- Olaparib
+- Olmesartan
+- Olmesartan Medoxomil
+- Olopatadine
+- Olopatadine ophthalmic
+- Olux
+- Omalizumab
+- Omega-3 Fish Oil
+- Omeprazole
+- Omnicef
+- Omnipaque 350
+- Omnitrope
+- Ondansetron
+- Onfi
+- Ongentys
+- Onureg
+- Opdivo
+- Opill
+- Opzelura
+- Orencia
+- Orgovyx
+- Oriahnn
+- Orladeyo
+- Orlistat
+- Orphenadrine
+- Ortho Tri-Cyclen
+- Oseltamivir
+- Osimertinib
+- Otezla
+- Oxaliplatin
+- Oxazepam
+- Oxcarbazepine
+- Oxtella XR
+- Oxybutynin
+- Oxycodone
+- Oxycontin
+- Oxygen
+- Oxymetazoline nasal
+- Oxytocin
+- Ozanimod
+- Ozempic
+- Paliperidone
+- Pantoprazole
+- Paracetamol
+- Paragard
+- Paroxetine
+- Paxil
+- Paxlovid
+- Pembrolizumab
+- Pentasa
+- Pepcid
+- Percocet
+- Phenazopyridine
+- Phenergan
+- Phenobarbital
+- Phentermine
+- Phenytoin
+- Phexxi
+- Pioglitazone
+- Piperacillin and tazobactam
+- Plan B
+- Plaquenil
+- Plavix
+- Polyethylene glycol 3350
+- Potassium Chloride
+- Pradaxa
+- Praluent
+- Pramipexole
+- Pravastatin
+- Prazosin
+- Prednisolone
+- Prednisone
+- Pregabalin
+- Premarin
+- Prevnar 20
+- Prilosec
+- Primidone
+- Pristiq
+- Probuphine
+- Prochlorperazine
+- Progesterone
+- Prolia
+- Promacta
+- Promethazine
+- Propofol
+- Propranolol
+- Protonix
+- Provenge
+- Provigil
+- Prozac
+- Pseudoephedrine
+- QIVIGY
+- QNASL
+- Qbrelis
+- Qbrexza
+- Qelbree
+- Qinlock
+- Qlosi
+- Qsymia
+- Qtern
+- Qualaquin
+- Quassia
+- Quazepam
+- Qudexy XR
+- Quelicin
+- Quercetin
+- Questran
+- Questran Light
+- Quetiapine
+- Quibron-T/SR
+- QuilliChew ER
+- Quillivant XR
+- Quinapril
+- Quinidine
+- Quinine
+- Quizartinib
+- Qulipta
+- Qutenza
+- Quviviq
+- Qvar
+- Qvar Redihaler
+- Rabeprazole
+- Raloxifene
+- Ramelteon
+- Ramipril
+- Ranitidine
+- Ranolazine
+- Rapamune
+- Rebif
+- Reclast
+- Reglan
+- Relugolix
+- Remeron
+- Remicade
+- Renflexis
+- Repaglinide
+- Repatha
+- Requip
+- Restasis
+- Restoril
+- Retevmo
+- Revlimid
+- Rexulti
+- Reyvow
+- Rezdiffra
+- Ribociclib
+- Rifampin
+- Rifaximin
+- Rimegepant
+- Rinvoq
+- Risdiplam
+- Risedronate
+- Risperdal
+- Risperidone
+- Ritalin
+- Rituxan
+- Rituxan Hycela
+- Rituximab
+- Rivaroxaban
+- Rivastigmine
+- Rizatriptan
+- Robaxin
+- Robitussin
+- Rocephin
+- Roflumilast
+- Ropinirole
+- Rosuvastatin
+- Rowasa
+- Roxicodone
+- Ruconest
+- Rybelsus
+- Rybrevant
+- Rydapt
+- Rystiggo
+- Rytary
+- Sabril
+- Sacubitril and valsartan
+- Salbutamol
+- Sandostatin
+- Saphnelo
+- Scopolamine
+- Semaglutide
+- Semglee
+- Senna
+- Sernivo
+- Seroquel
+- Sertraline
+- Sevelamer
+- Sildenafil
+- Silodosin
+- Simethicone
+- Simponi
+- Simvastatin
+- Sinemet
+- Singulair
+- Sitagliptin
+- Skyrizi
+- Skytrofa
+- Slynd
+- Sodium Chloride
+- Sodium bicarbonate
+- Sofosbuvir
+- Sogroya
+- Solifenacin
+- Soliqua
+- Soliris
+- SoluMEDROL
+- Soma
+- Somatuline Depot
+- Somavert
+- Sotalol
+- Sovaldi
+- Spevigo
+- Spinraza
+- Spiriva
+- Spiriva Respimat
+- Spironolactone
+- Spravato
+- Sprycel
+- Stelara
+- Strattera
+- Stribild
+- Sublocade
+- Suboxone
+- Subutex
+- Sucralfate
+- Sudafed
+- Sulfamethoxazole and trimethoprim
+- Sulfasalazine
+- Sumatriptan
+- Sunlenca
+- Sunosi
+- Supprelin LA
+- Sutent
+- Syfovre
+- Symbicort
+- Sympazan
+- Synjardy
+- Synthroid
+- Tacrolimus
+- Tadalafil
+- Takhzyro
+- Taltz
+- Talvey
+- Tamiflu
+- Tamoxifen
+- Tamsulosin
+- Tavneos
+- Tazarotene
+- Tazorac
+- Tecartus
+- Tecentriq
+- Tecfidera
+- Tecvayli
+- Tegretol
+- Telmisartan
+- Temazepam
+- Temovate
+- Tepezza
+- Terazosin
+- Terbinafine
+- Tessalon Perles
+- Testosterone
+- Tetracycline
+- Theophylline
+- Thiamine
+- Tibsovo
+- Ticagrelor
+- Tiotropium
+- Tirzepatide
+- Tizanidine
+- Topamax
+- Topiramate
+- Toprol XL
+- Toradol
+- Torsemide
+- Toujeo
+- Tradjenta
+- Tramadol
+- Tranexamic acid
+- Trazodone
+- Treanda
+- Trelegy Ellipta
+- Trelstar
+- Tremfya
+- Tresiba
+- Tretinoin
+- Triamcinolone
+- Triamcinolone Acetonide
+- Triamterene
+- Trileptal
+- Trimethoprim
+- Trintellix
+- Triptorelin
+- Triumeq
+- Trodelvy
+- Trokendi XR
+- Trulicity
+- Truqap
+- Truxima
+- Tryngolza
+- Twirla
+- Tylenol
+- Tyrvaya
+- Tysabri
+- Ubiquinone
+- Ublituximab
+- Ubrelvy
+- Ubrogepant
+- Uceris
+- Udenyca
+- Ulipristal
+- Uloric
+- Ultomiris
+- Ultracet
+- Ultram
+- Ultravate
+- Ultravist
+- Umeclidinium
+- Umeclidinium and vilanterol
+- Unasyn
+- Unisom
+- Unisom Sleep Gels
+- Unisom SleepMelts
+- Unithroid
+- Upadacitinib
+- Uplizna
+- Upneeq
+- Uptravi
+- Urea
+- Urea Cream
+- Urecholine
+- Urelle
+- Uretron D/S
+- Uribel
+- Urinary Pain Relief
+- Urispas
+- Uro-MP
+- Urogesic-Blue
+- Uroxatral
+- Urso
+- Ursodiol
+- Ustekinumab
+- Uva Ursi
+- Uzedy
+- VESIcare
+- Valacyclovir
+- Valium
+- Valproic acid
+- Valsartan
+- Valtoco
+- Valtrex
+- Vancomycin
+- Vanos
+- Varenicline
+- Vascepa
+- Vasotec
+- Velcade
+- Venclexta
+- Venetoclax
+- Venlafaxine
+- Venofer
+- Ventolin
+- Ventolin HFA
+- Veozah
+- Verapamil
+- Versed
+- Verzenio
+- Viagra
+- Vibramycin
+- Vicodin
+- Victoza
+- Viibryd
+- Vilazodone
+- Vimpat
+- Vistaril
+- Vitamin B12
+- Vitamin C
+- Vitamin D
+- Vitamin D3
+- Vitamin E
+- Vivitrol
+- Voltaren
+- Vonjo
+- Vonoprazan
+- Voquezna
+- Voranigo
+- Voriconazole
+- Vortioxetine
+- Vosevi
+- Votrient
+- Voydeya
+- Vraylar
+- Vyepti
+- Vyndamax
+- Vyvanse
+- WP Thyroid
+- Wainua
+- Wakix
+- Wal-itin
+- Warfarin
+- Wart Remover
+- Waskyra
+- Wayrilz
+- Wegovy
+- Welchol
+- Welireg
+- Wellbutrin
+- Wellbutrin SR
+- Wellbutrin XL
+- Wellcovorin
+- Westcort
+- Westhroid
+- Wezlana
+- White Cohosh
+- Widaplik
+- Wilate
+- Wild Asparagus
+- Wild yam
+- Willow Bark
+- WinRho SDF
+- Winlevi
+- Winrevair
+- Witch Hazel
+- Witch hazel topical
+- Wixela Inhub
+- Wormwood
+- Wymzya Fe
+- Wyost
+- Xadago
+- Xalatan
+- Xalkori
+- Xanax
+- Xanax XR
+- Xarelto
+- Xcopri
+- Xdemvy
+- Xeljanz
+- Xeloda
+- Xelstrym
+- Xenical
+- Xenleta
+- Xeomin
+- Xermelo
+- Xgeva
+- Xhance
+- Xiaflex
+- Xifaxan
+- Xigduo XR
+- Xiidra
+- Xofluza
+- Xolair
+- Xolremdi
+- Xopenex
+- Xopenex HFA
+- Xospata
+- Xphozah
+- Xtampza ER
+- Xtandi
+- Xtrenbo
+- Xulane
+- Xultophy
+- XyliMelts
+- Xylitol
+- Xylocaine
+- Xylocaine Jelly
+- Xyosted
+- Xyrem
+- Xywav
+- Xyzal
+- Xyzal Allergy 24HR
+- Yarrow
+- Yasmin
+- Yaz
+- Ycanth
+- Yellow fever vaccine
+- Yervoy
+- Yescarta
+- Yesintek
+- Yeztugo
+- Yohimbe
+- Yohimbine
+- Yondelis
+- Yonsa
+- Yorvipath
+- Yuflyma
+- Yupelri
+- Yusimry
+- Yutrepia
+- Yuvafem
+- Yuvezzi
+- Yuviwel
+- Zaleplon
+- Zanaflex
+- Zantac
+- Zanubrutinib
+- Zarxio
+- Zavzpret
+- Zebeta
+- Zegalogue
+- Zenpep
+- Zepbound
+- Zeposia
+- Zestril
+- Zetia
+- Zidovudine
+- Zilbrysq
+- Zinc
+- Zinc gluconate
+- Zinc oxide
+- Zinc oxide topical
+- Zinc sulfate
+- Ziprasidone
+- Zithromax
+- Zocor
+- Zofran
+- Zofran ODT
+- Zoladex
+- Zoledronic acid
+- Zolmitriptan
+- Zoloft
+- Zolpidem
+- Zometa
+- Zomig
+- Zonegran
+- Zonisamide
+- Zopiclone
+- Zoryve
+- Zosyn
+- Zovirax
+- Zurzuvae
+- Zydelig
+- Zykadia
+- Zyloprim
+- Zyprexa
+- Zyrtec
+- Zytiga
+- Zyvox
+- avacincaptad pegol
+- berotralstat
+- budesonide, glycopyrrolate, and formoterol inhaler
+- kalbitor
+- mavorixafor
+- olezarsen
+- pegcetacoplan ophthalmic
+- ravulizumab
+- rozanolixizumab
+- satralizumab
+- selumetinib
+- somatropin
+- spesolimab
+- telotristat ethyl
+- trastuzumab deruxtecan
+- vamorolone
+- vorasidenib
