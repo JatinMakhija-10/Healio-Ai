@@ -87,6 +87,14 @@ interface BoerickeChunk {
     similarity: number;
 }
 
+interface AyurvedicChunk {
+    book: string;
+    category: string;
+    section: string;
+    text: string;
+    similarity: number;
+}
+
 // ─── RAG Helper ───────────────────────────────────────────────────────────────
 
 /**
@@ -131,48 +139,82 @@ async function fetchMultiQueryRAG(
 
         if (validEmbeddings.length === 0) throw new Error("No valid embeddings");
 
-        // Retrieve Boericke chunks for each embedding in parallel
+        // Retrieve Boericke and Ayurvedic chunks for each embedding in parallel
         const supabase = getSupabaseAdminClient();
-        const rpcResults = await Promise.allSettled(
-            validEmbeddings.map((embedding) =>
+        
+        const rpcPromises: Promise<any>[] = [];
+        validEmbeddings.forEach(embedding => {
+            // 1. Fetch Boericke
+            rpcPromises.push(
                 supabase.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
                     match_threshold: AI_PHASE_CONFIG.rag.matchThreshold,
-                    match_count: AI_PHASE_CONFIG.rag.matchCountPerQuery,
-                })
-            )
-        );
+                    match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
+                }).then(res => ({ type: 'boericke', data: res.data }))
+            );
+            // 2. Fetch Ayurvedic
+            rpcPromises.push(
+                supabase.rpc("search_ayurvedic_knowledge", {
+                    query_embedding: embedding,
+                    match_threshold: 0.65, // slightly more forgiving for general text
+                    match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
+                }).then(res => ({ type: 'ayurvedic', data: res.data }))
+            );
+        });
+
+        const rpcResults = await Promise.allSettled(rpcPromises);
 
         // Deduplicate and re-rank
-        const seen = new Set<string>();
-        const allChunks: BoerickeChunk[] = [];
+        const seenBoericke = new Set<string>();
+        const seenAyurvedic = new Set<string>();
+        const allBoerickeChunks: BoerickeChunk[] = [];
+        const allAyurvedicChunks: AyurvedicChunk[] = [];
 
         for (const result of rpcResults) {
             if (result.status === "fulfilled" && result.value.data) {
-                for (const chunk of result.value.data as BoerickeChunk[]) {
-                    const key = `${chunk.remedy_name}::${chunk.chunk_text?.slice(0, 120)}`;
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        allChunks.push(chunk);
+                if (result.value.type === 'boericke') {
+                    for (const chunk of result.value.data as BoerickeChunk[]) {
+                        const key = `${chunk.remedy_name}::${chunk.chunk_text?.slice(0, 120)}`;
+                        if (!seenBoericke.has(key)) {
+                            seenBoericke.add(key);
+                            allBoerickeChunks.push(chunk);
+                        }
+                    }
+                } else if (result.value.type === 'ayurvedic') {
+                    for (const chunk of result.value.data as AyurvedicChunk[]) {
+                        const key = `${chunk.book}::${chunk.text?.slice(0, 120)}`;
+                        if (!seenAyurvedic.has(key)) {
+                            seenAyurvedic.add(key);
+                            allAyurvedicChunks.push(chunk);
+                        }
                     }
                 }
             }
         }
 
-        allChunks.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
-        const top = allChunks.slice(0, AI_PHASE_CONFIG.rag.maxTotalChunks);
-        const remediesFound = [...new Set(top.map((c) => c.remedy_name).filter(Boolean))];
+        allBoerickeChunks.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
+        allAyurvedicChunks.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
+        
+        const topBoericke = allBoerickeChunks.slice(0, Math.ceil(AI_PHASE_CONFIG.rag.maxTotalChunks / 2));
+        const topAyurvedic = allAyurvedicChunks.slice(0, Math.ceil(AI_PHASE_CONFIG.rag.maxTotalChunks / 2));
+        
+        const remediesFound = [...new Set(topBoericke.map((c) => c.remedy_name).filter(Boolean))];
 
-        const context =
-            top.length > 0
-                ? "=== BOERICKE MATERIA MEDICA (retrieved via multi-query RAG) ===\n\n" +
-                top
-                    .map(
-                        (c, i) =>
-                            `[${i + 1}] Remedy: ${c.remedy_name} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
-                    )
-                    .join("\n\n")
-                : "";
+        let context = "";
+        
+        if (topBoericke.length > 0) {
+            context += "=== BOERICKE MATERIA MEDICA (retrieved via multi-query RAG) ===\n\n" +
+                topBoericke.map((c, i) =>
+                    `[B${i + 1}] Remedy: ${c.remedy_name} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                ).join("\n\n") + "\n\n";
+        }
+        
+        if (topAyurvedic.length > 0) {
+            context += "=== AYURVEDIC KNOWLEDGE BASE (retrieved via multi-query RAG) ===\n\n" +
+                topAyurvedic.map((c, i) =>
+                    `[A${i + 1}] Source: ${c.book} / ${c.section} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
+                ).join("\n\n");
+        }
 
         return { context, remediesFound };
     } catch (err) {
@@ -188,20 +230,37 @@ async function fetchMultiQueryRAG(
             if (!embedding) return { context: "", remediesFound: [] };
 
             const supabase = getSupabaseAdminClient();
-            const { data } = await supabase.rpc("match_boericke_embeddings", {
-                query_embedding: embedding,
-                match_threshold: AI_PHASE_CONFIG.rag.singleQueryThreshold,
-                match_count: 4,
-            });
+            
+            // Single query fallback: Fetch both in parallel
+            const [boerickeRes, ayurvedicRes] = await Promise.all([
+                supabase.rpc("match_boericke_embeddings", {
+                    query_embedding: embedding,
+                    match_threshold: AI_PHASE_CONFIG.rag.singleQueryThreshold,
+                    match_count: 3,
+                }),
+                supabase.rpc("search_ayurvedic_knowledge", {
+                    query_embedding: embedding,
+                    match_threshold: 0.65,
+                    match_count: 3,
+                })
+            ]);
 
-            if (!data?.length) return { context: "", remediesFound: [] };
+            const boerickeData = boerickeRes.data as BoerickeChunk[] | null;
+            const ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
 
-            const remediesFound = [...new Set((data as BoerickeChunk[]).map((c) => c.remedy_name))];
-            const context =
-                "=== BOERICKE MATERIA MEDICA ===\n\n" +
-                (data as BoerickeChunk[])
-                    .map((c) => `Remedy: ${c.remedy_name}\n${c.chunk_text}`)
-                    .join("\n\n");
+            if (!boerickeData?.length && !ayurvedicData?.length) return { context: "", remediesFound: [] };
+
+            const remediesFound = [...new Set((boerickeData || []).map((c) => c.remedy_name))];
+            
+            let context = "";
+            if (boerickeData?.length) {
+                context += "=== BOERICKE MATERIA MEDICA ===\n\n" +
+                    boerickeData.map((c) => `Remedy: ${c.remedy_name}\n${c.chunk_text}`).join("\n\n") + "\n\n";
+            }
+            if (ayurvedicData?.length) {
+                context += "=== AYURVEDIC KNOWLEDGE BASE ===\n\n" +
+                    ayurvedicData.map((c) => `Source: ${c.book} / ${c.section}\n${c.text}`).join("\n\n");
+            }
 
             return { context, remediesFound };
         } catch {

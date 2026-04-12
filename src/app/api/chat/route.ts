@@ -31,7 +31,7 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
         const supabase = getServiceClient();
         const { data } = await supabase.rpc('match_boericke_embeddings', {
             query_embedding: embedding,
-            match_threshold: 0.75,   // raised from 0.60 — filter low-quality results
+            match_threshold: 0.75,
             match_count: 5,
         });
         if (!data?.length) return '';
@@ -43,60 +43,58 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
             .map((c: any, i: number) =>
                 `[${i + 1}] ${c.remedy_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
             ).join('\n\n');
-    } catch (e) {
-        console.error('[RAG] Homeopathic error:', e);
+    } catch {
         return '';
     }
 }
 
-// ── RAG: Ayurvedic herbs ──────────────────────────────────────────────────────
+// ── RAG: Ayurvedic herbs & Texts ──────────────────────────────────────────────────────
 async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
     try {
         const supabase = getServiceClient();
-        // Uses a separate table; falls back gracefully if not yet seeded
-        const { data } = await supabase.rpc('match_ayurvedic_embeddings', {
+        const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
             query_embedding: embedding,
-            match_threshold: 0.75,
-            match_count: 3,
+            match_threshold: 0.70,
+            match_count: 5,
         });
         if (!data?.length) return '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (data as any[])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+            .filter((c: any) => (c.similarity ?? 0) >= 0.70)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
-                `[${i + 1}] ${c.herb_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                `[${i + 1}] Source: ${c.book} / ${c.section} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
             ).join('\n\n');
     } catch {
-        // Ayurvedic table may not exist yet — silently degrade
         return '';
     }
 }
 
-// ── RAG: Home Remedies ────────────────────────────────────────────────────────
+// ── RAG: Home Remedies (Now handled by ayurvedic_knowledge_embeddings) ──────────
 async function fetchHomeRemedyContext(embedding: number[]): Promise<string> {
     try {
         const supabase = getServiceClient();
-        const { data } = await supabase.rpc('match_home_remedy_embeddings', {
+        const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
             query_embedding: embedding,
-            match_threshold: 0.75,
+            match_threshold: 0.70,
             match_count: 3,
+            filter_category: 'home_remedies'
         });
         if (!data?.length) return '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (data as any[])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+            .filter((c: any) => (c.similarity ?? 0) >= 0.70)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
-                `[${i + 1}] ${c.remedy_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                `[${i + 1}] ${c.book} - ${c.section} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
             ).join('\n\n');
     } catch {
-        // Home remedies table may not exist yet — silently degrade
         return '';
     }
 }
+
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
 async function fetchAllContext(symptomSummary: string): Promise<string> {
