@@ -297,7 +297,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Force a session refresh to ensure we have latest metadata
         const { data: { user } } = await supabase.auth.getUser();
 
-        const userRole = user?.user_metadata?.role || 'patient';
+        let userRole = user?.user_metadata?.role || 'patient'; if (user) { const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single(); if (profile?.role) { userRole = profile.role; } }
 
         // Route based on role
         if (userRole === 'admin') {

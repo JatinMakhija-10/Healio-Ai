@@ -34,8 +34,6 @@ const PHASE2_DASHBOARD_ROUTES = [
 ];
 
 const PHASE2_TOP_LEVEL_ROUTES = [
-    '/doctor',
-    '/admin',
     '/analytics',
     '/epidemic',
     '/marketplace',
