@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,219 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import {
     ChevronRight, ChevronLeft, ShieldAlert, CheckCircle, X, Search,
-    User, HeartPulse, Pill, AlertTriangle, Users, Leaf
+    User, HeartPulse, Pill, AlertTriangle, Users, Leaf, Loader2
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 
-// ─── Medicine List ────────────────────────────────────────────────────────────
+// ─── Medicine Types ───────────────────────────────────────────────────────────
 type MedicineEntry = { name: string; category: "Allopathic" | "Homeopathic" | "Ayurvedic" };
 
-const MEDICINES_LIST: MedicineEntry[] = [
-    // --- Allopathic: Diabetes ---
-    { name: "Metformin", category: "Allopathic" },
-    { name: "Insulin (Regular)", category: "Allopathic" },
-    { name: "Insulin (NPH)", category: "Allopathic" },
-    { name: "Glipizide", category: "Allopathic" },
-    { name: "Glyburide", category: "Allopathic" },
-    { name: "Glimepiride", category: "Allopathic" },
-    { name: "Sitagliptin (Januvia)", category: "Allopathic" },
-    { name: "Empagliflozin (Jardiance)", category: "Allopathic" },
-    { name: "Dapagliflozin (Farxiga)", category: "Allopathic" },
-    { name: "Liraglutide (Victoza)", category: "Allopathic" },
-    { name: "Pioglitazone", category: "Allopathic" },
-    // --- Allopathic: Hypertension ---
-    { name: "Amlodipine", category: "Allopathic" },
-    { name: "Losartan", category: "Allopathic" },
-    { name: "Telmisartan", category: "Allopathic" },
-    { name: "Lisinopril", category: "Allopathic" },
-    { name: "Enalapril", category: "Allopathic" },
-    { name: "Atenolol", category: "Allopathic" },
-    { name: "Metoprolol", category: "Allopathic" },
-    { name: "Carvedilol", category: "Allopathic" },
-    { name: "Ramipril", category: "Allopathic" },
-    { name: "Hydrochlorothiazide", category: "Allopathic" },
-    { name: "Furosemide", category: "Allopathic" },
-    { name: "Spironolactone", category: "Allopathic" },
-    // --- Allopathic: Cholesterol ---
-    { name: "Atorvastatin", category: "Allopathic" },
-    { name: "Rosuvastatin", category: "Allopathic" },
-    { name: "Simvastatin", category: "Allopathic" },
-    { name: "Ezetimibe", category: "Allopathic" },
-    // --- Allopathic: Pain / Anti-inflammatory ---
-    { name: "Paracetamol (Acetaminophen)", category: "Allopathic" },
-    { name: "Ibuprofen", category: "Allopathic" },
-    { name: "Diclofenac", category: "Allopathic" },
-    { name: "Naproxen", category: "Allopathic" },
-    { name: "Aspirin", category: "Allopathic" },
-    { name: "Celecoxib", category: "Allopathic" },
-    { name: "Tramadol", category: "Allopathic" },
-    { name: "Morphine", category: "Allopathic" },
-    { name: "Ketorolac", category: "Allopathic" },
-    // --- Allopathic: Antibiotics ---
-    { name: "Amoxicillin", category: "Allopathic" },
-    { name: "Amoxicillin-Clavulanate (Augmentin)", category: "Allopathic" },
-    { name: "Azithromycin", category: "Allopathic" },
-    { name: "Ciprofloxacin", category: "Allopathic" },
-    { name: "Levofloxacin", category: "Allopathic" },
-    { name: "Doxycycline", category: "Allopathic" },
-    { name: "Metronidazole", category: "Allopathic" },
-    { name: "Cefixime", category: "Allopathic" },
-    { name: "Cefuroxime", category: "Allopathic" },
-    { name: "Clindamycin", category: "Allopathic" },
-    { name: "Trimethoprim-Sulfamethoxazole", category: "Allopathic" },
-    { name: "Nitrofurantoin", category: "Allopathic" },
-    // --- Allopathic: Thyroid ---
-    { name: "Levothyroxine", category: "Allopathic" },
-    { name: "Carbimazole", category: "Allopathic" },
-    { name: "Methimazole", category: "Allopathic" },
-    { name: "Propylthiouracil", category: "Allopathic" },
-    // --- Allopathic: Respiratory ---
-    { name: "Salbutamol (Albuterol)", category: "Allopathic" },
-    { name: "Montelukast", category: "Allopathic" },
-    { name: "Budesonide inhaler", category: "Allopathic" },
-    { name: "Fluticasone inhaler", category: "Allopathic" },
-    { name: "Tiotropium", category: "Allopathic" },
-    { name: "Salmeterol", category: "Allopathic" },
-    { name: "Theophylline", category: "Allopathic" },
-    // --- Allopathic: Gastro ---
-    { name: "Omeprazole", category: "Allopathic" },
-    { name: "Pantoprazole", category: "Allopathic" },
-    { name: "Rabeprazole", category: "Allopathic" },
-    { name: "Ranitidine", category: "Allopathic" },
-    { name: "Domperidone", category: "Allopathic" },
-    { name: "Ondansetron", category: "Allopathic" },
-    { name: "Loperamide", category: "Allopathic" },
-    { name: "Lactulose", category: "Allopathic" },
-    { name: "Bisacodyl", category: "Allopathic" },
-    // --- Allopathic: Mental health ---
-    { name: "Sertraline", category: "Allopathic" },
-    { name: "Fluoxetine", category: "Allopathic" },
-    { name: "Escitalopram", category: "Allopathic" },
-    { name: "Clonazepam", category: "Allopathic" },
-    { name: "Alprazolam", category: "Allopathic" },
-    { name: "Diazepam", category: "Allopathic" },
-    { name: "Olanzapine", category: "Allopathic" },
-    { name: "Risperidone", category: "Allopathic" },
-    { name: "Quetiapine", category: "Allopathic" },
-    { name: "Lithium", category: "Allopathic" },
-    { name: "Bupropion", category: "Allopathic" },
-    { name: "Venlafaxine", category: "Allopathic" },
-    // --- Allopathic: Vitamins / Supplements ---
-    { name: "Vitamin D3", category: "Allopathic" },
-    { name: "Vitamin B12 (Methylcobalamin)", category: "Allopathic" },
-    { name: "Ferrous Sulfate (Iron)", category: "Allopathic" },
-    { name: "Folic Acid", category: "Allopathic" },
-    { name: "Calcium Carbonate", category: "Allopathic" },
-    { name: "Zinc Sulfate", category: "Allopathic" },
-    { name: "Magnesium", category: "Allopathic" },
-    { name: "Omega-3 Fish Oil", category: "Allopathic" },
-    // --- Allopathic: Antihistamines ---
-    { name: "Cetirizine", category: "Allopathic" },
-    { name: "Loratadine", category: "Allopathic" },
-    { name: "Fexofenadine", category: "Allopathic" },
-    { name: "Diphenhydramine", category: "Allopathic" },
-    { name: "Chlorpheniramine", category: "Allopathic" },
-    // --- Allopathic: Anti-malarial / Anti-parasite ---
-    { name: "Hydroxychloroquine", category: "Allopathic" },
-    { name: "Chloroquine", category: "Allopathic" },
-    { name: "Albendazole", category: "Allopathic" },
-    { name: "Mebendazole", category: "Allopathic" },
-    // --- Allopathic: Dermatology ---
-    { name: "Tretinoin", category: "Allopathic" },
-    { name: "Betamethasone cream", category: "Allopathic" },
-    { name: "Clotrimazole", category: "Allopathic" },
-    { name: "Terbinafine", category: "Allopathic" },
-    { name: "Doxycycline (acne)", category: "Allopathic" },
-    // --- Allopathic: Cardiac ---
-    { name: "Clopidogrel", category: "Allopathic" },
-    { name: "Warfarin", category: "Allopathic" },
-    { name: "Digoxin", category: "Allopathic" },
-    { name: "Nitroglycerin", category: "Allopathic" },
-    { name: "Amiodarone", category: "Allopathic" },
-    { name: "Isosorbide Mononitrate", category: "Allopathic" },
-    // --- Allopathic: Urology ---
-    { name: "Tamsulosin", category: "Allopathic" },
-    { name: "Sildenafil", category: "Allopathic" },
-    { name: "Finasteride", category: "Allopathic" },
-    // --- Homeopathic ---
-    { name: "Arnica Montana 30C", category: "Homeopathic" },
-    { name: "Belladonna 30C", category: "Homeopathic" },
-    { name: "Nux Vomica 30C", category: "Homeopathic" },
-    { name: "Rhus Tox 30C", category: "Homeopathic" },
-    { name: "Bryonia 30C", category: "Homeopathic" },
-    { name: "Pulsatilla 30C", category: "Homeopathic" },
-    { name: "Sulphur 30C", category: "Homeopathic" },
-    { name: "Calcarea Carbonica 30C", category: "Homeopathic" },
-    { name: "Lycopodium 30C", category: "Homeopathic" },
-    { name: "Phosphorus 30C", category: "Homeopathic" },
-    { name: "Natrum Muriaticum 30C", category: "Homeopathic" },
-    { name: "Sepia 30C", category: "Homeopathic" },
-    { name: "Ignatia Amara 30C", category: "Homeopathic" },
-    { name: "Gelsemium 30C", category: "Homeopathic" },
-    { name: "Arsenicum Album 30C", category: "Homeopathic" },
-    { name: "Aconite 30C", category: "Homeopathic" },
-    { name: "Mercurius Solubilis 30C", category: "Homeopathic" },
-    { name: "Hepar Sulph 30C", category: "Homeopathic" },
-    { name: "Silicea 30C", category: "Homeopathic" },
-    { name: "Thuja Occidentalis 30C", category: "Homeopathic" },
-    { name: "Allium Cepa 30C", category: "Homeopathic" },
-    { name: "Apis Mellifica 30C", category: "Homeopathic" },
-    { name: "Cantharis 30C", category: "Homeopathic" },
-    { name: "Colocynthis 30C", category: "Homeopathic" },
-    { name: "Drosera 30C", category: "Homeopathic" },
-    { name: "Ferrum Phosphoricum 30C", category: "Homeopathic" },
-    { name: "Hamamelis 30C", category: "Homeopathic" },
-    { name: "Hypericum Perforatum 30C", category: "Homeopathic" },
-    { name: "Kali Bichromicum 30C", category: "Homeopathic" },
-    { name: "Lachesis 30C", category: "Homeopathic" },
-    { name: "Ledum Palustre 30C", category: "Homeopathic" },
-    { name: "Ruta Graveolens 30C", category: "Homeopathic" },
-    { name: "Spongia Tosta 30C", category: "Homeopathic" },
-    { name: "Staphysagria 30C", category: "Homeopathic" },
-    { name: "Veratrum Album 30C", category: "Homeopathic" },
-    { name: "Zincum Metallicum 30C", category: "Homeopathic" },
-    // --- Ayurvedic ---
-    { name: "Ashwagandha (Withania somnifera)", category: "Ayurvedic" },
-    { name: "Triphala Churna", category: "Ayurvedic" },
-    { name: "Chyawanprash", category: "Ayurvedic" },
-    { name: "Brahmi (Bacopa monnieri)", category: "Ayurvedic" },
-    { name: "Tulsi (Holy Basil) extract", category: "Ayurvedic" },
-    { name: "Turmeric (Curcumin)", category: "Ayurvedic" },
-    { name: "Shilajit", category: "Ayurvedic" },
-    { name: "Guduchi (Tinospora cordifolia)", category: "Ayurvedic" },
-    { name: "Neem (Azadirachta indica)", category: "Ayurvedic" },
-    { name: "Amla (Emblica officinalis)", category: "Ayurvedic" },
-    { name: "Shatavari (Asparagus racemosus)", category: "Ayurvedic" },
-    { name: "Haritaki", category: "Ayurvedic" },
-    { name: "Vibhitaki", category: "Ayurvedic" },
-    { name: "Gokshura (Tribulus terrestris)", category: "Ayurvedic" },
-    { name: "Kapikacchu (Mucuna pruriens)", category: "Ayurvedic" },
-    { name: "Punarnava (Boerhavia diffusa)", category: "Ayurvedic" },
-    { name: "Manjistha (Rubia cordifolia)", category: "Ayurvedic" },
-    { name: "Dashamoola", category: "Ayurvedic" },
-    { name: "Trikatu Churna", category: "Ayurvedic" },
-    { name: "Hingvastak Churna", category: "Ayurvedic" },
-    { name: "Arjuna (Terminalia arjuna)", category: "Ayurvedic" },
-    { name: "Karela (Bitter Gourd) Juice", category: "Ayurvedic" },
-    { name: "Jamun Seed Powder", category: "Ayurvedic" },
-    { name: "Moringa (Drumstick leaf)", category: "Ayurvedic" },
-    { name: "Licorice (Mulethi)", category: "Ayurvedic" },
-    { name: "Vacha (Acorus calamus)", category: "Ayurvedic" },
-    { name: "Shankhpushpi", category: "Ayurvedic" },
-    { name: "Jatamansi", category: "Ayurvedic" },
-    { name: "Pippali (Long Pepper)", category: "Ayurvedic" },
-    { name: "Pushkarmool", category: "Ayurvedic" },
-    { name: "Bhumyamalaki", category: "Ayurvedic" },
-    { name: "Kutki (Picrorhiza kurroa)", category: "Ayurvedic" },
-    { name: "Vidanga (Embelia ribes)", category: "Ayurvedic" },
-    { name: "Chitrak (Plumbago zeylanica)", category: "Ayurvedic" },
-];
-
 const CATEGORY_COLORS: Record<string, string> = {
-    Allopathic: "bg-blue-50 text-blue-700 border-blue-200",
+    Allopathic:  "bg-blue-50 text-blue-700 border-blue-200",
     Homeopathic: "bg-purple-50 text-purple-700 border-purple-200",
-    Ayurvedic: "bg-green-50 text-green-700 border-green-200",
+    Ayurvedic:   "bg-green-50 text-green-700 border-green-200",
+};
+
+const CATEGORY_DOT: Record<string, string> = {
+    Allopathic:  "bg-blue-400",
+    Homeopathic: "bg-purple-400",
+    Ayurvedic:   "bg-green-500",
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -291,35 +96,60 @@ const STEP_META = [
     { icon: ShieldAlert, title: "Consent & Privacy", desc: "Review how we handle your data." },
 ];
 
-// ─── Medicine Combobox ────────────────────────────────────────────────────────
+// ─── Medicine Combobox (API-driven, 224k+ medicines) ─────────────────────────
 function MedicineCombobox({
     selected,
     onToggle,
 }: {
     selected: string[];
-    onToggle: (name: string) => void;
+    onToggle: (name: string, category: string) => void;
 }) {
     const [query, setQuery] = useState("");
     const [open, setOpen] = useState(false);
+    const [results, setResults] = useState<MedicineEntry[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedMeta, setSelectedMeta] = useState<Record<string, string>>({});
     const ref = useRef<HTMLDivElement>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Close on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
         };
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
-    const filtered = query.length < 1
-        ? []
-        : MEDICINES_LIST.filter((m) =>
-            m.name.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 30);
+    // Debounced fetch
+    const fetchMedicines = useCallback(async (q: string) => {
+        if (q.length < 2) { setResults([]); return; }
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/medicines/search?q=${encodeURIComponent(q)}&limit=50`);
+            const data = await res.json();
+            setResults(data.results ?? []);
+        } catch {
+            setResults([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => fetchMedicines(query), 220);
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    }, [query, fetchMedicines]);
 
     const groups = ["Allopathic", "Homeopathic", "Ayurvedic"] as const;
+
+    const handleSelect = (name: string, category: string) => {
+        setSelectedMeta(prev => ({ ...prev, [name]: category }));
+        onToggle(name, category);
+        setQuery("");
+        setOpen(false);
+    };
 
     return (
         <div className="space-y-3">
@@ -327,18 +157,20 @@ function MedicineCombobox({
             {selected.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {selected.map((name) => {
-                        const entry = MEDICINES_LIST.find((m) => m.name === name);
-                        const colorClass = entry ? CATEGORY_COLORS[entry.category] : "bg-slate-100 text-slate-700 border-slate-200";
+                        const cat = selectedMeta[name] ?? "Allopathic";
+                        const colorClass = CATEGORY_COLORS[cat] ?? "bg-slate-100 text-slate-700 border-slate-200";
+                        const dotClass = CATEGORY_DOT[cat] ?? "bg-slate-400";
                         return (
                             <span
                                 key={name}
                                 className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${colorClass}`}
                             >
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
                                 {name}
                                 <button
                                     type="button"
-                                    onClick={() => onToggle(name)}
-                                    className="hover:opacity-70 transition-opacity"
+                                    onClick={() => onToggle(name, cat)}
+                                    className="hover:opacity-70 transition-opacity ml-0.5"
                                     aria-label={`Remove ${name}`}
                                 >
                                     <X className="h-3 w-3" />
@@ -352,10 +184,13 @@ function MedicineCombobox({
             {/* Search input */}
             <div ref={ref} className="relative">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    {loading
+                        ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500 animate-spin pointer-events-none" />
+                        : <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    }
                     <input
                         type="text"
-                        placeholder="Search medicines (e.g. Metformin, Arnica, Ashwagandha…)"
+                        placeholder="Search 224,000+ medicines — Allopathic, Ayurvedic, Homeopathic…"
                         value={query}
                         onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
                         onFocus={() => setOpen(true)}
@@ -363,15 +198,27 @@ function MedicineCombobox({
                     />
                 </div>
 
-                {/* Dropdown */}
-                {open && filtered.length > 0 && (
-                    <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                <AnimatePresence>
+                {open && query.length >= 2 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl max-h-72 overflow-y-auto"
+                    >
+                        {results.length === 0 && !loading && (
+                            <div className="px-4 py-3 text-sm text-slate-400 italic">
+                                No results for &quot;{query}&quot; — try a different spelling or type it below.
+                            </div>
+                        )}
                         {groups.map((group) => {
-                            const items = filtered.filter((m) => m.category === group);
+                            const items = results.filter((m) => m.category === group);
                             if (items.length === 0) return null;
                             return (
                                 <div key={group}>
-                                    <div className="px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase text-slate-400 bg-slate-50 border-b border-slate-100 sticky top-0">
+                                    <div className="px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase text-slate-400 bg-slate-50 border-b border-slate-100 sticky top-0 flex items-center gap-1.5">
+                                        <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_DOT[group]}`} />
                                         {group}
                                     </div>
                                     {items.map((m) => {
@@ -382,11 +229,11 @@ function MedicineCombobox({
                                                 type="button"
                                                 onMouseDown={(e) => {
                                                     e.preventDefault();
-                                                    onToggle(m.name);
-                                                    setQuery("");
-                                                    setOpen(false);
+                                                    handleSelect(m.name, m.category);
                                                 }}
-                                                className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-slate-50 transition-colors ${isSelected ? "bg-teal-50 text-teal-700" : "text-slate-700"}`}
+                                                className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-slate-50 transition-colors ${
+                                                    isSelected ? "bg-teal-50 text-teal-700" : "text-slate-700"
+                                                }`}
                                             >
                                                 <span>{m.name}</span>
                                                 {isSelected && <CheckCircle className="h-4 w-4 text-teal-500 shrink-0" />}
@@ -396,13 +243,14 @@ function MedicineCombobox({
                                 </div>
                             );
                         })}
-                    </div>
+                    </motion.div>
                 )}
+                </AnimatePresence>
 
-                {open && query.length >= 1 && filtered.length === 0 && (
-                    <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg px-4 py-3 text-sm text-slate-500">
-                        No medicines found for &quot;{query}&quot;. You can type the name in the free-text box below.
-                    </div>
+                {!open && query.length < 2 && (
+                    <p className="text-[11px] text-slate-400 mt-1.5 px-1">
+                        Type at least 2 characters to search across Allopathic, Ayurvedic &amp; Homeopathic medicines.
+                    </p>
                 )}
             </div>
         </div>
@@ -509,7 +357,8 @@ export default function OnboardingWizard() {
         });
     };
 
-    const toggleMedicine = (name: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const toggleMedicine = (name: string, _category?: string) => {
         setData((prev) => ({
             ...prev,
             medicationList: prev.medicationList.includes(name)
