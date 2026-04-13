@@ -188,7 +188,10 @@ function ConsultPageInner() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100dvh-64px)] bg-[#F7F8FA]">
+        <div 
+            className="flex flex-col h-[calc(100dvh-64px)] bg-[#F7F8FA]"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
             {/* Follow-up Banner */}
             {isResumeMode && resumeContext && !bannerDismissed && (
                 <FollowUpBanner
