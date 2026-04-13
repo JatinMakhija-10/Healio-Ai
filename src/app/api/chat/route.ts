@@ -13,7 +13,7 @@ function getServiceClient() {
     );
 }
 
-// ── Generate embedding via Gemini ─────────────────────────────────────────────
+// ── Generate embedding via Gemini (768-dim) — used for Boericke & Ayurvedic ───
 async function generateEmbedding(text: string): Promise<number[] | null> {
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey || !text) return null;
@@ -23,6 +23,23 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
         contents: text,
     });
     return embResp.embeddings?.[0]?.values ?? null;
+}
+
+// ── Generate embedding via Gemini (3072-dim) — used for home_remedy_embeddings ─
+// home_remedy_embeddings was ingested with gemini-embedding-001 which produces 3072-dim vectors
+async function generateEmbedding3072(text: string): Promise<number[] | null> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || !text) return null;
+    try {
+        const ai = new GoogleGenAI({ apiKey: geminiKey });
+        const embResp = await ai.models.embedContent({
+            model: 'gemini-embedding-001',
+            contents: text,
+        });
+        return embResp.embeddings?.[0]?.values ?? null;
+    } catch {
+        return null;
+    }
 }
 
 // ── RAG: Homeopathic (Boericke) ───────────────────────────────────────────────
@@ -54,66 +71,85 @@ async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
         const supabase = getServiceClient();
         const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
             query_embedding: embedding,
-            match_threshold: 0.70,
-            match_count: 5,
+            match_threshold: 0.62,
+            match_count: 7,
         });
         if (!data?.length) return '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (data as any[])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.70)
+            .filter((c: any) => (c.similarity ?? 0) >= 0.62)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
-                `[${i + 1}] Source: ${c.book} / ${c.section} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
+                `[${i + 1}] Source: ${c.book} (${c.category ?? 'general'}) — ${c.section ?? 'N/A'} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
             ).join('\n\n');
     } catch {
         return '';
     }
 }
 
-// ── RAG: Home Remedies (Now handled by ayurvedic_knowledge_embeddings) ──────────
-async function fetchHomeRemedyContext(embedding: number[]): Promise<string> {
+// ── RAG: Home Remedies — dedicated home_remedy_embeddings table (nuskhe.json) ──
+// This table has 1051 structured home remedies with ailment, ingredients,
+// preparation method (Hindi + English). It uses 3072-dim gemini-embedding-001 vectors.
+async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<string> {
+    if (!embedding3072) return '';
     try {
         const supabase = getServiceClient();
-        const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
-            query_embedding: embedding,
-            match_threshold: 0.70,
-            match_count: 3,
-            filter_category: 'home_remedies'
+        const { data, error } = await supabase.rpc('match_home_remedy_embeddings', {
+            query_embedding: embedding3072,
+            match_threshold: 0.60,
+            match_count: 5,
         });
+        if (error) {
+            console.error('[RAG] home_remedy_embeddings RPC error:', error.message);
+            return '';
+        }
         if (!data?.length) return '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (data as any[])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.70)
+            .filter((c: any) => (c.similarity ?? 0) >= 0.60)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((c: any, i: number) =>
-                `[${i + 1}] ${c.book} - ${c.section} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
-            ).join('\n\n');
-    } catch {
+            .map((c: any, i: number) => {
+                const lines = [
+                    `[${i + 1}] Ailment: ${c.ailment}${c.ailment_hindi ? ` (${c.ailment_hindi})` : ''} — Remedy: ${c.remedy_name}${c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : ''} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)`,
+                    c.chunk_text,
+                ];
+                return lines.join('\n');
+            }).join('\n\n');
+    } catch (e) {
+        console.error('[RAG] Home remedy fetch error:', e);
         return '';
     }
 }
 
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
+// Generates two embeddings in parallel:
+//   • 768-dim  (gemini-embedding-2-preview) → Boericke + Ayurvedic tables
+//   • 3072-dim (gemini-embedding-001)        → home_remedy_embeddings table
 async function fetchAllContext(symptomSummary: string): Promise<string> {
     try {
-        const embedding = await generateEmbedding(symptomSummary);
+        // Generate both embedding sizes concurrently — no serial latency
+        const [embedding, embedding3072] = await Promise.all([
+            generateEmbedding(symptomSummary),
+            generateEmbedding3072(symptomSummary),
+        ]);
         if (!embedding) return '';
 
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
             fetchAyurvedicContext(embedding),
-            fetchHomeRemedyContext(embedding),
+            fetchHomeRemedyContext(embedding3072),
         ]);
 
         const sections = [
             homeopathicRaw && `=== HOMEOPATHIC REFERENCE (Boericke's Materia Medica) ===\n${homeopathicRaw}`,
-            ayurvedicRaw   && `=== AYURVEDIC REFERENCE ===\n${ayurvedicRaw}`,
-            homeRemedyRaw  && `=== HOME REMEDIES (Kitchen / Traditional) ===\n${homeRemedyRaw}`,
+            ayurvedicRaw   && `=== AYURVEDIC REFERENCE (Planet Ayurveda / CCRAS / Classical Texts) ===\n${ayurvedicRaw}`,
+            homeRemedyRaw  && `=== HOME REMEDIES (Traditional Nuskhe — Ingredients & Preparation) ===\n${homeRemedyRaw}`,
         ].filter(Boolean);
 
+        console.log(`[RAG] Sections loaded: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw}`);
         return sections.length ? sections.join('\n\n') : '';
     } catch (e) {
         console.error('[RAG] Combined fetch error:', e);
@@ -215,10 +251,15 @@ WHAT YOU MUST NEVER DO:
 - NEVER show a form or numbered list — keep everything conversational
 
 === FINAL DIAGNOSIS OUTPUT ===
-When you have enough information:
-1. Tell the user warmly that you have gathered enough information
-2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags
-3. If RAG reference material was provided above, USE IT for remedy selection
+When you have enough information (at least 3 questions answered):
+1. Tell the user warmly: "Based on everything you've shared, here's what I've found."
+2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags.
+3. CRITICAL REMEDY RULES — You MUST follow these:
+   • homeopathic_remedies: Pull DIRECTLY from the HOMEOPATHIC REFERENCE section of the knowledge base. Match the remedy to the patient's EXACT symptom modalities (what makes it worse, what makes it better, sensation type).
+   • ayurvedic_remedies: Pull DIRECTLY from the AYURVEDIC REFERENCE section. Include the exact herb or formulation name, the source text, and preparation.
+   • home_remedies: Pull from HOME REMEDIES section OR any practical kitchen/herb preparation found in the knowledge base. Use everyday household ingredients.
+   • If the knowledge base is empty for a section, use classical medical knowledge as a FALLBACK — but ALWAYS include at least 2 entries per section.
+   • NEVER leave any remedy array empty. NEVER output placeholder text like "Remedy Name".
 
 \`\`\`json
 {
@@ -233,25 +274,26 @@ When you have enough information:
   ],
   "homeopathic_remedies": [
     {
-      "name": "Remedy Name",
-      "description": "Why it suits their specific symptoms — reference exact modalities",
-      "potency": "30C or 200C",
-      "method": "4 pills every 3 hours",
-      "source": "boericke | classical | clinical"
+      "name": "Belladonna (from Boericke's Materia Medica)",
+      "description": "Suits sudden high fever with burning heat, red face, throbbing headache — all symptoms the patient described",
+      "potency": "30C",
+      "method": "4 pills every 3 hours; reduce frequency as symptoms improve",
+      "source": "Boericke's Materia Medica"
     }
   ],
   "ayurvedic_remedies": [
     {
-      "name": "Tulsi Kadha",
-      "indication": "Sore throat, congestion",
-      "preparation": "Boil 7 tulsi leaves with ginger and cloves in 2 cups water"
+      "name": "Exact herb or formulation from the knowledge base",
+      "indication": "Which specific symptom this addresses",
+      "preparation": "Exact preparation method — decoction, powder dose, or tablet with timing",
+      "source": "Planet Ayurveda / CCRAS / Classical Text (exact source from knowledge base)"
     }
   ],
   "home_remedies": [
     {
-      "name": "Haldi Doodh",
-      "indication": "Inflammation, immune support",
-      "preparation": "Warm milk with 1/4 tsp haldi and black pepper before bedtime"
+      "name": "Traditional remedy using household ingredients",
+      "indication": "Which symptom this directly helps",
+      "preparation": "Step-by-step: quantities, method, timing, frequency"
     }
   ],
   "lifestyle_advice": ["Rest", "Stay hydrated", "Steam inhalation twice daily"],
@@ -379,19 +421,31 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── RAG injection: after 3+ user turns, we have enough symptoms to retrieve context ──
+        // ── RAG injection: after 2+ user turns to ensure context is ready before diagnosis ──
         let ragContext = '';
         const userTurns = countUserTurns(processedMessages);
 
-        if (userTurns >= 3) {
+        if (userTurns >= 2) {
             const symptomSummary = extractSymptomSummary(processedMessages);
             ragContext = await fetchAllContext(symptomSummary);
+            if (ragContext) {
+                console.log(`[RAG] Retrieved ${ragContext.length} chars of context for ${userTurns}-turn session.`);
+            }
         }
 
         // RAG injected at TOP — before the role instructions — for maximum LLM weight
-        // Persona context appended after system prompt for patient-specific adaptation
+        // The knowledge base is labeled clearly so the model knows where to source each section
         let finalSystemPrompt = ragContext
-            ? `MEDICAL KNOWLEDGE BASE (use this to select remedies — prioritise remedies found here):\n\n${ragContext}\n\n---\n\n${SYSTEM_PROMPT}`
+            ? `=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
+The following data was retrieved from our verified databases. You MUST use this data to populate
+the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.
+Do NOT ignore this data. Do NOT hallucinate remedies that contradict this data.
+
+${ragContext}
+
+=== END OF KNOWLEDGE BASE ===
+
+${SYSTEM_PROMPT}`
             : SYSTEM_PROMPT;
         
         if (personaContext) {

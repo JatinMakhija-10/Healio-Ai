@@ -49,6 +49,7 @@ INSTRUCTIONS:
 - Write a compassionate description of the diagnosis.
 - Write a clear step-by-step reasoning trace (rationale) explaining to the user why the system chose this diagnosis based on their symptoms.
 - Take the provided "Structured Remedies" and format them nicely based on the Boericke RAG context.
+- For "indianHomeRemedies": use the HOME REMEDIES section from the knowledge base. If present, extract at least 2–3 specific remedies with their exact preparation steps. Do NOT leave this array empty — if no RAG data is found, use classical Indian home remedies from your training.
 - Respond ONLY with valid JSON that can be parsed by JSON.parse().
 
 REQUIRED JSON FORMAT:
@@ -65,7 +66,7 @@ REQUIRED JSON FORMAT:
     }
   ],
   "indianHomeRemedies": [
-    { "remedy": "String", "preparation": "String", "rationale": "String" }
+    { "remedy": "String — exact remedy name", "preparation": "String — step-by-step preparation with quantities and frequency", "rationale": "String — why this helps the specific symptoms" }
   ],
   "warnings": ["String — any red flags, cautions, or lifestyle advice"],
   "seekHelp": Boolean — true if they need an allopathic doctor urgently,
@@ -92,6 +93,16 @@ interface AyurvedicChunk {
     category: string;
     section: string;
     text: string;
+    similarity: number;
+}
+
+interface HomeRemedyChunk {
+    ailment: string;
+    ailment_hindi: string;
+    remedy_name: string;
+    remedy_name_hindi: string;
+    chunk_text: string;
+    symptoms_keywords: string[];
     similarity: number;
 }
 
@@ -156,11 +167,37 @@ async function fetchMultiQueryRAG(
             rpcPromises.push(
                 supabase.rpc("search_ayurvedic_knowledge", {
                     query_embedding: embedding,
-                    match_threshold: 0.65, // slightly more forgiving for general text
+                    match_threshold: 0.62,
                     match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
                 }).then(res => ({ type: 'ayurvedic', data: res.data }))
             );
         });
+
+        // 3. Fetch Home Remedies separately with 3072-dim embedding (gemini-embedding-001)
+        let homeRemedyContext = '';
+        try {
+            const homeEmbResp = await ai.models.embedContent({
+                model: 'gemini-embedding-001',
+                contents: `${symptomText} ${primaryDiagnosis.condition}`.trim(),
+            });
+            const homeEmbedding = homeEmbResp.embeddings?.[0]?.values;
+            if (homeEmbedding) {
+                const homeRes = await supabase.rpc('match_home_remedy_embeddings', {
+                    query_embedding: homeEmbedding,
+                    match_threshold: 0.58,
+                    match_count: 5,
+                });
+                if (homeRes.data?.length) {
+                    const homeChunks = homeRes.data as HomeRemedyChunk[];
+                    homeRemedyContext = '=== HOME REMEDIES (Traditional Nuskhe — from Supabase) ===\n\n' +
+                        homeChunks.map((c, i) =>
+                            `[H${i + 1}] Ailment: ${c.ailment}${c.ailment_hindi ? ` (${c.ailment_hindi})` : ''} — ${c.remedy_name}${c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : ''} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                        ).join('\n\n');
+                }
+            }
+        } catch (homeErr) {
+            console.warn('[RAG] Home remedy fetch failed (non-critical):', homeErr);
+        }
 
         const rpcResults = await Promise.allSettled(rpcPromises);
 
@@ -200,20 +237,24 @@ async function fetchMultiQueryRAG(
         
         const remediesFound = [...new Set(topBoericke.map((c) => c.remedy_name).filter(Boolean))];
 
-        let context = "";
+        let context = '';
         
         if (topBoericke.length > 0) {
-            context += "=== BOERICKE MATERIA MEDICA (retrieved via multi-query RAG) ===\n\n" +
+            context += '=== BOERICKE MATERIA MEDICA (retrieved via multi-query RAG) ===\n\n' +
                 topBoericke.map((c, i) =>
                     `[B${i + 1}] Remedy: ${c.remedy_name} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
-                ).join("\n\n") + "\n\n";
+                ).join('\n\n') + '\n\n';
         }
         
         if (topAyurvedic.length > 0) {
-            context += "=== AYURVEDIC KNOWLEDGE BASE (retrieved via multi-query RAG) ===\n\n" +
+            context += '=== AYURVEDIC KNOWLEDGE BASE (retrieved via multi-query RAG) ===\n\n' +
                 topAyurvedic.map((c, i) =>
                     `[A${i + 1}] Source: ${c.book} / ${c.section} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
-                ).join("\n\n");
+                ).join('\n\n') + '\n\n';
+        }
+
+        if (homeRemedyContext) {
+            context += homeRemedyContext;
         }
 
         return { context, remediesFound };
@@ -240,7 +281,7 @@ async function fetchMultiQueryRAG(
                 }),
                 supabase.rpc("search_ayurvedic_knowledge", {
                     query_embedding: embedding,
-                    match_threshold: 0.65,
+                    match_threshold: 0.62,
                     match_count: 3,
                 })
             ]);
@@ -248,19 +289,40 @@ async function fetchMultiQueryRAG(
             const boerickeData = boerickeRes.data as BoerickeChunk[] | null;
             const ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
 
-            if (!boerickeData?.length && !ayurvedicData?.length) return { context: "", remediesFound: [] };
+            if (!boerickeData?.length && !ayurvedicData?.length) return { context: '', remediesFound: [] };
 
             const remediesFound = [...new Set((boerickeData || []).map((c) => c.remedy_name))];
             
-            let context = "";
+            let context = '';
             if (boerickeData?.length) {
-                context += "=== BOERICKE MATERIA MEDICA ===\n\n" +
-                    boerickeData.map((c) => `Remedy: ${c.remedy_name}\n${c.chunk_text}`).join("\n\n") + "\n\n";
+                context += '=== BOERICKE MATERIA MEDICA ===\n\n' +
+                    boerickeData.map((c) => `Remedy: ${c.remedy_name}\n${c.chunk_text}`).join('\n\n') + '\n\n';
             }
             if (ayurvedicData?.length) {
-                context += "=== AYURVEDIC KNOWLEDGE BASE ===\n\n" +
-                    ayurvedicData.map((c) => `Source: ${c.book} / ${c.section}\n${c.text}`).join("\n\n");
+                context += '=== AYURVEDIC KNOWLEDGE BASE ===\n\n' +
+                    ayurvedicData.map((c) => `Source: ${c.book} / ${c.section}\n${c.text}`).join('\n\n') + '\n\n';
             }
+            // Fetch home remedies in fallback too
+            try {
+                const homeEmbResp = await ai.models.embedContent({
+                    model: 'gemini-embedding-001',
+                    contents: symptomText,
+                });
+                const homeEmb = homeEmbResp.embeddings?.[0]?.values;
+                if (homeEmb) {
+                    const homeRes = await supabase.rpc('match_home_remedy_embeddings', {
+                        query_embedding: homeEmb,
+                        match_threshold: 0.58,
+                        match_count: 4,
+                    });
+                    if (homeRes.data?.length) {
+                        context += '=== HOME REMEDIES (Traditional Nuskhe) ===\n\n' +
+                            (homeRes.data as HomeRemedyChunk[]).map((c, i) =>
+                                `[H${i + 1}] ${c.ailment} — ${c.remedy_name}\n${c.chunk_text}`
+                            ).join('\n\n');
+                    }
+                }
+            } catch { /* non-critical */ }
 
             return { context, remediesFound };
         } catch {
