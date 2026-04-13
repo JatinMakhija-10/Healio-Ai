@@ -323,7 +323,7 @@ export async function POST(req: NextRequest) {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { messages, personaId, sessionId } = await req.json() || {};
+        const { messages, personaId, sessionId, resumeContext } = await req.json() || {};
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
@@ -396,6 +396,31 @@ export async function POST(req: NextRequest) {
         
         if (personaContext) {
             finalSystemPrompt += personaContext;
+        }
+
+        // ── Follow-up context injection ──────────────────────────────────────
+        if (resumeContext && typeof resumeContext === 'object') {
+            const rc = resumeContext;
+            const followUpBlock = [
+                `\n\n=== FOLLOW-UP CONTEXT (from previous consultation ${rc.daysSince || 0} days ago) ===`,
+                `Original consultation date: ${rc.originalDate || 'unknown'}`,
+                `Condition diagnosed: ${rc.conditionName || 'Unknown'}`,
+                `Severity: ${rc.severity || 'moderate'}`,
+                `Confidence: ${rc.confidence || 0}%`,
+                rc.description ? `Description: ${rc.description}` : null,
+                rc.remedies?.length ? `Remedies prescribed: ${rc.remedies.join(', ')}` : null,
+                rc.warnings?.length ? `Warnings given: ${rc.warnings.join('; ')}` : null,
+                rc.seekHelp ? `See doctor if: ${rc.seekHelp}` : null,
+                `---`,
+                `IMPORTANT: This is a FOLLOW-UP consultation. The patient is returning after ${rc.daysSince || 0} days.`,
+                `Start by asking how they are feeling now regarding the previously diagnosed condition.`,
+                `Ask whether the prescribed remedies helped, symptoms changed, or new symptoms appeared.`,
+                `If the patient reports improvement, affirm and suggest maintenance steps.`,
+                `If the patient reports worsening or new symptoms, conduct a fresh focused assessment.`,
+                `Still follow all your normal conversation rules (one question at a time, empathetic tone, etc).`,
+            ].filter(Boolean).join('\n');
+
+            finalSystemPrompt += followUpBlock;
         }
 
         // Call Groq API with streaming — with timeout and retry

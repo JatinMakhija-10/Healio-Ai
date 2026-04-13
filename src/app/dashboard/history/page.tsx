@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, AlertCircle, Leaf, Dumbbell, AlertTriangle, ChevronDown, ChevronUp, Lock, Activity, Share2, Loader2 } from "lucide-react";
+import { Calendar, Clock, TrendingUp, AlertCircle, Leaf, Dumbbell, AlertTriangle, ChevronDown, ChevronUp, Lock, Activity, Share2, Loader2, MessageSquareHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,6 +44,7 @@ type Consultation = {
 
 export default function HistoryPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -246,6 +248,18 @@ export default function HistoryPage() {
                                                     size="icon"
                                                     variant="ghost"
                                                     className="h-6 w-6 text-slate-400 hover:text-teal-600"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/dashboard/consult?resumeId=${consultation.id}`);
+                                                    }}
+                                                    title="Ask Follow-up"
+                                                >
+                                                    <MessageSquareHeart className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-6 w-6 text-slate-400 hover:text-teal-600"
                                                     onClick={(e) => handleShare(e, consultation)}
                                                     disabled={generatingId === consultation.id}
                                                     title="Share Report"
@@ -399,6 +413,18 @@ export default function HistoryPage() {
                                                 <p className="text-sm text-red-600">{consultation.diagnosis.seekHelp}</p>
                                             </div>
                                         )}
+
+                                        {/* Follow-up CTA */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                router.push(`/dashboard/consult?resumeId=${consultation.id}`);
+                                            }}
+                                            className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold text-sm shadow-lg shadow-teal-600/20 transition-all hover:scale-[1.01] active:scale-100 flex items-center justify-center gap-2"
+                                        >
+                                            <MessageSquareHeart className="h-4 w-4" />
+                                            Ask Follow-up About This Consultation
+                                        </button>
                                     </CardContent>
                                 )}
                             </Card>

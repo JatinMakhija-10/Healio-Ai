@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChatWindow } from "./components/ChatWindow";
 import { InputBar } from "./components/InputBar";
 import { useChat } from "./hooks/useChat";
 import { useVoiceInput } from "./hooks/useVoiceInput";
 import { useAuth } from "@/context/AuthContext";
+import { X, ArrowLeft, History } from "lucide-react";
 
 // ─── Persona Required Banner ──────────────────────────────────────────────────
 function PersonaRequiredBanner() {
@@ -86,11 +87,74 @@ function PersonaRequiredBanner() {
     );
 }
 
-// ─── Main Consult Page ────────────────────────────────────────────────────────
-export default function ConsultPage() {
+// ─── Follow-up Banner ─────────────────────────────────────────────────────────
+function FollowUpBanner({
+    conditionName,
+    daysSince,
+    onClose,
+}: {
+    conditionName: string;
+    daysSince: number;
+    onClose: () => void;
+}) {
+    const router = useRouter();
+
+    const timeLabel =
+        daysSince === 0
+            ? "earlier today"
+            : daysSince === 1
+                ? "yesterday"
+                : `${daysSince} days ago`;
+
+    return (
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-200/60">
+            <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex-shrink-0 w-7 h-7 bg-teal-100 rounded-lg flex items-center justify-center">
+                        <History className="h-3.5 w-3.5 text-teal-700" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium text-teal-900 truncate">
+                            Follow-up: <span className="font-semibold">{conditionName}</span>
+                        </p>
+                        <p className="text-xs text-teal-600">
+                            Consultation from {timeLabel}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                        onClick={() => router.push("/dashboard/history")}
+                        className="text-xs text-teal-600 hover:text-teal-800 px-2 py-1 rounded-md hover:bg-teal-100/50 transition-colors flex items-center gap-1"
+                    >
+                        <ArrowLeft className="h-3 w-3" />
+                        History
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="text-teal-400 hover:text-teal-700 p-1 rounded-md hover:bg-teal-100/50 transition-colors"
+                        title="Dismiss banner"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Inner Component (uses useSearchParams) ───────────────────────────────────
+function ConsultPageInner() {
     const { user, loading } = useAuth();
-    const { messages, isLoading, sendMessage, resetChat } = useChat();
+    const searchParams = useSearchParams();
+    const resumeId = searchParams.get("resumeId");
+
+    const { messages, isLoading, sendMessage, resetChat, resumeContext, isResumeMode } = useChat({
+        resumeId,
+    });
+
     const [widgetActive, setWidgetActive] = useState(false);
+    const [bannerDismissed, setBannerDismissed] = useState(false);
     const {
         isRecording,
         transcript,
@@ -125,6 +189,15 @@ export default function ConsultPage() {
 
     return (
         <div className="flex flex-col h-[calc(100dvh-64px)] bg-[#F7F8FA]">
+            {/* Follow-up Banner */}
+            {isResumeMode && resumeContext && !bannerDismissed && (
+                <FollowUpBanner
+                    conditionName={resumeContext.conditionName}
+                    daysSince={resumeContext.daysSince}
+                    onClose={() => setBannerDismissed(true)}
+                />
+            )}
+
             {/* Chat Messages */}
             <ChatWindow
                 messages={messages}
@@ -143,6 +216,10 @@ export default function ConsultPage() {
                             onClick={() => {
                                 if (window.confirm("Are you sure? Your current chat will be saved.")) {
                                     resetChat();
+                                    // Also clear the resumeId from the URL cleanly
+                                    if (resumeId) {
+                                        window.history.replaceState(null, "", "/dashboard/consult");
+                                    }
                                 }
                             }}
                             className="px-6 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-full hover:bg-teal-700 transition-all hover:scale-105 shadow-md"
@@ -165,5 +242,20 @@ export default function ConsultPage() {
                 onClearTranscript={clearTranscript}
             />
         </div>
+    );
+}
+
+// ─── Main Consult Page (wrapped in Suspense for useSearchParams) ──────────────
+export default function ConsultPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center h-[calc(100dvh-64px)] bg-[#F7F8FA]">
+                    <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+            }
+        >
+            <ConsultPageInner />
+        </Suspense>
     );
 }

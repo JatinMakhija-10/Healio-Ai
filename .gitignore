@@ -123,3 +123,16 @@ lint_*.json
 lint_*.txt
 tmp_*.js
 tmp_*.txt
+
+# Large data / binary files (not for git)
+Books/
+Medicines/
+data/ayurveda/raw/
+data/ayurveda/processed/
+*.pdf
+*.xlsx
+*.jsonl
+HEAD_diff.txt
+get_diff.txt
+tmp_pubmed_check.py
+scripts/test_scrape.js
