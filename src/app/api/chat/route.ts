@@ -434,15 +434,44 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── RAG injection: after 2+ user turns to ensure context is ready before diagnosis ──
+        // ── Smart RAG gating ─────────────────────────────────────────────────
+        // ROOT CAUSE of 10-15s follow-up latency:
+        //   Each fetchAllContext() call makes 2 Gemini embedding API requests
+        //   (768-dim + 3072-dim, 3-8s each) + 3 Supabase vector RPCs.
+        //   Running this on EVERY turn for answers like "3 days", "7/10", "yes"
+        //   adds 8-15s for zero benefit — the short text produces nearly identical
+        //   embeddings and the RAG context from turn 2 already lives in conversation
+        //   history that Groq sees on every subsequent call.
+        //
+        // Strategy:
+        //   • Turn 2  → always run RAG (first time we have enough symptom context)
+        //   • Turn 3+ → only run RAG if the user's latest message is substantive
+        //               (≥80 chars, or contains medical/diagnosis keywords)
+        //   • Short follow-up answers ("Yes", "3 days", "7/10") → skip to Groq directly
+        //
+        // Expected result: follow-up latency drops from 10-15s back to 1-2s.
         let ragContext = '';
         const userTurns = countUserTurns(processedMessages);
 
         if (userTurns >= 2) {
-            const symptomSummary = extractSymptomSummary(processedMessages);
-            ragContext = await fetchAllContext(symptomSummary);
-            if (ragContext) {
-                console.log(`[RAG] Retrieved ${ragContext.length} chars of context for ${userTurns}-turn session.`);
+            const lastUserMsg = (processedMessages as { role: string; content: string }[])
+                .filter(m => m.role === 'user')
+                .pop()?.content ?? '';
+
+            const isSubstantive =
+                userTurns === 2 ||                  // first time — always fetch
+                lastUserMsg.length >= 80 ||          // paragraph of new symptoms
+                /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
+                    .test(lastUserMsg);
+
+            if (isSubstantive) {
+                const symptomSummary = extractSymptomSummary(processedMessages);
+                ragContext = await fetchAllContext(symptomSummary);
+                if (ragContext) {
+                    console.log(`[RAG] Fetched ${ragContext.length} chars at turn ${userTurns} (msg len=${lastUserMsg.length}).`);
+                }
+            } else {
+                console.log(`[RAG] Skipped at turn ${userTurns} — short follow-up (${lastUserMsg.length} chars). Going straight to Groq.`);
             }
         }
 
