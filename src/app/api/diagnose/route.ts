@@ -1,3 +1,6 @@
+// ── Vercel: allow up to 60 s for this Serverless Function ────────────────────
+export const maxDuration = 60;
+
 /**
  * /api/diagnose
  *
@@ -377,9 +380,18 @@ export async function POST(req: Request) {
 
         try {
             if (primaryDiagnosis.condition) {
-                const rag = await fetchMultiQueryRAG(symptomText, primaryDiagnosis);
-                ragContext = rag.context;
-                ragRemediesFound = rag.remediesFound;
+                // Hard 15 s cap on RAG so a slow Gemini embedding never blocks AI inference
+                const ragResult = await Promise.race([
+                    fetchMultiQueryRAG(symptomText, primaryDiagnosis),
+                    new Promise<{ context: string; remediesFound: string[] }>((resolve) =>
+                        setTimeout(() => {
+                            console.warn("[Diagnose] RAG timed out — proceeding without knowledge base");
+                            resolve({ context: "", remediesFound: [] });
+                        }, 15_000)
+                    ),
+                ]);
+                ragContext = ragResult.context;
+                ragRemediesFound = ragResult.remediesFound;
             }
         } catch (e) {
             console.error("[Diagnose] RAG retrieval error:", e);
@@ -444,7 +456,10 @@ Based on all of the above, generate the formatting JSON.`;
         let provider: string = AI_PHASE_CONFIG.primary;
         const start = performance.now();
 
-        // Primary: Groq (Llama 3.3 70B)
+        // Primary: Groq (Llama 3.3 70B) — hard 45 s timeout via AbortController
+        const groqAbort = new AbortController();
+        const groqTimeout = setTimeout(() => groqAbort.abort(), 45_000);
+
         try {
             const groqKey = process.env.GROQ_API_KEY;
             if (!groqKey) throw new Error("Missing GROQ_API_KEY");
@@ -454,50 +469,60 @@ Based on all of the above, generate the formatting JSON.`;
                 apiKey: groqKey,
             });
 
-            const completion = await groq.chat.completions.create({
-                model: AI_PHASE_CONFIG.models.groq,
-                messages: [
-                    { role: "system", content: SYSTEM_PROMPT },
-                    { role: "user", content: userPrompt },
-                ],
-                response_format: { type: "json_object" },
-                temperature: dynamicTemperature,
-            });
+            const completion = await groq.chat.completions.create(
+                {
+                    model: AI_PHASE_CONFIG.models.groq,
+                    messages: [
+                        { role: "system", content: SYSTEM_PROMPT },
+                        { role: "user", content: userPrompt },
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: dynamicTemperature,
+                },
+                { signal: groqAbort.signal }
+            );
 
             aiResponseContent = completion.choices[0].message.content || "{}";
         } catch (groqError) {
             console.warn("[Diagnose] Groq failed, falling back to Gemini:", groqError);
             provider = AI_PHASE_CONFIG.fallback;
 
-            // Fallback: Gemini 2.5 Flash
+            // Fallback: Gemini 2.5 Flash — hard 45 s timeout
             const geminiKey = process.env.GEMINI_API_KEY;
             if (!geminiKey) throw new Error("Missing GEMINI_API_KEY");
 
             const genai = new GoogleGenAI({ apiKey: geminiKey });
+            const geminiAbort = new AbortController();
+            const geminiTimeout = setTimeout(() => geminiAbort.abort(), 45_000);
 
-            const response = await genai.models.generateContent({
-                model: AI_PHASE_CONFIG.models.gemini,
-                contents: [
-                    {
-                        role: "user",
-                        parts: [
-                            {
-                                text:
-                                    "System Instructions:\n" +
-                                    SYSTEM_PROMPT +
-                                    "\n\n" +
-                                    userPrompt,
-                            },
-                        ],
+            try {
+                const response = await genai.models.generateContent({
+                    model: AI_PHASE_CONFIG.models.gemini,
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                {
+                                    text:
+                                        "System Instructions:\n" +
+                                        SYSTEM_PROMPT +
+                                        "\n\n" +
+                                        userPrompt,
+                                },
+                            ],
+                        },
+                    ],
+                    config: {
+                        temperature: dynamicTemperature,
+                        responseMimeType: "application/json",
                     },
-                ],
-                config: {
-                    temperature: dynamicTemperature,
-                    responseMimeType: "application/json",
-                },
-            });
-
-            aiResponseContent = response.text || "{}";
+                });
+                aiResponseContent = response.text || "{}";
+            } finally {
+                clearTimeout(geminiTimeout);
+            }
+        } finally {
+            clearTimeout(groqTimeout);
         }
 
         const latencyMs = Math.round(performance.now() - start);

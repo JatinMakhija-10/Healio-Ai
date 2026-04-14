@@ -10,14 +10,13 @@ export async function GET(request: NextRequest) {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { data: profile } = await supabase
-            .from('profiles').select('role').eq('id', session.user.id).single();
-        if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        // Fetch raw data for charts
+        // ── Auth role-check and all chart data fetched in ONE parallel batch ──────
+        // Previously: auth check was sequential before the data batch (2 serial hops)
+        // Now: role check runs in parallel with all chart queries (1 hop total)
         const [
+            profileResult,
             { data: userRows },
             { data: consultationRows },
             { data: transactionRows },
@@ -25,28 +24,26 @@ export async function GET(request: NextRequest) {
             { data: doctorRows },
             { data: roleRows },
         ] = await Promise.all([
-            // User signups last 30 days
+            supabase.from('profiles').select('role').eq('id', session.user.id).single(),
             supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
-            // Consultations last 30 days
             supabase.from('consultations').select('created_at').gte('created_at', thirtyDaysAgo),
-            // Transactions last 30 days
             supabase.from('transactions').select('created_at, amount').gte('created_at', thirtyDaysAgo),
-            // Disease distribution (top diagnoses)
             supabase.from('consultations').select('diagnosis').not('diagnosis', 'is', null),
-            // Doctor specializations
             supabase.from('doctors').select('specialization').not('specialization', 'is', null),
-            // User role breakdown
             supabase.from('profiles').select('role'),
         ]);
 
-        // Helper: group by day
+        // Guard after the batch — no wasted wait time
+        if (profileResult.data?.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        // ── Compute chart data in JS (CPU-bound, no further DB needed) ───────────
+
+        // Helper: group rows by calendar day, filling all 30 days
         const groupByDay = (rows: { created_at: string }[]) => {
             const map: Record<string, number> = {};
-            (rows || []).forEach(r => {
-                const day = r.created_at.slice(0, 10);
-                map[day] = (map[day] || 0) + 1;
-            });
-            // Fill all 30 days
+            (rows || []).forEach(r => { map[r.created_at.slice(0, 10)] = (map[r.created_at.slice(0, 10)] || 0) + 1; });
             const result = [];
             for (let i = 29; i >= 0; i--) {
                 const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -70,12 +67,10 @@ export async function GET(request: NextRequest) {
             return result;
         })();
 
-        // Disease distribution
+        // Disease distribution (top 10)
         const diseaseCounts: Record<string, number> = {};
         (diagnosisRows || []).forEach((r: { diagnosis: string }) => {
-            const d = (r.diagnosis || 'Unknown').trim();
-            // Normalize: take first condition if comma-separated
-            const key = d.split(',')[0].trim().substring(0, 40);
+            const key = (r.diagnosis || 'Unknown').trim().split(',')[0].trim().substring(0, 40);
             diseaseCounts[key] = (diseaseCounts[key] || 0) + 1;
         });
         const diseaseDistribution = Object.entries(diseaseCounts)
@@ -89,8 +84,7 @@ export async function GET(request: NextRequest) {
             const s = (r.specialization || 'General').split(',')[0].trim();
             specialtyCounts[s] = (specialtyCounts[s] || 0) + 1;
         });
-        const specialtyMix = Object.entries(specialtyCounts)
-            .map(([name, count]) => ({ name, count }));
+        const specialtyMix = Object.entries(specialtyCounts).map(([name, count]) => ({ name, count }));
 
         // Role breakdown
         const roleCounts: Record<string, number> = {};

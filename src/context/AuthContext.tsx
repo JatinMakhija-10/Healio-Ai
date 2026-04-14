@@ -89,31 +89,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Derive role from user
     const role = getUserRole(user);
 
-    // Fetch profile data from Supabase
-    const fetchProfile = async (userId: string) => {
+    // Fetch profile (and optionally doctor profile) from Supabase.
+    // maybeDoctor=true runs both queries in parallel so doctors save one round-trip.
+    const fetchProfile = async (userId: string, maybeDoctor = false) => {
         try {
-            // Fetch profile
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            if (maybeDoctor) {
+                // Run profile + doctor in parallel — safe because we always need both for doctors
+                const [profileRes, doctorRes] = await Promise.all([
+                    supabase.from('profiles').select('*').eq('id', userId).single(),
+                    supabase.from('doctors').select('*').eq('user_id', userId).single(),
+                ]);
 
-            if (profileError) throw profileError;
-            setProfile(profileData);
+                if (profileRes.error) throw profileRes.error;
+                setProfile(profileRes.data);
 
-            // If user is a doctor, fetch doctor profile
-            if (profileData?.role === 'doctor') {
-                const { data: doctorData, error: doctorError } = await supabase
-                    .from('doctors')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .single();
-
-                if (doctorError && doctorError.code !== 'PGRST116') { // Ignore "not found" error
-                    console.error('Error fetching doctor profile:', doctorError);
+                // Only commit doctor profile if it actually exists
+                if (!doctorRes.error || doctorRes.error.code === 'PGRST116') {
+                    setDoctorProfile(doctorRes.data ?? null);
+                } else {
+                    console.error('Error fetching doctor profile:', doctorRes.error);
                 }
-                setDoctorProfile(doctorData);
+            } else {
+                // Standard path: fetch profile first, then doctor only if role demands it
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles').select('*').eq('id', userId).single();
+
+                if (profileError) throw profileError;
+                setProfile(profileData);
+
+                if (profileData?.role === 'doctor') {
+                    const { data: doctorData, error: doctorError } = await supabase
+                        .from('doctors').select('*').eq('user_id', userId).single();
+
+                    if (doctorError && doctorError.code !== 'PGRST116') {
+                        console.error('Error fetching doctor profile:', doctorError);
+                    }
+                    setDoctorProfile(doctorData);
+                }
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
@@ -121,12 +133,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
-        // Check active session
+        // Check active session — pass maybeDoctor hint from JWT metadata to parallelise
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
             setPreviousUserId(session?.user?.id ?? null);
             if (session?.user) {
-                fetchProfile(session.user.id);
+                const isDoctor = session.user.user_metadata?.role === 'doctor';
+                fetchProfile(session.user.id, isDoctor);
             }
             setLoading(false);
         });
@@ -150,7 +163,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setPreviousUserId(newUserId);
             setUser(session?.user ?? null);
             if (session?.user) {
-                fetchProfile(session.user.id);
+                const isDoctor = session.user.user_metadata?.role === 'doctor';
+                fetchProfile(session.user.id, isDoctor);
             } else {
                 setProfile(null);
                 setDoctorProfile(null);
@@ -287,26 +301,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const login = async (email: string, password: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Force a session refresh to ensure we have latest metadata
-        const { data: { user } } = await supabase.auth.getUser();
+        // User is already in data.session — no need for a second getUser() call
+        const loggedInUser = data.session?.user;
+        if (!loggedInUser) throw new Error('Login succeeded but no session returned');
 
-        let userRole = user?.user_metadata?.role || 'patient'; if (user) { const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single(); if (profile?.role) { userRole = profile.role; } }
+        // Fetch DB role and profile in parallel — the JWT role is a hint only
+        const isDoctor = loggedInUser.user_metadata?.role === 'doctor';
+        const [{ data: profileData }] = await Promise.all([
+            supabase.from('profiles').select('role').eq('id', loggedInUser.id).single(),
+            // Warm the profile cache in parallel (don't await result separately)
+            fetchProfile(loggedInUser.id, isDoctor),
+        ]);
 
-        // Route based on role
+        const userRole = profileData?.role || loggedInUser.user_metadata?.role || 'patient';
+
         if (userRole === 'admin') {
             router.push('/admin');
         } else if (userRole === 'doctor') {
             router.push('/doctor');
         } else {
-            // Patient
-            router.push("/dashboard");
+            router.push('/dashboard');
         }
     };
 

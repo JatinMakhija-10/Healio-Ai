@@ -3,6 +3,9 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG } from '@/lib/ai/config';
 
+// ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
+export const maxDuration = 60;
+
 // ── Shared: build a Supabase service-role client ─────────────────────────────
 function getServiceClient() {
     return createClient(
@@ -14,15 +17,20 @@ function getServiceClient() {
 }
 
 // ── Generate embedding via Gemini (768-dim) — used for Boericke & Ayurvedic ───
+// Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
 async function generateEmbedding(text: string): Promise<number[] | null> {
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey || !text) return null;
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-    const embResp = await ai.models.embedContent({
-        model: AI_PHASE_CONFIG.models.embedding,
-        contents: text,
-    });
-    return embResp.embeddings?.[0]?.values ?? null;
+    try {
+        const ai = new GoogleGenAI({ apiKey: geminiKey });
+        const embResp = await Promise.race([
+            ai.models.embedContent({ model: AI_PHASE_CONFIG.models.embedding, contents: text }),
+            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
+        ]);
+        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
+    } catch {
+        return null;
+    }
 }
 
 // ── Generate embedding via Gemini (3072-dim) — used for home_remedy_embeddings ─
@@ -306,8 +314,9 @@ When you have enough information (at least 3 questions answered):
 
 
 export async function POST(req: NextRequest) {
+    // Raised to 55 s — safely inside the 60 s maxDuration boundary
     const timeoutPromise = new Promise<Response>((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 30000)
+        setTimeout(() => reject(new Error('timeout')), 55_000)
     );
 
     const processRequest = async (): Promise<Response> => {
@@ -340,30 +349,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── Usage gating ─────────────────────────────────────────────────────
-        const serviceClient = getServiceClient();
-        try {
-            const { data: usageResult, error: usageError } = await serviceClient
-                .rpc('increment_chat_count', { p_user_id: user.id });
-            
-            if (!usageError && usageResult && !usageResult.allowed) {
-                return new Response(JSON.stringify({
-                    error: 'Monthly consultation limit reached',
-                    code: 'USAGE_LIMIT',
-                    current_count: usageResult.current_count,
-                    limit: usageResult.limit,
-                    plan: usageResult.plan,
-                    resets_at: usageResult.resets_at,
-                }), {
-                    status: 429,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-        } catch (usageErr) {
-            // If RPC doesn't exist yet (migration not run), allow the request through
-            console.warn('[chat/route] Usage check skipped:', usageErr);
-        }
-
+        // ── Parse body early so we know personaId before parallel fetches ────
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { messages, personaId, sessionId, resumeContext } = await req.json() || {};
 
@@ -374,37 +360,64 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── Persona injection ────────────────────────────────────────────────
-        let personaContext = '';
-        if (personaId) {
-            try {
-                const { data: persona } = await serviceClient
+        // ── Usage gating + Persona fetch — RUN IN PARALLEL to save ~400-700 ms ─
+        const serviceClient = getServiceClient();
+
+        const [usageResult, personaResult] = await Promise.allSettled([
+            // 1. Usage check
+            serviceClient.rpc('increment_chat_count', { p_user_id: user.id }),
+            // 2. Persona fetch (skip if no personaId)
+            personaId
+                ? serviceClient
                     .from('personas')
                     .select('name, age, gender, relation, conditions, allergies')
                     .eq('id', personaId)
                     .eq('user_id', user.id)
-                    .single();
-                
-                if (persona) {
-                    const parts = [
-                        `Patient Profile: ${persona.name}`,
-                        persona.age ? `Age: ${persona.age} years` : null,
-                        persona.gender ? `Gender: ${persona.gender}` : null,
-                        persona.relation ? `Relation: ${persona.relation}` : null,
-                        persona.conditions?.length ? `Pre-existing conditions: ${persona.conditions.join(', ')}` : null,
-                        persona.allergies ? `Allergies: ${persona.allergies}` : null,
-                    ].filter(Boolean).join(', ');
-                    
-                    personaContext = `\n\n=== PATIENT CONTEXT ===\n${parts}\n`;
-                    
-                    // Child-safe mode for young patients
-                    if (persona.age && persona.age <= 12) {
-                        personaContext += `IMPORTANT: This patient is a child (${persona.age} years old). Use gentle, age-appropriate language. Always emphasize consulting a pediatrician. Avoid suggesting any adult-dose remedies.\n`;
-                    }
-                }
-            } catch (personaErr) {
-                console.warn('[chat/route] Persona fetch skipped:', personaErr);
+                    .single()
+                : Promise.resolve(null),
+        ]);
+
+        // Handle usage gate result
+        if (usageResult.status === 'fulfilled') {
+            const { data: usage, error: usageError } = usageResult.value as { data: Record<string, unknown> | null; error: { message: string } | null };
+            if (!usageError && usage && !usage.allowed) {
+                return new Response(JSON.stringify({
+                    error: 'Monthly consultation limit reached',
+                    code: 'USAGE_LIMIT',
+                    current_count: usage.current_count,
+                    limit: usage.limit,
+                    plan: usage.plan,
+                    resets_at: usage.resets_at,
+                }), {
+                    status: 429,
+                    headers: { 'Content-Type': 'application/json' },
+                });
             }
+        } else {
+            console.warn('[chat/route] Usage check skipped:', usageResult.reason);
+        }
+
+        // Handle persona result
+        let personaContext = '';
+        if (personaResult.status === 'fulfilled' && personaResult.value) {
+            const { data: persona } = personaResult.value as { data: Record<string, unknown> | null };
+            if (persona) {
+                const p = persona as { name?: string; age?: number; gender?: string; relation?: string; conditions?: string[]; allergies?: string };
+                const parts = [
+                    `Patient Profile: ${p.name}`,
+                    p.age    ? `Age: ${p.age} years` : null,
+                    p.gender ? `Gender: ${p.gender}` : null,
+                    p.relation ? `Relation: ${p.relation}` : null,
+                    p.conditions?.length ? `Pre-existing conditions: ${p.conditions.join(', ')}` : null,
+                    p.allergies ? `Allergies: ${p.allergies}` : null,
+                ].filter(Boolean).join(', ');
+                personaContext = `\n\n=== PATIENT CONTEXT ===\n${parts}\n`;
+                if (p.age && p.age <= 12) {
+                    personaContext += `IMPORTANT: This patient is a child (${p.age} years old). Use gentle language. Always recommend consulting a pediatrician. Avoid adult-dose remedies.\n`;
+                }
+            }
+        } else if (personaResult.status === 'rejected') {
+            console.warn('[chat/route] Persona fetch skipped:', personaResult.reason);
         }
 
         // Token overflow protection: sliding window (last 15 messages)
