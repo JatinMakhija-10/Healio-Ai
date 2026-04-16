@@ -312,9 +312,9 @@ WHAT YOU MUST NEVER DO:
 - NEVER suggest allopathic medicines (paracetamol, antibiotics, ibuprofen, etc.)
 - NEVER make a definitive medical diagnosis — always say "likely" or "seems like"
 - NEVER ask more than 9 questions total
-- NEVER show a form or numbered list — keep everything conversational
+- NEVER show a form or numbered list — keep everything conversational`;
 
-=== FINAL DIAGNOSIS OUTPUT ===
+const FINAL_DIAGNOSIS_OUTPUT_RULES = `=== FINAL DIAGNOSIS OUTPUT ===
 When you have enough information (at least 3 questions answered):
 1. Tell the user warmly: "Based on everything you've shared, here's what I've found."
 2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags.
@@ -583,6 +583,10 @@ ${ragContext}
 ${SYSTEM_PROMPT}`
             : SYSTEM_PROMPT;
         
+        if (isFinalTurn && typeof FINAL_DIAGNOSIS_OUTPUT_RULES !== 'undefined') {
+            finalSystemPrompt += '\n\n' + FINAL_DIAGNOSIS_OUTPUT_RULES;
+        }
+
         if (personaContext) {
             finalSystemPrompt += personaContext;
         }
