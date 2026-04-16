@@ -7,9 +7,10 @@ export const AI_PHASE_CONFIG = {
 
     // Model Selection
     models: {
-        groq: 'llama-3.3-70b-versatile',
+        groq: 'llama-3.3-70b-versatile',          // used ONLY for final diagnosis JSON
+        groqFast: 'llama-3.1-8b-instant',           // used for conversational Q&A turns
         gemini: 'gemini-2.5-flash',
-        embedding: 'gemini-embedding-2-preview', // Bypasses recent 404 & quota traps
+        embedding: 'gemini-embedding-2-preview',    // Bypasses recent 404 & quota traps
     },
 
     // API Endpoints

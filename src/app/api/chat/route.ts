@@ -40,11 +40,12 @@ async function generateEmbedding3072(text: string): Promise<number[] | null> {
     if (!geminiKey || !text) return null;
     try {
         const ai = new GoogleGenAI({ apiKey: geminiKey });
-        const embResp = await ai.models.embedContent({
-            model: 'gemini-embedding-001',
-            contents: text,
-        });
-        return embResp.embeddings?.[0]?.values ?? null;
+        // Hard 3s timeout — this model is slower; fail fast rather than block the stream
+        const embResp = await Promise.race([
+            ai.models.embedContent({ model: 'gemini-embedding-001', contents: text }),
+            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 3_000)),
+        ]);
+        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
     } catch {
         return null;
     }
@@ -134,14 +135,15 @@ async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<s
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
 // Generates two embeddings in parallel:
-//   • 768-dim  (gemini-embedding-2-preview) → Boericke + Ayurvedic tables
-//   • 3072-dim (gemini-embedding-001)        → home_remedy_embeddings table
-async function fetchAllContext(symptomSummary: string): Promise<string> {
+//   • 768-dim  (gemini-embedding-2-preview) → Boericke + Ayurvedic tables (fast)
+//   • 3072-dim (gemini-embedding-001)        → home_remedy_embeddings (slower — only on final turn)
+async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false): Promise<string> {
     try {
-        // Generate both embedding sizes concurrently — no serial latency
+        // Always generate the fast 768-dim embedding for Boericke + Ayurvedic
+        // Only generate the slow 3072-dim embedding when we actually need home remedies (final turn)
         const [embedding, embedding3072] = await Promise.all([
             generateEmbedding(symptomSummary),
-            generateEmbedding3072(symptomSummary),
+            skipHomeRemedies ? Promise.resolve(null) : generateEmbedding3072(symptomSummary),
         ]);
         if (!embedding) return '';
 
@@ -157,7 +159,7 @@ async function fetchAllContext(symptomSummary: string): Promise<string> {
             homeRemedyRaw  && `=== HOME REMEDIES (Traditional Nuskhe — Ingredients & Preparation) ===\n${homeRemedyRaw}`,
         ].filter(Boolean);
 
-        console.log(`[RAG] Sections loaded: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw}`);
+        console.log(`[RAG] Sections loaded: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw} (skipHomeRemedies=${skipHomeRemedies})`);
         return sections.length ? sections.join('\n\n') : '';
     } catch (e) {
         console.error('[RAG] Combined fetch error:', e);
@@ -434,46 +436,55 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── Smart RAG gating ─────────────────────────────────────────────────
-        // ROOT CAUSE of 10-15s follow-up latency:
-        //   Each fetchAllContext() call makes 2 Gemini embedding API requests
-        //   (768-dim + 3072-dim, 3-8s each) + 3 Supabase vector RPCs.
-        //   Running this on EVERY turn for answers like "3 days", "7/10", "yes"
-        //   adds 8-15s for zero benefit — the short text produces nearly identical
-        //   embeddings and the RAG context from turn 2 already lives in conversation
-        //   history that Groq sees on every subsequent call.
-        //
-        // Strategy:
-        //   • Turn 2  → always run RAG (first time we have enough symptom context)
-        //   • Turn 3+ → only run RAG if the user's latest message is substantive
-        //               (≥80 chars, or contains medical/diagnosis keywords)
-        //   • Short follow-up answers ("Yes", "3 days", "7/10") → skip to Groq directly
-        //
-        // Expected result: follow-up latency drops from 10-15s back to 1-2s.
-        let ragContext = '';
+        // ── Turn phase detection ─────────────────────────────────────────────
+        // PHASE A (turns 1-2): Pure Q&A — no RAG, 8B model, 200 token cap  → ~100-300ms
+        // PHASE B (turns 3-5): Q&A + Boericke/Ayurvedic RAG, 8B model, 350 tokens → ~500-800ms
+        // PHASE C (turn 6+ or explicit diagnosis request): Full RAG + home
+        //         remedies + 70B model + 2000 tokens → rich, detailed final answer
         const userTurns = countUserTurns(processedMessages);
+        const lastUserMsg = (processedMessages as { role: string; content: string }[])
+            .filter(m => m.role === 'user')
+            .pop()?.content ?? '';
+
+        const isFinalTurn =
+            userTurns >= 6 ||
+            processedMessages.length >= 10 ||
+            /diagnos|summary|what.*wrong|tell.*me|give.*result|remedy|remedies|prescription|treatment|what.*condition|what.*problem|suggest/i
+                .test(lastUserMsg);
+
+        // Model + token budget per phase
+        const groqModel = isFinalTurn
+            ? AI_PHASE_CONFIG.models.groq        // llama-3.3-70b-versatile — rich diagnosis
+            : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
+
+        const maxTokensForTurn =
+            isFinalTurn    ? 2000 :
+            userTurns >= 3 ? 350  :
+                             200;
+
+        // ── RAG gating ──────────────────────────────────────────────────────
+        let ragContext = '';
 
         if (userTurns >= 2) {
-            const lastUserMsg = (processedMessages as { role: string; content: string }[])
-                .filter(m => m.role === 'user')
-                .pop()?.content ?? '';
-
             const isSubstantive =
-                userTurns === 2 ||                  // first time — always fetch
-                lastUserMsg.length >= 80 ||          // paragraph of new symptoms
+                isFinalTurn ||              // always fetch on diagnosis turn
+                userTurns === 2 ||          // first time we have symptom context
+                lastUserMsg.length >= 60 || // substantial new info
                 /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
                     .test(lastUserMsg);
 
             if (isSubstantive) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
-                ragContext = await fetchAllContext(symptomSummary);
+                // Skip slow 3072-dim home remedy embedding on non-final turns
+                ragContext = await fetchAllContext(symptomSummary, !isFinalTurn);
                 if (ragContext) {
-                    console.log(`[RAG] Fetched ${ragContext.length} chars at turn ${userTurns} (msg len=${lastUserMsg.length}).`);
+                    console.log(`[RAG] ${ragContext.length} chars at turn ${userTurns}, final=${isFinalTurn}, model=${groqModel}.`);
                 }
             } else {
-                console.log(`[RAG] Skipped at turn ${userTurns} — short follow-up (${lastUserMsg.length} chars). Going straight to Groq.`);
+                console.log(`[RAG] Skipped at turn ${userTurns} — short follow-up (${lastUserMsg.length} chars). model=${groqModel}.`);
             }
         }
+
 
         // RAG injected at TOP — before the role instructions — for maximum LLM weight
         // The knowledge base is labeled clearly so the model knows where to source each section
@@ -537,13 +548,13 @@ ${SYSTEM_PROMPT}`
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        model: AI_PHASE_CONFIG.models.groq,
+                        model: groqModel,         // 8B for Q&A, 70B for final diagnosis
                         messages: [
                             { role: 'system', content: finalSystemPrompt },
                             ...processedMessages,
                         ],
                         temperature: AI_PHASE_CONFIG.generation.temperature,
-                        max_tokens: AI_PHASE_CONFIG.generation.maxTokens,
+                        max_tokens: maxTokensForTurn,  // tight per-phase budget
                         stream: true,
                     }),
                     signal: controller.signal,
