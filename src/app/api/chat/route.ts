@@ -51,80 +51,124 @@ async function generateEmbedding3072(text: string): Promise<number[] | null> {
     }
 }
 
-// ── RAG: Homeopathic (Boericke) ───────────────────────────────────────────────
+// ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
+// Deduplicates by remedy_name — keeps only the highest-similarity chunk per remedy
 async function fetchBoerickeContext(embedding: number[]): Promise<string> {
     try {
         const supabase = getServiceClient();
         const { data } = await supabase.rpc('match_boericke_embeddings', {
             query_embedding: embedding,
-            match_threshold: 0.75,
-            match_count: 5,
+            match_threshold: 0.72,
+            match_count: 10,
         });
         if (!data?.length) return '';
+
+        // Deduplicate: keep only the HIGHEST-similarity chunk per remedy
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (data as any[])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.75)
+        const seen = new Map<string, any>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const row of data as any[]) {
+            const key = (row.remedy_name ?? '').toLowerCase().trim();
+            if (!key) continue;
+            if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
+                seen.set(key, row);
+            }
+        }
+
+        return [...seen.values()]
+            .filter(c => (c.similarity ?? 0) >= 0.72)
+            .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+            .slice(0, 5)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
-                `[${i + 1}] ${c.remedy_name} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                `[${i + 1}] REMEDY: ${c.remedy_name} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.chunk_text}`
             ).join('\n\n');
     } catch {
         return '';
     }
 }
 
-// ── RAG: Ayurvedic herbs & Texts ──────────────────────────────────────────────────────
+// ── RAG: Ayurvedic Classical Texts ──────────────────────────────────────────
+// Sources: Planet Ayurveda books, CCRAS e-books, classical Sanskrit texts
+// IMPORTANT: These are FORMAL Ayurvedic medicines — herbs, formulations, decoctions
+// that require purchase from an Ayurvedic pharmacy. NOT kitchen shelf items.
 async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
     try {
         const supabase = getServiceClient();
         const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
             query_embedding: embedding,
-            match_threshold: 0.62,
-            match_count: 7,
+            match_threshold: 0.60,
+            match_count: 12,
         });
         if (!data?.length) return '';
+
+        // Deduplicate: keep one entry per unique source+section combination
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (data as any[])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.62)
+        const seen = new Map<string, any>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const row of data as any[]) {
+            const key = `${row.book ?? ''}|${row.section ?? ''}`.toLowerCase().trim();
+            if (!key || key === '|') continue;
+            if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
+                seen.set(key, row);
+            }
+        }
+
+        return [...seen.values()]
+            .filter(c => (c.similarity ?? 0) >= 0.60)
+            .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+            .slice(0, 6)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
-                `[${i + 1}] Source: ${c.book} (${c.category ?? 'general'}) — ${c.section ?? 'N/A'} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
+                `[${i + 1}] SOURCE: ${c.book} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`
             ).join('\n\n');
     } catch {
         return '';
     }
 }
 
-// ── RAG: Home Remedies — dedicated home_remedy_embeddings table (nuskhe.json) ──
-// This table has 1051 structured home remedies with ailment, ingredients,
-// preparation method (Hindi + English). It uses 3072-dim gemini-embedding-001 vectors.
+// ── RAG: Home Remedies (Dadi-Nani ke Nuskhe) ─────────────────────────────────
+// Source: nuskhe.json — 1,051 traditional household remedies
+// IMPORTANT: These are IMMEDIATE kitchen-shelf remedies — haldi, adrak, tulsi,
+// shahad, nimbu, ajwain, jeera, pudina, lahsun. No pharmacy needed.
 async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<string> {
     if (!embedding3072) return '';
     try {
         const supabase = getServiceClient();
         const { data, error } = await supabase.rpc('match_home_remedy_embeddings', {
             query_embedding: embedding3072,
-            match_threshold: 0.60,
-            match_count: 5,
+            match_threshold: 0.58,
+            match_count: 8,
         });
         if (error) {
             console.error('[RAG] home_remedy_embeddings RPC error:', error.message);
             return '';
         }
         if (!data?.length) return '';
+
+        // Deduplicate by ailment+remedy_name
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (data as any[])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((c: any) => (c.similarity ?? 0) >= 0.60)
+        const seen = new Map<string, any>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const row of data as any[]) {
+            const key = `${row.ailment ?? ''}|${row.remedy_name ?? ''}`.toLowerCase().trim();
+            if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
+                seen.set(key, row);
+            }
+        }
+
+        return [...seen.values()]
+            .filter(c => (c.similarity ?? 0) >= 0.58)
+            .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+            .slice(0, 5)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) => {
-                const lines = [
-                    `[${i + 1}] Ailment: ${c.ailment}${c.ailment_hindi ? ` (${c.ailment_hindi})` : ''} — Remedy: ${c.remedy_name}${c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : ''} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)`,
+                const nameHindi = c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : '';
+                const ailmentHindi = c.ailment_hindi ? ` (${c.ailment_hindi})` : '';
+                return [
+                    `[${i + 1}] AILMENT: ${c.ailment}${ailmentHindi} | NUSKHA: ${c.remedy_name}${nameHindi} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%`,
                     c.chunk_text,
-                ];
-                return lines.join('\n');
+                ].join('\n');
             }).join('\n\n');
     } catch (e) {
         console.error('[RAG] Home remedy fetch error:', e);
@@ -134,13 +178,8 @@ async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<s
 
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
-// Generates two embeddings in parallel:
-//   • 768-dim  (gemini-embedding-2-preview) → Boericke + Ayurvedic tables (fast)
-//   • 3072-dim (gemini-embedding-001)        → home_remedy_embeddings (slower — only on final turn)
 async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false): Promise<string> {
     try {
-        // Always generate the fast 768-dim embedding for Boericke + Ayurvedic
-        // Only generate the slow 3072-dim embedding when we actually need home remedies (final turn)
         const [embedding, embedding3072] = await Promise.all([
             generateEmbedding(symptomSummary),
             skipHomeRemedies ? Promise.resolve(null) : generateEmbedding3072(symptomSummary),
@@ -154,18 +193,33 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false)
         ]);
 
         const sections = [
-            homeopathicRaw && `=== HOMEOPATHIC REFERENCE (Boericke's Materia Medica) ===\n${homeopathicRaw}`,
-            ayurvedicRaw   && `=== AYURVEDIC REFERENCE (Planet Ayurveda / CCRAS / Classical Texts) ===\n${ayurvedicRaw}`,
-            homeRemedyRaw  && `=== HOME REMEDIES (Traditional Nuskhe — Ingredients & Preparation) ===\n${homeRemedyRaw}`,
+            homeopathicRaw && [
+                '[SECTION A: HOMEOPATHIC — Boerickes Materia Medica]',
+                'Use entries below ONLY for homeopathic_remedies JSON array.',
+                homeopathicRaw,
+            ].join('\n'),
+            ayurvedicRaw && [
+                '[SECTION B: AYURVEDIC CLASSICAL MEDICINE — Planet Ayurveda / CCRAS / Classical Texts]',
+                'FORMAL Ayurvedic herbs & formulations (Ashwagandha, Triphala, Sitopaladi, etc.)',
+                'Require Ayurvedic pharmacy. Use ONLY for ayurvedic_remedies JSON array.',
+                ayurvedicRaw,
+            ].join('\n'),
+            homeRemedyRaw && [
+                '[SECTION C: DADI-NANI KE NUSKHE — Household Kitchen Remedies]',
+                'IMMEDIATE home remedies: haldi, adrak, tulsi, shahad, nimbu, ajwain, jeera, pudina.',
+                'NO pharmacy needed. Use ONLY for home_remedies JSON array.',
+                homeRemedyRaw,
+            ].join('\n'),
         ].filter(Boolean);
 
-        console.log(`[RAG] Sections loaded: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw} (skipHomeRemedies=${skipHomeRemedies})`);
+        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw} (skipHomeRemedies=${skipHomeRemedies})`);
         return sections.length ? sections.join('\n\n') : '';
     } catch (e) {
         console.error('[RAG] Combined fetch error:', e);
         return '';
     }
 }
+
 
 // ── Extract symptom summary from conversation for RAG ─────────────────────────
 function extractSymptomSummary(messages: { role: string; content: string }[]): string {
@@ -264,12 +318,38 @@ WHAT YOU MUST NEVER DO:
 When you have enough information (at least 3 questions answered):
 1. Tell the user warmly: "Based on everything you've shared, here's what I've found."
 2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags.
-3. CRITICAL REMEDY RULES — You MUST follow these:
-   • homeopathic_remedies: Pull DIRECTLY from the HOMEOPATHIC REFERENCE section of the knowledge base. Match the remedy to the patient's EXACT symptom modalities (what makes it worse, what makes it better, sensation type).
-   • ayurvedic_remedies: Pull DIRECTLY from the AYURVEDIC REFERENCE section. Include the exact herb or formulation name, the source text, and preparation.
-   • home_remedies: Pull from HOME REMEDIES section OR any practical kitchen/herb preparation found in the knowledge base. Use everyday household ingredients.
-   • If the knowledge base is empty for a section, use classical medical knowledge as a FALLBACK — but ALWAYS include at least 2 entries per section.
-   • NEVER leave any remedy array empty. NEVER output placeholder text like "Remedy Name".
+3. CRITICAL REMEDY POPULATION RULES — Read CAREFULLY and follow EXACTLY.
+
+The knowledge base has 3 DISTINCT sections. Map each to the CORRECT JSON array:
+
+SECTION A -> homeopathic_remedies ONLY:
+  Pull from SECTION A (Boericke Materia Medica).
+  Homeopathic remedies: Belladonna, Aconite, Bryonia, Nux Vomica, Pulsatilla, etc.
+  Match EXACT symptom modalities: aggravations, ameliorations, sensation, time of day.
+  Include: remedy name, potency (6C/30C/200C), exact dose, which modalities it fits.
+
+SECTION B -> ayurvedic_remedies ONLY:
+  Pull from SECTION B (Planet Ayurveda / CCRAS / Classical Sanskrit Texts).
+  CLASSICAL Ayurvedic formulations requiring an Ayurvedic pharmacy:
+  Ashwagandha, Triphala, Brahmi, Sitopaladi Churna, Shatavari, Dashmularishta, etc.
+  Include: exact herb/formulation name, source text, preparation method, dose + timing.
+  NEVER put kitchen items (haldi-doodh, adrak) here — those belong in SECTION C.
+
+SECTION C -> home_remedies ONLY:
+  Pull from SECTION C (Dadi-Nani ke Nuskhe — nuskhe.json).
+  IMMEDIATE household remedies using kitchen-shelf items ONLY. No pharmacy needed:
+  haldi+doodh, adrak+shahad, tulsi+kali mirch, nimbu+pani, ajwain pani,
+  jeera water, saunf tea, desi ghee, pudina, lahsun, kala namak, methi seeds.
+  Should feel like aapki nani ka nuskha — warm, familiar, instantly doable.
+  Include: ingredients with quantities, step-by-step preparation, timing, frequency.
+  NEVER put Ashwagandha, Brahmi, Triphala, Sitopaladi or any classical herb here.
+
+MANDATORY RULES (apply to ALL sections):
+  - ALWAYS include at least 2 entries per section. NEVER leave any array empty.
+  - If RAG data is absent for a section, use authoritative classical fallback knowledge.
+  - NEVER duplicate a remedy across sections (e.g. no haldi in both ayurvedic AND home).
+  - NEVER list the same remedy twice within one section.
+  - NEVER use placeholder text like "Remedy Name" or "herb name".
 
 \`\`\`json
 {
