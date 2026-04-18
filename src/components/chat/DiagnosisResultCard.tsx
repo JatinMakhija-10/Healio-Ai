@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Condition } from "@/lib/diagnosis/types";
+import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
 import {
     Video,
     Shield,
@@ -42,7 +42,7 @@ interface DiagnosisResultCardProps {
     showUncertaintyDetails?: boolean;
     showDetailedExplanations?: boolean;
     symptoms?: string[];
-    reasoningTrace?: { factor: string; impact: number; type: string }[];
+    reasoningTrace?: ReasoningTraceEntry[];
     diagnosisId?: string; // ID for booking flow
     showBookDoctor?: boolean; // Whether to show booking CTA
     carePreferences?: string[]; // Override user preferences from parent
@@ -121,6 +121,8 @@ export function DiagnosisResultCard({
                     uncertainty={uncertainty}
                     alerts={allWarnings}
                     symptoms={symptoms}
+                    clinicalRules={clinicalRules}
+                    reasoningTrace={reasoningTrace}
                 />
             ).toBlob();
 
