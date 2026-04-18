@@ -304,6 +304,29 @@ function buildSafeWindow(
     return enforceRoleAlternation(candidate);
 }
 
+// ── Language Detection (code-level, not prompt-level) ─────────────────────────────
+// Small models ignore prompt-level language rules when the prompt contains
+// Hindi tokens (haldi, adrak, etc.). This function detects the user's language
+// so we can inject a hard directive the model cannot override.
+function detectUserLanguage(text: string): 'english' | 'hinglish' | 'hindi' {
+    const trimmed = text.trim();
+    // Check for Devanagari script characters
+    const devanagariChars = (trimmed.match(/[\u0900-\u097F]/g) || []).length;
+    const totalChars = trimmed.replace(/\s/g, '').length;
+    
+    if (totalChars === 0) return 'english';
+    
+    // If >30% Devanagari, it's Hindi
+    if (devanagariChars / totalChars > 0.3) return 'hindi';
+    
+    // Check for common Hinglish words (romanized Hindi)
+    const hinglishMarkers = /\b(mujhe|mera|hai|hain|kya|kaise|dard|pet|sir|bukhar|khansi|gala|naak|kamar|pair|hath|aankh|kaan|dant|pasina|ulti|dast|sujan|khujli|jalan|thakan|chakkar|neend|bhookh|acidity|gas|kabz|bawasir|aap|nahi|bahut|abhi|pahle|hua|ho|raha|rahi|wala|wali|ke|ki|ka|se|ko|mein|par|toh|bhi|aur|ya|lekin|agar|jab|tab|yeh|woh|kuch|sab|bohot|zyada|kam|achha|bura|theek)\b/i;
+    if (hinglishMarkers.test(trimmed)) return 'hinglish';
+    
+    // Default: if it's mostly Latin script, treat as English
+    return 'english';
+}
+
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
 const SYSTEM_PROMPT = `
 [ROLE IDENTITY]
@@ -621,6 +644,10 @@ export async function POST(req: NextRequest) {
             .filter(m => m.role === 'user')
             .pop()?.content ?? '';
 
+        // Detect user language programmatically — prompt-level rules are too weak for 8B models
+        const detectedLang = detectUserLanguage(lastUserMsg);
+        console.log(`[LANG] Detected: ${detectedLang} for input: "${lastUserMsg.slice(0, 60)}"`);
+
         const isFinalTurn =
             userTurns >= 6 ||
             processedMessages.length >= 10 ||
@@ -737,8 +764,15 @@ ${SYSTEM_PROMPT}`
                     },
                     body: JSON.stringify({
                         model: groqModel,         // 8B for Q&A, 70B for final diagnosis
-                        messages: [
+                    messages: [
                             { role: 'system', content: finalSystemPrompt },
+                            ...(detectedLang === 'english' ? [{
+                                role: 'system' as const,
+                                content: '[LANGUAGE DIRECTIVE — MANDATORY] The user is writing in ENGLISH. You MUST respond in 100% pure English. Every single word must be English. Do NOT use Hindi, Hinglish, or any Hindi words like aap, haldi, adrak. Use "you" not "aap". Use "turmeric" not "haldi". Use "ginger" not "adrak". VIOLATION OF THIS RULE IS A CRITICAL FAILURE.'
+                            }] : detectedLang === 'hindi' ? [{
+                                role: 'system' as const,
+                                content: '[LANGUAGE DIRECTIVE — MANDATORY] The user is writing in Devanagari Hindi. You MUST respond in pure Devanagari Hindi script. Every word must be in हिंदी.'
+                            }] : []),
                             ...processedMessages,
                         ],
                         temperature: AI_PHASE_CONFIG.generation.temperature,
