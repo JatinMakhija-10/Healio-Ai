@@ -50,7 +50,7 @@ export const AI_PHASE_CONFIG = {
 
     // ── LLM Generation Parameters ─────────────────────────────────────────────
     generation: {
-        temperature: 0.2,          // Low temp → deterministic, medically appropriate
+        temperature: 0.15,          // Low temp → deterministic, medically appropriate
         maxRetries: 1,             // Retry once before fallback
         timeoutMs: 30_000,         // 30 s total timeout
         maxTokens: 1500,           // Max output tokens per response

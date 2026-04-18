@@ -529,8 +529,9 @@ export async function POST(req: NextRequest) {
             // language and introductory context so the LLM doesn't break character or speak natively!
             processedMessages = [
                 messages[0], 
-                ...messages.slice(messages.length - dynamicMaxMessages + 1)
-            ];
+                messages[1],
+                ...messages.slice(messages.length - dynamicMaxMessages + 2)
+            ].filter(Boolean);
         }
 
         const groqKey = process.env.GROQ_API_KEY;
@@ -665,6 +666,7 @@ ${SYSTEM_PROMPT}`
                         temperature: AI_PHASE_CONFIG.generation.temperature,
                         max_tokens: maxTokensForTurn,  // tight per-phase budget
                         stream: true,
+                        stop: ["\n\nUser:", "\n\nHuman:"],
                     }),
                     signal: controller.signal,
                 });
