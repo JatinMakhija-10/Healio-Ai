@@ -178,19 +178,22 @@ async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<s
 
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
-async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false): Promise<string> {
+async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false): Promise<{ context: string; homeRemediesAvailable: boolean }> {
     try {
         const [embedding, embedding3072] = await Promise.all([
             generateEmbedding(symptomSummary),
             skipHomeRemedies ? Promise.resolve(null) : generateEmbedding3072(symptomSummary),
         ]);
-        if (!embedding) return '';
+        if (!embedding) return { context: '', homeRemediesAvailable: false };
 
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
             fetchAyurvedicContext(embedding),
             fetchHomeRemedyContext(embedding3072),
         ]);
+
+        // Track whether home remedies RAG data was actually retrieved
+        const homeRemediesAvailable = !skipHomeRemedies && !!homeRemedyRaw;
 
         const sections = [
             homeopathicRaw && [
@@ -212,11 +215,11 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false)
             ].join('\n'),
         ].filter(Boolean);
 
-        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${!!homeRemedyRaw} (skipHomeRemedies=${skipHomeRemedies})`);
-        return sections.length ? sections.join('\n\n') : '';
+        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies})`);
+        return { context: sections.length ? sections.join('\n\n') : '', homeRemediesAvailable };
     } catch (e) {
         console.error('[RAG] Combined fetch error:', e);
-        return '';
+        return { context: '', homeRemediesAvailable: false };
     }
 }
 
@@ -229,6 +232,76 @@ function extractSymptomSummary(messages: { role: string; content: string }[]): s
 // ── Count how many turns have happened ─────────────────────────────────────────
 function countUserTurns(messages: { role: string }[]): number {
     return messages.filter(m => m.role === 'user').length;
+}
+
+// ── Message Role Alternation Validator ─────────────────────────────────────────
+// Groq/OpenAI APIs enforce strict alternation: [user] → [assistant] → [user] → ...
+// If the sliding window creates consecutive same-role messages, this merges them
+// rather than dropping — preserving diagnostic symptom context.
+function enforceRoleAlternation(
+    messages: { role: string; content: string }[]
+): { role: string; content: string }[] {
+    const result: { role: string; content: string }[] = [];
+
+    for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+        const prev = result[result.length - 1];
+
+        if (!prev) {
+            if (msg.role === 'assistant') continue; // drop leading assistant
+            result.push(msg);
+            continue;
+        }
+
+        if (prev.role === msg.role && msg.role !== 'system') {
+            // Consecutive same role — merge to preserve context
+            if (msg.role === 'user') {
+                result[result.length - 1] = {
+                    ...prev,
+                    content: `${prev.content}\n${msg.content}`,
+                };
+            } else if (msg.role === 'assistant') {
+                // For consecutive assistants, keep the more recent one
+                result[result.length - 1] = msg;
+            }
+        } else {
+            result.push(msg);
+        }
+    }
+
+    // Final message must be user role for the API call
+    if (result[result.length - 1]?.role === 'assistant') {
+        result.pop();
+    }
+
+    return result;
+}
+
+// ── Safe Sliding Window Builder ───────────────────────────────────────────────
+// Preserves messages[0] (user's language register) and messages[1] (assistant's
+// tone register) while building a role-safe sliding window from the tail.
+function buildSafeWindow(
+    messages: { role: string; content: string }[],
+    maxMessages: number
+): { role: string; content: string }[] {
+    if (messages.length <= maxMessages) return messages;
+
+    const anchor0 = messages[0]; // User turn 1 — language register
+    const anchor1 = messages[1]; // Assistant turn 1 — tone/persona register
+
+    // Find the slice start: must begin on a User role boundary
+    let sliceStart = messages.length - maxMessages + 2; // +2 because we prepend 2 anchors
+
+    // Align to nearest User message boundary
+    while (sliceStart < messages.length && messages[sliceStart]?.role !== 'user') {
+        sliceStart++;
+    }
+
+    const tail = messages.slice(sliceStart);
+    const candidate = [anchor0, anchor1, ...tail].filter(Boolean);
+
+    // Validate alternation — catch any edge case the math missed
+    return enforceRoleAlternation(candidate);
 }
 
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
@@ -523,16 +596,9 @@ export async function POST(req: NextRequest) {
         if (userTurnsEarly <= 2) dynamicMaxMessages = 4;        // ~2 turns of history
         else if (userTurnsEarly <= 5) dynamicMaxMessages = 8;   // ~4 turns of history
 
-        let processedMessages = messages;
-        if (messages.length > dynamicMaxMessages) {
-            // CRITICAL: Always keep messages[0] which contains the user's initial 
-            // language and introductory context so the LLM doesn't break character or speak natively!
-            processedMessages = [
-                messages[0], 
-                messages[1],
-                ...messages.slice(messages.length - dynamicMaxMessages + 2)
-            ].filter(Boolean);
-        }
+        // Build role-safe sliding window — preserves language anchors AND enforces
+        // strict User↔Assistant alternation to prevent API 400 rejections (Bug 2 fix)
+        const processedMessages = buildSafeWindow(messages, dynamicMaxMessages);
 
         const groqKey = process.env.GROQ_API_KEY;
         if (!groqKey) {
@@ -570,6 +636,7 @@ export async function POST(req: NextRequest) {
 
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
+        let homeRemediesAvailable = true; // assume available unless proven otherwise
 
         if (userTurns >= 2) {
             const isSubstantive =
@@ -582,9 +649,11 @@ export async function POST(req: NextRequest) {
             if (isSubstantive) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
                 // Skip slow 3072-dim home remedy embedding on non-final turns
-                ragContext = await fetchAllContext(symptomSummary, !isFinalTurn);
+                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn);
+                ragContext = ragResult.context;
+                homeRemediesAvailable = ragResult.homeRemediesAvailable;
                 if (ragContext) {
-                    console.log(`[RAG] ${ragContext.length} chars at turn ${userTurns}, final=${isFinalTurn}, model=${groqModel}.`);
+                    console.log(`[RAG] ${ragContext.length} chars at turn ${userTurns}, final=${isFinalTurn}, homeRemedies=${homeRemediesAvailable}, model=${groqModel}.`);
                 }
             } else {
                 console.log(`[RAG] Skipped at turn ${userTurns} — short follow-up (${lastUserMsg.length} chars). model=${groqModel}.`);
@@ -609,6 +678,12 @@ ${SYSTEM_PROMPT}`
         
         if (isFinalTurn && typeof FINAL_DIAGNOSIS_OUTPUT_RULES !== 'undefined') {
             finalSystemPrompt += '\n\n' + FINAL_DIAGNOSIS_OUTPUT_RULES;
+        }
+
+        // Failure Mode 4 fix: If home remedy embedding timed out, inject fallback instruction
+        // so the model uses authoritative knowledge instead of hallucinating or leaving empty
+        if (!homeRemediesAvailable && isFinalTurn) {
+            finalSystemPrompt += '\n[NOTE: SECTION C RAG data was unavailable this turn due to embedding timeout. Use your authoritative traditional Indian household remedy knowledge for the home_remedies array. You MUST still include at least 2 home remedies. Do NOT leave it empty.]';
         }
 
         if (personaContext) {
@@ -743,24 +818,67 @@ ${SYSTEM_PROMPT}`
             const geminiData = await geminiResponse.json();
             const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-            // Return non-streaming response for Gemini fallback
-            return new Response(JSON.stringify({ content: text, provider: 'gemini' }), {
-                headers: { 'Content-Type': 'application/json' },
+            // Normalize Gemini response into SSE format to match Groq stream shape
+            // so the frontend useChat hook can parse it identically (Failure Mode 3 fix)
+            const geminiSSE = [
+                `data: ${JSON.stringify({ content: text })}\n\n`,
+                `data: [DONE]\n\n`,
+            ].join('');
+
+            return new Response(geminiSSE, {
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'X-Provider': 'gemini',
+                },
             });
         }
 
-        // Stream the Groq response back to the client
+        // Stream the Groq response back to the client — with chunk-level idle timeout
+        // (Bug 1 fix: prevents indefinite stream hangs that Vercel maxDuration cannot catch)
+        const CHUNK_IDLE_TIMEOUT_MS = 10_000; // 10s — covers TTFT and inter-chunk gaps
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             async start(controller) {
-                const reader = groqResponse.body!.getReader();
+                const reader = groqResponse!.body!.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
+                let idleTimer: ReturnType<typeof setTimeout> | null = null;
+                const chunkAbort = new AbortController();
+
+                const resetIdleTimer = () => {
+                    if (idleTimer) clearTimeout(idleTimer);
+                    idleTimer = setTimeout(() => {
+                        console.warn('[stream] Chunk idle timeout — aborting Groq stream');
+                        chunkAbort.abort();
+                        reader.cancel('idle-timeout').catch(() => {});
+                    }, CHUNK_IDLE_TIMEOUT_MS);
+                };
+
+                resetIdleTimer(); // arm on stream open
 
                 try {
                     while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
+                        // Race reader.read() against the idle abort signal
+                        const readPromise = reader.read();
+                        const abortPromise = new Promise<never>((_, rej) => {
+                            if (chunkAbort.signal.aborted) {
+                                rej(new Error('CHUNK_IDLE_TIMEOUT'));
+                                return;
+                            }
+                            chunkAbort.signal.addEventListener('abort', () =>
+                                rej(new Error('CHUNK_IDLE_TIMEOUT')), { once: true }
+                            );
+                        });
+
+                        const { done, value } = await Promise.race([readPromise, abortPromise]);
+
+                        if (done) {
+                            if (idleTimer) clearTimeout(idleTimer);
+                            break;
+                        }
+
+                        resetIdleTimer(); // reset on every received chunk
 
                         buffer += decoder.decode(value, { stream: true });
                         const lines = buffer.split('\n');
@@ -774,21 +892,27 @@ ${SYSTEM_PROMPT}`
                                 controller.enqueue(encoder.encode('data: [DONE]\n\n'));
                                 continue;
                             }
-
                             try {
                                 const parsed = JSON.parse(data);
                                 const content = parsed.choices?.[0]?.delta?.content;
                                 if (content) {
                                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
                                 }
-                            } catch {
-                                // Skip malformed JSON
-                            }
+                            } catch { /* skip malformed chunk */ }
                         }
                     }
-                } catch (err) {
-                    console.error('Stream error:', err);
+                } catch (err: unknown) {
+                    if (idleTimer) clearTimeout(idleTimer);
+                    const msg = err instanceof Error ? err.message : String(err);
+
+                    if (msg === 'CHUNK_IDLE_TIMEOUT') {
+                        console.warn('[stream] Emitting stall error to client');
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'STREAM_STALL', fallback: true })}\n\n`));
+                    } else {
+                        console.error('[stream] Unexpected error:', err);
+                    }
                 } finally {
+                    if (idleTimer) clearTimeout(idleTimer);
                     controller.close();
                 }
             },
