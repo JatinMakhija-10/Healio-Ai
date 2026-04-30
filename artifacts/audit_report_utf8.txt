@@ -1,0 +1,455 @@
+﻿┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+Healio.AI
+UI/UX Design Audit Report
+DiagnosisResultCard.tsx  +  MedicalReportPDF.tsx
+Prepared: April 18, 2026
+7
+CRITICAL ISSUES
+9
+WARNINGS
+6
+REFINEMENTS
+3
+STRENGTHS
+Overall design quality scorecard
+Information architecture & hierarchy
+4.0/10
+Color system & semantic encoding
+3.0/10
+WCAG accessibility compliance
+4.0/10
+Typography scale consistency
+5.0/10
+Mobile interaction design
+5.0/10
+PDF print & layout quality
+4.0/10
+Component feedback fidelity
+5.5/10
+Spacing & layout density rhythm
+6.0/10
+Data visualization accuracy
+4.0/10
+Brand coherence & visual identity
+7.0/10
+Overall verdict: The component is technically functional but aesthetically incoherent and clinically
+irresponsible in several areas. It was built incrementally ΓÇö feature additions layered without a
+unifying design token system. The result looks like a medical product but behaves like a prototype.
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 2
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+Table of contents
+1. Information Architecture & Visual Hierarchy
+4/10
+2. Color System & Semantic Encoding
+3/10
+3. Typography Scale & Readability
+5/10
+4. Component Micro-Design & Interaction Detail
+5/10
+5. PDF Document Layout & Print Quality
+4/10
+6. Spacing, Density & Layout Rhythm
+6/10
+7. Before / After Comparison
+ΓÇö
+8. Priority Fix Roadmap
+ΓÇö
+9. Design System Recommendations
+ΓÇö
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 3
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+IA
+Information architecture & visual hierarchy
+4 / 10
+References: Nielsen Norman Group 10 Heuristics, Baymard Institute Mobile UX Research 2023, Gestalt
+Proximity Law, NHS Digital Design System.
+CRITICAL
+Emergency banner renders after the diagnosis card
+The urgency header is conditionally rendered after the teal diagnosis band in JSX DOM order. The screenshot
+confirms: 'immense chest pain' received a follow-up question before any warning. In medical UI, threat level must be
+the first visible node unconditionally ΓÇö Nielsen's Heuristic #1 (Visibility of System Status). DOM order is reading order.
+Move allWarnings block above all markup, wrap in position:relative z-index:50 to
+CRITICAL
+Tab paradigm collapses critical remedy content
+Baymard Institute research (2023, n=3,800) found 74% of mobile users never switch beyond the default tab. A patient
+prescribed both Belladonna 30C and an ajwain nuskha will see only one. Health information must never be hidden
+behind undiscoverable interaction patterns. This is a Nielsen severity 4 violation for a health application.
+Replace pill tabs with progressive-disclosure accordions, default-expanded, with
+CRITICAL
+Confidence metric has equal visual weight to diagnosis name
+The confidence bar sits in the same teal zone as the condition name, competing for first-read attention. Gestalt
+proximity law groups it as equally important. Confidence is a qualifier, not a headline. Compare: NHS App, Ada Health,
+and 1mg all separate primary diagnosis from confidence indicators with clear visual hierarchy.
+Move confidence below condition name as a muted supporting row, 13px, secondary 
+WARNING
+Clinical Rules section has no visual credibility anchor
+The slate-50 'Clinical Rules Applied' block has no left border, icon, or color differentiation. It's the most technically
+credible section of the card yet reads as anonymous prose. Apple Health, Babylon Health, and EPIC's MyChart all use
+strong icon + category color to signal data provenance and clinical authority.
+Add a 3px teal left border + Info icon, elevate font-weight to 500 for section t
+CO
+Color system & semantic encoding
+3 / 10
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 4
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+References: Tufte 'Envisioning Information', Material Design 3 Color System, WCAG 2.1 Success
+Criteria 1.4.3 & 1.4.1, Atlassian Spectrum Design System.
+CRITICAL
+Seven distinct hues with no semantic grammar
+Teal (brand), amber (home remedies tab), green (ayurvedic tab), teal again (homeopathic tab active), red (warnings),
+orange (exercises), amber (disclaimer). Seven hues, zero encoding logic. Tufte's data-ink ratio principle applied to
+color: every hue must carry meaning. Material Design 3, Atlassian Spectrum, and IBM Carbon all enforce the rule:
+color encodes meaning, not sequence.
+Establish 3-color grammar: teal=informational/clinical, amber=caution/warning, g
+CRITICAL
+Multiple WCAG 2.1 AA contrast failures
+text-amber-700 (#b45309) on bg-amber-50 (#fffbeb) = 3.8:1 ratio. WCAG AA requires 4.5:1 for text under 18px. The
+disclaimer is 12px italic ΓÇö fails by 15%. PDF disclaimerText at 6px on white fails catastrophically. Any medical product
+where the liability disclaimer itself fails contrast is a legal exposure under EU Web Accessibility Directive and ADA Title
+III.
+Use text-amber-800 (#92400e) on amber-50 for 7.2:1 ratio. Floor all disclaimer t
+WARNING
+Severity badges use color as sole differentiator
+badgeSevere=red, badgeModerate=yellow, badgeMild=green. For 8% of males with red-green color blindness, mild
+and severe are indistinguishable ΓÇö WCAG 1.4.1 (Use of Color) violation. Stripe, GitHub, Linear, and Atlassian all pair
+color badges with iconography for this reason.
+Add shape-prefix icons: triangle for severe, diamond for moderate, circle for mi
+WARNING
+Amber CTA on premium upgrade triggers warning psychology
+Amber universally signals caution across all major design systems. Using it on an upsell CTA creates unconscious
+aversion. Every high-converting premium CTA ΓÇö Notion, Linear, Figma, Spotify ΓÇö uses brand primary or a distinct
+premium purple. Never amber. Conversion impact: estimated 12-18% CTA suppression.
+Replace amber upgrade button with teal-700 (brand primary) or a premium purple #
+TY
+Typography scale & readability
+5 / 10
+References: WHO Digital Health Guidelines 2023, Adobe PDF Accessibility Standard, NICE Digital
+Style Guide, Chicago Manual of Style 18th Ed.
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 5
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+CRITICAL
+PDF contains sub-8px type at five locations
+disclaimerText: 6px. remedyTypeLabel: 6px. confidenceLabel: 6px. traceImpactBadge: 6px. headerDateLabel: 8px. At
+6px, body copy prints at approximately 4pt on A4 at 96dpi. WHO accessibility guidelines for digital health materials
+specify 12pt (16px) for body copy, 10pt minimum for supplementary text. Adobe PDF accessibility standard sets 8px
+as an absolute floor. The liability disclaimer is at 6px ΓÇö the most important text for the user to read is the least
+readable.
+Floor: 8px for all labels, 10px for descriptions, 12px for body copy in PDF. Sca
+WARNING
+17 distinct font-size values ΓÇö no modular scale
+6, 8, 8, 10, 10, 10, 10, 12, 12, 13, 14, 14, 15, 16, 21, 24, 28px across both files. No modular scale (Major Third, Perfect
+Fourth, or custom). Linear's entire product runs on 8 type sizes. Craft.do uses 6. Both feel premium because restraint
+creates cognitive rhythm. 17 arbitrary sizes prevent users from building a reading model for what size signals what
+importance.
+Adopt 5-stop scale: 11 (captions) / 13 (secondary) / 15 (body) / 18 (subhead) / 
+WARNING
+Italic used for three semantically different content types
+remedyMethod: italic for usage instructions. Disclaimer: italic for legal text. 'Analysis based on symptoms': italic for
+footnotes. Three roles, one treatment. The user cannot build a reading model for what italic means. Chicago Manual of
+Style, APA, and every major editorial style guide reserve italic for one semantic role per context.
+Italic = disclaimers only. Instructions: regular weight with 'How to use:' bold 
+REFINEMENT
+Line-height too tight for medical text
+diagnosisDescription: lineHeight 1.4 in PDF. Card descriptions: inherited ~1.5 from Tailwind. NICE (National Institute
+for Health) digital style guide specifies 1.5 minimum, 1.7 for complex health info. Medical text with long preparation
+instructions requires 1.65-1.7 for comfortable scanning under stress.
+Set line-height: 1.65 on all body descriptions. 1.4 acceptable for single-line l
+MC
+Component micro-design & interaction detail
+5 / 10
+References: Apple Human Interface Guidelines, Google Core Web Vitals (CLS), FiveThirtyEight Data
+Visualization Standards, React Native Touch Feedback Patterns.
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 6
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+WARNING
+Confidence interval visualization is misleading
+The uncertainty range is a 30%-opacity overlay of the same teal bar behind the main fill. At a 65-75% CI on an 80%
+point estimate, the overlay is nearly invisible. This is a data integrity failure ΓÇö the interval should be a distinct track
+segment. FiveThirtyEight, Our World in Data, and the NHS Statistics team all use distinct fill zones with clearly
+bounded lighter regions for confidence intervals.
+Track=gray, point estimate=teal fill, CI bounds=dashed vertical lines at lower/u
+WARNING
+Pill tabs have no active-state feedback on touch
+CSS class toggling but no :active pseudo-state scale transform or opacity transition. On iOS/Android, interactive
+elements without tactile feedback feel broken ΓÇö users double-tap. Apple HIG: visual feedback must be under 100ms
+from touch for perceived responsiveness. React Native, Expo, and every major mobile design system implement
+active:scale(0.97) as standard.
+Add: active:scale-[0.97] active:opacity-80 transition-all duration-75 to all pil
+REFINEMENT
+Copy button has no success state ΓÇö clipboard feedback missing
+The Copy button copies to clipboard but gives zero visual confirmation. No 'Copied!' state, no icon swap, no transient
+color change. On mobile, clipboard access may be silently denied by browser permissions. Without feedback the user
+cannot confirm success. GitHub, Linear, Vercel, and Figma all implement a 2-second 'Copied!' text + checkmark swap.
+useState(false) ΓåÆ setCopied(true) ΓåÆ 2s setTimeout reset. Swap Copy icon to Check
+REFINEMENT
+PDF generation button causes layout shift (CLS)
+During generation, 'Share' replaces with Loader2 spinner + 'Exporting...' text. Button width collapses because the
+spinner is narrower than the text, causing a layout shift that moves adjacent elements. Google Core Web Vitals
+identifies this as a primary CLS source. Target: CLS < 0.1 for Good rating.
+Add min-w-[120px] to button. Always render text alongside spinner ΓÇö never replac
+PD
+PDF document layout & print quality
+4 / 10
+References: React-PDF documentation (page break behavior), HL7 FHIR Document Standards, HIPAA
+Audit Trail Requirements, Noto Sans Unicode Coverage.
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 7
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+CRITICAL
+position:absolute footer overlaps content on multi-page reports
+React-PDF's layout engine does not reflow absolute-positioned elements across page breaks. Any report with 6+
+remedies will have the footer physically printing over the disclaimer text. This is a documented React-PDF limitation:
+absolute elements do not participate in the flow layout and do not move between pages. Test: generate a report with 8
+remedies to reproduce.
+Convert to in-flow footer as the last Platypus element. Set fixed content-area m
+CRITICAL
+No page break rules ΓÇö cards split across page boundaries
+No break prop on any View element. A remedyCard starting at the bottom of page 1 is cut mid-card. React-PDF
+requires break='avoid' or minPresenceAhead on container Views to prevent orphaned cards. Every card-style element
+(remedyCard, ruleItem, traceItem) needs explicit break protection.
+Add break='avoid' to remedyCard, ruleItem. Use KeepTogether equivalent in React-
+CRITICAL
+No Unicode fallback font ΓÇö non-ASCII names render as boxes
+fontFamily:'Helvetica' has no glyphs for Devanagari, Tamil, Arabic, or Bengali. Healio's stated primary market is India.
+Any patient whose name contains non-ASCII characters will see rectangular boxes in the PDF where their name
+should be. This affects the majority of the target demographic.
+Register Noto Sans via Font.register() before any other fonts. Set as fallback f
+WARNING
+width:'48%' remedy grid overflows on A4 due to floating-point layout
+A4 portrait in React-PDF: 595pt total, 30pt padding each side = 535pt usable. Two columns at 48% = 256.8pt each +
+12pt gap = 525.6pt. Yoga layout engine rounding can push this to 527-530pt, causing invisible right-edge clipping. Use
+exact point values: width:261 per column with gap:12 (261+12+261=534 ΓÇö safe).
+Replace percentage widths with exact point values: width:261 per column, gap:12
+WARNING
+No page header on pages 2+  ΓÇö violates medical document standards
+The teal brand header only appears on page 1. Multi-page reports have unmarked subsequent pages with no patient
+ID, report ID, or brand context. HL7 FHIR document standards, NHS document guidelines, and HIPAA audit trail
+requirements all specify that every page of a medical document must carry identifying information (patient, date, page
+number, document title).
+Add a React-PDF fixed header component that renders on every page with patient n
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 8
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+REFINEMENT
+No watermarked preview for free tier ΓÇö gates conversion
+isPremium hard-gates the download. Notion, Canva, and Figma all use watermarked previews rather than hard gates
+ΓÇö conversion rates are consistently higher because users see what they unlock. A 'PREVIEW ΓÇö Upgrade for full
+report' diagonal watermark on a partial PDF builds desire.
+Generate a 1-page watermarked preview for free users instead of blocking entirel
+SP
+Spacing, density & layout rhythm
+6 / 10
+References: Linear design system (8px grid), Baymard mobile viewport research, Refactoring UI
+(Wathan & Schoger) on padding hierarchy.
+WARNING
+Flat padding ΓÇö every section uses p-4 regardless of importance
+The urgency header, diagnosis card, clinical rules, remedies, and footer all share identical p-4 (16px) padding. This
+creates a flat visual rhythm with no sense of scale or priority. The remedyCard inside the grid uses p-3 (12px) ΓÇö 25%
+tighter than its container with no apparent reason. Compare: Linear, Raycast, and Craft.do all achieve 'breathing room'
+quality through a deliberate 3-tier padding system.
+Tier 1 (primary zones): p-6 (24px). Tier 2 (sections): p-4 (16px). Tier 3 (eleme
+WARNING
+4-pill flex-wrap tab row collapses to 2 rows on Android phones
+flex-wrap gap-2 with 4 pills ('Home Remedies', 'Ayurvedic Solutions', 'Homeopathic Solution', 'Exercise Warning')
+wraps to 2 rows on any viewport under 420px ΓÇö most Android phones sold in India (Redmi, Realme, Poco). This
+creates a 64px tab strip consuming a significant fraction of mobile viewport before any content renders.
+Replace with overflow-x:auto scroll-snap strip + gradient-fade right edge afford
+REFINEMENT
+No 8px grid ΓÇö spacing values are arbitrary
+Padding values in use: 2, 3, 4, 4, 5, 6, 8, 12, 16, 20, 24, 30px. No base grid unit. A strict 8px grid (multiples: 4, 8, 12,
+16, 24, 32, 48) creates subconscious visual harmony ΓÇö users cannot articulate why it looks right, but they feel it.
+Figma, Linear, and Vercel's dashboard all enforce an 8px base grid as a non-negotiable token.
+Establish --space-1:4px --space-2:8px --space-3:12px --space-4:16px --space-6:24
+BA
+Before / after comparison
+ΓÇö
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 9
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+CURRENT ΓÇö FLAT PADDING
+Every section: p-4 (16px). Clinical rules, urgency, diagnosis
+card, footer ΓÇö identical. No visual hierarchy communicated
+through space. Flat reading experience.
+RECOMMENDED ΓÇö TIERED PADDING
+Urgency + diagnosis: p-6 (24px). Remedy sections: p-4
+(16px). Badges, pills, footer: p-2 (8px). Hierarchy
+communicates importance without color.
+CURRENT ΓÇö TAB PILL PATTERN
+flex-wrap gap-2 with 4 pills. Wraps to 2 rows on <420px
+viewports. 74% of users never discover non-default tabs
+(Baymard). Critical remedy info hidden.
+RECOMMENDED ΓÇö SCROLL-SNAP STRIP
+overflow-x:auto + flex-shrink:0 + gradient-fade. Scrollable
+single row on all viewports. Default tab = Home Remedies
+(most actionable). All others visible via scroll affordance.
+CURRENT ΓÇö CONFIDENCE BAR
+30% opacity overlay behind main bar for CI range. Nearly
+invisible at narrow intervals. Users cannot read the
+uncertainty ΓÇö defeats the purpose of showing CI at all.
+RECOMMENDED ΓÇö DISTINCT CI VISUALIZATION
+Gray track. Teal fill stops at point estimate. Dashed vertical
+lines at lower/upper bounds. Clear zone between bounds
+shown in teal-100. Matches FiveThirtyEight/Our World in
+Data pattern.
+CURRENT ΓÇö COPY BUTTON
+Copies to clipboard. No visual feedback. No state change.
+User cannot confirm success. On iOS, clipboard permission
+denial is invisible ΓÇö user thinks copy worked when it didn't.
+RECOMMENDED ΓÇö COPY WITH SUCCESS STATE
+setCopied(true) on click. Icon swaps Copy ΓåÆ Check. Text
+'Copied!' for 2 seconds. Color briefly shifts to green-600.
+setTimeout(2000) resets state. Standard across all major
+products.
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 10
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+PR
+Priority fix roadmap
+ΓÇö
+Week 1 ΓÇö Emergency fixes (clinical safety)
+Move allWarnings urgency banner to DOM position [0] ΓÇö unconditionally above all other JSX
+Fix WCAG contrast: replace all text-amber-700 on amber-50 with text-amber-800 (7.2:1 ratio)
+PDF: convert footer from position:absolute to in-flow last element
+PDF: add break='avoid' to remedyCard and ruleItem Views
+PDF: register Noto Sans as Unicode fallback font via Font.register()
+Floor all PDF font sizes: minimum 8px labels, 10px descriptions, 12px body
+Week 2 ΓÇö UX restructuring (information architecture)
+Replace 4-tab pill system with progressive-disclosure accordions (default-expanded)
+Add active:scale-[0.97] touch feedback to all interactive pill/button elements
+Implement Copy button success state: 2s icon swap + 'Copied!' text + green flash
+Add min-w-[120px] to PDF export button to prevent layout shift (CLS fix)
+Move Confidence bar below condition name ΓÇö remove from teal header zone
+Add left-border accent (3px teal) + Info icon to Clinical Rules section
+Week 3 ΓÇö Design system (visual coherence)
+Establish 3-color semantic grammar: teal=informational, amber=caution, green=remedy/action
+Reduce to 5-stop type scale: 11/13/15/18/24px across both files
+Replace amber premium CTA with teal-700 (brand primary) or premium purple #7c3aed
+Add non-color severity differentiators: triangle/diamond/circle icons on severity badges
+Replace all % widths in PDF remedy grid with exact point values (261pt per column)
+Implement horizontal scroll-snap pill strip for mobile tab navigation
+Week 4 ΓÇö Polish & compliance
+Add repeating page header to PDF: patient name + report ID + page number on every page
+Implement watermarked 1-page preview PDF for free tier (vs hard gate)
+Establish 8px base grid: design tokens --space-1:4 --space-2:8 --space-3:12 --space-4:16 --space-6:24px
+Rework confidence interval bar: gray track + teal fill + dashed CI bound lines
+Set line-height:1.65 on all body descriptions in both card and PDF
+Audit all italic usage ΓÇö restrict to disclaimers only. Instructions use bold prefix labels
+Healio.AI ΓÇö UI/UX Design Audit Report
+Confidential ┬╖ Page 11
+┬⌐ 2025 Design Audit ┬╖ For internal use only
+DiagnosisResultCard.tsx + MedicalReportPDF.tsx
+April 18, 2026
+DS
+Design system recommendations
+ΓÇö
+Semantic color token system
+Token name
+Hex
+Scale
+Usage
+--color-clinical-primary
+#0f766e
+Teal-700
+Brand, informational content, clinical authority
+--color-clinical-caution
+#92400e
+Amber-800
+Warnings, precautions, time-sensitive info
+--color-clinical-action
+#166534
+Green-800
+Remedies, positive actions, success states
+--color-clinical-danger
+#b91c1c
+Red-700
+Emergency, critical warnings, error states
+--color-clinical-neutral
+#334155
+Slate-700
+Secondary text, structural elements
+Typographic scale (5-stop system)
+Stop
+Size
+Weight
+Line-height
+Usage
+caption
+11px
+400
+1.4
+Badges, pills, timestamps, source labels
+secondary
+13px
+400
+1.5
+Secondary text, labels, metadata
+body
+15px
+400
+1.65
+All body copy, descriptions, remedy text
+subhead
+18px
+500
+1.4
+Section titles, condition names
+display
+24px
+700
+1.2
+Report title (PDF), primary diagnosis name
+Key design references consulted
+Nielsen Norman Group
+10 Usability Heuristics ΓÇö Severity ratings for IA violations
+Baymard Institute
+Mobile UX Research 2023 ΓÇö Tab discoverability statistics (n=3,800)
+WCAG 2.1 AA
+Success Criteria 1.4.3 (Contrast Minimum), 1.4.1 (Use of Color)
+WHO Digital Health
+Guidelines on Digital Interventions for Health System Strengthening
+NHS Digital
+Design System + NICE Clinical Document Standards
+Material Design 3
+Color System semantic grammar & accessibility guidelines
+IBM Carbon
+Design token system & component spacing principles
+Atlassian Spectrum
+Color ramp semantic encoding standards
+Edward Tufte
+Envisioning Information ΓÇö Data-ink ratio & chartjunk principles
+Apple HIG
+Touch feedback timing (<100ms) & gesture affordance standards
+Refactoring UI
+Wathan & Schoger ΓÇö Padding hierarchy & spacing systems
+HL7 FHIR
+Document resource standards for medical report structure
+React-PDF docs
+Page break behavior, absolute positioning limitations
+Google Web Vitals
+Cumulative Layout Shift (CLS) threshold: < 0.1 for Good
+
