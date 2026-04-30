@@ -1,19 +1,35 @@
 import { NextRequest } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
-import { AI_PHASE_CONFIG } from '@/lib/ai/config';
+import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
 
-// ── Shared: build a Supabase service-role client ─────────────────────────────
-function getServiceClient() {
-    return createClient(
+// ── JWT→UserId short-lived auth cache (30 s) ─────────────────────────────────
+// Eliminates the per-turn Supabase Auth round-trip (~100 ms) while keeping
+// the security window tiny (30 s). Expired entries are lazy-evicted.
+const AUTH_CACHE = new Map<string, { userId: string; exp: number }>();
+
+async function verifyToken(token: string): Promise<string | null> {
+    const hit = AUTH_CACHE.get(token);
+    if (hit && Date.now() < hit.exp) return hit.userId;
+
+    const authClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ''
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '',
+        { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
+    const { data: { user }, error } = await authClient.auth.getUser();
+    if (error || !user) return null;
+
+    AUTH_CACHE.set(token, { userId: user.id, exp: Date.now() + 30_000 });
+    if (AUTH_CACHE.size > 500) {
+        const oldest = AUTH_CACHE.keys().next().value;
+        if (oldest) AUTH_CACHE.delete(oldest);
+    }
+    return user.id;
 }
 
 // ── Generate embedding via Gemini (768-dim) — used for Boericke & Ayurvedic ───
@@ -22,7 +38,7 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey || !text) return null;
     try {
-        const ai = new GoogleGenAI({ apiKey: geminiKey });
+        const ai = getGeminiClient(); // singleton
         const embResp = await Promise.race([
             ai.models.embedContent({ model: AI_PHASE_CONFIG.models.embedding, contents: text }),
             new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
@@ -39,8 +55,7 @@ async function generateEmbedding3072(text: string): Promise<number[] | null> {
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey || !text) return null;
     try {
-        const ai = new GoogleGenAI({ apiKey: geminiKey });
-        // Hard 3s timeout — this model is slower; fail fast rather than block the stream
+        const ai = getGeminiClient(); // singleton
         const embResp = await Promise.race([
             ai.models.embedContent({ model: 'gemini-embedding-001', contents: text }),
             new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 3_000)),
@@ -55,8 +70,9 @@ async function generateEmbedding3072(text: string): Promise<number[] | null> {
 // Deduplicates by remedy_name — keeps only the highest-similarity chunk per remedy
 async function fetchBoerickeContext(embedding: number[]): Promise<string> {
     try {
-        const supabase = getServiceClient();
-        const { data } = await supabase.rpc('match_boericke_embeddings', {
+        const supabase = getSupabaseAdmin(); // singleton
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase as any).rpc('match_boericke_embeddings', {
             query_embedding: embedding,
             match_threshold: 0.72,
             match_count: 10,
@@ -94,8 +110,9 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
 // that require purchase from an Ayurvedic pharmacy. NOT kitchen shelf items.
 async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
     try {
-        const supabase = getServiceClient();
-        const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
+        const supabase = getSupabaseAdmin(); // singleton
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase as any).rpc('search_ayurvedic_knowledge', {
             query_embedding: embedding,
             match_threshold: 0.60,
             match_count: 12,
@@ -134,8 +151,9 @@ async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
 async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<string> {
     if (!embedding3072) return '';
     try {
-        const supabase = getServiceClient();
-        const { data, error } = await supabase.rpc('match_home_remedy_embeddings', {
+        const supabase = getSupabaseAdmin(); // singleton
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase as any).rpc('match_home_remedy_embeddings', {
             query_embedding: embedding3072,
             match_threshold: 0.58,
             match_count: 8,
@@ -513,7 +531,7 @@ export async function POST(req: NextRequest) {
 
     const processRequest = async (): Promise<Response> => {
         try {
-        // ── Auth guard ───────────────────────────────────────────────────────
+        // ── Auth — validate JWT (30 s cache hit avoids an extra Supabase round-trip)
         const authHeader = req.headers.get('authorization');
         if (!authHeader?.startsWith('Bearer ')) {
             return new Response(JSON.stringify({ error: 'Unauthorized — missing token' }), {
@@ -522,19 +540,8 @@ export async function POST(req: NextRequest) {
             });
         }
         const token = authHeader.slice(7);
-
-        // Create a per-request client that uses the user's JWT to verify identity
-        const authClient = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '',
-            {
-                global: {
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            }
-        );
-        const { data: { user }, error: authError } = await authClient.auth.getUser();
-        if (authError || !user) {
+        const userId = await verifyToken(token);
+        if (!userId) {
             return new Response(JSON.stringify({ error: 'Unauthorized — invalid token' }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' },
@@ -552,19 +559,20 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ── Usage gating + Persona fetch — RUN IN PARALLEL to save ~400-700 ms ─
-        const serviceClient = getServiceClient();
+        // ── Usage gating + Persona fetch — parallel to save ~400-700 ms ───────────
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const serviceClient = getSupabaseAdmin() as any; // singleton
 
         const [usageResult, personaResult] = await Promise.allSettled([
             // 1. Usage check
-            serviceClient.rpc('increment_chat_count', { p_user_id: user.id }),
+            serviceClient.rpc('increment_chat_count', { p_user_id: userId }),
             // 2. Persona fetch (skip if no personaId)
             personaId
                 ? serviceClient
                     .from('personas')
                     .select('name, age, gender, relation, conditions, allergies')
                     .eq('id', personaId)
-                    .eq('user_id', user.id)
+                    .eq('user_id', userId)
                     .single()
                 : Promise.resolve(null),
         ]);

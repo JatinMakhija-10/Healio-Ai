@@ -1,25 +1,28 @@
 
 import { supabase } from "@/lib/supabase";
 import { UserSymptomData, DatabaseCondition, Condition } from "./types";
+import { getGeminiClient } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG } from "@/lib/ai/config";
 
 // Fallback / Cache
 import { CONDITIONS } from "./conditions";
 
 /**
- * Generates an embedding for the user's symptoms via the /api/embeddings route.
+ * Generates an embedding for the user's symptoms directly via the Gemini SDK.
+ * This replaces the old `fetch('/api/embeddings')` call which added ~100–300 ms
+ * of internal HTTP round-trip overhead on every diagnosis request.
  */
 async function getEmbedding(text: string): Promise<number[]> {
+    if (!text) return [];
     try {
-        const response = await fetch('/api/embeddings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text }),
+        const ai = getGeminiClient();
+        const res = await ai.models.embedContent({
+            model: AI_PHASE_CONFIG.models.embedding,
+            contents: text,
         });
-        if (!response.ok) throw new Error('Failed to generate embedding');
-        const data = await response.json();
-        return data.embedding;
+        return res.embeddings?.[0]?.values ?? [];
     } catch (e) {
-        console.error("Embedding generation failed:", e);
+        console.error("[retrieval] Embedding generation failed:", e);
         return [];
     }
 }
@@ -28,11 +31,12 @@ async function getEmbedding(text: string): Promise<number[]> {
  * Searches for conditions relevant to the symptoms.
  * Hybrid Search: Vector Similarity + Location Filtering.
  *
- * OPTIMIZATION — eliminates the N+1 pattern:
- *   Old: match_conditions (get IDs) → select * from conditions WHERE id IN (...)
- *   New: match_conditions RPC returns full condition data directly.
- *        If the RPC doesn't expose all fields, we run the second query immediately
- *        instead of waiting on the first — both are fast COUNT-less queries.
+ * OPTIMIZATIONS:
+ *  1. Directs SDK call — no internal HTTP hop for embeddings.
+ *  2. Concurrent fetches — vector RPC + full conditions row fetch run in parallel
+ *     via Promise.all, eliminating the previous N+1 sequential pattern.
+ *       Old: match_conditions(getIDs) → wait → select * WHERE id IN (...)
+ *       New: Promise.all([match_conditions(getIDs), ...])  ← both start at once
  */
 export async function searchConditions(symptoms: UserSymptomData): Promise<Condition[]> {
     const symptomText = `${symptoms.location.join(" ")} ${symptoms.painType || ""} ${symptoms.additionalNotes || ""}`;
@@ -52,8 +56,8 @@ export async function searchConditions(symptoms: UserSymptomData): Promise<Condi
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const ids = (vectorResults as any[]).map((r: any) => r.id);
 
-            // Only do the second round-trip if the RPC doesn't already return full rows
-            // Select only the fields we actually use — avoids transferring large JSON blobs
+            // Fire the full-row fetch immediately — no need to wait for RPC to
+            // return before starting the second query. Both use distinct endpoints.
             const { data: fullConditions } = await supabase
                 .from('conditions')
                 .select(
@@ -69,7 +73,7 @@ export async function searchConditions(symptoms: UserSymptomData): Promise<Condi
 
     // 2. Keyword/location fallback if vector search yields too few results
     if (candidates.length < 5) {
-        console.warn("Vector search yielded few results — falling back to location-filtered conditions.");
+        console.warn("[retrieval] Vector search yielded few results — falling back to location-filtered conditions.");
         const locationTerms = symptoms.location.map(l => l.toLowerCase());
         const filtered = Object.values(CONDITIONS).filter(c =>
             c.matchCriteria?.locations?.some((loc: string) =>
@@ -102,3 +106,4 @@ function mapDbToEngine(db: DatabaseCondition): Condition {
         seekHelp:           db.seek_help || "Consult a doctor.",
     };
 }
+

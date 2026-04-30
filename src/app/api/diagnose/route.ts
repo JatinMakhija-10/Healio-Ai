@@ -25,22 +25,9 @@ export const maxDuration = 60;
  */
 
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { GoogleGenAI } from "@google/genai";
-import { AI_PHASE_CONFIG } from "@/lib/ai/config";
-import { createClient } from "@supabase/supabase-js";
+import { AI_PHASE_CONFIG, getGeminiClient, getGroqClient, getSupabaseAdmin } from "@/lib/ai/config";
 import { infoGainSelector } from "@/lib/diagnosis/advanced/InformationGainSelector";
-
-// Admin Supabase client factory — created lazily at runtime so build-time env absence doesn't crash
-function getSupabaseAdminClient() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-        ""
-    );
-}
+import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -123,7 +110,15 @@ async function fetchMultiQueryRAG(
         return { context: "", remediesFound: [] };
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    // ── RAG Cache check ───────────────────────────────────────────────────────
+    const cacheKey = buildRagCacheKey(primaryDiagnosis.condition || '', symptomText);
+    const cached = getCachedRAG(cacheKey);
+    if (cached) {
+        console.log('[RAG] Cache hit — skipping embed + RPC cycle');
+        return cached;
+    }
+
+    const ai = getGeminiClient(); // singleton — no per-request constructor cost
 
     // Build query set: symptom text + condition-specific query
     const keywordHint = primaryDiagnosis.matchedKeywords?.slice(0, 3).join(" ") || "";
@@ -133,17 +128,34 @@ async function fetchMultiQueryRAG(
     ];
 
     try {
-        // Embed all queries in parallel
-        const embeddingResults = await Promise.allSettled(
-            queries.map((q) =>
-                ai.models.embedContent({
-                    model: AI_PHASE_CONFIG.models.embedding,
-                    contents: q,
-                })
-            )
-        );
+        const supabase = getSupabaseAdmin(); // singleton — no per-request constructor cost
 
-        const validEmbeddings = embeddingResults
+        // ── Fully parallel embedding fan-out ─────────────────────────────────
+        // Main embeddings (768-dim) + home-remedy embedding (3072-dim) all fire
+        // simultaneously — previously the home embed ran only AFTER main embeds
+        // finished, adding 1-2s of unnecessary sequential latency.
+        const homeQuery = `${symptomText} ${primaryDiagnosis.condition}`.trim();
+
+        const [embeddingResults, homeEmbResp] = await Promise.allSettled([
+            // Batch: embed all queries in one Promise.allSettled
+            Promise.allSettled(
+                queries.map((q) =>
+                    ai.models.embedContent({
+                        model: AI_PHASE_CONFIG.models.embedding,
+                        contents: q,
+                    })
+                )
+            ),
+            // Home remedy embedding runs in parallel — not after
+            ai.models.embedContent({
+                model: 'gemini-embedding-001',
+                contents: homeQuery,
+            }),
+        ]);
+
+        // Unwrap main embeddings
+        const mainEmbedResults = embeddingResults.status === 'fulfilled' ? embeddingResults.value : [];
+        const validEmbeddings = mainEmbedResults
             .filter(
                 (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof ai.models.embedContent>>> =>
                     r.status === "fulfilled"
@@ -152,57 +164,63 @@ async function fetchMultiQueryRAG(
             .filter((e): e is number[] => !!e && e.length > 0);
 
         if (validEmbeddings.length === 0) throw new Error("No valid embeddings");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const db = supabase as any;
 
-        // Retrieve Boericke and Ayurvedic chunks for each embedding in parallel
-        const supabase = getSupabaseAdminClient();
-        
-        const rpcPromises: PromiseLike<any>[] = [];
+        // Unwrap home remedy embedding
+        const homeEmbedding = homeEmbResp.status === 'fulfilled'
+            ? homeEmbResp.value.embeddings?.[0]?.values
+            : null;
+
+        // ── Fan-out all Supabase RPCs simultaneously ──────────────────────────
+        // Boericke + Ayurvedic per embedding + home remedies — all in parallel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rpcPromises: Promise<any>[] = [];
         validEmbeddings.forEach(embedding => {
             // 1. Fetch Boericke
             rpcPromises.push(
-                supabase.rpc("match_boericke_embeddings", {
+                db.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
                     match_threshold: AI_PHASE_CONFIG.rag.matchThreshold,
                     match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
-                }).then(res => ({ type: 'boericke', data: res.data }))
+                }).then((res: { data: unknown }) => ({ type: 'boericke', data: res.data }))
             );
             // 2. Fetch Ayurvedic
             rpcPromises.push(
-                supabase.rpc("search_ayurvedic_knowledge", {
+                db.rpc("search_ayurvedic_knowledge", {
                     query_embedding: embedding,
                     match_threshold: 0.62,
                     match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
-                }).then(res => ({ type: 'ayurvedic', data: res.data }))
+                }).then((res: { data: unknown }) => ({ type: 'ayurvedic', data: res.data }))
             );
         });
 
-        // 3. Fetch Home Remedies separately with 3072-dim embedding (gemini-embedding-001)
+        // 3. Home Remedies RPC (embedding already available from parallel fetch)
         let homeRemedyContext = '';
-        try {
-            const homeEmbResp = await ai.models.embedContent({
-                model: 'gemini-embedding-001',
-                contents: `${symptomText} ${primaryDiagnosis.condition}`.trim(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let homeRpcPromise: Promise<any> | null = null;
+        if (homeEmbedding) {
+            homeRpcPromise = db.rpc('match_home_remedy_embeddings', {
+                query_embedding: homeEmbedding,
+                match_threshold: 0.58,
+                match_count: 5,
             });
-            const homeEmbedding = homeEmbResp.embeddings?.[0]?.values;
-            if (homeEmbedding) {
-                const homeRes = await supabase.rpc('match_home_remedy_embeddings', {
-                    query_embedding: homeEmbedding,
-                    match_threshold: 0.58,
-                    match_count: 5,
-                });
-                if (homeRes.data?.length) {
-                    const homeChunks = homeRes.data as HomeRemedyChunk[];
-                    homeRemedyContext = '=== HOME REMEDIES (Traditional Nuskhe — from Supabase) ===\n\n' +
-                        homeChunks.map((c, i) =>
-                            `[H${i + 1}] Ailment: ${c.ailment}${c.ailment_hindi ? ` (${c.ailment_hindi})` : ''} — ${c.remedy_name}${c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : ''} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
-                        ).join('\n\n');
-                }
-            }
-        } catch (homeErr) {
-            console.warn('[RAG] Home remedy fetch failed (non-critical):', homeErr);
         }
 
-        const rpcResults = await Promise.allSettled(rpcPromises);
+        // Await all Boericke/Ayurvedic RPCs + home remedy RPC concurrently
+        const [rpcResults, homeRes] = await Promise.all([
+            Promise.allSettled(rpcPromises),
+            homeRpcPromise ? homeRpcPromise.catch(() => null) : Promise.resolve(null),
+        ]);
+
+        // Process home remedy result
+        if (homeRes?.data?.length) {
+            const homeChunks = homeRes.data as HomeRemedyChunk[];
+            homeRemedyContext = '=== HOME REMEDIES (Traditional Nuskhe — from Supabase) ===\n\n' +
+                homeChunks.map((c: HomeRemedyChunk, i: number) =>
+                    `[H${i + 1}] Ailment: ${c.ailment}${c.ailment_hindi ? ` (${c.ailment_hindi})` : ''} — ${c.remedy_name}${c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : ''} (relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.chunk_text}`
+                ).join('\n\n');
+        }
 
         // Deduplicate and re-rank
         const seenBoericke = new Set<string>();
@@ -260,33 +278,54 @@ async function fetchMultiQueryRAG(
             context += homeRemedyContext;
         }
 
-        return { context, remediesFound };
+        const result = { context, remediesFound };
+        setCachedRAG(cacheKey, result); // store for future warm requests
+        return result;
     } catch (err) {
         console.warn("[RAG] Multi-query failed, trying single-query fallback:", err);
 
         // ── Single-query fallback ──────────────────────────────────────────────
         try {
-            const resp = await ai.models.embedContent({
-                model: AI_PHASE_CONFIG.models.embedding,
-                contents: symptomText,
-            });
-            const embedding = resp.embeddings?.[0]?.values;
+            const supabase = getSupabaseAdmin();
+
+            // Fire main (768) + home (3072) embeddings concurrently even in fallback
+            const [mainEmbResp, homeEmbResp] = await Promise.all([
+                ai.models.embedContent({
+                    model: AI_PHASE_CONFIG.models.embedding,
+                    contents: symptomText,
+                }),
+                ai.models.embedContent({
+                    model: 'gemini-embedding-001',
+                    contents: symptomText,
+                }).catch(() => null),
+            ]);
+
+            const embedding = mainEmbResp.embeddings?.[0]?.values;
             if (!embedding) return { context: "", remediesFound: [] };
 
-            const supabase = getSupabaseAdminClient();
-            
-            // Single query fallback: Fetch both in parallel
-            const [boerickeRes, ayurvedicRes] = await Promise.all([
-                supabase.rpc("match_boericke_embeddings", {
+            const homeEmb = homeEmbResp?.embeddings?.[0]?.values ?? null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const fdb = supabase as any;
+
+            // Fan-out all RPCs in parallel
+            const [boerickeRes, ayurvedicRes, homeRes] = await Promise.all([
+                fdb.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
                     match_threshold: AI_PHASE_CONFIG.rag.singleQueryThreshold,
                     match_count: 3,
                 }),
-                supabase.rpc("search_ayurvedic_knowledge", {
+                fdb.rpc("search_ayurvedic_knowledge", {
                     query_embedding: embedding,
                     match_threshold: 0.62,
                     match_count: 3,
-                })
+                }),
+                homeEmb
+                    ? fdb.rpc('match_home_remedy_embeddings', {
+                        query_embedding: homeEmb,
+                        match_threshold: 0.58,
+                        match_count: 4,
+                    })
+                    : Promise.resolve({ data: null }),
             ]);
 
             const boerickeData = boerickeRes.data as BoerickeChunk[] | null;
@@ -295,7 +334,7 @@ async function fetchMultiQueryRAG(
             if (!boerickeData?.length && !ayurvedicData?.length) return { context: '', remediesFound: [] };
 
             const remediesFound = [...new Set((boerickeData || []).map((c) => c.remedy_name))];
-            
+
             let context = '';
             if (boerickeData?.length) {
                 context += '=== BOERICKE MATERIA MEDICA ===\n\n' +
@@ -305,29 +344,16 @@ async function fetchMultiQueryRAG(
                 context += '=== AYURVEDIC KNOWLEDGE BASE ===\n\n' +
                     ayurvedicData.map((c) => `Source: ${c.book} / ${c.section}\n${c.text}`).join('\n\n') + '\n\n';
             }
-            // Fetch home remedies in fallback too
-            try {
-                const homeEmbResp = await ai.models.embedContent({
-                    model: 'gemini-embedding-001',
-                    contents: symptomText,
-                });
-                const homeEmb = homeEmbResp.embeddings?.[0]?.values;
-                if (homeEmb) {
-                    const homeRes = await supabase.rpc('match_home_remedy_embeddings', {
-                        query_embedding: homeEmb,
-                        match_threshold: 0.58,
-                        match_count: 4,
-                    });
-                    if (homeRes.data?.length) {
-                        context += '=== HOME REMEDIES (Traditional Nuskhe) ===\n\n' +
-                            (homeRes.data as HomeRemedyChunk[]).map((c, i) =>
-                                `[H${i + 1}] ${c.ailment} — ${c.remedy_name}\n${c.chunk_text}`
-                            ).join('\n\n');
-                    }
-                }
-            } catch { /* non-critical */ }
+            if (homeRes.data?.length) {
+                context += '=== HOME REMEDIES (Traditional Nuskhe) ===\n\n' +
+                    (homeRes.data as HomeRemedyChunk[]).map((c: HomeRemedyChunk, i: number) =>
+                        `[H${i + 1}] ${c.ailment} — ${c.remedy_name}\n${c.chunk_text}`
+                    ).join('\n\n');
+            }
 
-            return { context, remediesFound };
+            const fallbackResult = { context, remediesFound };
+            setCachedRAG(cacheKey, fallbackResult);
+            return fallbackResult;
         } catch {
             return { context: "", remediesFound: [] };
         }
@@ -344,7 +370,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized — missing token' }, { status: 401 });
         }
         const token = authHeader.slice(7);
-        const supabase = getSupabaseAdminClient();
+        const supabase = getSupabaseAdmin();
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized — invalid token' }, { status: 401 });
@@ -461,13 +487,9 @@ Based on all of the above, generate the formatting JSON.`;
         const groqTimeout = setTimeout(() => groqAbort.abort(), 45_000);
 
         try {
-            const groqKey = process.env.GROQ_API_KEY;
-            if (!groqKey) throw new Error("Missing GROQ_API_KEY");
+            if (!process.env.GROQ_API_KEY) throw new Error("Missing GROQ_API_KEY");
 
-            const groq = new OpenAI({
-                baseURL: AI_PHASE_CONFIG.endpoints.groq,
-                apiKey: groqKey,
-            });
+            const groq = getGroqClient(); // singleton — reuses existing connection
 
             const completion = await groq.chat.completions.create(
                 {
@@ -488,10 +510,9 @@ Based on all of the above, generate the formatting JSON.`;
             provider = AI_PHASE_CONFIG.fallback;
 
             // Fallback: Gemini 2.5 Flash — hard 45 s timeout
-            const geminiKey = process.env.GEMINI_API_KEY;
-            if (!geminiKey) throw new Error("Missing GEMINI_API_KEY");
+            if (!process.env.GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
-            const genai = new GoogleGenAI({ apiKey: geminiKey });
+            const genai = getGeminiClient(); // singleton
             const geminiAbort = new AbortController();
             const geminiTimeout = setTimeout(() => geminiAbort.abort(), 45_000);
 

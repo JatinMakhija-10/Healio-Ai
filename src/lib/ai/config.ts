@@ -1,3 +1,7 @@
+import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
+import { createClient } from '@supabase/supabase-js';
+
 export const AI_PHASE_CONFIG = {
     // Primary provider (Groq - Llama 3.3 70B)
     primary: 'groq',
@@ -58,6 +62,49 @@ export const AI_PHASE_CONFIG = {
     },
 } as const;
 
+// ── Singleton SDK Client Factories ────────────────────────────────────────────
+// Created once per serverless instance (warm re-use) — never per-request.
+// This eliminates ~100–200 ms of SDK constructor + TLS overhead on every call.
+
+let _groqClient: OpenAI | null = null;
+/** Returns a module-level singleton Groq client (OpenAI-compatible). */
+export function getGroqClient(): OpenAI {
+    if (!_groqClient) {
+        _groqClient = new OpenAI({
+            baseURL: AI_PHASE_CONFIG.endpoints.groq,
+            apiKey: process.env.GROQ_API_KEY ?? '',
+        });
+    }
+    return _groqClient;
+}
+
+let _geminiClient: GoogleGenAI | null = null;
+/** Returns a module-level singleton Google GenAI client. */
+export function getGeminiClient(): GoogleGenAI {
+    if (!_geminiClient) {
+        _geminiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY ?? '' });
+    }
+    return _geminiClient;
+}
+
+let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
+/**
+ * Returns a module-level singleton Supabase service-role client.
+ * Safe to share across requests — the service key is never user-scoped.
+ */
+export function getSupabaseAdmin(): ReturnType<typeof createClient> {
+    if (!_supabaseAdmin) {
+        _supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+            process.env.SUPABASE_SERVICE_ROLE_KEY ??
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
+            ''
+        );
+    }
+    return _supabaseAdmin;
+}
+
 // Types for AI responses
 export interface AIResponse {
     content: string;
@@ -67,3 +114,4 @@ export interface AIResponse {
 }
 
 export type AIProviderKey = typeof AI_PHASE_CONFIG.primary | typeof AI_PHASE_CONFIG.fallback;
+

@@ -1,8 +1,14 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, lazy, Suspense } from "react";
+
+// Lazy load devtools to prevent chunk load errors
+const ReactQueryDevtools = lazy(() =>
+    import("@tanstack/react-query-devtools").then((mod) => ({
+        default: mod.ReactQueryDevtools,
+    }))
+);
 
 export function QueryProvider({ children }: { children: ReactNode }) {
     const [queryClient] = useState(
@@ -21,7 +27,11 @@ export function QueryProvider({ children }: { children: ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             {children}
-            <ReactQueryDevtools initialIsOpen={false} />
+            {process.env.NODE_ENV === "development" && (
+                <Suspense fallback={null}>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                </Suspense>
+            )}
         </QueryClientProvider>
     );
 }
