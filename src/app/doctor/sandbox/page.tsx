@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProFeatureGate } from "@/components/subscription/ProFeatureGate";
 
 export default function ClinicalSandboxPage() {
     const [query, setQuery] = useState("");
@@ -52,6 +53,11 @@ export default function ClinicalSandboxPage() {
     };
 
     return (
+        <ProFeatureGate
+            feature="clinical_sandbox"
+            featureName="Clinical Sandbox"
+            description="Run AI-assisted differential analysis, lab suggestions, and integrative clinical reasoning for test cases."
+        >
         <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
             <div className="flex items-center justify-between shrink-0">
                 <div>
@@ -226,6 +232,7 @@ export default function ClinicalSandboxPage() {
                 </Card>
             </div>
         </div>
+        </ProFeatureGate>
     );
 }
 

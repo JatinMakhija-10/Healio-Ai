@@ -1,0 +1,11 @@
+Doctor Name,Specialty,Clinic/Hospital,Area,Phone,Email,Source,Owner,Status,Priority,Follow-up Date,Notes
+Sample Doctor 1,General Physician,,,,"",Google Maps,,Not Contacted,P0,,
+Sample Doctor 2,Dermatologist,,,,"",Clinic Visit,,Not Contacted,P1,,
+Sample Doctor 3,Gynecologist,,,,"",Referral,,Not Contacted,P1,,
+Sample Doctor 4,Pediatrician,,,,"",LinkedIn,,Not Contacted,P1,,
+Sample Doctor 5,Dentist,,,,"",Google Maps,,Not Contacted,P2,,
+Sample Doctor 6,Physiotherapist,,,,"",Clinic Visit,,Not Contacted,P2,,
+Sample Doctor 7,Dietician,,,,"",Instagram,,Not Contacted,P2,,
+Sample Doctor 8,Psychologist,,,,"",Referral,,Not Contacted,P1,,
+Sample Doctor 9,Homeopathy Doctor,,,,"",Local Search,,Not Contacted,P1,,
+Sample Doctor 10,Ayurveda Doctor,,,,"",Local Search,,Not Contacted,P1,,

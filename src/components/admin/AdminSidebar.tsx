@@ -19,6 +19,7 @@ import {
     Zap,
     Video,
     BarChart2,
+    Megaphone,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -86,6 +87,7 @@ export function AdminSidebar() {
             items: [
                 { label: "Doctor Verification", href: "/admin/doctors", icon: UserCheck, badge: badges.pendingDoctors },
                 { label: "Users", href: "/admin/users", icon: Users, badge: 0 },
+                { label: "Notifications", href: "/admin/notifications", icon: Megaphone, badge: 0 },
                 { label: "Video Management", href: "/admin/videos", icon: Video, badge: 0 },
                 { label: "Transactions", href: "/admin/transactions", icon: CreditCard, badge: 0 },
                 { label: "Invoices", href: "/admin/invoices", icon: FileText, badge: 0 },

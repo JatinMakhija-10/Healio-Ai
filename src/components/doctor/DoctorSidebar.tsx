@@ -15,11 +15,13 @@ import {
     ChevronLeft,
     ChevronRight,
     Video,
+    Beaker,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { hasFeature } from "@/lib/subscription/plans";
 
 const navItems = [
     {
@@ -54,6 +56,11 @@ const navItems = [
         icon: BarChart3,
     },
     {
+        label: "Sandbox",
+        href: "/doctor/sandbox",
+        icon: Beaker,
+    },
+    {
         label: "Settings",
         href: "/doctor/settings",
         icon: Settings,
@@ -62,8 +69,9 @@ const navItems = [
 
 export function DoctorSidebar() {
     const pathname = usePathname();
-    const { user, logout } = useAuth();
+    const { user, profile, logout } = useAuth();
     const [collapsed, setCollapsed] = useState(false);
+    const isPro = hasFeature(profile?.subscription_plan, "verified_badge");
 
     const initials = user?.user_metadata?.full_name
         ?.split(" ")
@@ -96,7 +104,7 @@ export function DoctorSidebar() {
                             Healio<span className="text-teal-400">.AI</span>
                         </span>
                         <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
-                            Doctor Portal
+                            {isPro ? "Doctor Portal Pro" : "Doctor Portal"}
                         </span>
                     </div>
                 )}
@@ -188,7 +196,7 @@ export function DoctorSidebar() {
                                 {user?.user_metadata?.full_name || "Doctor"}
                             </p>
                             <p className="text-[10px] text-slate-500 truncate">
-                                {user?.email}
+                                {isPro ? "Healio Pro" : user?.email}
                             </p>
                         </div>
                     )}

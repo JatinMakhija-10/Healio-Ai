@@ -150,8 +150,11 @@ export default function SearchPage() {
                                                             {doctor.profile?.full_name?.[0] || 'D'}
                                                         </AvatarFallback>
                                                     </Avatar>
-                                                    {doctor.verified && (
-                                                        <div className="absolute -bottom-1 -right-1 bg-teal-500 text-white p-0.5 rounded-full border-2 border-white" title="Verified Doctor">
+                                                    {(doctor.verified || doctor.is_pro) && (
+                                                        <div
+                                                            className={`absolute -bottom-1 -right-1 text-white p-0.5 rounded-full border-2 border-white ${doctor.is_pro ? "bg-purple-600" : "bg-teal-500"}`}
+                                                            title={doctor.is_pro ? "Healio Pro Verified" : "Verified Doctor"}
+                                                        >
                                                             <Award className="h-3 w-3" />
                                                         </div>
                                                     )}
@@ -167,6 +170,11 @@ export default function SearchPage() {
                                                         <MapPin className="h-3 w-3" />
                                                         <span>Online / Video</span>
                                                     </div>
+                                                    {doctor.is_pro && (
+                                                        <Badge variant="outline" className="mt-2 bg-purple-50 text-purple-700 border-purple-200">
+                                                            Healio Pro
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </div>
                                             <Badge variant="secondary" className="bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-100 gap-1 pl-1.5 pr-2">

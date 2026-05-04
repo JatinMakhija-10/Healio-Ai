@@ -110,9 +110,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                             limit={usageLimitData.limit} 
                             resetsAt={usageLimitData.resets_at} 
                             onUpgradeClick={() => {
-                                // Will trigger modal if PlanSelectionModal supports global event
-                                // Assuming page will handle layout upgrade logic for now
-                                console.log("Upgrade clicked");
+                                window.dispatchEvent(new CustomEvent("healio:open-upgrade", {
+                                    detail: {
+                                        featureLocked: "Unlimited Consultations",
+                                        targetPlan: "plus",
+                                    },
+                                }));
                             }}
                         />
                     </div>

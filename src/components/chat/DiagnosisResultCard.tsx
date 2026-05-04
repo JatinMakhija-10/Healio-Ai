@@ -35,6 +35,7 @@ import { MedicalReportDocument, MedicalReportPreviewDocument } from "./MedicalRe
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { useAuth } from "@/context/AuthContext";
+import { hasFeature } from "@/lib/subscription/plans";
 
 interface DiagnosisResultCardProps {
     condition: Condition;
@@ -151,7 +152,7 @@ export function DiagnosisResultCard({
 
     useEffect(() => {
         getSubscriptionStatus().then((status) => {
-            setIsPremium(status === "plus" || status === "pro");
+            setIsPremium(hasFeature(status, "pdf_health_reports"));
         });
     }, []);
 

@@ -4,28 +4,34 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Sparkles, Shield, Zap } from "lucide-react";
-import { PLANS, createCheckoutSession } from "@/lib/stripe/mockClient";
+import { PLANS, createCheckoutSession, type SubscriptionPlan } from "@/lib/stripe/mockClient";
 import { useRouter } from "next/navigation";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cn } from "@/lib/utils";
 
 interface PlanSelectionModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    featureLocked?: string; // Optional: name of the feature user tried to access
+    featureLocked?: string;
+    targetPlan?: Exclude<SubscriptionPlan, "free">;
 }
 
-export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSelectionModalProps) {
+export function PlanSelectionModal({
+    open,
+    onOpenChange,
+    featureLocked,
+    targetPlan = "plus",
+}: PlanSelectionModalProps) {
     const [loading, setLoading] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const router = useRouter();
+    const plan = PLANS[targetPlan];
+    const isPro = targetPlan === "pro";
 
-    const handleUpgrade = async (planId: string) => {
+    const handleUpgrade = async (planId: SubscriptionPlan) => {
         setLoading(planId);
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { url } = await createCheckoutSession(planId);
-            // Simulate redirect delay
             setTimeout(() => {
                 onOpenChange(false);
                 setLoading(null);
@@ -42,9 +48,7 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl p-0 overflow-hidden bg-slate-50">
                 <div className="grid md:grid-cols-2">
-                    {/* Left: Value Prop */}
                     <div className="bg-slate-900 p-8 text-white flex flex-col justify-center relative overflow-hidden">
-                        {/* Background blobs */}
                         <div className="absolute top-[-20%] right-[-20%] w-64 h-64 bg-teal-500/20 rounded-full blur-3xl" />
                         <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
 
@@ -57,10 +61,14 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                             <div>
                                 <h2 className="text-3xl font-bold tracking-tight mb-2">
                                     Go Beyond <br />
-                                    <span className="text-teal-400">Basic Care</span>
+                                    <span className={cn(isPro ? "text-purple-300" : "text-teal-400")}>
+                                        Basic Care
+                                    </span>
                                 </h2>
                                 <p className="text-slate-400 leading-relaxed">
-                                    Get unlimited access to advanced AI diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family.
+                                    {isPro
+                                        ? "Unlock doctor-grade analytics, clinical sandbox access, AI-assisted SOAP notes, and zero platform fees."
+                                        : "Get unlimited access to advanced AI diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family."}
                                 </p>
                             </div>
 
@@ -70,8 +78,10 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                         <Shield className="h-5 w-5 text-teal-400" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold">Comprehensive Protection</p>
-                                        <p className="text-xs text-slate-400">Family coverage up to 5 members</p>
+                                        <p className="font-semibold">{isPro ? "Practice Growth" : "Comprehensive Protection"}</p>
+                                        <p className="text-xs text-slate-400">
+                                            {isPro ? "0% platform fee and Pro doctor tools" : "Family coverage up to 5 members"}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -79,15 +89,16 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                         <Zap className="h-5 w-5 text-purple-400" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold">Faster Answers</p>
-                                        <p className="text-xs text-slate-400">Instant report generation & priority support</p>
+                                        <p className="font-semibold">{isPro ? "Clinical Intelligence" : "Faster Answers"}</p>
+                                        <p className="text-xs text-slate-400">
+                                            {isPro ? "Sandbox analysis and AI-enhanced notes" : "Instant report generation and priority support"}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Plans */}
                     <div className="p-8 flex flex-col">
                         <DialogHeader>
                             <DialogTitle className="text-xl text-slate-900">Choose your plan</DialogTitle>
@@ -95,23 +106,36 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                         </DialogHeader>
 
                         <div className="mt-6 space-y-4 flex-1">
-                            {/* Plus Plan (Highlighted) */}
-                            <div className="relative p-5 rounded-xl border-2 border-teal-500 bg-white shadow-lg shadow-teal-500/10">
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-500 text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                                    Most Popular
+                            <div
+                                className={cn(
+                                    "relative p-5 rounded-xl border-2 bg-white shadow-lg",
+                                    isPro
+                                        ? "border-purple-500 shadow-purple-500/10"
+                                        : "border-teal-500 shadow-teal-500/10"
+                                )}
+                            >
+                                <div
+                                    className={cn(
+                                        "absolute -top-3 left-1/2 -translate-x-1/2 text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                                        isPro ? "bg-purple-600" : "bg-teal-500"
+                                    )}
+                                >
+                                    {isPro ? "For Doctors" : "Most Popular"}
                                 </div>
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <h3 className="font-bold text-lg text-slate-900">{PLANS.plus.name}</h3>
-                                        <p className="text-xs text-slate-500">For health-conscious individuals</p>
+                                        <h3 className="font-bold text-lg text-slate-900">{plan.name}</h3>
+                                        <p className="text-xs text-slate-500">
+                                            {isPro ? "For verified practitioners" : "For health-conscious individuals"}
+                                        </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-2xl font-bold text-slate-900">₹{PLANS.plus.price}</p>
-                                        <p className="text-xs text-slate-500">/{PLANS.plus.interval}</p>
+                                        <p className="text-2xl font-bold text-slate-900">INR {plan.price}</p>
+                                        <p className="text-xs text-slate-500">/{plan.interval}</p>
                                     </div>
                                 </div>
                                 <ul className="space-y-2 mb-6">
-                                    {PLANS.plus.features.map((feature, i) => (
+                                    {plan.features.map((feature, i) => (
                                         <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                                             <Check className="h-4 w-4 text-teal-500 shrink-0" />
                                             {feature}
@@ -119,17 +143,20 @@ export function PlanSelectionModal({ open, onOpenChange, featureLocked }: PlanSe
                                     ))}
                                 </ul>
                                 <Button
-                                    className="w-full bg-teal-600 hover:bg-teal-700 h-11"
-                                    onClick={() => handleUpgrade('plus')}
-                                    disabled={loading === 'plus'}
+                                    className={cn(
+                                        "w-full h-11",
+                                        isPro ? "bg-purple-600 hover:bg-purple-700" : "bg-teal-600 hover:bg-teal-700"
+                                    )}
+                                    onClick={() => handleUpgrade(targetPlan)}
+                                    disabled={loading === targetPlan}
                                 >
-                                    {loading === 'plus' ? (
+                                    {loading === targetPlan ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                             Processing...
                                         </>
                                     ) : (
-                                        "Start Free Trial"
+                                        isPro ? "Upgrade to Healio Pro" : "Start Free Trial"
                                     )}
                                 </Button>
                             </div>

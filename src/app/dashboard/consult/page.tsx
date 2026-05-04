@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChatWindow } from "./components/ChatWindow";
@@ -8,6 +8,8 @@ import { InputBar } from "./components/InputBar";
 import { useChat } from "./hooks/useChat";
 import { useVoiceInput } from "./hooks/useVoiceInput";
 import { useAuth } from "@/context/AuthContext";
+import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
+import type { SubscriptionPlan } from "@/lib/subscription/plans";
 import { X, ArrowLeft, History } from "lucide-react";
 
 // ─── Persona Required Banner ──────────────────────────────────────────────────
@@ -155,6 +157,11 @@ function ConsultPageInner() {
 
     const [widgetActive, setWidgetActive] = useState(false);
     const [bannerDismissed, setBannerDismissed] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState<{
+        open: boolean;
+        featureLocked?: string;
+        targetPlan: Exclude<SubscriptionPlan, "free">;
+    }>({ open: false, targetPlan: "plus" });
     const {
         isRecording,
         transcript,
@@ -166,6 +173,23 @@ function ConsultPageInner() {
 
     const handleWidgetActive = useCallback((active: boolean) => {
         setWidgetActive(active);
+    }, []);
+
+    useEffect(() => {
+        const handleUpgradeEvent = (event: Event) => {
+            const detail = (event as CustomEvent<{
+                featureLocked?: string;
+                targetPlan?: Exclude<SubscriptionPlan, "free">;
+            }>).detail;
+            setUpgradeModal({
+                open: true,
+                featureLocked: detail?.featureLocked,
+                targetPlan: detail?.targetPlan || "plus",
+            });
+        };
+
+        window.addEventListener("healio:open-upgrade", handleUpgradeEvent);
+        return () => window.removeEventListener("healio:open-upgrade", handleUpgradeEvent);
     }, []);
 
     // Show nothing while auth resolves
@@ -243,6 +267,13 @@ function ConsultPageInner() {
                 onStartRecording={startRecording}
                 onStopRecording={stopRecording}
                 onClearTranscript={clearTranscript}
+            />
+
+            <PlanSelectionModal
+                open={upgradeModal.open}
+                onOpenChange={(open) => setUpgradeModal((prev) => ({ ...prev, open }))}
+                featureLocked={upgradeModal.featureLocked}
+                targetPlan={upgradeModal.targetPlan}
             />
         </div>
     );

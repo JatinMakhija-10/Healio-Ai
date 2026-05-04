@@ -24,6 +24,7 @@ import { invoiceService } from "@/lib/invoices/invoiceService";
 import { paymentService, Transaction } from "@/lib/payments/paymentService";
 import { appointmentService } from "@/lib/appointments/appointmentService";
 import { supabase } from "@/lib/supabase";
+import { ProFeatureGate } from "@/components/subscription/ProFeatureGate";
 
 interface RevenueSummary {
     totalRevenue: number;
@@ -158,6 +159,11 @@ export default function DoctorRevenuePage() {
     }
 
     return (
+        <ProFeatureGate
+            feature="patient_analytics_dashboard"
+            featureName="Patient Analytics Dashboard"
+            description="Track revenue, consultation volume, invoice health, payout history, and performance trends in one Pro dashboard."
+        >
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -444,5 +450,6 @@ export default function DoctorRevenuePage() {
                 </CardContent>
             </Card>
         </div>
+        </ProFeatureGate>
     );
 }

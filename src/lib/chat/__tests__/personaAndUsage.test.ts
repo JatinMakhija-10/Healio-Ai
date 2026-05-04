@@ -1,4 +1,9 @@
 import { describe, it, expect } from "vitest";
+import {
+    FREE_MONTHLY_CONSULTATIONS,
+    UNLIMITED_USAGE,
+    getMonthlyConsultationLimit,
+} from "@/lib/subscription/plans";
 
 /**
  * Tests for persona-related logic used in the chat API route.
@@ -93,18 +98,16 @@ describe("Persona context generation", () => {
 });
 
 describe("Usage limit constants", () => {
-    const FREE_LIMIT = 10;
-    const PREMIUM_LIMIT = -1; // unlimited
-
     it("free plan has 10 monthly consultations", () => {
-        expect(FREE_LIMIT).toBe(10);
+        expect(getMonthlyConsultationLimit("free")).toBe(FREE_MONTHLY_CONSULTATIONS);
     });
 
     it("premium plans have unlimited (-1) consultations", () => {
-        expect(PREMIUM_LIMIT).toBe(-1);
+        expect(getMonthlyConsultationLimit("plus")).toBe(UNLIMITED_USAGE);
+        expect(getMonthlyConsultationLimit("pro")).toBe(UNLIMITED_USAGE);
     });
 
     it("free limit is positive", () => {
-        expect(FREE_LIMIT).toBeGreaterThan(0);
+        expect(FREE_MONTHLY_CONSULTATIONS).toBeGreaterThan(0);
     });
 });

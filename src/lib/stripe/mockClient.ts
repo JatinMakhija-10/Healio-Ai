@@ -1,58 +1,11 @@
 import { supabase } from '@/lib/supabase';
-
-export type SubscriptionPlan = 'free' | 'plus' | 'pro';
-
-export interface PlanDetails {
-    id: SubscriptionPlan;
-    name: string;
-    price: number;
-    interval: 'month' | 'year';
-    currency: string;
-    features: string[];
-}
-
-export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
-    free: {
-        id: 'free',
-        name: 'Healio Basic',
-        price: 0,
-        interval: 'month',
-        currency: 'INR',
-        features: [
-            'Basic AI Diagnosis',
-            '10 Monthly Consultations',
-            'Community Support'
-        ]
-    },
-    plus: {
-        id: 'plus',
-        name: 'Healio Plus',
-        price: 999,
-        interval: 'month',
-        currency: 'INR',
-        features: [
-            'Unlimited AI Diagnosis',
-            'PDF Health Reports',
-            'Family Profiles (up to 5)',
-            'Vikriti Wellness Tracking',
-            'Priority Doctor Access'
-        ]
-    },
-    pro: {
-        id: 'pro',
-        name: 'Healio Pro',
-        price: 4999,
-        interval: 'month',
-        currency: 'INR',
-        features: [
-            'Patient Analytics Dashboard',
-            'Clinical Sandbox Access',
-            'AI-Enhanced SOAP Notes',
-            'Verified Badge',
-            '0% Platform Fee'
-        ]
-    }
-};
+export {
+    PLANS,
+    type PlanDetails,
+    type SubscriptionPlan,
+    normalizeSubscriptionPlan,
+} from '@/lib/subscription/plans';
+import { normalizeSubscriptionPlan, type SubscriptionPlan } from '@/lib/subscription/plans';
 
 export async function createCheckoutSession(planId: string): Promise<{ url: string }> {
     // Mock network delay — replace with real Stripe integration later
@@ -75,7 +28,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionPlan> {
             .single();
 
         if (error || !profile?.subscription_plan) return 'free';
-        return profile.subscription_plan as SubscriptionPlan;
+        return normalizeSubscriptionPlan(profile.subscription_plan);
     } catch {
         // Fallback to free if DB query fails (e.g., column not yet migrated)
         return 'free';

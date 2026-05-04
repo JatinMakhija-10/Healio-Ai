@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Bell, Search, Menu, X, Heart, Droplets, Moon, Activity, Leaf } from "lucide-react";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/lib/hooks/useApiQueries";
+import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+    Bell, Search, Menu, X, Info,
+    Calendar, UserCheck, XCircle, MessageSquare, Shield, Video, Megaphone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileSidebar } from "./MobileSidebar";
@@ -20,58 +25,113 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard/videos": "Videos",
 };
 
-// Sample notifications with health tips
-const sampleNotifications = [
-    {
-        id: 1,
-        type: 'tip',
-        icon: Droplets,
-        title: 'Stay Hydrated',
-        message: 'Drink warm water in the morning to kickstart your digestion.',
-        time: '2 hours ago',
-        read: false
-    },
-    {
-        id: 2,
-        type: 'reminder',
-        icon: Moon,
-        title: 'Sleep Reminder',
-        message: 'Aim for 7-8 hours of sleep for optimal health.',
-        time: '5 hours ago',
-        read: false
-    },
-    {
-        id: 3,
-        type: 'insight',
-        icon: Leaf,
-        title: 'Ayurvedic Tip',
-        message: 'Practice deep breathing for 5 minutes to balance your doshas.',
-        time: '1 day ago',
-        read: true
-    },
-    {
-        id: 4,
-        type: 'health',
-        icon: Activity,
-        title: 'Activity Goal',
-        message: 'Try a 15-minute walk after meals to improve digestion.',
-        time: '2 days ago',
-        read: true
+/** Map notification type → icon + color */
+function getNotificationMeta(type: string) {
+    switch (type) {
+        case 'appointment_reminder':
+            return { icon: Calendar, color: 'text-blue-600 bg-blue-100' };
+        case 'new_booking':
+            return { icon: UserCheck, color: 'text-emerald-600 bg-emerald-100' };
+        case 'booking_confirmed':
+            return { icon: UserCheck, color: 'text-green-600 bg-green-100' };
+        case 'booking_cancelled':
+            return { icon: XCircle, color: 'text-red-600 bg-red-100' };
+        case 'patient_message':
+        case 'doctor_message':
+            return { icon: MessageSquare, color: 'text-purple-600 bg-purple-100' };
+        case 'admin_alert':
+            return { icon: Megaphone, color: 'text-amber-600 bg-amber-100' };
+        case 'video_call':
+            return { icon: Video, color: 'text-teal-600 bg-teal-100' };
+        case 'system':
+        default:
+            return { icon: Info, color: 'text-slate-600 bg-slate-100' };
     }
-];
+}
+
+/** Format relative time */
+function timeAgo(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+// DB Notification shape
+interface DBNotification {
+    id: string;
+    user_id: string;
+    type: string;
+    title: string;
+    message: string;
+    action_url: string | null;
+    metadata: Record<string, unknown>;
+    is_read: boolean;
+    created_at: string;
+    read_at: string | null;
+}
 
 export function Header() {
     const { user } = useAuth();
     const pathname = usePathname();
+    const router = useRouter();
+    const queryClient = useQueryClient();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const [notifications, setNotifications] = useState(sampleNotifications);
+    const notificationRef = useRef<HTMLDivElement>(null);
+
+    // ── Fetch real notifications from Supabase ──
+    const { data: notifications = [], isLoading } = useNotifications(user?.id);
+    const markReadMutation = useMarkNotificationRead();
+    const markAllReadMutation = useMarkAllNotificationsRead();
+
+    const typedNotifications = notifications as DBNotification[];
+
+    const unreadCount = typedNotifications.filter(n => !n.is_read).length;
 
     // Resolve page title from current route
     const pageTitle = PAGE_TITLES[pathname] || pathname.split("/").pop()?.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Dashboard";
-    const notificationRef = useRef<HTMLDivElement>(null);
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    // ── Supabase Realtime: listen for NEW notifications ──
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const channel = supabase
+            .channel(`user-notifications-${user.id}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notifications',
+                filter: `user_id=eq.${user.id}`,
+            }, () => {
+                // Invalidate React Query cache → triggers refetch
+                queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            })
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'notifications',
+                filter: `user_id=eq.${user.id}`,
+            }, () => {
+                queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user?.id, queryClient]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -84,13 +144,19 @@ export function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const markAllAsRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    };
+    const handleMarkAllRead = useCallback(() => {
+        if (user?.id) {
+            markAllReadMutation.mutate(user.id);
+        }
+    }, [user?.id, markAllReadMutation]);
 
-    const markAsRead = (id: number) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    };
+    const handleMarkRead = useCallback((notifId: string, actionUrl?: string | null) => {
+        markReadMutation.mutate(notifId);
+        if (actionUrl) {
+            setIsNotificationOpen(false);
+            router.push(actionUrl);
+        }
+    }, [markReadMutation, router]);
 
     return (
         <>
@@ -128,8 +194,8 @@ export function Header() {
                         >
                             <Bell size={20} />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white font-bold flex items-center justify-center">
-                                    {unreadCount}
+                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white font-bold flex items-center justify-center animate-pulse">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
                                 </span>
                             )}
                         </Button>
@@ -139,11 +205,18 @@ export function Header() {
                             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
-                                    <h3 className="font-semibold text-slate-900">Notifications</h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-semibold text-slate-900">Notifications</h3>
+                                        {unreadCount > 0 && (
+                                            <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold">
+                                                {unreadCount} new
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2">
                                         {unreadCount > 0 && (
                                             <button
-                                                onClick={markAllAsRead}
+                                                onClick={handleMarkAllRead}
                                                 className="text-xs text-teal-600 hover:text-teal-700 font-medium"
                                             >
                                                 Mark all read
@@ -160,35 +233,50 @@ export function Header() {
 
                                 {/* Notification List */}
                                 <div className="max-h-80 overflow-y-auto">
-                                    {notifications.length === 0 ? (
+                                    {isLoading ? (
+                                        <div className="py-8 text-center text-slate-500">
+                                            <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                                            <p className="text-sm">Loading…</p>
+                                        </div>
+                                    ) : typedNotifications.length === 0 ? (
                                         <div className="py-8 text-center text-slate-500">
                                             <Bell className="mx-auto h-8 w-8 text-slate-300 mb-2" />
-                                            <p>No notifications yet</p>
+                                            <p className="font-medium">All caught up!</p>
+                                            <p className="text-xs text-slate-400 mt-1">No notifications yet</p>
                                         </div>
                                     ) : (
-                                        notifications.map((notif) => {
-                                            const IconComponent = notif.icon;
+                                        typedNotifications.slice(0, 20).map((notif) => {
+                                            const meta = getNotificationMeta(notif.type);
+                                            const IconComponent = meta.icon;
                                             return (
                                                 <div
                                                     key={notif.id}
-                                                    onClick={() => markAsRead(notif.id)}
-                                                    className={`px-4 py-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!notif.read ? 'bg-teal-50/50' : ''}`}
+                                                    onClick={() => handleMarkRead(notif.id, notif.action_url)}
+                                                    className={`px-4 py-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-teal-50/50' : ''}`}
                                                 >
                                                     <div className="flex gap-3">
-                                                        <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${!notif.read ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                        <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${!notif.is_read ? meta.color : 'bg-slate-100 text-slate-400'}`}>
                                                             <IconComponent size={18} />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-start justify-between gap-2">
-                                                                <p className={`text-sm ${!notif.read ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
+                                                                <p className={`text-sm ${!notif.is_read ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
                                                                     {notif.title}
                                                                 </p>
-                                                                {!notif.read && (
+                                                                {!notif.is_read && (
                                                                     <span className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0 mt-1.5"></span>
                                                                 )}
                                                             </div>
                                                             <p className="text-sm text-slate-500 mt-0.5 line-clamp-2">{notif.message}</p>
-                                                            <p className="text-xs text-slate-400 mt-1">{notif.time}</p>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <p className="text-xs text-slate-400">{timeAgo(notif.created_at)}</p>
+                                                                {notif.type === 'admin_alert' && (
+                                                                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                                                                        <Shield size={8} />
+                                                                        Admin
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -198,11 +286,13 @@ export function Header() {
                                 </div>
 
                                 {/* Footer */}
-                                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
-                                    <button className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium py-1">
-                                        View all notifications
-                                    </button>
-                                </div>
+                                {typedNotifications.length > 0 && (
+                                    <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
+                                        <button className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium py-1">
+                                            View all notifications
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

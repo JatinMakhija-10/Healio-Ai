@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
+import { getFamilyProfileLimit, hasFeature } from "@/lib/subscription/plans";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
@@ -48,6 +49,7 @@ interface Persona {
 export default function FamilyPage() {
     const { user } = useAuth();
     const [isPremium, setIsPremium] = useState(false);
+    const [profileLimit, setProfileLimit] = useState(1);
     const [loading, setLoading] = useState(true);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [members, setMembers] = useState<Persona[]>([]);
@@ -83,7 +85,8 @@ export default function FamilyPage() {
     useEffect(() => {
         async function init() {
             const status = await getSubscriptionStatus();
-            setIsPremium(status === 'plus' || status === 'pro');
+            setIsPremium(hasFeature(status, "family_profiles"));
+            setProfileLimit(getFamilyProfileLimit(status));
             await loadPersonas();
             setLoading(false);
         }
@@ -103,9 +106,8 @@ export default function FamilyPage() {
         e.preventDefault();
         if (!user || !formName.trim() || isSaving) return;
 
-        // Enforce max 5 personas
-        if (members.length >= 5) {
-            alert("You can have a maximum of 5 family profiles.");
+        if (members.length >= profileLimit) {
+            alert(`You can have a maximum of ${profileLimit} family profile${profileLimit === 1 ? "" : "s"}.`);
             return;
         }
 

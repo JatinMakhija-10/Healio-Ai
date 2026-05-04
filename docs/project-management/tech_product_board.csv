@@ -1,0 +1,77 @@
+Task,Category,Owner,Priority,Status,Deadline,GitHub Link,Notes
+Fix production build error in doctor sandbox,Build Stability,,P0,Not Started,,,Known blocker in src/app/doctor/sandbox/page.tsx
+Run npm run build successfully,Build Stability,,P0,Not Started,,,Required before launch
+Fix current ESLint errors,Code Quality,,P0,Not Started,,,Known JSX entity and img issues
+Upgrade Next.js to patched version,Security,,P0,Not Started,,,Current audit flags Next vulnerability
+Fix or replace vulnerable jspdf,Security,,P0,Not Started,,,Critical audit issue
+Fix protobufjs vulnerability,Security,,P0,Not Started,,,Critical audit issue
+Review xlsx vulnerability,Security,,P1,Not Started,,,No automatic fix available
+Fix dompurify vulnerability,Security,,P1,Not Started,,,XSS-related dependency risk
+Fix lodash/lodash-es vulnerabilities,Security,,P1,Not Started,,,Prototype pollution/code injection risk
+Review react-simple-maps risk,Security,,P2,Not Started,,,Major version downgrade suggested by audit
+Verify env vars are server-only,Secrets,,P0,Not Started,,,Service role and AI keys must not be public
+Add env validation,Secrets,,P1,Not Started,,,Fail clearly when missing keys
+Verify patient signup/login,Auth,,P0,Not Started,,,Critical flow
+Verify doctor signup/login,Auth,,P0,Not Started,,,Critical flow
+Verify admin login,Auth,,P0,Not Started,,,Critical flow
+Test role-based access control,Auth,,P0,Not Started,,,Patient doctor admin separation
+Verify pending doctor restrictions,Auth,,P0,Not Started,,,Pending doctors should not access full dashboard
+Verify rejected doctor flow,Auth,,P1,Not Started,,,Clear UX after rejection
+Review Supabase RLS policies,Database,,P0,Not Started,,,All sensitive tables
+Test patient cannot access other patient data,Database,,P0,Not Started,,,RLS test
+Test doctor cannot access unrelated patients,Database,,P0,Not Started,,,RLS test
+Review storage bucket permissions,Database,,P0,Not Started,,,Medical files must be private
+Add signed URLs for private documents,Database,,P1,Not Started,,,Reports/uploads
+Finalize users/patients/doctors schema,Database,,P0,Not Started,,,Core tables
+Finalize appointments schema,Database,,P0,Not Started,,,Booking flow
+Finalize consultations schema,Database,,P1,Not Started,,,Doctor notes
+Finalize AI sessions schema,Database,,P1,Not Started,,,Audit and history
+Add database indexes for doctor search,Database,,P1,Not Started,,,Performance
+Add database indexes for appointments,Database,,P1,Not Started,,,Performance
+Add backup and restore process,Database,,P0,Not Started,,,Production safety
+Complete doctor registration flow,Doctor Product,,P0,Not Started,,,End-to-end
+Complete doctor onboarding flow,Doctor Product,,P0,Not Started,,,End-to-end
+Complete doctor profile editor,Doctor Product,,P1,Not Started,,,Specialty location fee availability
+Complete doctor schedule flow,Doctor Product,,P0,Not Started,,,Availability and slots
+Complete doctor patient list,Doctor Product,,P0,Not Started,,,Critical for doctors
+Complete post-consultation form,Doctor Product,,P1,Not Started,,,Doctor workflow
+Complete patient onboarding,Patient Product,,P0,Not Started,,,End-to-end
+Complete doctor search,Patient Product,,P0,Not Started,,,Specialty/location filters
+Complete appointment booking,Patient Product,,P0,Not Started,,,Critical flow
+Complete appointment cancellation/reschedule,Appointments,,P1,Not Started,,,Expected user flow
+Prevent double booking,Appointments,,P0,Not Started,,,Critical launch risk
+Add appointment lifecycle statuses,Appointments,,P1,Not Started,,,Pending confirmed completed cancelled no-show
+Test real-time appointment updates,Appointments,,P1,Not Started,,,Doctor/patient sync
+Add medical disclaimer to AI chat,AI Safety,,P0,Not Started,,,Before any AI answer
+Add emergency red-flag detection,AI Safety,,P0,Not Started,,,Escalate immediately
+Add doctor escalation CTA,AI Safety,,P0,Not Started,,,Healthcare safety
+Add AI rate limiting,AI Safety,,P0,Not Started,,,Cost and abuse control
+Add AI usage tracking,AI Safety,,P1,Not Started,,,Cost monitoring
+Finalize Ayurveda Prakriti scoring,Ayurveda Engine,,P1,Not Started,,,Logic and tests
+Finalize Ayurveda Vikriti scoring,Ayurveda Engine,,P1,Not Started,,,Logic and tests
+Add Ayurveda safety disclaimers,Ayurveda Engine,,P0,Not Started,,,No medical certainty
+Add clinical review for Ayurveda content,Ayurveda Engine,,P0,Not Started,,,Before public use
+Finalize homeopathy remedy KB structure,Homeopathy Engine,,P1,Not Started,,,Source-tagged data
+Add remedy confidence scoring,Homeopathy Engine,,P1,Not Started,,,Avoid overclaiming
+Add homeopathy safety disclaimers,Homeopathy Engine,,P0,Not Started,,,No cure guarantees
+Add doctor review workflow for remedies,Homeopathy Engine,,P1,Not Started,,,Safety
+Define Bayesian engine priors,Diagnostic Engine,,P1,Not Started,,,Condition probability model
+Define symptom likelihood mapping,Diagnostic Engine,,P1,Not Started,,,Bayesian logic
+Add uncertainty handling,Diagnostic Engine,,P0,Not Started,,,Avoid false certainty
+Add tests for emergency symptom sets,Diagnostic Engine,,P0,Not Started,,,Safety-critical
+Define approved RAG sources,RAG,,P0,Not Started,,,Medical/Ayurveda/Homeopathy split
+Add source metadata to chunks,RAG,,P1,Not Started,,,Title author page category
+Add citation display in AI answers,RAG,,P0,Not Started,,,Trust requirement
+Add prompt injection protection,RAG,,P0,Not Started,,,Security
+Add RAG fallback when source is weak,RAG,,P0,Not Started,,,Say cannot answer reliably
+Run unit tests,QA,,P0,Not Started,,,npm run test
+Run Playwright doctor flow,QA,,P0,Not Started,,,Existing e2e coverage
+Add Playwright patient booking test,QA,,P0,Not Started,,,Critical flow
+Add admin approval e2e test,QA,,P1,Not Started,,,Doctor onboarding
+Run mobile visual QA,QA,,P1,Not Started,,,Patient and doctor screens
+Set up staging deployment,Deployment,,P0,Not Started,,,Before production
+Set up production env vars,Deployment,,P0,Not Started,,,Vercel/Supabase/AI
+Configure error monitoring,Monitoring,,P0,Not Started,,,Production visibility
+Configure uptime monitoring,Monitoring,,P1,Not Started,,,Launch safety
+Create rollback plan,Deployment,,P0,Not Started,,,Launch-day required
+Prepare final launch smoke test,Launch Gate,,P0,Not Started,,,Run before public launch

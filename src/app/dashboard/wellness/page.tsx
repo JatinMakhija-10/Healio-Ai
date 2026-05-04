@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
+import { hasFeature } from "@/lib/subscription/plans";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -33,7 +34,7 @@ export default function WellnessPage() {
 
     useEffect(() => {
         getSubscriptionStatus().then((status) => {
-            setIsPremium(status === 'plus' || status === 'pro');
+            setIsPremium(hasFeature(status, "vikriti_wellness_tracking"));
             setLoading(false);
         });
     }, []);

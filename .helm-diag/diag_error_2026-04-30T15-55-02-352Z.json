@@ -1,0 +1,145 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-04-30T15:55:02.307Z",
+    "userEmail": "dudetfgibmeemailid@gmail.com",
+    "userName": "ALtt acc"
+  },
+  "extensionLogs": [
+    "2026-04-30 21:21:37.541 [info] I0430 21:21:37.541215 22396 server.go:1235] Starting language server process with pid 22396",
+    "2026-04-30 21:21:37.542 [info] I0430 21:21:37.541215 22396 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-04-30 21:21:37.542 [info] I0430 21:21:37.542260 22396 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-04-30 21:21:37.544 [info] I0430 21:21:37.544282 22396 server.go:454] Language server listening on random port at 57416 for HTTPS (gRPC)",
+    "2026-04-30 21:21:37.544 [info] I0430 21:21:37.544282 22396 server.go:461] Language server listening on random port at 57417 for HTTP",
+    "2026-04-30 21:21:38.795 [info] I0430 21:21:38.795228 22396 server.go:433] Created extension server client at port 57415",
+    "2026-04-30 21:21:38.815 [info] I0430 21:21:38.814167 22396 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-04-30 21:21:38.831 [info] (Antigravity) 2026-04-30 21:21:38.830 [INFO]: Language server started",
+    "2026-04-30 21:21:38.861 [info] I0430 21:21:38.852380 22396 server.go:1691] initialized server successfully in 1.3111654s",
+    "2026-04-30 21:21:39.020 [info] (Antigravity) 2026-04-30 21:21:39.019 [INFO]: LS lspClient started successfully",
+    "2026-04-30 21:21:40.072 [info] I0430 21:21:40.072098 22396 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:57439/mcp, stopping watcher",
+    "2026-04-30 21:21:41.562 [info] I0430 21:21:41.561923 22396 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xf8d2cddd54fb531a",
+    "2026-04-30 21:21:44.215 [info] I0430 21:21:44.215505 22396 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x486b5df02715c022",
+    "2026-04-30 21:21:44.226 [info] 2026/04/30 21:21:44 http: TLS handshake error from 127.0.0.1:58706: read tcp 127.0.0.1:57416->127.0.0.1:58706: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-04-30 21:21:44.226 [info] 2026/04/30 21:21:44 http: TLS handshake error from 127.0.0.1:56602: EOF",
+    "2026-04-30 21:21:44.228 [info] E0430 21:21:44.228082 22396 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-04-30 21:21:45.552 [info] I0430 21:21:45.550368 22396 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x1bcbd439d59e7266",
+    "2026-04-30 21:23:36.148 [info] I0430 21:23:36.143726 21816 server.go:1235] Starting language server process with pid 21816",
+    "2026-04-30 21:23:36.148 [info] I0430 21:23:36.144296 21816 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-04-30 21:23:36.154 [info] I0430 21:23:36.149825 21816 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-04-30 21:23:36.154 [info] I0430 21:23:36.151340 21816 server.go:454] Language server listening on random port at 56959 for HTTPS (gRPC)",
+    "2026-04-30 21:23:36.154 [info] I0430 21:23:36.152359 21816 server.go:461] Language server listening on random port at 56960 for HTTP",
+    "2026-04-30 21:23:36.713 [info] I0430 21:23:36.712650 21816 server.go:433] Created extension server client at port 56958",
+    "2026-04-30 21:23:36.733 [info] I0430 21:23:36.731374 21816 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-04-30 21:23:36.751 [info] (Antigravity) 2026-04-30 21:23:36.749 [INFO]: Language server started",
+    "2026-04-30 21:23:36.779 [info] I0430 21:23:36.767347 21816 server.go:1691] initialized server successfully in 623.0508ms",
+    "2026-04-30 21:23:36.939 [info] (Antigravity) 2026-04-30 21:23:36.938 [INFO]: LS lspClient started successfully",
+    "2026-04-30 21:23:37.246 [info] E0430 21:23:37.245801 21816 repo.go:394] failed to create patch for untracked file artifacts/audit_report_text.txt: bytes are not valid utf8",
+    "2026-04-30 21:23:38.036 [info] I0430 21:23:38.036195 21816 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:59983/mcp, stopping watcher",
+    "2026-04-30 21:23:39.177 [info] I0430 21:23:39.173576 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xe77449743b52969",
+    "2026-04-30 21:23:41.362 [info] I0430 21:23:41.362498 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xd6dc8ec4d8b6466",
+    "2026-04-30 21:23:41.795 [info] 2026/04/30 21:23:41 http: TLS handshake error from 127.0.0.1:57802: read tcp 127.0.0.1:56959->127.0.0.1:57802: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-04-30 21:23:41.795 [info] 2026/04/30 21:23:41 http: TLS handshake error from 127.0.0.1:53968: read tcp 127.0.0.1:56959->127.0.0.1:53968: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-04-30 21:23:41.799 [info] E0430 21:23:41.798979 21816 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-04-30 21:23:43.698 [info] I0430 21:23:43.698180 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xb14c6648f666443f",
+    "2026-04-30 21:24:59.337 [info] I0430 21:24:59.336169 21816 planner_generator.go:283] Requesting planner with 62 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-30 21:25:02.127 [info] E0430 21:25:02.125858 21816 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server"
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-04-30 21:21:29.837 [info] Initialized with 0 existing HTML files",
+      "2026-04-30 21:21:29.837 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts",
+      "2026-04-30 21:21:38.550 [info] Initialized with 0 existing HTML files",
+      "2026-04-30 21:21:38.550 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts",
+      "2026-04-30 21:23:37.256 [info] Initialized with 0 existing HTML files",
+      "2026-04-30 21:23:37.257 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-04-30 21:21:30.216 [info] Render performance baseline is 24ms",
+      "2026-04-30 21:21:38.920 [info] Render performance baseline is 20ms",
+      "2026-04-30 21:23:37.478 [info] Render performance baseline is 15ms",
+      "2026-04-30 21:24:36.731 [warning] Renderer reported VERY LONG TASK (194ms), starting profiling session '521cb9ea-ece3-449a-ab76-c3547b06708a'"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-04-30 21:21:29.050 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 4921b83810f80ebf",
+      "2026-04-30 21:21:29.096 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: d438e1684948b688",
+      "2026-04-30 21:21:31.289 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: f511b8f4ff72da15",
+      "2026-04-30 21:21:31.373 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: d03830f92afd12be",
+      "2026-04-30 21:21:33.514 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 9c701c02c69c3a01",
+      "2026-04-30 21:21:33.520 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 1b16674b51042af8"
+    ],
+    "auth": [
+      "2026-04-30 21:21:31.485 [info] OAuth token changed, executing antigravity.handleAuthRefresh",
+      "2026-04-30 21:21:33.522 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0430 21:23:36.143726 21816 server.go:1235] Starting language server process with pid 21816\n",
+      "I0430 21:23:36.144296 21816 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0430 21:23:36.149825 21816 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0430 21:23:36.151340 21816 server.go:454] Language server listening on random port at 56959 for HTTPS (gRPC)\n",
+      "I0430 21:23:36.152359 21816 server.go:461] Language server listening on random port at 56960 for HTTP\n",
+      "I0430 21:23:36.712650 21816 server.go:433] Created extension server client at port 56958\n",
+      "I0430 21:23:36.731374 21816 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0430 21:23:36.767347 21816 server.go:1691] initialized server successfully in 623.0508ms\n",
+      "E0430 21:23:37.245801 21816 repo.go:394] failed to create patch for untracked file artifacts/audit_report_text.txt: bytes are not valid utf8\n",
+      "I0430 21:23:38.036195 21816 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:59983/mcp, stopping watcher\n",
+      "I0430 21:23:39.173576 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xe77449743b52969\n",
+      "I0430 21:23:41.362498 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xd6dc8ec4d8b6466\n",
+      "E0430 21:23:41.798979 21816 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0430 21:23:43.698180 21816 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xb14c6648f666443f\n",
+      "I0430 21:24:59.336169 21816 planner_generator.go:283] Requesting planner with 62 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0430 21:25:02.125858 21816 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "30f72e36-05bc-4c2b-89cd-245f89949a03",
+      "trajectoryId": "dc3d2e03-882f-48c4-9590-69ef0b5f1f82",
+      "summary": "Optimizing Healio RAG Performance",
+      "lastStepIndex": 207,
+      "lastModifiedTime": "2026-04-30T15:55:02.128Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    },
+    {
+      "googleAgentId": "a7d91fd2-c427-49b9-aabc-79ea3bb48841",
+      "trajectoryId": "0cb749aa-220e-40fc-8b92-63769e6e921f",
+      "summary": "what is the currebt status",
+      "lastStepIndex": 2,
+      "lastModifiedTime": "2026-04-24T09:40:02.086Z"
+    },
+    {
+      "googleAgentId": "cb6404a3-0784-47a5-ab8e-60972655924c",
+      "trajectoryId": "d25d2c31-ef59-4f73-a845-112d58d79146",
+      "summary": "curent statys",
+      "lastStepIndex": 2,
+      "lastModifiedTime": "2026-04-24T09:39:50.302Z"
+    }
+  ]
+}

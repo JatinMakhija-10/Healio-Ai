@@ -30,14 +30,15 @@ from dotenv import load_dotenv
 load_dotenv(".env.local")
 
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types as genai_types
     GEMINI_KEYS = [k.strip() for k in os.environ.get("GEMINI_API_KEYS", os.environ.get("GEMINI_API_KEY", "")).split(",") if k.strip()]
     HAS_GEMINI = bool(GEMINI_KEYS)
-    if HAS_GEMINI:
-        genai.configure(api_key=GEMINI_KEYS[0])
+    _gemini_client = genai.Client(api_key=GEMINI_KEYS[0]) if HAS_GEMINI else None
 except ImportError:
     HAS_GEMINI = False
     GEMINI_KEYS = []
+    _gemini_client = None
 
 current_key_idx = 0
 
@@ -209,22 +210,24 @@ def extract_book(book: dict) -> int:
                     img_bytes = pix.tobytes("png")
                     
                     ocr_success = False
+                    global current_key_idx, _gemini_client
                     for attempt in range(len(GEMINI_KEYS) + 1):
                         try:
-                            model = genai.GenerativeModel('gemini-2.5-flash')
-                            resp = model.generate_content([
-                                "Extract ONLY the text from this ancient book page. No markdown formatting, just the raw text. Do not add any conversational preamble.",
-                                {"mime_type": "image/png", "data": img_bytes}
-                            ])
+                            resp = _gemini_client.models.generate_content(
+                                model='gemini-2.5-flash',
+                                contents=[
+                                    "Extract ONLY the text from this ancient book page. No markdown formatting, just the raw text. Do not add any conversational preamble.",
+                                    genai_types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+                                ]
+                            )
                             raw = resp.text
                             ocr_success = True
-                            time.sleep(2) # Respect free tier RPM a bit
+                            time.sleep(2)  # Respect free tier RPM
                             break
                         except Exception as e:
-                            global current_key_idx
                             sys.stdout.write(f"\n[KEY SWAP] Error: {e}. Swapping to key {current_key_idx+1}\n")
                             current_key_idx = (current_key_idx + 1) % len(GEMINI_KEYS)
-                            genai.configure(api_key=GEMINI_KEYS[current_key_idx])
+                            _gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_idx])
                             time.sleep(1)
                     
                     if not ocr_success or not raw or len(raw.strip()) < 50:

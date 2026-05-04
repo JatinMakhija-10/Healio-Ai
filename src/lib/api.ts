@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { hasFeature } from "@/lib/subscription/plans";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { User } from "@supabase/supabase-js";
 
@@ -257,7 +258,7 @@ export const api = {
         const userIds = doctors.map(d => d.user_id);
         const { data: profiles } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url')
+            .select('id, full_name, avatar_url, subscription_plan')
             .in('id', userIds);
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
@@ -265,11 +266,16 @@ export const api = {
         // 3. Merge
         // 3. Merge and Filter (Remove orphans)
         return doctors
-            .map(d => ({
-                ...d,
-                profile: profileMap.get(d.user_id)
-            }))
-            .filter(d => d.profile && d.profile.full_name);
+            .map(d => {
+                const profile = profileMap.get(d.user_id);
+                return {
+                    ...d,
+                    profile,
+                    is_pro: hasFeature(profile?.subscription_plan, "verified_badge"),
+                };
+            })
+            .filter(d => d.profile && d.profile.full_name)
+            .sort((a, b) => Number(b.is_pro) - Number(a.is_pro));
     },
 
     /**

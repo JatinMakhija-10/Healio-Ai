@@ -13,6 +13,10 @@ export interface Profile {
     role: string;
     full_name: string | null;
     phone: string | null;
+    subscription_plan?: 'free' | 'plus' | 'pro' | null;
+    monthly_chat_count?: number | null;
+    chat_count_reset_at?: string | null;
+    stripe_customer_id?: string | null;
     created_at: string;
     updated_at: string;
 }

@@ -1,0 +1,182 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-04-29T06:42:46.297Z",
+    "userEmail": "dudetfgibmeemailid@gmail.com",
+    "userName": "ALtt acc"
+  },
+  "extensionLogs": [
+    "2026-04-29 12:08:35.829 [info] I0429 12:08:35.825881  3884 server.go:1235] Starting language server process with pid 3884",
+    "2026-04-29 12:08:35.830 [info] I0429 12:08:35.828987  3884 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-04-29 12:08:35.832 [info] I0429 12:08:35.831999  3884 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-04-29 12:08:35.835 [info] I0429 12:08:35.835007  3884 server.go:454] Language server listening on random port at 57452 for HTTPS (gRPC)",
+    "2026-04-29 12:08:35.835 [info] I0429 12:08:35.835007  3884 server.go:461] Language server listening on random port at 57453 for HTTP",
+    "2026-04-29 12:08:38.410 [info] I0429 12:08:38.409589  3884 server.go:433] Created extension server client at port 57450",
+    "2026-04-29 12:08:38.436 [info] I0429 12:08:38.436246  3884 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-04-29 12:08:38.459 [info] (Antigravity) 2026-04-29 12:08:38.458 [INFO]: Language server started",
+    "2026-04-29 12:08:38.490 [info] I0429 12:08:38.490328  3884 server.go:1691] initialized server successfully in 2.6613409s",
+    "2026-04-29 12:08:38.599 [info] (Antigravity) 2026-04-29 12:08:38.599 [INFO]: LS lspClient started successfully",
+    "2026-04-29 12:08:39.803 [info] I0429 12:08:39.803031  3884 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:63867/mcp, stopping watcher",
+    "2026-04-29 12:08:42.199 [info] I0429 12:08:42.198168  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x65c9962a5cc6c7d2",
+    "2026-04-29 12:08:44.593 [info] I0429 12:08:44.570607  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xded3f034069a1cb1",
+    "2026-04-29 12:08:44.757 [info] 2026/04/29 12:08:44 http: TLS handshake error from 127.0.0.1:51232: read tcp 127.0.0.1:57452->127.0.0.1:51232: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-04-29 12:08:44.757 [info] 2026/04/29 12:08:44 http: TLS handshake error from 127.0.0.1:50954: read tcp 127.0.0.1:57452->127.0.0.1:50954: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-04-29 12:08:44.757 [info] E0429 12:08:44.736987  3884 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-04-29 12:08:46.644 [info] I0429 12:08:46.533729  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x8a67abcaf4bf140d",
+    "2026-04-29 12:08:46.742 [info] I0429 12:08:46.725686  3884 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6",
+    "2026-04-29 12:08:49.895 [info] I0429 12:08:49.895090  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xbe02b2117f0c80ff",
+    "2026-04-29 12:08:49.976 [info] (Antigravity) 2026-04-29 12:08:49.975 [INFO]: [SupercompleteProvider] No supercomplete response",
+    "2026-04-29 12:08:56.928 [info] E0429 12:08:56.928262  3884 interceptor.go:74] /exa.language_server_pb.LanguageServerService/StreamAgentStateUpdates (unknown): agent state for conversation 8b6e444a-83d4-43cf-a649-0cadfa624b7a not found",
+    "2026-04-29 12:08:57.122 [info] I0429 12:08:57.121922  3884 planner_generator.go:283] Requesting planner with 6 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:08:57.235 [info] E0429 12:08:57.235359  3884 repo.go:394] failed to create patch for untracked file artifacts/audit_report_text.txt: bytes are not valid utf8",
+    "2026-04-29 12:09:01.917 [info] I0429 12:09:01.916700  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x18190ad01052add7",
+    "2026-04-29 12:09:06.799 [info] I0429 12:09:06.799337  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x9e74774295a489d6",
+    "2026-04-29 12:10:10.599 [info] I0429 12:10:10.598695  3884 planner_generator.go:283] Requesting planner with 48 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:10:15.327 [info] E0429 12:10:15.327195  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-04-29 12:10:24.009 [info] I0429 12:10:24.008385  3884 planner_generator.go:283] Requesting planner with 50 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:10:31.395 [info] I0429 12:10:31.394437  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xedcf8b241466d02",
+    "2026-04-29 12:10:41.870 [info] I0429 12:10:41.869511  3884 planner_generator.go:283] Requesting planner with 52 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:10:44.159 [info] E0429 12:10:44.159332  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-04-29 12:10:51.397 [info] I0429 12:10:51.396614  3884 planner_generator.go:283] Requesting planner with 54 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:11:01.206 [info] I0429 12:11:01.205951  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xf1b766d557416c38",
+    "2026-04-29 12:11:09.752 [info] I0429 12:11:09.752150  3884 planner_generator.go:283] Requesting planner with 57 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:11:12.598 [info] E0429 12:11:12.597485  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-04-29 12:11:19.572 [info] I0429 12:11:19.571220  3884 planner_generator.go:283] Requesting planner with 59 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:11:23.914 [info] I0429 12:11:23.914137  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xdf5bb4ffe2102ed5",
+    "2026-04-29 12:11:53.139 [info] I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
+    "2026-04-29 12:11:53.139 [info] E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
+    "2026-04-29 12:11:53.154 [info] I0429 12:11:53.153744  3884 planner_generator.go:283] Requesting planner with 61 chat messages at model retry attempt 2 and API retry attempt 1",
+    "2026-04-29 12:11:57.868 [info] I0429 12:11:57.868116  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc80328f73af743e7",
+    "2026-04-29 12:11:58.634 [info] I0429 12:11:58.633740  3884 planner_generator.go:283] Requesting planner with 63 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:12:00.384 [info] E0429 12:12:00.384394  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-04-29 12:12:09.417 [info] I0429 12:12:09.415873  3884 planner_generator.go:283] Requesting planner with 65 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:12:13.762 [info] E0429 12:12:13.761527  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-04-29 12:12:21.967 [info] I0429 12:12:21.966415  3884 planner_generator.go:283] Requesting planner with 67 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:12:26.486 [info] E0429 12:12:26.486495  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h47m4s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h47m4s.",
+    "2026-04-29 12:12:34.195 [info] I0429 12:12:34.194311  3884 planner_generator.go:283] Requesting planner with 69 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:12:36.418 [info] E0429 12:12:36.418009  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m54s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m54s.",
+    "2026-04-29 12:12:43.340 [info] I0429 12:12:43.338737  3884 planner_generator.go:283] Requesting planner with 71 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-04-29 12:12:45.436 [info] E0429 12:12:45.436086  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m45s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m45s."
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-04-29 12:08:36.046 [info] Initialized with 0 existing HTML files",
+      "2026-04-29 12:08:36.047 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-04-29 12:08:36.040 [info] Render performance baseline is 20ms",
+      "2026-04-29 12:08:46.515 [warning] Renderer reported VERY LONG TASK (309ms), starting profiling session '830221a5-b4ea-4ac1-a1df-eb6714081a3c'"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-04-29 12:08:32.686 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: e245223ce71d474d",
+      "2026-04-29 12:08:32.951 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: a46da090e04e2ad3",
+      "2026-04-29 12:08:35.168 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 2a2d13ae78680a83",
+      "2026-04-29 12:08:35.384 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: f210f8909753ed0f",
+      "2026-04-29 12:08:37.592 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 1cd1ee13b37c9edc",
+      "2026-04-29 12:08:39.260 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 3c06bbf17e730b79"
+    ],
+    "auth": [
+      "2026-04-29 12:08:37.594 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0429 12:08:35.825881  3884 server.go:1235] Starting language server process with pid 3884\n",
+      "I0429 12:08:35.828987  3884 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0429 12:08:35.831999  3884 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0429 12:08:35.835007  3884 server.go:454] Language server listening on random port at 57452 for HTTPS (gRPC)\n",
+      "I0429 12:08:35.835007  3884 server.go:461] Language server listening on random port at 57453 for HTTP\n",
+      "I0429 12:08:38.409589  3884 server.go:433] Created extension server client at port 57450\n",
+      "I0429 12:08:38.436246  3884 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0429 12:08:38.490328  3884 server.go:1691] initialized server successfully in 2.6613409s\n",
+      "I0429 12:08:39.803031  3884 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:63867/mcp, stopping watcher\n",
+      "I0429 12:08:42.198168  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x65c9962a5cc6c7d2\n",
+      "I0429 12:08:44.570607  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xded3f034069a1cb1\n",
+      "E0429 12:08:44.736987  3884 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0429 12:08:46.533729  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x8a67abcaf4bf140d\n",
+      "I0429 12:08:46.725686  3884 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6\n",
+      "I0429 12:08:49.895090  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xbe02b2117f0c80ff\n",
+      "E0429 12:08:56.928262  3884 interceptor.go:74] /exa.language_server_pb.LanguageServerService/StreamAgentStateUpdates (unknown): agent state for conversation 8b6e444a-83d4-43cf-a649-0cadfa624b7a not found\n",
+      "I0429 12:08:57.121922  3884 planner_generator.go:283] Requesting planner with 6 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:08:57.235359  3884 repo.go:394] failed to create patch for untracked file artifacts/audit_report_text.txt: bytes are not valid utf8\n",
+      "I0429 12:09:01.916700  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x18190ad01052add7\n",
+      "I0429 12:09:06.799337  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x9e74774295a489d6\n",
+      "I0429 12:10:10.598695  3884 planner_generator.go:283] Requesting planner with 48 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:10:15.327195  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0429 12:10:24.008385  3884 planner_generator.go:283] Requesting planner with 50 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "I0429 12:10:31.394437  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xedcf8b241466d02\n",
+      "I0429 12:10:41.869511  3884 planner_generator.go:283] Requesting planner with 52 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:10:44.159332  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0429 12:10:51.396614  3884 planner_generator.go:283] Requesting planner with 54 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "I0429 12:11:01.205951  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xf1b766d557416c38\n",
+      "I0429 12:11:09.752150  3884 planner_generator.go:283] Requesting planner with 57 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:11:12.597485  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0429 12:11:19.571220  3884 planner_generator.go:283] Requesting planner with 59 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "I0429 12:11:23.914137  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xdf5bb4ffe2102ed5\n",
+      "I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your co(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
+      "E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
+      "I0429 12:11:53.153744  3884 planner_generator.go:283] Requesting planner with 61 chat messages at model retry attempt 2 and API retry attempt 1\n",
+      "I0429 12:11:57.868116  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc80328f73af743e7\n",
+      "I0429 12:11:58.633740  3884 planner_generator.go:283] Requesting planner with 63 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:12:00.384394  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0429 12:12:09.415873  3884 planner_generator.go:283] Requesting planner with 65 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:12:13.761527  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0429 12:12:21.966415  3884 planner_generator.go:283] Requesting planner with 67 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:12:26.486495  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h47m4s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h47m4s.\n",
+      "I0429 12:12:34.194311  3884 planner_generator.go:283] Requesting planner with 69 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:12:36.418009  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m54s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m54s.\n",
+      "I0429 12:12:43.338737  3884 planner_generator.go:283] Requesting planner with 71 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0429 12:12:45.436086  3884 log.go:398] agent executor error: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m45s.: RESOURCE_EXHAUSTED (code 429): You have exhausted your capacity on this model. Your quota will reset after 156h46m45s.\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "30f72e36-05bc-4c2b-89cd-245f89949a03",
+      "trajectoryId": "59413de7-d1fa-448f-afa4-3484c3a338f3",
+      "summary": "Optimizing Healio RAG Performance",
+      "lastStepIndex": 170,
+      "lastModifiedTime": "2026-04-29T06:42:45.437Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    },
+    {
+      "googleAgentId": "a7d91fd2-c427-49b9-aabc-79ea3bb48841",
+      "trajectoryId": "0cb749aa-220e-40fc-8b92-63769e6e921f",
+      "summary": "what is the currebt status",
+      "lastStepIndex": 2,
+      "lastModifiedTime": "2026-04-24T09:40:02.086Z"
+    },
+    {
+      "googleAgentId": "cb6404a3-0784-47a5-ab8e-60972655924c",
+      "trajectoryId": "d25d2c31-ef59-4f73-a845-112d58d79146",
+      "summary": "curent statys",
+      "lastStepIndex": 2,
+      "lastModifiedTime": "2026-04-24T09:39:50.302Z"
+    }
+  ]
+}
