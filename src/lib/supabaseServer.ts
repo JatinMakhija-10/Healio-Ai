@@ -8,7 +8,10 @@ const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
     '';
 const supabaseServiceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+    process.env.SUPABASE_SERVICE_ROLE_KEY || (() => {
+        console.warn('[supabaseServer] SUPABASE_SERVICE_ROLE_KEY not set — falling back to anon key. Admin/batch operations will fail due to RLS.');
+        return supabaseAnonKey;
+    })();
 
 /**
  * Cookie-aware client for Server Components and API routes that need

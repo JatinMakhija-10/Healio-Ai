@@ -96,7 +96,7 @@ export default function AdminNotificationsPage() {
             } else {
                 setResult({
                     success: false,
-                    message: json.error || json.message || 'Failed to send notification',
+                    message: json.message || json.error || 'Failed to send notification',
                 });
             }
         } catch (error) {

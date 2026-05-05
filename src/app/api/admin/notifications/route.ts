@@ -81,6 +81,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid notification type' }, { status: 400 });
         }
 
+        // Service key is required to bypass RLS for cross-user queries
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('[Admin Notifications] SUPABASE_SERVICE_ROLE_KEY is not set — cannot bypass RLS');
+            return NextResponse.json(
+                { error: 'Server configuration error', message: 'SUPABASE_SERVICE_ROLE_KEY is not configured. Admin notifications require the service role key to bypass RLS.' },
+                { status: 500 }
+            );
+        }
+
         // Use service client to bypass RLS for inserting notifications
         const serviceClient = createServiceClient();
 
@@ -107,7 +116,10 @@ export async function POST(request: NextRequest) {
             }
 
             const { data: users, error: usersError } = await query;
-            if (usersError) throw usersError;
+            if (usersError) {
+                console.error('[Admin Notifications] Profiles query error:', usersError.message);
+                throw new Error(`Failed to fetch target users: ${usersError.message}`);
+            }
             targetUserIds = (users || []).map((u: { id: string }) => u.id);
         }
 
@@ -141,7 +153,10 @@ export async function POST(request: NextRequest) {
                 .from('notifications')
                 .insert(batch);
 
-            if (insertError) throw insertError;
+            if (insertError) {
+                console.error('[Admin Notifications] Insert error:', insertError.message);
+                throw new Error(`Failed to insert notifications: ${insertError.message}`);
+            }
             totalInserted += batch.length;
         }
 
