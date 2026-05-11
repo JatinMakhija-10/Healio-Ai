@@ -22,6 +22,9 @@ type SavedDiagnosis = {
     condition: string;
     description: string;
     severity?: string;
+    bayesianFactors?: string;
+    red_flags?: string[];
+    see_doctor_if?: string[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remedies?: any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +44,115 @@ type Consultation = {
     uncertainty?: UncertaintyEstimate;
     clinicalRules?: RuleResult[];
 };
+
+type SymptomRecord = Partial<UserSymptomData> & {
+    raw_conversation?: string;
+};
+
+type SymptomDisplay = {
+    location: string;
+    painType: string;
+    intensity: string;
+    duration: string;
+    notes?: string;
+    locationList: string[];
+};
+
+function titleCase(value: string): string {
+    return value.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function uniqueValues(values: string[]): string[] {
+    return Array.from(new Set(values.filter(Boolean)));
+}
+
+function extractLocations(text: string): string[] {
+    const locations = [
+        "head", "forehead", "eyes", "ear", "ears", "nose", "throat", "neck",
+        "chest", "stomach", "abdomen", "back", "lower back", "shoulder",
+        "arm", "arms", "hand", "hands", "leg", "legs", "knee", "knees",
+        "foot", "feet", "skin", "face", "scalp", "sinus", "teeth", "tooth",
+    ];
+
+    const matches = uniqueValues(
+        locations
+            .filter((location) => new RegExp(`\\b${location}\\b`, "i").test(text))
+            .map(titleCase)
+    );
+
+    return matches.length > 1 ? matches.filter((location) => location !== "Skin") : matches;
+}
+
+function extractPainType(text: string, fallback: string): string {
+    const sensations = [
+        "tingling", "burning", "itching", "throbbing", "sharp", "stabbing",
+        "dull", "cramping", "pressure", "tightness", "nausea", "rash",
+        "congestion", "fatigue", "fever", "cough", "ache", "pain",
+    ];
+    const matches = uniqueValues(
+        sensations
+            .filter((sensation) => new RegExp(`\\b${sensation}\\b`, "i").test(text))
+            .map(titleCase)
+    );
+
+    return matches.length > 0 ? matches.slice(0, 3).join(", ") : fallback;
+}
+
+function extractIntensity(text: string, severity?: string): string {
+    const explicitRating = text.match(/\b(?:severity|intensity|pain|rate|rating)?\s*(?:is|was|around|about|:)?\s*([1-9]|10)\s*(?:\/\s*10|out of 10|on a scale)/i);
+    if (explicitRating) return `${explicitRating[1]}/10`;
+
+    const normalizedSeverity = severity?.toLowerCase() || "";
+    if (normalizedSeverity.includes("severe")) return "8/10 (estimated from severity)";
+    if (normalizedSeverity.includes("moderate")) return "5/10 (estimated from severity)";
+    if (normalizedSeverity.includes("mild")) return "3/10 (estimated from severity)";
+
+    return "4/10 (baseline estimate)";
+}
+
+function extractDuration(text: string): string {
+    const durationPatterns = [
+        /\b(?:for|since|from)\s+((?:today|yesterday|last night|this morning|a few hours|few hours|[1-9]\d?\s*(?:hour|hours|day|days|week|weeks|month|months|year|years)))/i,
+        /\b((?:today|yesterday|last night|this morning|a few hours|few hours|[1-9]\d?\s*(?:hour|hours|day|days|week|weeks|month|months|year|years)))\b/i,
+    ];
+
+    for (const pattern of durationPatterns) {
+        const match = text.match(pattern);
+        if (match?.[1]) return titleCase(match[1]);
+    }
+
+    return "Captured during consultation";
+}
+
+function buildSymptomDisplay(consultation: Consultation): SymptomDisplay {
+    const symptoms = (consultation.symptoms || {}) as SymptomRecord;
+    const sourceText = [
+        symptoms.raw_conversation,
+        symptoms.additionalNotes,
+        consultation.diagnosis?.condition,
+        consultation.diagnosis?.description,
+        consultation.diagnosis?.bayesianFactors,
+    ].filter(Boolean).join("\n");
+
+    const locationList = symptoms.location?.length
+        ? symptoms.location
+        : extractLocations(sourceText);
+    const painType = symptoms.painType ||
+        extractPainType(sourceText, consultation.diagnosis?.condition || "General symptoms");
+    const intensity = typeof symptoms.intensity === "number"
+        ? `${symptoms.intensity}/10`
+        : extractIntensity(sourceText, consultation.diagnosis?.severity);
+    const duration = symptoms.duration || extractDuration(sourceText);
+
+    return {
+        location: locationList.length > 0 ? locationList.join(", ") : "General / not localized",
+        painType,
+        intensity,
+        duration,
+        notes: symptoms.additionalNotes || symptoms.raw_conversation || consultation.diagnosis?.description,
+        locationList,
+    };
+}
 
 export default function HistoryPage() {
     const { user } = useAuth();
@@ -214,6 +326,7 @@ export default function HistoryPage() {
                 <div className="grid gap-4">
                     {history.map((consultation) => {
                         const isExpanded = expandedId === consultation.id;
+                        const symptomDisplay = buildSymptomDisplay(consultation);
                         return (
                             <Card key={consultation.id} className="hover:shadow-md transition-shadow overflow-hidden">
                                 <CardHeader
@@ -226,9 +339,9 @@ export default function HistoryPage() {
                                                 <CardTitle className="text-xl flex items-center gap-2">
                                                     {consultation.diagnosis?.condition || 'Unknown Condition'}
                                                 </CardTitle>
-                                                {consultation.symptoms?.location && consultation.symptoms.location.length > 0 && (
+                                                {symptomDisplay.locationList.length > 0 && (
                                                     <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                        {consultation.symptoms.location.join(', ')}
+                                                        {symptomDisplay.location}
                                                     </span>
                                                 )}
                                                 <Lock className="h-3 w-3 text-emerald-500" />
@@ -311,12 +424,12 @@ export default function HistoryPage() {
                                                 Symptoms Reported
                                             </h4>
                                             <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-1">
-                                                <p><span className="font-medium">Location:</span> {consultation.symptoms?.location?.join(', ') || 'Not specified'}</p>
-                                                <p><span className="font-medium">Pain Type:</span> {consultation.symptoms?.painType || 'Not specified'}</p>
-                                                <p><span className="font-medium">Intensity:</span> {consultation.symptoms?.intensity || 'N/A'}/10</p>
-                                                <p><span className="font-medium">Duration:</span> {consultation.symptoms?.duration || 'Not specified'}</p>
-                                                {consultation.symptoms?.additionalNotes && (
-                                                    <p><span className="font-medium">Notes:</span> {consultation.symptoms.additionalNotes}</p>
+                                                <p><span className="font-medium">Location:</span> {symptomDisplay.location}</p>
+                                                <p><span className="font-medium">Pain Type:</span> {symptomDisplay.painType}</p>
+                                                <p><span className="font-medium">Intensity:</span> {symptomDisplay.intensity}</p>
+                                                <p><span className="font-medium">Duration:</span> {symptomDisplay.duration}</p>
+                                                {symptomDisplay.notes && (
+                                                    <p><span className="font-medium">Notes:</span> {symptomDisplay.notes}</p>
                                                 )}
                                             </div>
                                         </div>

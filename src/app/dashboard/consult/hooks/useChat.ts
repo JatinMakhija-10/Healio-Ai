@@ -158,6 +158,99 @@ function normalizeDiagnosisForStorage(
     };
 }
 
+function titleCase(value: string): string {
+    return value.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function uniqueValues(values: string[]): string[] {
+    return Array.from(new Set(values.filter(Boolean)));
+}
+
+function extractLocations(text: string): string[] {
+    const locations = [
+        "head", "forehead", "eyes", "ear", "ears", "nose", "throat", "neck",
+        "chest", "stomach", "abdomen", "back", "lower back", "shoulder",
+        "arm", "arms", "hand", "hands", "leg", "legs", "knee", "knees",
+        "foot", "feet", "skin", "face", "scalp", "sinus", "teeth", "tooth",
+    ];
+
+    const matches = uniqueValues(
+        locations
+            .filter((location) => new RegExp(`\\b${location}\\b`, "i").test(text))
+            .map(titleCase)
+    );
+
+    return matches.length > 1 ? matches.filter((location) => location !== "Skin") : matches;
+}
+
+function extractPainType(text: string, diagnosis: ParsedDiagnosis | null): string {
+    const sensations = [
+        "tingling", "burning", "itching", "throbbing", "sharp", "stabbing",
+        "dull", "cramping", "pressure", "tightness", "nausea", "rash",
+        "congestion", "fatigue", "fever", "cough", "ache", "pain",
+    ];
+    const matches = uniqueValues(
+        sensations
+            .filter((sensation) => new RegExp(`\\b${sensation}\\b`, "i").test(text))
+            .map(titleCase)
+    );
+
+    if (matches.length > 0) return matches.slice(0, 3).join(", ");
+
+    return firstString(diagnosis?.condition, diagnosis?.name) || "General symptoms";
+}
+
+function extractIntensity(text: string, diagnosis: ParsedDiagnosis | null): number {
+    const explicitRating = text.match(/\b(?:severity|intensity|pain|rate|rating)?\s*(?:is|was|around|about|:)?\s*([1-9]|10)\s*(?:\/\s*10|out of 10|on a scale)/i);
+    if (explicitRating) return Number(explicitRating[1]);
+
+    const severity = firstString(diagnosis?.severity)?.toLowerCase() || "";
+    if (severity.includes("severe")) return 8;
+    if (severity.includes("moderate")) return 5;
+    if (severity.includes("mild")) return 3;
+
+    return 4;
+}
+
+function extractDuration(text: string): string {
+    const durationPatterns = [
+        /\b(?:for|since|from)\s+((?:today|yesterday|last night|this morning|a few hours|few hours|[1-9]\d?\s*(?:hour|hours|day|days|week|weeks|month|months|year|years)))/i,
+        /\b((?:today|yesterday|last night|this morning|a few hours|few hours|[1-9]\d?\s*(?:hour|hours|day|days|week|weeks|month|months|year|years)))\b/i,
+    ];
+
+    for (const pattern of durationPatterns) {
+        const match = text.match(pattern);
+        if (match?.[1]) return titleCase(match[1]);
+    }
+
+    return "Not captured in chat";
+}
+
+function buildSymptomRecord(
+    allMessages: ChatMessage[],
+    parsedDiagnosis: ParsedDiagnosis | null
+) {
+    const rawConversation = allMessages
+        .filter((m) => m.role === "user")
+        .map((m) => m.content)
+        .join("\n");
+    const diagnosisText = [
+        firstString(parsedDiagnosis?.condition, parsedDiagnosis?.name),
+        firstString(parsedDiagnosis?.description),
+        firstString(parsedDiagnosis?.bayesianFactors),
+    ].filter(Boolean).join(" ");
+    const sourceText = `${rawConversation}\n${diagnosisText}`;
+
+    return {
+        raw_conversation: rawConversation,
+        location: extractLocations(sourceText),
+        painType: extractPainType(sourceText, parsedDiagnosis),
+        intensity: extractIntensity(sourceText, parsedDiagnosis),
+        duration: extractDuration(sourceText),
+        additionalNotes: rawConversation || diagnosisText,
+    };
+}
+
 /**
  * Build a human-readable recap message from a prior consultation.
  */
@@ -395,12 +488,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
             const consultation = {
                 id: generateId(),
                 created_at: new Date().toISOString(),
-                symptoms: {
-                    raw_conversation: allMessages
-                        .filter((m) => m.role === "user")
-                        .map((m) => m.content)
-                        .join("\n"),
-                },
+                symptoms: buildSymptomRecord(allMessages, parsedDiagnosis),
                 diagnosis: parsedDiagnosis
                     ? normalizeDiagnosisForStorage(parsedDiagnosis, isResumeMode, resumeContext)
                     : {
