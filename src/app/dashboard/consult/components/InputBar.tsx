@@ -8,6 +8,7 @@ interface InputBarProps {
     onSend: (text: string) => void;
     disabled?: boolean;
     widgetActive?: boolean;
+    followUpMode?: boolean;
     // Voice
     isRecording: boolean;
     voiceSupported: boolean;
@@ -21,6 +22,7 @@ export function InputBar({
     onSend,
     disabled,
     widgetActive,
+    followUpMode,
     isRecording,
     voiceSupported,
     transcript,
@@ -81,6 +83,8 @@ export function InputBar({
 
     const placeholderText = widgetActive
         ? "Select an option above or type here..."
+        : followUpMode
+            ? "Share an update or ask a follow-up..."
         : "Describe your symptoms here...";
 
     return (
@@ -149,7 +153,11 @@ export function InputBar({
                 </div>
             </div>
             <p className="text-xs text-slate-400 text-center mt-2">
-                {widgetActive ? "Use the selection above or type your answer" : "Type in Hindi, English, or Hinglish"}
+                {widgetActive
+                    ? "Use the selection above or type your answer"
+                    : followUpMode
+                        ? "Continuing with your previous diagnosis context"
+                        : "Type in Hindi, English, or Hinglish"}
             </p>
         </div>
     );

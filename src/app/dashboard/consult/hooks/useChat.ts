@@ -34,14 +34,129 @@ interface UseChatReturn {
     isLoading: boolean;
     sendMessage: (text: string) => Promise<void>;
     resetChat: () => void;
+    startFollowUpFromDiagnosis: () => boolean;
     resumeContext: ResumeContext | null;
     isResumeMode: boolean;
+    hasCompletedDiagnosis: boolean;
 }
 
 const generateId = () =>
     Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+type ParsedDiagnosis = Record<string, unknown>;
+
+function firstString(...values: unknown[]): string | undefined {
+    return values.find((value): value is string => typeof value === "string" && value.trim().length > 0);
+}
+
+function arrayOrEmpty(value: unknown): unknown[] {
+    return Array.isArray(value) ? value : [];
+}
+
+function normalizeStringArray(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+        .map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object") {
+                const record = item as Record<string, unknown>;
+                return firstString(record.name, record.indication, record.description, record.preparation) || null;
+            }
+            return null;
+        })
+        .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+function collectRemedyNames(diagnosis: ParsedDiagnosis): string[] {
+    return [
+        ...normalizeStringArray(diagnosis.remedies),
+        ...normalizeStringArray(diagnosis.indianHomeRemedies),
+        ...normalizeStringArray(diagnosis.homeopathic_remedies),
+        ...normalizeStringArray(diagnosis.ayurvedic_remedies),
+        ...normalizeStringArray(diagnosis.home_remedies),
+    ];
+}
+
+function extractLatestDiagnosis(messages: ChatMessage[]): ParsedDiagnosis | null {
+    const assistantMessages = messages.filter((m) => m.role === "assistant");
+    for (let i = assistantMessages.length - 1; i >= 0; i--) {
+        const jsonMatch = assistantMessages[i].content.match(/```json\n([\s\S]*?)\n```/);
+        if (!jsonMatch) continue;
+
+        try {
+            return JSON.parse(jsonMatch[1]) as ParsedDiagnosis;
+        } catch {
+            // Invalid JSON block; continue searching older assistant messages.
+        }
+    }
+
+    return null;
+}
+
+function buildResumeContextFromDiagnosis(
+    diagnosis: ParsedDiagnosis,
+    originalDate: string,
+    daysSince = 0
+): ResumeContext {
+    const seeDoctorIf = normalizeStringArray(diagnosis.see_doctor_if);
+    const seekHelp =
+        typeof diagnosis.seekHelp === "string"
+            ? diagnosis.seekHelp
+            : seeDoctorIf.join("; ");
+
+    return {
+        conditionName:
+            firstString(diagnosis.name, diagnosis.condition, diagnosis.conditionName) ||
+            "your previous concern",
+        description: firstString(diagnosis.description) || "",
+        severity: firstString(diagnosis.severity) || "moderate",
+        confidence:
+            typeof diagnosis.confidence === "number" ? diagnosis.confidence : 0,
+        remedies: collectRemedyNames(diagnosis),
+        warnings: [
+            ...normalizeStringArray(diagnosis.warnings),
+            ...normalizeStringArray(diagnosis.red_flags),
+        ],
+        seekHelp,
+        daysSince,
+        originalDate,
+    };
+}
+
+function normalizeDiagnosisForStorage(
+    parsedDiagnosis: ParsedDiagnosis,
+    isResumeMode: boolean,
+    resumeContext: ResumeContext | null
+) {
+    const seeDoctorIf = normalizeStringArray(parsedDiagnosis.see_doctor_if);
+
+    return {
+        condition: firstString(parsedDiagnosis.name, parsedDiagnosis.condition) || "Unknown Condition",
+        description: firstString(parsedDiagnosis.description) || "",
+        severity: firstString(parsedDiagnosis.severity) || "moderate",
+        remedies: arrayOrEmpty(parsedDiagnosis.remedies).length
+            ? arrayOrEmpty(parsedDiagnosis.remedies)
+            : arrayOrEmpty(parsedDiagnosis.homeopathic_remedies),
+        indianHomeRemedies: arrayOrEmpty(parsedDiagnosis.indianHomeRemedies).length
+            ? arrayOrEmpty(parsedDiagnosis.indianHomeRemedies)
+            : arrayOrEmpty(parsedDiagnosis.home_remedies),
+        ayurvedicRemedies: arrayOrEmpty(parsedDiagnosis.ayurvedic_remedies),
+        exercises: arrayOrEmpty(parsedDiagnosis.exercises).length
+            ? arrayOrEmpty(parsedDiagnosis.exercises)
+            : arrayOrEmpty(parsedDiagnosis.lifestyle_advice),
+        warnings: arrayOrEmpty(parsedDiagnosis.warnings).length
+            ? arrayOrEmpty(parsedDiagnosis.warnings)
+            : arrayOrEmpty(parsedDiagnosis.red_flags),
+        seekHelp:
+            firstString(parsedDiagnosis.seekHelp) ||
+            (seeDoctorIf.length > 0 ? seeDoctorIf.join("; ") : ""),
+        ai_generated: true,
+        is_followup: isResumeMode,
+        prior_condition: resumeContext?.conditionName || null,
+    };
+}
 
 /**
  * Build a human-readable recap message from a prior consultation.
@@ -127,29 +242,20 @@ function extractResumeContext(
     daysSince: number
 ): ResumeContext {
     const diagnosis = consultation.diagnosis || {};
-    const remedyNames: string[] = [];
-
-    if (diagnosis.remedies?.length) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        diagnosis.remedies.forEach((r: any) => {
-            if (r.name) remedyNames.push(r.name);
-        });
-    }
-    if (diagnosis.indianHomeRemedies?.length) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        diagnosis.indianHomeRemedies.forEach((r: any) => {
-            if (r.name) remedyNames.push(r.name);
-        });
-    }
 
     return {
-        conditionName: diagnosis.condition || "Unknown Condition",
+        conditionName: diagnosis.condition || diagnosis.name || "Unknown Condition",
         description: diagnosis.description || "",
         severity: diagnosis.severity || "moderate",
         confidence: consultation.confidence || 0,
-        remedies: remedyNames,
-        warnings: diagnosis.warnings || [],
-        seekHelp: diagnosis.seekHelp || "",
+        remedies: collectRemedyNames(diagnosis),
+        warnings: [
+            ...normalizeStringArray(diagnosis.warnings),
+            ...normalizeStringArray(diagnosis.red_flags),
+        ],
+        seekHelp:
+            diagnosis.seekHelp ||
+            normalizeStringArray(diagnosis.see_doctor_if).join("; "),
         daysSince,
         originalDate: consultation.created_at,
     };
@@ -166,6 +272,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
     const { user } = useAuth();
 
     const resumeId = options?.resumeId || null;
+    const hasCompletedDiagnosis = Boolean(extractLatestDiagnosis(messages));
 
     // Get user-specific storage key
     const getStorageKey = useCallback(() => {
@@ -295,24 +402,9 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
-            // Try to extract structured diagnosis from AI's JSON block
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let parsedDiagnosis: any = null;
+            const parsedDiagnosis = extractLatestDiagnosis(allMessages);
             const confidence = 0;
-
-            // Find the last assistant message containing ```json
             const assistantMessages = allMessages.filter((m) => m.role === "assistant");
-            for (let i = assistantMessages.length - 1; i >= 0; i--) {
-                const jsonMatch = assistantMessages[i].content.match(/```json\n([\s\S]*?)\n```/);
-                if (jsonMatch) {
-                    try {
-                        parsedDiagnosis = JSON.parse(jsonMatch[1]);
-                        break;
-                    } catch {
-                        // Invalid JSON, continue searching
-                    }
-                }
-            }
 
             const consultation = {
                 id: generateId(),
@@ -324,19 +416,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                         .join("\n"),
                 },
                 diagnosis: parsedDiagnosis
-                    ? {
-                        condition: parsedDiagnosis.name || "Unknown Condition",
-                        description: parsedDiagnosis.description || "",
-                        severity: parsedDiagnosis.severity || "moderate",
-                        remedies: parsedDiagnosis.remedies || [],
-                        indianHomeRemedies: parsedDiagnosis.indianHomeRemedies || [],
-                        exercises: parsedDiagnosis.exercises || [],
-                        warnings: parsedDiagnosis.warnings || [],
-                        seekHelp: parsedDiagnosis.seekHelp || "",
-                        ai_generated: true,
-                        is_followup: isResumeMode,
-                        prior_condition: resumeContext?.conditionName || null,
-                    }
+                    ? normalizeDiagnosisForStorage(parsedDiagnosis, isResumeMode, resumeContext)
                     : {
                         condition: "Unknown Condition",
                         raw_conversation: assistantMessages
@@ -345,7 +425,10 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                         ai_generated: true,
                         is_followup: isResumeMode,
                     },
-                confidence: parsedDiagnosis?.confidence || confidence,
+                confidence:
+                    typeof parsedDiagnosis?.confidence === "number"
+                        ? parsedDiagnosis.confidence
+                        : confidence,
             };
 
             // Save to localStorage backup (user-specific)
@@ -426,12 +509,22 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     throw new Error("Not authenticated");
                 }
 
+                const latestDiagnosis = extractLatestDiagnosis(updatedMessages);
+                const activeResumeContext =
+                    resumeContext ||
+                    (latestDiagnosis
+                        ? buildResumeContextFromDiagnosis(
+                            latestDiagnosis,
+                            new Date().toISOString()
+                        )
+                        : null);
+
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const body: any = { messages: apiMessages };
 
                 // Attach resume context if in follow-up mode
-                if (resumeContext) {
-                    body.resumeContext = resumeContext;
+                if (activeResumeContext) {
+                    body.resumeContext = activeResumeContext;
                 }
 
                 const response = await fetch("/api/chat", {
@@ -576,5 +669,45 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
         }
     }, [getStorageKey]);
 
-    return { messages, isLoading, sendMessage, resetChat, resumeContext, isResumeMode };
+    const startFollowUpFromDiagnosis = useCallback(() => {
+        const latestDiagnosis = extractLatestDiagnosis(messages);
+        if (!latestDiagnosis) return false;
+
+        const ctx = buildResumeContextFromDiagnosis(
+            latestDiagnosis,
+            new Date().toISOString()
+        );
+
+        setResumeContext(ctx);
+        setIsResumeMode(true);
+        setMessages((prev) => {
+            const alreadyPrompted = prev.some((m) => m.isRecap && m.id.startsWith("current-followup-"));
+            if (alreadyPrompted) return prev;
+
+            return [
+                ...prev,
+                {
+                    id: `current-followup-${generateId()}`,
+                    role: "assistant",
+                    content:
+                        `We can continue from the ${ctx.conditionName} assessment. Share how you are feeling now, what changed, or ask anything about the diagnosis and recommendations.`,
+                    timestamp: new Date(),
+                    isRecap: true,
+                },
+            ];
+        });
+
+        return true;
+    }, [messages]);
+
+    return {
+        messages,
+        isLoading,
+        sendMessage,
+        resetChat,
+        startFollowUpFromDiagnosis,
+        resumeContext,
+        isResumeMode,
+        hasCompletedDiagnosis,
+    };
 }

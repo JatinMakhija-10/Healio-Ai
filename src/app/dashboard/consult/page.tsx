@@ -10,7 +10,7 @@ import { useVoiceInput } from "./hooks/useVoiceInput";
 import { useAuth } from "@/context/AuthContext";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import type { SubscriptionPlan } from "@/lib/subscription/plans";
-import { X, ArrowLeft, History } from "lucide-react";
+import { X, ArrowLeft, History, MessageSquareHeart, Plus } from "lucide-react";
 
 // ─── Persona Required Banner ──────────────────────────────────────────────────
 function PersonaRequiredBanner() {
@@ -151,7 +151,16 @@ function ConsultPageInner() {
     const searchParams = useSearchParams();
     const resumeId = searchParams.get("resumeId");
 
-    const { messages, isLoading, sendMessage, resetChat, resumeContext, isResumeMode } = useChat({
+    const {
+        messages,
+        isLoading,
+        sendMessage,
+        resetChat,
+        startFollowUpFromDiagnosis,
+        resumeContext,
+        isResumeMode,
+        hasCompletedDiagnosis,
+    } = useChat({
         resumeId,
     });
 
@@ -233,34 +242,40 @@ function ConsultPageInner() {
                 onWidgetActive={handleWidgetActive}
             />
 
-            {/* New Consultation button when chat has ended */}
-            {messages.length > 0 &&
-                !isLoading &&
-                messages[messages.length - 1]?.role === "assistant" &&
-                messages[messages.length - 1]?.content.includes("```json") && (
-                    <div className="flex justify-center py-3">
-                        <button
-                            onClick={() => {
-                                if (window.confirm("Are you sure? Your current chat will be saved.")) {
-                                    resetChat();
-                                    // Also clear the resumeId from the URL cleanly
-                                    if (resumeId) {
-                                        window.history.replaceState(null, "", "/dashboard/consult");
-                                    }
+            {/* Post-diagnosis actions */}
+            {hasCompletedDiagnosis && !isLoading && (
+                <div className="flex flex-col sm:flex-row justify-center gap-2 px-4 py-3">
+                    <button
+                        onClick={startFollowUpFromDiagnosis}
+                        className="px-5 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-full hover:bg-teal-700 transition-all hover:scale-[1.03] shadow-md flex items-center justify-center gap-2"
+                    >
+                        <MessageSquareHeart className="h-4 w-4" />
+                        Ask Follow-up
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (window.confirm("Are you sure? Your current chat will be saved.")) {
+                                resetChat();
+                                // Also clear the resumeId from the URL cleanly
+                                if (resumeId) {
+                                    window.history.replaceState(null, "", "/dashboard/consult");
                                 }
-                            }}
-                            className="px-6 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-full hover:bg-teal-700 transition-all hover:scale-105 shadow-md"
-                        >
-                            ✨ Start New Consultation
-                        </button>
-                    </div>
-                )}
+                            }
+                        }}
+                        className="px-5 py-2.5 bg-white text-slate-700 text-sm font-medium rounded-full hover:bg-slate-50 border border-slate-200 transition-all hover:scale-[1.03] shadow-sm flex items-center justify-center gap-2"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Start New Consultation
+                    </button>
+                </div>
+            )}
 
             {/* Input Bar */}
             <InputBar
                 onSend={sendMessage}
                 disabled={isLoading}
                 widgetActive={widgetActive}
+                followUpMode={isResumeMode || hasCompletedDiagnosis}
                 isRecording={isRecording}
                 voiceSupported={isSupported}
                 transcript={transcript}

@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
-import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
 
@@ -654,6 +653,7 @@ export async function POST(req: NextRequest) {
         // PHASE C (turn 6+ or explicit diagnosis request): Full RAG + home
         //         remedies + 70B model + 2000 tokens → rich, detailed final answer
         const userTurns = countUserTurns(processedMessages);
+        const isFollowUpMode = Boolean(resumeContext && typeof resumeContext === 'object');
         const lastUserMsg = (processedMessages as { role: string; content: string }[])
             .filter(m => m.role === 'user')
             .pop()?.content ?? '';
@@ -662,11 +662,20 @@ export async function POST(req: NextRequest) {
         const detectedLang = detectUserLanguage(lastUserMsg);
         console.log(`[LANG] Detected: ${detectedLang} for input: "${lastUserMsg.slice(0, 60)}"`);
 
-        const isFinalTurn =
-            userTurns >= 6 ||
-            processedMessages.length >= 10 ||
-            /diagnos|summary|what.*wrong|tell.*me|give.*result|remedy|remedies|prescription|treatment|what.*condition|what.*problem|suggest/i
+        const asksForFreshDiagnosis =
+            /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result/i
                 .test(lastUserMsg);
+        const asksForAdviceOnly =
+            /remedy|remedies|prescription|treatment|suggest|can i|should i|how (do|can) i|what should i do/i
+                .test(lastUserMsg);
+
+        const isFinalTurn = isFollowUpMode
+            ? asksForFreshDiagnosis && userTurns >= 3
+            : userTurns >= 6 ||
+                processedMessages.length >= 10 ||
+                asksForFreshDiagnosis ||
+                asksForAdviceOnly ||
+                /summary|tell.*me/i.test(lastUserMsg);
 
         // Model + token budget per phase
         const groqModel = isFinalTurn
@@ -685,6 +694,7 @@ export async function POST(req: NextRequest) {
         if (userTurns >= 2) {
             const isSubstantive =
                 isFinalTurn ||              // always fetch on diagnosis turn
+                (isFollowUpMode && asksForAdviceOnly) ||
                 userTurns === 2 ||          // first time we have symptom context
                 lastUserMsg.length >= 60 || // substantial new info
                 /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
@@ -748,8 +758,10 @@ ${SYSTEM_PROMPT}`
                 rc.warnings?.length ? `Warnings given: ${rc.warnings.join('; ')}` : null,
                 rc.seekHelp ? `See doctor if: ${rc.seekHelp}` : null,
                 `---`,
-                `IMPORTANT: This is a FOLLOW-UP consultation. The patient is returning after ${rc.daysSince || 0} days.`,
-                `Start by asking how they are feeling now regarding the previously diagnosed condition.`,
+                `IMPORTANT: This is a FOLLOW-UP consultation. The patient is returning after ${rc.daysSince || 0} days, or continuing after a completed diagnosis.`,
+                `Treat the user's latest message as an update or question about the existing diagnosis unless they clearly ask for a fresh diagnosis.`,
+                `If they ask about remedies, safety, dosing, next steps, or symptoms after the diagnosis, answer directly and conversationally. Do not output a final JSON block for routine follow-up questions.`,
+                `If this is the first follow-up turn and they have not given an update yet, ask how they are feeling now regarding the previously diagnosed condition.`,
                 `Ask whether the prescribed remedies helped, symptoms changed, or new symptoms appeared.`,
                 `If the patient reports improvement, affirm and suggest maintenance steps.`,
                 `If the patient reports worsening or new symptoms, conduct a fresh focused assessment.`,

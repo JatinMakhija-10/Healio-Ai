@@ -245,16 +245,17 @@ export default function HistoryPage() {
                                         <div className="flex flex-col items-end gap-2">
                                             <div className="flex items-center gap-2">
                                                 <Button
-                                                    size="icon"
+                                                    size="sm"
                                                     variant="ghost"
-                                                    className="h-6 w-6 text-slate-400 hover:text-teal-600"
+                                                    className="h-8 px-2 text-slate-500 hover:text-teal-700 hover:bg-teal-50 gap-1.5"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         router.push(`/dashboard/consult?resumeId=${consultation.id}`);
                                                     }}
-                                                    title="Ask Follow-up"
+                                                    title="Continue this consultation"
                                                 >
                                                     <MessageSquareHeart className="h-4 w-4" />
+                                                    Continue
                                                 </Button>
                                                 <Button
                                                     size="icon"
