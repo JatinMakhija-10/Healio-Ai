@@ -58,6 +58,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isLastAssistant =
         lastMessage?.role === "assistant" &&
+        !lastMessage.isRecap &&
         !isLoading &&
         !lastMessage.content.includes("```json");
 

@@ -175,42 +175,28 @@ function buildRecapMessage(
         year: "numeric",
     });
 
-    // Collect top remedies (max 3)
-    const remedyNames: string[] = [];
-    if (diagnosis.remedies?.length) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        diagnosis.remedies.slice(0, 2).forEach((r: any) => {
-            if (r.name) remedyNames.push(r.name);
-        });
-    }
-    if (diagnosis.indianHomeRemedies?.length) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        diagnosis.indianHomeRemedies.slice(0, 1).forEach((r: any) => {
-            if (r.name) remedyNames.push(r.name);
-        });
-    }
-
-    // Top warning
+    const remedyNames = collectRemedyNames(diagnosis).slice(0, 3);
     const topWarning = diagnosis.warnings?.[0] || null;
 
-    // Build the message
-    let msg = `🔄 **Welcome back!** It's been **${daysSince} day${daysSince !== 1 ? "s" : ""}** since your last consultation.\n\n`;
-    msg += `**Here's what we covered on ${dateStr}:**\n`;
-    msg += `• Likely condition: **${conditionName}** (${severity})\n`;
+    let msg = `**Continue your consultation**\n\n`;
+    msg += `Your last consultation was **${daysSince} day${daysSince !== 1 ? "s" : ""} ago** on ${dateStr}.\n\n`;
+    msg += `**Previous assessment**\n`;
+    msg += `- Likely condition: **${conditionName}**\n`;
+    msg += `- Severity: ${severity}\n`;
 
     if (remedyNames.length > 0) {
-        msg += `• Recommendations given: ${remedyNames.join(", ")}\n`;
+        msg += `- Recommendations discussed: ${remedyNames.join(", ")}\n`;
     }
 
     if (topWarning) {
-        msg += `• Red flag to watch: ${topWarning}\n`;
+        msg += `- Watch for: ${topWarning}\n`;
     }
 
     if (diagnosis.seekHelp) {
-        msg += `• See a doctor if: ${diagnosis.seekHelp}\n`;
+        msg += `- Seek medical help if: ${diagnosis.seekHelp}\n`;
     }
 
-    msg += `\n**How are you feeling now?** Have things improved, stayed the same, or gotten worse? I can do a follow-up assessment based on your current symptoms. 💚`;
+    msg += `\nTell me what changed since then, or ask any question about the diagnosis or care plan.`;
 
     return msg;
 }
@@ -227,10 +213,10 @@ function buildShortResumeMessage(
     const conditionName = diagnosis.condition || "your previous concern";
 
     if (daysSince === 0) {
-        return `💬 **Continuing your consultation** for **${conditionName}** from earlier today.\n\nHow are things going? Any changes since we last spoke?`;
+        return `**Continue your consultation**\n\nWe are continuing from your **${conditionName}** assessment earlier today.\n\nTell me what changed since then, or ask any question about the diagnosis or care plan.`;
     }
 
-    return `💬 **Following up** on your consultation for **${conditionName}** from ${daysSince} day${daysSince !== 1 ? "s" : ""} ago.\n\nHow are you feeling now? Any changes or new symptoms?`;
+    return `**Continue your consultation**\n\nWe are continuing from your **${conditionName}** assessment from ${daysSince} day${daysSince !== 1 ? "s" : ""} ago.\n\nTell me what changed since then, or ask any question about the diagnosis or care plan.`;
 }
 
 /**
@@ -690,7 +676,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     id: `current-followup-${generateId()}`,
                     role: "assistant",
                     content:
-                        `We can continue from the ${ctx.conditionName} assessment. Share how you are feeling now, what changed, or ask anything about the diagnosis and recommendations.`,
+                        `**Continue your consultation**\n\nWe can continue from the **${ctx.conditionName}** assessment.\n\nTell me what changed since then, or ask any question about the diagnosis or care plan.`,
                     timestamp: new Date(),
                     isRecap: true,
                 },
