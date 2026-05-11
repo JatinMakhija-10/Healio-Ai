@@ -251,6 +251,19 @@ function buildSymptomRecord(
     };
 }
 
+function isResumeIntroMessage(message: ChatMessage): boolean {
+    if (message.isRecap) return true;
+
+    const content = message.content.toLowerCase();
+    return (
+        content.includes("welcome back") ||
+        content.includes("continue your consultation") ||
+        content.includes("continuing your consultation") ||
+        content.includes("following up") ||
+        content.includes("your last consultation was")
+    );
+}
+
 /**
  * Build a human-readable recap message from a prior consultation.
  */
@@ -460,6 +473,13 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     ...m,
                     timestamp: new Date(m.timestamp)
                 }));
+
+                if (withDates.some(isResumeIntroMessage)) {
+                    sessionStorage.removeItem(storageKey);
+                    setMessages([]);
+                    return;
+                }
+
                 setMessages(withDates);
             } else {
                 // New user session, start fresh
@@ -475,9 +495,10 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
     useEffect(() => {
         const storageKey = getStorageKey();
         if (!storageKey) return; // Don't save if no user
+        if (resumeId || isResumeMode || messages.some(isResumeIntroMessage)) return;
 
         sessionStorage.setItem(storageKey, JSON.stringify(messages));
-    }, [messages, getStorageKey]);
+    }, [messages, getStorageKey, resumeId, isResumeMode]);
 
     const saveConsultation = useCallback(
         async (allMessages: ChatMessage[]) => {
