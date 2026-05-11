@@ -51,7 +51,7 @@ type SymptomRecord = Partial<UserSymptomData> & {
 
 type SymptomDisplay = {
     location: string;
-    painType: string;
+    sensation: string;
     intensity: string;
     duration: string;
     notes?: string;
@@ -137,7 +137,8 @@ function buildSymptomDisplay(consultation: Consultation): SymptomDisplay {
     const locationList = symptoms.location?.length
         ? symptoms.location
         : extractLocations(sourceText);
-    const painType = symptoms.painType ||
+    const sensation = symptoms.sensation ||
+        symptoms.painType ||
         extractPainType(sourceText, consultation.diagnosis?.condition || "General symptoms");
     const intensity = typeof symptoms.intensity === "number"
         ? `${symptoms.intensity}/10`
@@ -146,7 +147,7 @@ function buildSymptomDisplay(consultation: Consultation): SymptomDisplay {
 
     return {
         location: locationList.length > 0 ? locationList.join(", ") : "General / not localized",
-        painType,
+        sensation,
         intensity,
         duration,
         notes: symptoms.additionalNotes || symptoms.raw_conversation || consultation.diagnosis?.description,
@@ -425,7 +426,7 @@ export default function HistoryPage() {
                                             </h4>
                                             <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-1">
                                                 <p><span className="font-medium">Location:</span> {symptomDisplay.location}</p>
-                                                <p><span className="font-medium">Pain Type:</span> {symptomDisplay.painType}</p>
+                                                <p><span className="font-medium">Sensation:</span> {symptomDisplay.sensation}</p>
                                                 <p><span className="font-medium">Intensity:</span> {symptomDisplay.intensity}</p>
                                                 <p><span className="font-medium">Duration:</span> {symptomDisplay.duration}</p>
                                                 {symptomDisplay.notes && (

@@ -240,11 +240,13 @@ function buildSymptomRecord(
         firstString(parsedDiagnosis?.bayesianFactors),
     ].filter(Boolean).join(" ");
     const sourceText = `${rawConversation}\n${diagnosisText}`;
+    const sensation = extractPainType(sourceText, parsedDiagnosis);
 
     return {
         raw_conversation: rawConversation,
         location: extractLocations(sourceText),
-        painType: extractPainType(sourceText, parsedDiagnosis),
+        sensation,
+        painType: sensation,
         intensity: extractIntensity(sourceText, parsedDiagnosis),
         duration: extractDuration(sourceText),
         additionalNotes: rawConversation || diagnosisText,

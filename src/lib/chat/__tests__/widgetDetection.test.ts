@@ -33,7 +33,42 @@ describe("detectWidget", () => {
         expect(result.type).toBe("quick_reply");
         if (result.type === "quick_reply") {
             expect(result.options).toContain("Burning");
-            expect(result.options).toContain("Sharp / Stabbing");
+            expect(result.options).toContain("Sharp / stabbing");
+            expect(result.options).toContain("Other");
+        }
+    });
+
+    it("uses globally understandable discomfort options", () => {
+        const result = detectWidget("What does the discomfort feel like? Choose the closest option, or describe it in your own words.");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Itching");
+            expect(result.options).toContain("Blocked / congested");
+            expect(result.options).toContain("Nausea / uneasy stomach");
+            expect(result.options).toContain("Weak / tired / heavy");
+            expect(result.options).toContain("Other");
+        }
+    });
+
+    it("uses skin-specific sensation options for rash complaints", () => {
+        const result = detectWidget("For this skin rash, what does the discomfort feel like?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Itching");
+            expect(result.options).toContain("Dry / flaky");
+            expect(result.options).toContain("Spreading");
+            expect(result.options).toContain("Other");
+        }
+    });
+
+    it("uses nasal-specific sensation options for congestion complaints", () => {
+        const result = detectWidget("For the blocked nose and congestion, what does the discomfort feel like?");
+        expect(result.type).toBe("quick_reply");
+        if (result.type === "quick_reply") {
+            expect(result.options).toContain("Blocked / congested");
+            expect(result.options).toContain("Runny or watery");
+            expect(result.options).toContain("Post-nasal drip");
+            expect(result.options).toContain("Other");
         }
     });
 
@@ -187,8 +222,9 @@ describe("detectWidget", () => {
         expect(result.type).toBe("quick_reply");
         if (result.type === "quick_reply") {
             expect(result.options).toContain("Burning");
-            expect(result.options).toContain("Sharp / Stabbing");
-            expect(result.options).toContain("Dull ache");
+            expect(result.options).toContain("Sharp / stabbing");
+            expect(result.options).toContain("Dull / aching");
+            expect(result.options).toContain("Other");
         }
     });
 

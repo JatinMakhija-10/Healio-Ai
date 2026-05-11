@@ -145,6 +145,7 @@ export interface AyurvedicProfile {
 
 export interface UserSymptomData {
     location: string[];
+    sensation?: string;
     painType?: string;
     triggers?: string;
     duration?: string;

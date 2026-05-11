@@ -35,9 +35,27 @@ const TRIGGER_KEYWORDS = [
 ];
 
 const SENSATION_KEYWORDS = [
-    "feel like", "type of pain", "kaisa dard", "kaisa lagta",
+    "feel like", "feels like", "discomfort feel", "symptom feel",
+    "describe what", "describe the feeling", "describe the sensation",
+    "closest option", "own words", "type of pain", "kaisa dard", "kaisa lagta",
     "sensation", "what kind", "nature of", "dard ki prakar",
     "kis tarah ka dard", "chubhan", "dhadakta", "bharipan",
+];
+
+const UNIVERSAL_SENSATION_OPTIONS = [
+    "Sharp / stabbing",
+    "Dull / aching",
+    "Burning",
+    "Itching",
+    "Tingling / numb",
+    "Pressure / tightness",
+    "Throbbing / pulsing",
+    "Cramping",
+    "Swollen / tender",
+    "Blocked / congested",
+    "Nausea / uneasy stomach",
+    "Weak / tired / heavy",
+    "Other",
 ];
 
 const DURATION_KEYWORDS = [
@@ -59,6 +77,38 @@ function hasAny(text: string, keywords: string[]): boolean {
     return keywords.some(kw => text.includes(kw));
 }
 
+function getSensationOptions(text: string): string[] {
+    if (hasAny(text, ["rash", "skin", "itch", "khujli", "redness", "spots", "patch", "hives"])) {
+        return ["Itching", "Burning", "Tingling / numb", "Swollen / tender", "Dry / flaky", "Spreading", "Tender to touch", "Other"];
+    }
+
+    if (hasAny(text, ["headache", "head", "migraine", "forehead", "temple", "eyes", "sinus"])) {
+        return ["Throbbing / pulsing", "Pressure / tightness", "Sharp / stabbing", "Dull / aching", "Behind the eyes", "One-sided", "With nausea", "Other"];
+    }
+
+    if (hasAny(text, ["nose", "blocked", "congestion", "congested", "sinus", "sneezing", "runny", "cold"])) {
+        return ["Blocked / congested", "Runny or watery", "Sneezing", "Pressure / tightness", "Burning / dryness", "Post-nasal drip", "Coughing", "Other"];
+    }
+
+    if (hasAny(text, ["stomach", "abdomen", "nausea", "vomit", "gas", "acidity", "diarrhea", "constipation", "pet"])) {
+        return ["Cramping", "Burning", "Bloating / gas", "Nausea / uneasy stomach", "Sharp / stabbing", "Dull / aching", "Pressure / fullness", "Other"];
+    }
+
+    if (hasAny(text, ["chest", "breath", "cough", "throat", "gala", "saans"])) {
+        return ["Pressure / tightness", "Burning", "Scratchy / sore", "Dry cough", "Wet cough / phlegm", "Short of breath", "Sharp / stabbing", "Other"];
+    }
+
+    if (hasAny(text, ["back", "neck", "shoulder", "arm", "leg", "knee", "joint", "muscle", "injury"])) {
+        return ["Dull / aching", "Sharp / stabbing", "Cramping", "Stiff / tight", "Swollen / tender", "Tingling / numb", "Weak / heavy", "Other"];
+    }
+
+    if (hasAny(text, ["dizzy", "numb", "tingling", "weak", "fatigue", "tired", "chakkar", "thakan"])) {
+        return ["Tingling / numb", "Weak / tired / heavy", "Dizzy / lightheaded", "Shaky", "Pressure / tightness", "Burning", "Other"];
+    }
+
+    return UNIVERSAL_SENSATION_OPTIONS;
+}
+
 /**
  * Analyzes the last assistant message text and returns a hint for
  * which interactive widget should be rendered beneath it.
@@ -66,14 +116,19 @@ function hasAny(text: string, keywords: string[]): boolean {
 export function detectWidget(text: string): WidgetHint {
     const t = text.toLowerCase();
 
-    // ─── 1. Sensation / pain type — HIGHEST PRIORITY ──────────────────
+    // ─── 1. Sensation / discomfort type — HIGHEST PRIORITY ─────────────
     if (hasAny(t, SENSATION_KEYWORDS) ||
         // Additional patterns that indicate sensation question
         (t.includes("burning") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("itching") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("tingling") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("numb") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("blocked") && !hasAny(t, TRIGGER_KEYWORDS)) ||
+        (t.includes("congested") && !hasAny(t, TRIGGER_KEYWORDS)) ||
         (t.includes("jalan") && !hasAny(t, TRIGGER_KEYWORDS)) ||
         t.includes("dull") || t.includes("sharp")
     ) {
-        return { type: "quick_reply", options: ["Burning", "Sharp / Stabbing", "Dull ache", "Throbbing", "Cramping", "Pressure"] };
+        return { type: "quick_reply", options: getSensationOptions(t) };
     }
 
     // ─── 3. Relief / what makes it better — BEFORE triggers ───────────
