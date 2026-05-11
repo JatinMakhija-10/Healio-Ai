@@ -1,0 +1,119 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-05-08T06:15:06.150Z",
+    "userEmail": "syntraa.business@gmail.com",
+    "userName": "Jatin"
+  },
+  "extensionLogs": [
+    "2026-05-08 11:43:38.563 [info] I0508 11:43:38.561344 30568 server.go:1235] Starting language server process with pid 30568",
+    "2026-05-08 11:43:38.563 [info] I0508 11:43:38.562344 30568 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-05-08 11:43:38.564 [info] I0508 11:43:38.563683 30568 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-05-08 11:43:38.567 [info] I0508 11:43:38.565809 30568 server.go:454] Language server listening on random port at 50793 for HTTPS (gRPC)",
+    "2026-05-08 11:43:38.567 [info] I0508 11:43:38.566816 30568 server.go:461] Language server listening on random port at 50794 for HTTP",
+    "2026-05-08 11:43:38.977 [info] I0508 11:43:38.976920 30568 server.go:433] Created extension server client at port 55239",
+    "2026-05-08 11:43:39.009 [info] I0508 11:43:39.007420 30568 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-05-08 11:43:39.030 [info] (Antigravity) 2026-05-08 11:43:39.028 [INFO]: Language server started",
+    "2026-05-08 11:43:39.066 [info] I0508 11:43:39.045163 30568 server.go:1691] initialized server successfully in 482.8183ms",
+    "2026-05-08 11:43:39.370 [info] (Antigravity) 2026-05-08 11:43:39.370 [INFO]: LS lspClient started successfully",
+    "2026-05-08 11:43:40.463 [info] I0508 11:43:40.463012 30568 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:50816/mcp, stopping watcher",
+    "2026-05-08 11:43:40.509 [info] I0508 11:43:40.508636 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xa095f32d058dc13a",
+    "2026-05-08 11:43:41.946 [info] I0508 11:43:41.945685 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xc78b9afc78b69370",
+    "2026-05-08 11:43:43.736 [info] I0508 11:43:43.736400 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xc24aa8874e746b7f",
+    "2026-05-08 11:43:44.095 [info] 2026/05/08 11:43:44 http: TLS handshake error from 127.0.0.1:60618: remote error: tls: unknown certificate",
+    "2026-05-08 11:43:44.095 [info] 2026/05/08 11:43:44 http: TLS handshake error from 127.0.0.1:50880: remote error: tls: unknown certificate",
+    "2026-05-08 11:43:44.105 [info] E0508 11:43:44.105284 30568 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-05-08 11:45:01.268 [info] I0508 11:45:01.267159 30568 planner_generator.go:283] Requesting planner with 103 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-08 11:45:03.493 [info] E0508 11:45:03.493052 30568 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server"
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-05-08 11:43:38.962 [info] Initialized with 0 existing HTML files",
+      "2026-05-08 11:43:38.962 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-05-08 11:43:38.954 [info] Render performance baseline is 26ms",
+      "2026-05-08 11:43:48.812 [warning] Renderer reported VERY LONG TASK (337ms), starting profiling session '8aecffa9-5475-415e-ba2c-ce3a7b013c5b'"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-05-08 11:43:36.394 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 2c4b854822693ece",
+      "2026-05-08 11:43:36.423 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: d7994d16bc9cfd9a",
+      "2026-05-08 11:43:38.488 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: ae2fc349ab858c1a",
+      "2026-05-08 11:43:38.611 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 5caecc723b08f312",
+      "2026-05-08 11:43:40.390 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 658cdbca26f2e40f",
+      "2026-05-08 11:43:40.946 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 399f578b4317a69e"
+    ],
+    "auth": [
+      "2026-05-08 11:43:40.394 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0508 11:43:38.561344 30568 server.go:1235] Starting language server process with pid 30568\n",
+      "I0508 11:43:38.562344 30568 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0508 11:43:38.563683 30568 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0508 11:43:38.565809 30568 server.go:454] Language server listening on random port at 50793 for HTTPS (gRPC)\n",
+      "I0508 11:43:38.566816 30568 server.go:461] Language server listening on random port at 50794 for HTTP\n",
+      "I0508 11:43:38.976920 30568 server.go:433] Created extension server client at port 55239\n",
+      "I0508 11:43:39.007420 30568 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0508 11:43:39.045163 30568 server.go:1691] initialized server successfully in 482.8183ms\n",
+      "I0508 11:43:40.463012 30568 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:50816/mcp, stopping watcher\n",
+      "I0508 11:43:40.508636 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xa095f32d058dc13a\n",
+      "I0508 11:43:41.945685 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xc78b9afc78b69370\n",
+      "I0508 11:43:43.736400 30568 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xc24aa8874e746b7f\n",
+      "E0508 11:43:44.105284 30568 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0508 11:45:01.267159 30568 planner_generator.go:283] Requesting planner with 103 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0508 11:45:03.493052 30568 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "e028be98-2629-4a79-bcf2-20e5a2b5a9a1",
+      "trajectoryId": "91b8e48f-fab6-4555-a415-aa8a29d3beb7",
+      "summary": "Running OCR Processing Script",
+      "lastStepIndex": 155,
+      "lastModifiedTime": "2026-05-08T06:15:03.495Z"
+    },
+    {
+      "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
+      "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
+      "summary": "Fixing Healio Notification System",
+      "lastStepIndex": 118,
+      "lastModifiedTime": "2026-05-04T19:34:48.008Z"
+    },
+    {
+      "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
+      "trajectoryId": "4d9a93b2-fd33-4a01-8849-dab5a44e4355",
+      "summary": "Healio Project Development Resumption",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-05-04T19:23:00.933Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    }
+  ]
+}

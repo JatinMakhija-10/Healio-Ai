@@ -12,10 +12,16 @@
 export const dynamic = 'force-dynamic';
 export const maxDuration = 15;
 
+import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/ai/config';
+import { rateLimitCheck } from '@/lib/api/rateLimit';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(req, 'health', 30, 60_000);
+        if (limited) return limited;
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = getSupabaseAdmin() as any;
 

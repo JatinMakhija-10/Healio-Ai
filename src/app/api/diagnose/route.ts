@@ -28,6 +28,7 @@ import { NextResponse } from "next/server";
 import { AI_PHASE_CONFIG, getGeminiClient, getGroqClient, getSupabaseAdmin } from "@/lib/ai/config";
 import { infoGainSelector } from "@/lib/diagnosis/advanced/InformationGainSelector";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
+import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -364,6 +365,10 @@ async function fetchMultiQueryRAG(
 
 export async function POST(req: Request) {
     try {
+        // ── Rate limit: 10 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(req, 'diagnose', 10, 60_000);
+        if (limited) return limited;
+
         // ── Auth guard ───────────────────────────────────────────────────────
         const authHeader = req.headers.get('authorization');
         if (!authHeader?.startsWith('Bearer ')) {

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
@@ -531,6 +532,10 @@ export async function POST(req: NextRequest) {
 
     const processRequest = async (): Promise<Response> => {
         try {
+        // ── Rate limit: 20 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(req, 'chat', 20, 60_000);
+        if (limited) return limited;
+
         // ── Auth — validate JWT (30 s cache hit avoids an extra Supabase round-trip)
         const authHeader = req.headers.get('authorization');
         if (!authHeader?.startsWith('Bearer ')) {

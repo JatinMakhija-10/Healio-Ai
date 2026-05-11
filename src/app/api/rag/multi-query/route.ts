@@ -27,6 +27,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { AI_PHASE_CONFIG } from "@/lib/ai/config";
+import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 function getSupabaseClient() {
     return createClient(
@@ -46,6 +47,10 @@ interface BoerickeChunk {
 
 export async function POST(req: Request) {
     try {
+        // ── Rate limit: 15 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(req, 'rag', 15, 60_000);
+        if (limited) return limited;
+
         const body = await req.json();
         const {
             queries,

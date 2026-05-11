@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { rateLimitCheck } from '@/lib/api/rateLimit';
 
 export async function POST(req: Request) {
     try {
+        // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(req, 'embeddings', 30, 60_000);
+        if (limited) return limited;
+
         const { text } = await req.json();
 
         if (!text) {

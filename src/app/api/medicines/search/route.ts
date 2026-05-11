@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
+import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 // Cache the database in memory after first load (server-side only)
 let _db: Record<string, Record<string, string[]>> | null = null;
@@ -15,6 +16,10 @@ function loadDB() {
 
 export async function GET(req: NextRequest) {
   try {
+    // ── Rate limit: 60 req / 60 s per IP ─────────────────────────────────────
+    const limited = rateLimitCheck(req, 'medicines', 60, 60_000);
+    if (limited) return limited;
+
     const { searchParams } = new URL(req.url);
     const q = (searchParams.get("q") ?? "").trim().toLowerCase();
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "40"), 100);

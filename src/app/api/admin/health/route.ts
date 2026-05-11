@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer';
+import { rateLimitCheck } from '@/lib/api/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,9 +72,12 @@ function aggregateSystemStatus(services: { database: string; aiService: string; 
     return 'operational';
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
     try {
+        // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(request, 'admin', 30, 60_000);
+        if (limited) return limited;
+
         const supabase = await createClient();
         // Check authentication
         const { data: { session } } = await supabase.auth.getSession();

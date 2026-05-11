@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer';
 import { createServiceClient } from '@/lib/supabaseServer';
+import { rateLimitCheck } from '@/lib/api/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +10,11 @@ export const dynamic = 'force-dynamic';
  * Fetch all admin-sent notifications (most recent first)
  */
 export async function GET(request: NextRequest) {
-    void request;
     try {
+        // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(request, 'admin', 30, 60_000);
+        if (limited) return limited;
+
         const supabase = await createClient();
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,6 +57,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
+        // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
+        const limited = rateLimitCheck(request, 'admin', 30, 60_000);
+        if (limited) return limited;
+
         const supabase = await createClient();
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,0 +1,142 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-05-11T14:48:08.532Z",
+    "userEmail": "syntraa.business@gmail.com",
+    "userName": "Jatin"
+  },
+  "extensionLogs": [
+    "2026-05-11 20:17:19.154 [info] I0511 20:17:19.153754 21044 server.go:1235] Starting language server process with pid 21044",
+    "2026-05-11 20:17:19.155 [info] I0511 20:17:19.154754 21044 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-05-11 20:17:19.164 [info] I0511 20:17:19.160767 21044 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-05-11 20:17:19.165 [info] I0511 20:17:19.165282 21044 server.go:454] Language server listening on random port at 51031 for HTTPS (gRPC)",
+    "2026-05-11 20:17:19.165 [info] I0511 20:17:19.165282 21044 server.go:461] Language server listening on random port at 51032 for HTTP",
+    "2026-05-11 20:17:20.436 [info] I0511 20:17:20.436374 21044 server.go:433] Created extension server client at port 52574",
+    "2026-05-11 20:17:20.471 [info] I0511 20:17:20.471237 21044 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-05-11 20:17:20.514 [info] (Antigravity) 2026-05-11 20:17:20.512 [INFO]: Language server started",
+    "2026-05-11 20:17:20.548 [info] I0511 20:17:20.536591 21044 server.go:1691] initialized server successfully in 1.3818364s",
+    "2026-05-11 20:17:20.658 [info] (Antigravity) 2026-05-11 20:17:20.657 [INFO]: LS lspClient started successfully",
+    "2026-05-11 20:17:21.944 [info] I0511 20:17:21.919129 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x330259937b500707",
+    "2026-05-11 20:17:22.004 [info] I0511 20:17:22.003972 21044 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:53925/mcp, stopping watcher",
+    "2026-05-11 20:17:24.121 [info] I0511 20:17:24.121379 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x88480911002ab21f",
+    "2026-05-11 20:17:25.577 [info] 2026/05/11 20:17:25 http: TLS handshake error from 127.0.0.1:64377: read tcp 127.0.0.1:51031->127.0.0.1:64377: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-05-11 20:17:25.578 [info] 2026/05/11 20:17:25 http: TLS handshake error from 127.0.0.1:55878: read tcp 127.0.0.1:51031->127.0.0.1:55878: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-05-11 20:17:25.578 [info] 2026/05/11 20:17:25 http: TLS handshake error from 127.0.0.1:59268: read tcp 127.0.0.1:51031->127.0.0.1:59268: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-05-11 20:17:25.581 [info] 2026/05/11 20:17:25 http: TLS handshake error from 127.0.0.1:49889: read tcp 127.0.0.1:51031->127.0.0.1:49889: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-05-11 20:17:25.592 [info] E0511 20:17:25.590859 21044 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-05-11 20:17:27.416 [info] I0511 20:17:26.095367 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xda53d7b5dc8c0b88",
+    "2026-05-11 20:17:39.927 [info] I0511 20:17:39.925829 21044 planner_generator.go:283] Requesting planner with 109 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-11 20:17:43.622 [info] I0511 20:17:43.622296 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc42b0890cce5f0e1",
+    "2026-05-11 20:17:48.679 [info] (Antigravity) 2026-05-11 20:17:48.679 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-11 20:17:49.839 [info] (Antigravity) 2026-05-11 20:17:49.838 [INFO]: [Terminal] Command completed: git log --oneline -10 exit code 0",
+    "2026-05-11 20:17:49.897 [info] I0511 20:17:49.896859 21044 planner_generator.go:283] Requesting planner with 111 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-11 20:17:55.042 [info] I0511 20:17:55.042329 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xf15326c8430420ee",
+    "2026-05-11 20:17:55.993 [info] I0511 20:17:55.992536 21044 planner_generator.go:283] Requesting planner with 113 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-11 20:17:57.244 [info] E0511 20:17:57.243250 21044 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
+    "2026-05-11 20:18:05.565 [info] I0511 20:18:05.564258 21044 planner_generator.go:283] Requesting planner with 115 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-11 20:18:06.615 [info] E0511 20:18:06.614695 21044 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server"
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-05-11 20:17:18.856 [info] Initialized with 0 existing HTML files",
+      "2026-05-11 20:17:18.856 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-05-11 20:17:19.062 [info] Render performance baseline is 22ms",
+      "2026-05-11 20:17:30.533 [warning] Renderer reported VERY LONG TASK (354ms), starting profiling session '8ab21242-fbe3-464e-9fb8-c968c47ff9e1'"
+    ],
+    "auth": [
+      "2026-05-11 20:17:19.966 [info] OAuth token changed, executing antigravity.handleAuthRefresh",
+      "2026-05-11 20:17:20.126 [info] OAuth token changed, executing antigravity.handleAuthRefresh",
+      "2026-05-11 20:17:22.375 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-05-11 20:17:17.605 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: b2174b3142fcc1b7",
+      "2026-05-11 20:17:17.608 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: b15ea06d98c83f9c",
+      "2026-05-11 20:17:19.824 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 558f0d8750a1f363",
+      "2026-05-11 20:17:19.988 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 91a2cbe49875a3a4",
+      "2026-05-11 20:17:22.348 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 3c2b2efa531f8ff2",
+      "2026-05-11 20:17:22.372 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 348513e9940ccab5"
+    ],
+    "auth": [
+      "2026-05-11 20:17:19.966 [info] OAuth token changed, executing antigravity.handleAuthRefresh",
+      "2026-05-11 20:17:20.126 [info] OAuth token changed, executing antigravity.handleAuthRefresh",
+      "2026-05-11 20:17:22.375 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0511 20:17:19.153754 21044 server.go:1235] Starting language server process with pid 21044\n",
+      "I0511 20:17:19.154754 21044 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0511 20:17:19.160767 21044 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0511 20:17:19.165282 21044 server.go:454] Language server listening on random port at 51031 for HTTPS (gRPC)\n",
+      "I0511 20:17:19.165282 21044 server.go:461] Language server listening on random port at 51032 for HTTP\n",
+      "I0511 20:17:20.436374 21044 server.go:433] Created extension server client at port 52574\n",
+      "I0511 20:17:20.471237 21044 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0511 20:17:20.536591 21044 server.go:1691] initialized server successfully in 1.3818364s\n",
+      "I0511 20:17:21.919129 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x330259937b500707\n",
+      "I0511 20:17:22.003972 21044 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:53925/mcp, stopping watcher\n",
+      "I0511 20:17:24.121379 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x88480911002ab21f\n",
+      "E0511 20:17:25.590859 21044 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0511 20:17:26.095367 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xda53d7b5dc8c0b88\n",
+      "I0511 20:17:39.925829 21044 planner_generator.go:283] Requesting planner with 109 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "I0511 20:17:43.622296 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc42b0890cce5f0e1\n",
+      "I0511 20:17:49.896859 21044 planner_generator.go:283] Requesting planner with 111 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "I0511 20:17:55.042329 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xf15326c8430420ee\n",
+      "I0511 20:17:55.992536 21044 planner_generator.go:283] Requesting planner with 113 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0511 20:17:57.243250 21044 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
+      "I0511 20:18:05.564258 21044 planner_generator.go:283] Requesting planner with 115 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0511 20:18:06.614695 21044 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "e028be98-2629-4a79-bcf2-20e5a2b5a9a1",
+      "trajectoryId": "91b8e48f-fab6-4555-a415-aa8a29d3beb7",
+      "summary": "Running OCR Processing Script",
+      "lastStepIndex": 177,
+      "lastModifiedTime": "2026-05-11T14:48:06.615Z"
+    },
+    {
+      "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
+      "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
+      "summary": "Fixing Healio Notification System",
+      "lastStepIndex": 118,
+      "lastModifiedTime": "2026-05-04T19:34:48.008Z"
+    },
+    {
+      "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
+      "trajectoryId": "4d9a93b2-fd33-4a01-8849-dab5a44e4355",
+      "summary": "Healio Project Development Resumption",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-05-04T19:23:00.933Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    }
+  ]
+}
