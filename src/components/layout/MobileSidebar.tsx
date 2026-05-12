@@ -141,7 +141,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-slate-100">
+                        <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
@@ -151,6 +151,15 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                                 {isLoggingOut ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
                                 {isLoggingOut ? "Signing Out..." : "Sign Out"}
                             </Button>
+
+                            <div className="flex flex-col gap-2 px-3 mt-4 mb-2">
+                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Legal</p>
+                                <div className="flex flex-col gap-1.5 text-xs font-medium text-slate-500">
+                                    <Link href="/privacy" onClick={onClose} className="hover:text-teal-600 transition-colors">Privacy Policy</Link>
+                                    <Link href="/terms" onClick={onClose} className="hover:text-teal-600 transition-colors">Terms of Service</Link>
+                                    <Link href="/medical-disclaimer" onClick={onClose} className="hover:text-teal-600 transition-colors">Medical Disclaimer</Link>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 </>

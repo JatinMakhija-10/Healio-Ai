@@ -162,6 +162,13 @@ export default function SignupPage() {
                         Login
                     </Link>
                 </p>
+
+                {/* Legal Links Footer */}
+                <div className="mt-8 pt-4 border-t border-slate-100 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[11px] text-slate-400">
+                    <Link href="/privacy" className="hover:text-slate-600 transition-colors">Privacy Policy</Link>
+                    <Link href="/terms" className="hover:text-slate-600 transition-colors">Terms of Service</Link>
+                    <Link href="/medical-disclaimer" className="hover:text-slate-600 transition-colors">Medical Disclaimer</Link>
+                </div>
             </div>
         </div>
     );

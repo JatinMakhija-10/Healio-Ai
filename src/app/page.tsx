@@ -88,9 +88,16 @@ export default function LandingPage() {
         </motion.div>
 
         {/* Legal Footer */}
-        <p className="text-xs text-slate-500 max-w-sm mx-auto leading-normal">
-          By continuing, you agree that Healio.AI is an informational tool and does not provide medical diagnosis or treatment advice.
-        </p>
+        <div className="pt-6 space-y-4">
+          <p className="text-xs text-slate-500 max-w-sm mx-auto leading-normal">
+            By continuing, you agree that Healio.AI is an informational tool and does not provide medical diagnosis or treatment advice.
+          </p>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-slate-500">
+            <Link href="/privacy" className="hover:text-slate-900 transition-colors underline underline-offset-2">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-slate-900 transition-colors underline underline-offset-2">Terms of Service</Link>
+            <Link href="/medical-disclaimer" className="hover:text-slate-900 transition-colors underline underline-offset-2">Medical Disclaimer</Link>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
