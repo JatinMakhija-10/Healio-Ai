@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabaseServer';
-import { createServiceClient } from '@/lib/supabaseServer';
+import { createClient, createServiceClient } from '@/lib/supabaseServer';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -16,11 +15,11 @@ export async function GET(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { data: profile } = await supabase
-            .from('profiles').select('role').eq('id', session.user.id).single();
+            .from('profiles').select('role').eq('id', user.id).single();
         if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         // Fetch recent admin-sent notifications (grouped by batch)
@@ -62,11 +61,11 @@ export async function POST(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { data: profile } = await supabase
-            .from('profiles').select('role').eq('id', session.user.id).single();
+            .from('profiles').select('role').eq('id', user.id).single();
         if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const body = await request.json();
@@ -144,8 +143,8 @@ export async function POST(request: NextRequest) {
             action_url: actionUrl || null,
             metadata: {
                 ...metadata,
-                sent_by: session.user.id,
-                sent_by_email: session.user.email,
+                sent_by: user.id,
+                sent_by_email: user.email,
                 target_group: target,
             },
             is_read: false,

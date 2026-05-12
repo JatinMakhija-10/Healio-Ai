@@ -288,7 +288,10 @@ export function Header() {
                                 {/* Footer */}
                                 {typedNotifications.length > 0 && (
                                     <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
-                                        <button className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium py-1">
+                                        <button
+                                            onClick={() => { setIsNotificationOpen(false); router.push('/dashboard/notifications'); }}
+                                            className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium py-1"
+                                        >
                                             View all notifications
                                         </button>
                                     </div>

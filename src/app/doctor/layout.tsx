@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DoctorSidebar } from "@/components/doctor/DoctorSidebar";
+import { DoctorHeader } from "@/components/layout/DoctorHeader";
 import { useRequireRole } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -58,6 +59,7 @@ export default function DoctorLayout({
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col h-full overflow-hidden">
+                <DoctorHeader />
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto p-6 md:p-8">
                     <div className="max-w-7xl mx-auto">

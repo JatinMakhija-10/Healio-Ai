@@ -98,11 +98,17 @@ export function useAppointmentById(appointmentId: string | undefined) {
 export function useNotifications(userId: string | undefined, unreadOnly = false) {
     return useQuery({
         queryKey: queryKeys.notifications(userId!, unreadOnly),
-        queryFn: () => api.getNotifications(userId!, unreadOnly),
+        queryFn: async () => {
+            const params = unreadOnly ? '?unread=true' : '';
+            const res = await fetch(`/api/notifications${params}`);
+            if (!res.ok) return [];
+            const json = await res.json();
+            return json.data || [];
+        },
         enabled: !!userId,
-        staleTime: 10 * 1000, // 10s — notifications should be near-realtime
+        staleTime: 10 * 1000,
         refetchOnWindowFocus: true,
-        refetchInterval: 30 * 1000, // poll every 30s in background
+        refetchInterval: 30 * 1000,
     });
 }
 
@@ -177,10 +183,16 @@ export function useMarkNotificationRead() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (notificationId: string) =>
-            api.markNotificationAsRead(notificationId),
+        mutationFn: async (notificationId: string) => {
+            const res = await fetch('/api/notifications', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: notificationId }),
+            });
+            if (!res.ok) throw new Error('Failed to mark notification as read');
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 }
@@ -189,10 +201,16 @@ export function useMarkAllNotificationsRead() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (userId: string) =>
-            api.markAllNotificationsAsRead(userId),
+        mutationFn: async (_userId: string) => {
+            const res = await fetch('/api/notifications', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ all: true }),
+            });
+            if (!res.ok) throw new Error('Failed to mark all notifications as read');
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 }
