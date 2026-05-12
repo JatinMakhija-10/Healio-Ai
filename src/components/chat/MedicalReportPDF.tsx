@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
         fontSize: TYPE.body,   // CRITICAL FIX: was 6px → 12pt.
         color: '#64748b',      // Liability disclaimer must be the MOST readable text.
         lineHeight: 1.65,      // FIXED: was 1.4 → 1.65
-        fontStyle: 'italic',   // Italic IS appropriate — disclaimer is the sole italic role.
+        // NOTE: fontStyle italic removed — no italic variant registered for Noto Sans (react-pdf v4 throws)
     },
 
     // ── In-flow footer ────────────────────────────────────────────────────────
@@ -664,7 +664,6 @@ const styles = StyleSheet.create({
         fontSize: TYPE.body,
         color: '#64748b',
         lineHeight: 1.65,
-        fontStyle: 'italic',
         marginBottom: 6,
     },
     disclaimerMeta: {
@@ -1020,7 +1019,7 @@ export const MedicalReportDocument = ({
                                     </View>
                                 ))
                             ) : (
-                                <Text style={[styles.alertText, { color: '#64748b', fontStyle: 'italic' }]}>
+                                <Text style={[styles.alertText, { color: '#64748b' }]}>
                                     No specific red flags identified.
                                 </Text>
                             )}
