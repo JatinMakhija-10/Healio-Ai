@@ -1,22 +1,20 @@
+"use client";
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-export const metadata = {
-  title: "Medical Disclaimer | Healio.AI",
-  description: "Medical Disclaimer for Healio.AI - Please read carefully before using our services.",
-};
-
 export default function MedicalDisclaimer() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation Bar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          <Link href="/" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => router.back()} className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to Home</span>
-          </Link>
+            <span>Back</span>
+          </button>
         </div>
       </header>
 
