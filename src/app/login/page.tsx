@@ -81,7 +81,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 py-6 px-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 py-12 px-4 overflow-y-auto">
             {/* Card */}
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
                 {/* Header (No Logo) */}

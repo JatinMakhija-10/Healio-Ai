@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-start items-center p-4 pt-12 md:pt-24 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-start items-center p-4 pt-12 md:pt-24 pb-12 relative overflow-x-hidden">
       {/* Background Decor - Subtle Clinical Gradients */}
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-teal-50 to-transparent -z-10" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-50/50 rounded-full blur-3xl -z-10" />
