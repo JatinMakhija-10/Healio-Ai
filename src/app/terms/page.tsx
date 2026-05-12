@@ -47,7 +47,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">3. User Accounts & Data</h2>
               <p>
-                When you create an account with us, you must provide accurate, complete, and current information. You are responsible for safeguarding your password and tracking your chat history safely. Because the core function of the application is a conversational AI, any text prompts, responses, and session metadata will be processed by our system to provide you with the Service.
+                When you create an account with us, you must provide accurate, complete, and current information. You must be at least 18 years of age, or the age of majority under the Indian Contract Act, 1872, to form a binding contract. You are responsible for safeguarding your password and tracking your chat history safely. Because the core function of the application is a conversational AI, any text prompts, responses, and session metadata will be processed by our system to provide you with the Service.
               </p>
             </section>
 
@@ -57,8 +57,8 @@ export default function TermsOfService() {
                 You agree not to use the Service or its chatbot interface:
               </p>
               <ul className="list-disc pl-6 space-y-2 mt-2">
-                <li>In any way that violates any applicable national or international law or regulation.</li>
-                <li>To attempt to independently diagnose or treat a severe medical condition without physician consultation, or prompt the AI to issue prescriptive drug advice.</li>
+                <li>In any way that violates any applicable national or state law in India, including the Information Technology Act, 2000.</li>
+                <li>To attempt to independently diagnose or treat a severe medical condition without physician consultation in accordance with Telemedicine Practice Guidelines, or prompt the AI to issue prescriptive drug advice.</li>
                 <li>To perform automated data scraping, reverse-engineer the underlying LLM models, or attempt to extract system prompts through jailbreaking techniques.</li>
                 <li>To submit malicious code, highly illegal content, or excessively explicit material into the chat inputs.</li>
                 <li>To engage in any other conduct that degrades the AI infrastructure or harms other users of the Service.</li>
@@ -80,7 +80,14 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Governing Law & Jurisdiction</h2>
+              <p>
+                These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. You agree that any legal action or proceeding arising out of or related to these Terms or the Service shall be instituted exclusively in the courts located in New Delhi, India.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">8. Changes to Terms</h2>
               <p>
                 We reserve the right, at our sole discretion, to modify or replace these Terms at any time. What constitutes a material change will be determined at our sole discretion. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
               </p>

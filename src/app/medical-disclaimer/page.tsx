@@ -29,17 +29,17 @@ export default function MedicalDisclaimer() {
           <div className="prose prose-slate dark:prose-invert max-w-none space-y-6 text-foreground/90">
             <div className="bg-destructive/10 border-l-4 border-destructive p-4 rounded-r-lg mb-8">
               <p className="font-semibold text-destructive mb-0 mt-0">
-                IF YOU ARE EXPERIENCING A MEDICAL EMERGENCY, PLEASE CALL 911 OR YOUR LOCAL EMERGENCY SERVICES IMMEDIATELY.
+                IF YOU ARE EXPERIENCING A MEDICAL EMERGENCY, PLEASE CALL 112, 108, OR YOUR LOCAL EMERGENCY SERVICES IMMEDIATELY.
               </p>
             </div>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">1. Not Medical Advice</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">1. Not Medical Advice (Telemedicine Practice Guidelines)</h2>
               <p>
-                The information, text, graphics, images, and other material contained on Healio.AI (the "Service") are for informational and educational purposes only. The Service is <strong>not intended to be a substitute for professional medical advice, diagnosis, or treatment.</strong>
+                The information, text, graphics, images, and other material contained on Healio.AI (the "Service") are for informational and educational purposes only. The Service is <strong>not intended to be a substitute for professional medical advice, diagnosis, or treatment by a Registered Medical Practitioner (RMP)</strong> as defined by the National Medical Commission (NMC).
               </p>
               <p>
-                Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read on or through the Service.
+                Always seek the advice of your physician or other qualified health provider within your jurisdiction with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read on or through the Service. Wait times or recommendations should not replace immediate consultation at the nearest hospital/clinic.
               </p>
             </section>
 

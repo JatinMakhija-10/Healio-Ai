@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
                 Welcome to Healio.AI ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice or our practices with regard to your personal information, please contact us.
               </p>
               <p>
-                When you visit our website and use our services (the "Services"), you trust us with your personal information. We take your privacy very seriously. In this privacy policy, we describe our privacy practices.
+                When you visit our website and use our services (the "Services"), you trust us with your personal information. We take your privacy very seriously. In this privacy policy, we describe our privacy practices in accordance with the Information Technology Act, 2000, the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011 (SPDI Rules), and the Digital Personal Data Protection Act, 2023 (DPDPA) of India.
               </p>
             </section>
 
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
               </p>
               <ul className="list-disc pl-6 space-y-2 mt-2">
                 <li><strong>Personal Data:</strong> Names, email addresses, and account credentials used to access the chatbot.</li>
-                <li><strong>Health/Medical Data & Chat Transcripts:</strong> Any symptoms, conditions, or related queries you input into our AI chatbot. Note: We collect the text of your conversations with the Healio.AI assistant. Do not upload or paste highly sensitive, personally identifying health records (like full medical charts or social security numbers) into the chat.</li>
+                <li><strong>Health/Medical Data & Chat Transcripts:</strong> Any symptoms, conditions, or related queries you input into our AI chatbot. Note: As per SPDI Rules, physical, physiological, and mental health conditions are considered Sensitive Personal Data. We process this text solely to provide the Healio.AI assistant services. Do not upload or paste highly sensitive, personally identifying health records (like full medical charts or Aadhaar numbers) into the chat.</li>
                 <li><strong>Automatically Collected Data:</strong> IP address, device characteristics, operating system, and information about how you interact with the chatbot interface.</li>
               </ul>
             </section>
@@ -82,16 +82,16 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">6. Keeping Your Information Safe</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">6. Keeping Your Information Safe & Data Localization</h2>
               <p>
-                We have implemented appropriate technical and organizational security measures designed to protect the security of any personal information we process. However, please also remember that we cannot guarantee that the internet itself is 100% secure. Although we will do our best to protect your personal information, transmission of personal information to and from our Services is at your own risk.
+                We have implemented appropriate technical and organizational security measures—in accordance with industry standards—designed to protect the security of any personal information we process. Data is stored and processed with compliant cloud providers. Following applicable Indian cyber laws, any core data processing adheres to requisite geographic and structural constraints. However, please also remember that we cannot guarantee that the internet itself is 100% secure.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Contact Us</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Grievance Officer & Contact Us</h2>
               <p>
-                If you have questions or comments about this notice, you may email us at privacy@healio.ai.
+                In accordance with the Information Technology Act, 2000 and the rules made thereunder, if you have questions, comments, or grievances about this notice or the processing of your Sensitive Personal Data, you may email our Grievance Officer at grievance@healio.ai or contact us at privacy@healio.ai.
               </p>
             </section>
           </div>
