@@ -8,6 +8,7 @@ import { DiagnosisResultCard } from "./DiagnosisResultCard";
 import { Bot, User } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DiagnosisMessage, UiHint } from "./useDiagnosisChat";
+import type { UserSymptomData } from "@/lib/diagnosis/types";
 
 function parseUiHint(content: string): { cleanText: string; hint: UiHint | null } {
     const hintMatch = content.match(/\{"ui_hint"\s*:/);
@@ -170,6 +171,7 @@ interface MessageListProps {
     messages: DiagnosisMessage[];
     isTyping: boolean;
     isComplete: boolean;
+    symptomData?: UserSymptomData | null;
     preferences: {
         ayurvedicMode: boolean;
         showUncertainty: boolean;
@@ -186,6 +188,7 @@ export function MessageList({
     preferences,
     onOptionSelect,
     onReset,
+    symptomData,
 }: MessageListProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     // Track which message hints have been answered so they disappear after selection
@@ -288,6 +291,11 @@ export function MessageList({
                                     showUncertaintyDetails={preferences.showUncertainty}
                                     showDetailedExplanations={preferences.detailedExplanations}
                                     reasoningTrace={msg.diagnosis.reasoningTrace}
+                                    symptoms={symptomData?.location}
+                                    ddiAlerts={msg.ddiAlerts}
+                                    ddiFlaggedRemedies={msg.ddiFlaggedRemedies}
+                                    ddiBlockedRemedies={msg.ddiBlockedRemedies}
+                                    userSymptomData={symptomData ?? undefined}
                                 />
                             )}
                         </div>

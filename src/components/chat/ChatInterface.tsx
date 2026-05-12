@@ -40,6 +40,7 @@ export default function ChatInterface() {
                 preferences={preferences}
                 onOptionSelect={handleOptionSelect}
                 onReset={handleReset}
+                symptomData={symptomData}
             />
         </div>
     );

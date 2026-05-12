@@ -479,9 +479,226 @@ const styles = StyleSheet.create({
         marginBottom: 4,
         lineHeight: 1.65,
     },
+
+    // ── Patient profile grid ─────────────────────────────────────────────────
+    profileGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 16,
+    },
+    profileItem: {
+        width: 155,
+        backgroundColor: '#f8fafc',
+        borderRadius: 4,
+        padding: '6 8',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    profileItemWide: {
+        width: 318,
+        backgroundColor: '#f8fafc',
+        borderRadius: 4,
+        padding: '6 8',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    profileLabel: {
+        fontSize: TYPE.caption,
+        color: '#94a3b8',
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+        marginBottom: 2,
+    },
+    profileValue: {
+        fontSize: TYPE.secondary,
+        color: '#0f172a',
+        fontWeight: 'bold',
+    },
+
+    // ── Symptom details chips ────────────────────────────────────────────────
+    symptomDetailRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginTop: 8,
+    },
+    symptomDetailChip: {
+        backgroundColor: '#f0fdfa',
+        borderRadius: 4,
+        padding: '4 8',
+        borderWidth: 1,
+        borderColor: '#99f6e4',
+    },
+    symptomDetailChipLabel: {
+        fontSize: TYPE.caption,
+        color: '#0d9488',
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+        marginBottom: 1,
+    },
+    symptomDetailChipValue: {
+        fontSize: TYPE.secondary,
+        color: '#134e4a',
+        fontWeight: 'bold',
+    },
+
+    // ── Confidence interval row ───────────────────────────────────────────────
+    ciRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 8,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#99f6e4',
+    },
+    ciLabel: {
+        fontSize: TYPE.caption,
+        color: '#0d9488',
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+    },
+    ciValue: {
+        fontSize: TYPE.secondary,
+        color: '#134e4a',
+        fontWeight: 'bold',
+    },
+
+    // ── Seek help / red flags ─────────────────────────────────────────────────
+    seekHelpBox: {
+        backgroundColor: '#fff1f2',
+        borderRadius: 6,
+        padding: 12,
+        borderWidth: 1,
+        borderLeftWidth: 4,
+        borderColor: '#fecdd3',
+        borderLeftColor: '#e11d48',
+        marginBottom: 16,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        break: 'avoid' as any,
+    },
+    seekHelpTitle: {
+        fontSize: TYPE.secondary,
+        fontWeight: 'bold',
+        color: '#be123c',
+        marginBottom: 6,
+    },
+    seekHelpText: {
+        fontSize: TYPE.secondary,
+        color: '#9f1239',
+        lineHeight: 1.65,
+        marginBottom: 3,
+    },
+
+    // ── DDI drug interaction box ──────────────────────────────────────────────
+    ddiBox: {
+        backgroundColor: '#fff7ed',
+        borderRadius: 6,
+        padding: 12,
+        borderWidth: 1,
+        borderLeftWidth: 4,
+        borderColor: '#fed7aa',
+        borderLeftColor: '#ea580c',
+        marginBottom: 16,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        break: 'avoid' as any,
+    },
+    ddiTitle: {
+        fontSize: TYPE.secondary,
+        fontWeight: 'bold',
+        color: '#c2410c',
+        marginBottom: 6,
+    },
+    ddiText: {
+        fontSize: TYPE.secondary,
+        color: '#9a3412',
+        lineHeight: 1.65,
+        marginBottom: 3,
+    },
+
+    // ── Follow-up recommendations ─────────────────────────────────────────────
+    followUpBox: {
+        backgroundColor: '#f0f9ff',
+        borderRadius: 6,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: '#bae6fd',
+        marginBottom: 16,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        break: 'avoid' as any,
+    },
+    followUpTitle: {
+        fontSize: TYPE.secondary,
+        fontWeight: 'bold',
+        color: '#0369a1',
+        marginBottom: 6,
+    },
+    followUpText: {
+        fontSize: TYPE.secondary,
+        color: '#075985',
+        lineHeight: 1.65,
+        marginBottom: 3,
+    },
+
+    // ── Enhanced disclaimer ───────────────────────────────────────────────────
+    disclaimerEnhanced: {
+        backgroundColor: '#f8fafc',
+        padding: 14,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginTop: 12,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        break: 'avoid' as any,
+    },
+    disclaimerSubTitle: {
+        fontSize: TYPE.caption,
+        fontWeight: 'bold',
+        color: '#475569',
+        textTransform: 'uppercase',
+        marginBottom: 3,
+    },
+    disclaimerPara: {
+        fontSize: TYPE.body,
+        color: '#64748b',
+        lineHeight: 1.65,
+        fontStyle: 'italic',
+        marginBottom: 6,
+    },
+    disclaimerMeta: {
+        fontSize: TYPE.caption,
+        color: '#94a3b8',
+        lineHeight: 1.5,
+        marginTop: 4,
+    },
 });
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
+export interface UserProfileSummary {
+    age?: string;
+    gender?: string;
+    weight?: string;
+    height?: string;
+    bloodPressure?: string;
+    medications?: string | string[];
+    allergies?: string;
+    conditions?: string[];
+    familyHistory?: string | string[];
+    smoking?: string;
+    alcohol?: string;
+    exercise?: string;
+}
+
+export interface SymptomDetailsSummary {
+    duration?: string;
+    frequency?: string;
+    intensity?: number;
+    triggers?: string;
+    sensation?: string;
+}
+
 interface MedicalReportPDFProps {
     condition: Condition;
     confidence: number;
@@ -492,6 +709,10 @@ interface MedicalReportPDFProps {
     reportId?: string;
     clinicalRules?: RuleResult[];
     reasoningTrace?: ReasoningTraceEntry[];
+    userProfile?: UserProfileSummary;
+    symptomDetails?: SymptomDetailsSummary;
+    ddiAlerts?: string[];
+    generatedAt?: Date;
 }
 
 interface MedicalReportPreviewProps {
@@ -550,8 +771,14 @@ export const MedicalReportDocument = ({
     reportId = 'HA-REPORT',
     clinicalRules = [],
     reasoningTrace = [],
+    userProfile,
+    symptomDetails,
+    ddiAlerts = [],
+    generatedAt,
 }: MedicalReportPDFProps) => {
-    // Consolidate all remedy types into flat list (max 8 to keep layout clean)
+    const assessmentDate = generatedAt || new Date();
+    const hasUserProfile = userProfile && Object.values(userProfile).some(v => v !== undefined && v !== null && v !== '');
+    // Consolidate all remedy types into flat list (max 12 for comprehensive report)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allRemedies: any[] = [
         ...(condition.home_remedies || []).map(r => ({ ...r, type: 'Home Remedy' })),
@@ -559,7 +786,7 @@ export const MedicalReportDocument = ({
         ...(condition.ayurvedic_remedies || []).map(r => ({ ...r, type: 'Ayurvedic' })),
         ...(condition.homeopathic_remedies || []).map(r => ({ ...r, type: 'Homeopathic' })),
         ...(condition.remedies || []).map(r => ({ ...r, type: 'General' })),
-    ].slice(0, 8);
+    ].slice(0, 12);
 
     return (
         <Document>
@@ -574,9 +801,12 @@ export const MedicalReportDocument = ({
                         <Text style={styles.headerSubtitle}>Medical Assessment Report</Text>
                     </View>
                     <View style={styles.headerDateContainer}>
-                        <Text style={styles.headerDateLabel}>Report Date</Text>
+                        <Text style={styles.headerDateLabel}>Assessment Date</Text>
                         <Text style={styles.headerDateValue}>
-                            {format(new Date(), 'MMM d, yyyy')}
+                            {format(assessmentDate, 'MMM d, yyyy')}
+                        </Text>
+                        <Text style={[styles.headerDateLabel, { marginTop: 4 }]}>
+                            {format(assessmentDate, 'HH:mm')} IST
                         </Text>
                     </View>
                 </View>
@@ -592,7 +822,97 @@ export const MedicalReportDocument = ({
                             <Text style={styles.patientInfoLabel}>Report ID</Text>
                             <Text style={styles.patientInfoValue}>{reportId}</Text>
                         </View>
+                        <View style={styles.patientInfoItem}>
+                            <Text style={styles.patientInfoLabel}>Assessment</Text>
+                            <Text style={styles.patientInfoValue}>
+                                {format(assessmentDate, 'dd/MM/yyyy HH:mm')}
+                            </Text>
+                        </View>
                     </View>
+
+                    {/* Patient Clinical Profile — demographics */}
+                    {hasUserProfile && (
+                        <View style={styles.section}>
+                            <Text style={styles.columnTitle}>Patient Clinical Profile</Text>
+                            <View style={styles.profileGrid}>
+                                {userProfile!.age && (
+                                    <View style={styles.profileItem}>
+                                        <Text style={styles.profileLabel}>Age</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.age}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.gender && (
+                                    <View style={styles.profileItem}>
+                                        <Text style={styles.profileLabel}>Gender</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.gender}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.weight && (
+                                    <View style={styles.profileItem}>
+                                        <Text style={styles.profileLabel}>Weight</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.weight}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.height && (
+                                    <View style={styles.profileItem}>
+                                        <Text style={styles.profileLabel}>Height</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.height}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.bloodPressure && (
+                                    <View style={styles.profileItem}>
+                                        <Text style={styles.profileLabel}>Blood Pressure</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.bloodPressure}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.medications && (
+                                    <View style={styles.profileItemWide}>
+                                        <Text style={styles.profileLabel}>Current Medications</Text>
+                                        <Text style={styles.profileValue}>
+                                            {Array.isArray(userProfile!.medications)
+                                                ? userProfile!.medications.join(', ')
+                                                : userProfile!.medications}
+                                        </Text>
+                                    </View>
+                                )}
+                                {userProfile!.allergies && (
+                                    <View style={styles.profileItemWide}>
+                                        <Text style={styles.profileLabel}>Known Allergies</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.allergies}</Text>
+                                    </View>
+                                )}
+                                {(userProfile!.conditions?.length ?? 0) > 0 && (
+                                    <View style={styles.profileItemWide}>
+                                        <Text style={styles.profileLabel}>Pre-existing Conditions</Text>
+                                        <Text style={styles.profileValue}>{userProfile!.conditions?.join(', ')}</Text>
+                                    </View>
+                                )}
+                                {userProfile!.familyHistory && (
+                                    <View style={styles.profileItemWide}>
+                                        <Text style={styles.profileLabel}>Family History</Text>
+                                        <Text style={styles.profileValue}>
+                                            {Array.isArray(userProfile!.familyHistory)
+                                                ? userProfile!.familyHistory.join(', ')
+                                                : userProfile!.familyHistory}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                            {(userProfile!.smoking || userProfile!.alcohol || userProfile!.exercise) && (
+                                <View style={styles.tagContainer}>
+                                    {userProfile!.smoking && (
+                                        <Text style={styles.tag}>Smoking: {userProfile!.smoking}</Text>
+                                    )}
+                                    {userProfile!.alcohol && (
+                                        <Text style={styles.tag}>Alcohol: {userProfile!.alcohol}</Text>
+                                    )}
+                                    {userProfile!.exercise && (
+                                        <Text style={styles.tag}>Exercise: {userProfile!.exercise}</Text>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    )}
 
                     {/* Diagnosis card */}
                     <View style={styles.diagnosisCard}>
@@ -626,6 +946,22 @@ export const MedicalReportDocument = ({
                                     : confidence}%
                             </Text>
                         </View>
+
+                        {/* Confidence Interval & Evidence Quality */}
+                        {uncertainty && (
+                            <View style={styles.ciRow}>
+                                <Text style={styles.ciLabel}>95% CI:</Text>
+                                <Text style={styles.ciValue}>
+                                    {uncertainty.confidenceInterval.lower.toFixed(0)}%
+                                    {' – '}
+                                    {uncertainty.confidenceInterval.upper.toFixed(0)}%
+                                </Text>
+                                <Text style={[styles.ciLabel, { marginLeft: 10 }]}>Evidence:</Text>
+                                <Text style={styles.ciValue}>{uncertainty.evidenceQuality}</Text>
+                                <Text style={[styles.ciLabel, { marginLeft: 10 }]}>Calibration:</Text>
+                                <Text style={styles.ciValue}>{uncertainty.calibrationQuality}</Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Symptoms & Alerts */}
@@ -637,6 +973,41 @@ export const MedicalReportDocument = ({
                                     <Text key={i} style={styles.tag}>{s}</Text>
                                 ))}
                             </View>
+                            {/* Symptom Details Chips */}
+                            {symptomDetails && (
+                                <View style={styles.symptomDetailRow}>
+                                    {symptomDetails.duration && (
+                                        <View style={styles.symptomDetailChip}>
+                                            <Text style={styles.symptomDetailChipLabel}>Duration</Text>
+                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.duration}</Text>
+                                        </View>
+                                    )}
+                                    {symptomDetails.intensity !== undefined && (
+                                        <View style={styles.symptomDetailChip}>
+                                            <Text style={styles.symptomDetailChipLabel}>Intensity</Text>
+                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.intensity}/10</Text>
+                                        </View>
+                                    )}
+                                    {symptomDetails.frequency && (
+                                        <View style={styles.symptomDetailChip}>
+                                            <Text style={styles.symptomDetailChipLabel}>Frequency</Text>
+                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.frequency}</Text>
+                                        </View>
+                                    )}
+                                    {symptomDetails.triggers && (
+                                        <View style={styles.symptomDetailChip}>
+                                            <Text style={styles.symptomDetailChipLabel}>Triggers</Text>
+                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.triggers}</Text>
+                                        </View>
+                                    )}
+                                    {symptomDetails.sensation && (
+                                        <View style={styles.symptomDetailChip}>
+                                            <Text style={styles.symptomDetailChipLabel}>Sensation</Text>
+                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.sensation}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
                         </View>
                         <View style={styles.column}>
                             <Text style={[styles.columnTitle, { color: '#92400e' }]}>
@@ -655,6 +1026,21 @@ export const MedicalReportDocument = ({
                             )}
                         </View>
                     </View>
+
+                    {/* When to Seek Immediate Medical Attention */}
+                    {(condition.seekHelp || (condition.redFlags?.length ?? 0) > 0) && (
+                        <View style={styles.seekHelpBox}>
+                            <Text style={styles.seekHelpTitle}>
+                                When to Seek Immediate Medical Attention
+                            </Text>
+                            {condition.seekHelp && (
+                                <Text style={styles.seekHelpText}>{condition.seekHelp}</Text>
+                            )}
+                            {condition.redFlags?.map((flag, i) => (
+                                <Text key={i} style={styles.seekHelpText}>• {flag}</Text>
+                            ))}
+                        </View>
+                    )}
 
                     {/* Clinical Rules & Reasoning Trace */}
                     {(clinicalRules.length > 0 || reasoningTrace.length > 0) && (
@@ -705,6 +1091,21 @@ export const MedicalReportDocument = ({
                                         ))}
                                 </View>
                             )}
+                        </View>
+                    )}
+
+                    {/* Medication & Supplement Interaction Notices */}
+                    {ddiAlerts.length > 0 && (
+                        <View style={styles.ddiBox}>
+                            <Text style={styles.ddiTitle}>
+                                Medication &amp; Supplement Interaction Notices
+                            </Text>
+                            {ddiAlerts.map((alert, i) => (
+                                <Text key={i} style={styles.ddiText}>• {alert}</Text>
+                            ))}
+                            <Text style={[styles.ddiText, { marginTop: 6 }]}>
+                                Consult your prescribing physician before combining these remedies with your current medications.
+                            </Text>
                         </View>
                     )}
 
@@ -775,18 +1176,54 @@ export const MedicalReportDocument = ({
                         </View>
                     )}
 
-                    {/* Medical Disclaimer — italic appropriate here (sole italic role) */}
-                    <View style={styles.disclaimer}>
-                        <Text style={styles.disclaimerTitle}>
-                            Medical Disclaimer
+                    {/* Recommended Follow-up Actions */}
+                    <View style={styles.followUpBox}>
+                        <Text style={styles.followUpTitle}>Recommended Next Steps</Text>
+                        {[
+                            'Monitor your symptoms over the next 24–48 hours and note any changes in intensity or character.',
+                            'Maintain rest and adequate hydration unless contraindicated.',
+                            confidence < 75
+                                ? `Note: Diagnostic confidence is ${confidence}%. A clinical evaluation is strongly recommended to confirm this AI-generated assessment.`
+                                : null,
+                            condition.seekHelp
+                                ? `Seek immediate care if: ${condition.seekHelp}`
+                                : null,
+                            (condition.mimics?.length ?? 0) > 0
+                                ? `Differential diagnoses to consider / rule out: ${condition.mimics?.join(', ')}.`
+                                : null,
+                            'Share this report with your registered medical practitioner at your next appointment.',
+                            'Do not self-medicate. All remedies listed are supplementary; they are not a substitute for prescribed treatment.',
+                        ].filter(Boolean).map((step, i) => (
+                            <Text key={i} style={styles.followUpText}>• {step}</Text>
+                        ))}
+                    </View>
+
+                    {/* Comprehensive Medical & Legal Disclaimer */}
+                    <View style={styles.disclaimerEnhanced}>
+                        <Text style={styles.disclaimerTitle}>Important Medical &amp; Legal Disclaimer</Text>
+
+                        <Text style={styles.disclaimerSubTitle}>Informational Use Only</Text>
+                        <Text style={styles.disclaimerPara}>
+                            This report has been generated by Healio.AI, an artificial intelligence-based health information system, for informational and educational purposes only. It does not constitute a medical diagnosis, clinical assessment, treatment recommendation, or prescription under any applicable law, including but not limited to the Indian Medical Council Act, 1956, the Drugs and Cosmetics Act, 1940, or any equivalent legislation in the user’s jurisdiction.
                         </Text>
-                        <Text style={styles.disclaimerText}>
-                            This report is generated by an artificial intelligence system
-                            (Healio.AI) and is intended for informational purposes only. It
-                            does not constitute a medical diagnosis, treatment, or professional
-                            medical advice. Always seek the advice of a physician or other
-                            qualified health provider with any questions you may have regarding
-                            a medical condition.
+
+                        <Text style={styles.disclaimerSubTitle}>AI Limitations</Text>
+                        <Text style={styles.disclaimerPara}>
+                            The AI-generated assessment is based solely on self-reported symptom data provided during this session and publicly available medical knowledge up to the system’s training date. It has not been reviewed or validated by a licensed medical practitioner. Confidence scores and probability estimates represent algorithmic computations and must not be interpreted as clinical certainty or a substitute for professional medical judgment.
+                        </Text>
+
+                        <Text style={styles.disclaimerSubTitle}>Seek Professional Medical Advice</Text>
+                        <Text style={styles.disclaimerPara}>
+                            Always consult a registered medical practitioner (RMP) before making any healthcare decision, beginning or stopping any medication, or undertaking any treatment. In case of a medical emergency, call emergency services immediately (India: 112 | AIIMS Emergency: 011-26588500).
+                        </Text>
+
+                        <Text style={styles.disclaimerSubTitle}>Liability & Data Privacy</Text>
+                        <Text style={styles.disclaimerPara}>
+                            Healio.AI and its operators assume no liability for any adverse health outcomes, medical errors, or damages arising from reliance on the contents of this report. This document is generated in compliance with the Digital Personal Data Protection (DPDP) Act, 2023, and must be treated as confidential personal health information. Unauthorised disclosure is prohibited.
+                        </Text>
+
+                        <Text style={styles.disclaimerMeta}>
+                            Report ID: {reportId} · Generated: {format(assessmentDate, 'MMMM d, yyyy HH:mm')} IST · System: Healio.AI Clinical Assessment Engine v2.0
                         </Text>
                     </View>
 

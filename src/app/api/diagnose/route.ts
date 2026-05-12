@@ -10,10 +10,11 @@ export const maxDuration = 60;
  * Accepts:
  *   · symptoms          — UserSymptomData (required)
  *   · userProfile       — patient profile (optional)
- *   · bayesianPriors    — top-K candidates from client Bayesian engine (optional)
+ *   · primaryDiagnosis  — top-K candidates from client Bayesian engine (optional)
  *                          [{ condition, bayesianScore, matchedKeywords, mcmcStats }]
  *   · clinicalRuleAlerts — triggered clinical rule names (optional)
  *   · posteriorRedFlags — posterior-based escalation alerts from MCMC (optional)
+ *   · ddiPromptSection  — Drug-Drug Interaction context from Stage 2.5 DDI filter (optional)
  *
  * Server-side pipeline:
  *   1. Multi-Query RAG    — embeds (symptoms + per-candidate condition names)
@@ -389,6 +390,7 @@ export async function POST(req: Request) {
             clinicalRuleAlerts = [] as string[],
             posteriorRedFlags = [] as string[],
             detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
+            ddiPromptSection = '' as string,
         } = body;
 
         if (!symptoms) {
@@ -458,7 +460,14 @@ CRITICAL: The MCMC engine detected non-trivial posterior probability for one or 
 Include appropriate warnings and set seekHelp=true.\n`
             : "";
 
-        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}${posteriorRedFlagSection}
+        // DDI Safety Layer — injected by Stage 2.5 in the orchestrator.
+        // This section tells the LLM exactly which remedies are blocked and why.
+        // CRITICAL: LLM must NOT invent new interaction warnings beyond this section.
+        const ddiSection = ddiPromptSection
+            ? `${ddiPromptSection}\n\nCRITICAL SAFETY RULE: Do NOT add any drug interaction warnings that are not listed in the DDI CONTEXT above. Do NOT re-recommend any blocked remedies. Limit interaction messaging strictly to what the DDI layer has already determined.\n`
+            : '';
+
+        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}${posteriorRedFlagSection}${ddiSection}
 === PATIENT PRESENTATION ===
 
 Symptoms:

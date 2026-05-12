@@ -6,6 +6,7 @@ import { UserSymptomData, DiagnosisResult, ClarificationQuestion } from "@/lib/d
 import { diagnose } from "@/lib/diagnosis/orchestrator";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import type { FlaggedRemedy } from "@/lib/diagnosis/ddi";
 import {
     DialogueState,
     EmotionalState,
@@ -44,6 +45,10 @@ export type DiagnosisMessage = {
     uncertainty?: UncertaintyEstimate;
     clinicalRules?: RuleResult[];
     alerts?: string[];
+    // ─── DDI Safety Layer ─────────────────────────────────────────────────────
+    ddiAlerts?: string[];                 // Interaction alert strings from DDI checker
+    ddiFlaggedRemedies?: FlaggedRemedy[]; // Remedies with ⚠ severity badges (not blocked)
+    ddiBlockedRemedies?: FlaggedRemedy[]; // Remedies blocked: shown strikethrough
 };
 
 export interface DiagnosisChatState {
@@ -233,6 +238,9 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
                         dialogueState
                     );
 
+                    // ── DDI Safety Layer: extract from orchestration metadata ──
+                    const ddiMeta = result.orchestrationMeta?.ddi;
+
                     addMessage({
                         id: generateId(),
                         role: "assistant",
@@ -242,6 +250,9 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
                         uncertainty: result.uncertainty,
                         clinicalRules: result.clinicalRules,
                         alerts: result.alerts,
+                        ddiAlerts: ddiMeta?.ddiAlerts ?? [],
+                        ddiFlaggedRemedies: [],  // FlaggedRemedy arrays from orchestrator Stage 2.5
+                        ddiBlockedRemedies: [],  // populated once checker result is surfaced via meta
                     });
 
                     await saveConsultation(data, topResult, result.uncertainty, result.clinicalRules);
@@ -281,23 +292,34 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
                 ? languageDetector.detect(initialText).language
                 : "en";
 
+            const mp = user?.user_metadata?.medical_profile;
+            const lifestyle = mp?.lifestyle || {};
+            const vitals = mp?.vitals || {};
+
             const enrichedData: UserSymptomData = {
                 ...data,
                 userProfile: user?.user_metadata
                     ? {
-                          age: user.user_metadata.age,
-                          gender: user.user_metadata.gender,
-                          weight: user.user_metadata.weight,
-                          height: user.user_metadata.height,
-                          conditions: user.user_metadata.medical_profile?.conditions,
-                          allergies: user.user_metadata.medical_profile?.allergies,
-                          smoking: user.user_metadata.medical_profile?.smoking,
-                          alcohol: user.user_metadata.medical_profile?.alcohol,
-                          medications: user.user_metadata.medical_profile?.medications,
-                          pregnant: user.user_metadata.medical_profile?.pregnant,
-                          recentSurgery: user.user_metadata.medical_profile?.recent_surgery,
-                          familyHistory: user.user_metadata.medical_profile?.family_history,
+                          age: user.user_metadata.age || vitals.age,
+                          gender: user.user_metadata.gender || vitals.gender,
+                          weight: vitals.weight || user.user_metadata.weight,
+                          height: vitals.height || user.user_metadata.height,
+                          conditions: mp?.conditions,
+                          allergies: mp?.drugAllergies?.join(', ') || mp?.allergies,
+                          smoking: lifestyle.smoking || mp?.smoking,
+                          alcohol: lifestyle.alcohol || mp?.alcohol,
+                          medications: mp?.medications,
+                          pregnant: mp?.pregnant,
+                          recentSurgery: mp?.recent_surgery,
+                          familyHistory: mp?.familyHistory || mp?.family_history,
+                          exercise: lifestyle.exercise || mp?.exercise,
+                          diet: lifestyle.diet || mp?.diet,
+                          sleepHours: lifestyle.sleepPattern || mp?.sleepPattern || mp?.sleep_hours,
+                          occupation: lifestyle.occupation || mp?.occupation,
                           language: detectedLang,
+                          // Pass full medical_profile for PersonaEngine to parse
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          medical_profile: mp as any,
                       }
                     : { language: detectedLang },
             };

@@ -21,6 +21,7 @@
 
 import { Condition, UserSymptomData, ReasoningTraceEntry } from "../types";
 import { DetectedPattern } from "./SymptomCorrelations";
+import { buildPersonaProfile, type PersonaProfile } from "./PersonaEngine";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -100,6 +101,8 @@ export interface EvidenceVector {
     familyHistory: string[];
     isPregnant: boolean;
     usesBirthControl: boolean;
+    // ── Persona-Calibrated Fields (from PersonaEngine) ───────────────────────
+    persona: PersonaProfile;
 }
 
 // ─── Prevalence → Beta Prior Parameters ───────────────────────────────────────
@@ -132,7 +135,9 @@ interface CovariateRule {
 }
 
 const COVARIATE_RULES: CovariateRule[] = [
-    // Age-based adjustments
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 1: AGE-BASED (5 rules)
+    // ══════════════════════════════════════════════════════════════════════════
     {
         conditionPattern: /copd|chronic_bronchitis|emphysema/i,
         filter: (ev) => (ev.age ?? 0) >= 50 && ev.isSmoker,
@@ -157,7 +162,15 @@ const COVARIATE_RULES: CovariateRule[] = [
         alphaMultiplier: 2.0,
         description: "Female 15-45 → migraine prior doubled"
     },
-    // Sex-based adjustments
+    {
+        conditionPattern: /osteoporosis|bone_loss/i,
+        filter: (ev) => (ev.sex === 'female' || ev.sex === 'f') && (ev.age ?? 0) >= 50,
+        alphaMultiplier: 2.5,
+        description: "Female 50+ → osteoporosis prior boosted"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 2: SEX-BASED (4 rules)
+    // ══════════════════════════════════════════════════════════════════════════
     {
         conditionPattern: /uti|urinary_tract/i,
         filter: (ev) => ev.sex === 'female' || ev.sex === 'f',
@@ -176,7 +189,15 @@ const COVARIATE_RULES: CovariateRule[] = [
         alphaMultiplier: 2.5,
         description: "Female/pregnant → ectopic prior boosted"
     },
-    // Comorbidity-based adjustments
+    {
+        conditionPattern: /iron_deficiency|anemia|anaemia/i,
+        filter: (ev) => (ev.sex === 'female' || ev.sex === 'f') && (ev.age ?? 0) >= 15 && (ev.age ?? 0) <= 50,
+        alphaMultiplier: 2.0,
+        description: "Menstruating-age female → iron-deficiency anemia prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 3: COMORBIDITY-BASED (8 rules) — from conditions[]
+    // ══════════════════════════════════════════════════════════════════════════
     {
         conditionPattern: /diabetic_neuropathy|diabetic_ketoacidosis|diabetic/i,
         filter: (ev) => ev.hasDiabetes,
@@ -189,7 +210,228 @@ const COVARIATE_RULES: CovariateRule[] = [
         alphaMultiplier: 1.8,
         description: "Known hypertension → cardiovascular prior boosted"
     },
-    // Lifestyle adjustments
+    {
+        conditionPattern: /thyroid|hypothyroid|hyperthyroid|hashimoto/i,
+        filter: (ev) => ev.persona.hasThyroid,
+        alphaMultiplier: 3.0,
+        description: "Known thyroid disorder → thyroid-related prior tripled"
+    },
+    {
+        conditionPattern: /pcos|polycystic|insulin_resist/i,
+        filter: (ev) => ev.persona.hasPCOS,
+        alphaMultiplier: 3.5,
+        description: "Known PCOS → PCOS/insulin resistance prior boosted"
+    },
+    {
+        conditionPattern: /anemia|anaemia|iron_deficiency|b12_deficiency/i,
+        filter: (ev) => ev.persona.hasAnemia,
+        alphaMultiplier: 2.5,
+        description: "Known anemia → anemia-related prior boosted"
+    },
+    {
+        conditionPattern: /asthma|bronchospasm|allerg/i,
+        filter: (ev) => ev.persona.hasAsthma,
+        alphaMultiplier: 2.5,
+        description: "Known asthma → respiratory/allergy prior boosted"
+    },
+    {
+        conditionPattern: /kidney|renal|ckd|electrolyte|hyperkalemia/i,
+        filter: (ev) => ev.persona.hasCKD,
+        alphaMultiplier: 3.0,
+        description: "Known CKD → renal/electrolyte prior tripled"
+    },
+    {
+        conditionPattern: /depress|anxiety|panic|insomnia|sleep_disorder/i,
+        filter: (ev) => ev.persona.hasDepression,
+        alphaMultiplier: 2.0,
+        description: "Known depression/anxiety → mental health prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 4: BMI / METABOLIC (6 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /osteoarthritis|joint|knee_pain|back_pain/i,
+        filter: (ev) => ev.persona.isObese,
+        alphaMultiplier: 2.0,
+        description: "BMI ≥ 30 → osteoarthritis/joint prior doubled"
+    },
+    {
+        conditionPattern: /diabetes|t2dm|metabolic_syndrome|insulin_resist/i,
+        filter: (ev) => ev.persona.isObese,
+        alphaMultiplier: 2.5,
+        description: "BMI ≥ 30 → T2DM/metabolic prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /sleep_apnea|osa|obstructive/i,
+        filter: (ev) => ev.persona.isObese,
+        alphaMultiplier: 3.0,
+        description: "BMI ≥ 30 → sleep apnea prior tripled"
+    },
+    {
+        conditionPattern: /gerd|acid_reflux|gastritis|hiatal/i,
+        filter: (ev) => ev.persona.isObese || (ev.age ?? 0) >= 40,
+        alphaMultiplier: 1.8,
+        description: "Obese or age 40+ → GERD/GI prior boosted"
+    },
+    {
+        conditionPattern: /fatty_liver|nafld|hepato/i,
+        filter: (ev) => ev.persona.isObese,
+        alphaMultiplier: 2.5,
+        description: "BMI ≥ 30 → fatty liver prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /anemia|anaemia|tb|tuberculosis|malnutrition/i,
+        filter: (ev) => ev.persona.isUnderweight,
+        alphaMultiplier: 2.0,
+        description: "BMI < 18.5 → anemia/TB/malnutrition prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 5: ALCOHOL (5 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /fatty_liver|alcoholic_hepat|cirrhosis|liver/i,
+        filter: (ev) => ev.persona.isHeavyDrinker,
+        alphaMultiplier: 3.0,
+        description: "Heavy alcohol → liver disease prior tripled"
+    },
+    {
+        conditionPattern: /pancreatitis/i,
+        filter: (ev) => ev.persona.isHeavyDrinker,
+        alphaMultiplier: 2.5,
+        description: "Heavy alcohol → pancreatitis prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /gout|uric_acid/i,
+        filter: (ev) => ev.persona.isAlcoholUser,
+        alphaMultiplier: 2.0,
+        description: "Alcohol user → gout prior doubled"
+    },
+    {
+        conditionPattern: /peripheral_neuropathy|neuropath/i,
+        filter: (ev) => ev.persona.isHeavyDrinker,
+        alphaMultiplier: 2.0,
+        description: "Heavy alcohol → peripheral neuropathy prior doubled"
+    },
+    {
+        conditionPattern: /depress|anxiety|insomnia/i,
+        filter: (ev) => ev.persona.isHeavyDrinker,
+        alphaMultiplier: 1.8,
+        description: "Heavy alcohol → depression/anxiety prior boosted"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 6: SLEEP (4 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /anxiety|panic/i,
+        filter: (ev) => ev.persona.hasLowSleep,
+        alphaMultiplier: 1.8,
+        description: "Poor sleep (<6h) → anxiety prior boosted"
+    },
+    {
+        conditionPattern: /depress|mood/i,
+        filter: (ev) => ev.persona.hasLowSleep,
+        alphaMultiplier: 1.8,
+        description: "Poor sleep (<6h) → depression prior boosted"
+    },
+    {
+        conditionPattern: /hypertens|blood_pressure/i,
+        filter: (ev) => ev.persona.hasLowSleep,
+        alphaMultiplier: 1.5,
+        description: "Poor sleep (<6h) → hypertension prior boosted"
+    },
+    {
+        conditionPattern: /infection|common_cold|flu|viral/i,
+        filter: (ev) => ev.persona.hasLowSleep,
+        alphaMultiplier: 1.5,
+        description: "Poor sleep → immune suppression, infection prior boosted"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 7: DIET (5 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /cardiac|heart|cholesterol|atheroscler/i,
+        filter: (ev) => ev.persona.dietRisk.isHighFat,
+        alphaMultiplier: 1.8,
+        description: "High-fat diet → cardiac/cholesterol prior boosted"
+    },
+    {
+        conditionPattern: /b12_deficiency|megaloblastic/i,
+        filter: (ev) => ev.persona.dietRisk.isVegan,
+        alphaMultiplier: 2.5,
+        description: "Vegan diet → B12 deficiency prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /iron_deficiency|anemia|anaemia/i,
+        filter: (ev) => ev.persona.dietRisk.isVegetarian || ev.persona.dietRisk.isVegan,
+        alphaMultiplier: 2.0,
+        description: "Vegetarian/vegan → iron deficiency prior doubled"
+    },
+    {
+        conditionPattern: /hypertens|kidney|gastritis/i,
+        filter: (ev) => ev.persona.dietRisk.isHighSalt,
+        alphaMultiplier: 1.5,
+        description: "High-salt diet → hypertension/kidney/gastritis prior boosted"
+    },
+    {
+        conditionPattern: /gerd|acid_reflux|obesity|metabolic/i,
+        filter: (ev) => ev.persona.dietRisk.isJunkHeavy,
+        alphaMultiplier: 1.8,
+        description: "Junk food diet → GERD/obesity/metabolic prior boosted"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 8: EXERCISE & OCCUPATION (8 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /dvt|deep_vein|pulmonary_embolism/i,
+        filter: (ev) => ev.persona.isSedentary,
+        alphaMultiplier: 1.8,
+        description: "Sedentary lifestyle → DVT/PE prior boosted"
+    },
+    {
+        conditionPattern: /depress|anxiety|mood/i,
+        filter: (ev) => ev.persona.isSedentary,
+        alphaMultiplier: 1.5,
+        description: "Sedentary → depression/anxiety prior boosted"
+    },
+    {
+        conditionPattern: /sports_injury|muscle_strain|ligament|tendon|stress_fracture/i,
+        filter: (ev) => ev.persona.isVigorousExercise,
+        alphaMultiplier: 2.0,
+        description: "Vigorous exercise → sports injury prior doubled"
+    },
+    {
+        conditionPattern: /cervical_spondyl|neck_pain|carpal|rsi|repetitive/i,
+        filter: (ev) => ev.persona.occupation === 'desk',
+        alphaMultiplier: 2.0,
+        description: "Desk job → cervical/RSI/neck pain prior doubled"
+    },
+    {
+        conditionPattern: /lower_back|lumbar|disc|sciatica/i,
+        filter: (ev) => ev.persona.occupation === 'desk' || ev.persona.occupation === 'manual',
+        alphaMultiplier: 2.0,
+        description: "Desk/manual work → lumbar/back pain prior doubled"
+    },
+    {
+        conditionPattern: /musculoskeletal|joint|shoulder/i,
+        filter: (ev) => ev.persona.occupation === 'manual',
+        alphaMultiplier: 2.0,
+        description: "Manual labour → musculoskeletal prior doubled"
+    },
+    {
+        conditionPattern: /infection|tb|tuberculosis|hepatit/i,
+        filter: (ev) => ev.persona.occupation === 'healthcare',
+        alphaMultiplier: 2.0,
+        description: "Healthcare worker → infection/TB prior doubled"
+    },
+    {
+        conditionPattern: /heat_stroke|dehydrat|sunburn/i,
+        filter: (ev) => ev.persona.occupation === 'outdoor',
+        alphaMultiplier: 2.0,
+        description: "Outdoor worker → heat/dehydration prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 9: SMOKING (keep existing + add oral cancer)
+    // ══════════════════════════════════════════════════════════════════════════
     {
         conditionPattern: /pneumonia|lung_cancer|bronchitis|copd/i,
         filter: (ev) => ev.isSmoker,
@@ -197,10 +439,127 @@ const COVARIATE_RULES: CovariateRule[] = [
         description: "Smoker → respiratory prior doubled"
     },
     {
-        conditionPattern: /gerd|acid_reflux|gastritis/i,
-        filter: (ev) => (ev.age ?? 0) >= 40,
-        alphaMultiplier: 1.5,
-        description: "Age 40+ → GI prior mildly boosted"
+        conditionPattern: /oral_cancer|mouth_ulcer|leukoplakia/i,
+        filter: (ev) => ev.isSmoker,
+        alphaMultiplier: 2.5,
+        description: "Smoker → oral cancer/mouth ulcer prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /atheroscler|peripheral_arterial|pad/i,
+        filter: (ev) => ev.isSmoker,
+        alphaMultiplier: 2.0,
+        description: "Smoker → atherosclerosis/PAD prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 10: FAMILY HISTORY (8 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /heart_attack|angina|coronary|mi$|cardiac/i,
+        filter: (ev) => ev.persona.familyHistory.cardiac,
+        alphaMultiplier: 2.0,
+        description: "Family history of cardiac disease → cardiac prior doubled"
+    },
+    {
+        conditionPattern: /hypertens|stroke/i,
+        filter: (ev) => ev.persona.familyHistory.hypertension || ev.persona.familyHistory.stroke,
+        alphaMultiplier: 1.8,
+        description: "Family history of hypertension/stroke → prior boosted"
+    },
+    {
+        conditionPattern: /diabetes|t2dm|metabolic/i,
+        filter: (ev) => ev.persona.familyHistory.diabetes,
+        alphaMultiplier: 2.5,
+        description: "Family history of diabetes → T2DM prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /cancer|carcinoma|malignan/i,
+        filter: (ev) => ev.persona.familyHistory.cancer,
+        alphaMultiplier: 2.0,
+        description: "Family history of cancer → cancer-related prior doubled"
+    },
+    {
+        conditionPattern: /depress|anxiety|bipolar|schizo/i,
+        filter: (ev) => ev.persona.familyHistory.mentalHealth,
+        alphaMultiplier: 2.0,
+        description: "Family history of mental illness → psychiatric prior doubled"
+    },
+    {
+        conditionPattern: /thyroid|hashimoto|graves/i,
+        filter: (ev) => ev.persona.familyHistory.thyroid,
+        alphaMultiplier: 2.0,
+        description: "Family history of thyroid → thyroid prior doubled"
+    },
+    {
+        conditionPattern: /asthma|allerg/i,
+        filter: (ev) => ev.persona.familyHistory.asthma,
+        alphaMultiplier: 1.8,
+        description: "Family history of asthma → respiratory/allergy prior boosted"
+    },
+    {
+        conditionPattern: /kidney|ckd|renal/i,
+        filter: (ev) => ev.persona.familyHistory.kidney,
+        alphaMultiplier: 1.8,
+        description: "Family history of kidney disease → renal prior boosted"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 11: MEDICATION-DERIVED (6 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /infection|fungal|opportunistic|pneumonia/i,
+        filter: (ev) => ev.persona.medicationFlags.onSteroids || ev.persona.medicationFlags.onImmunosuppressants,
+        alphaMultiplier: 2.5,
+        description: "On steroids/immunosuppressants → infection prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /osteoporosis|bone_loss|fracture/i,
+        filter: (ev) => ev.persona.medicationFlags.onSteroids,
+        alphaMultiplier: 2.0,
+        description: "On steroids → osteoporosis/fracture prior doubled"
+    },
+    {
+        conditionPattern: /hyperglycemia|diabetes|blood_sugar/i,
+        filter: (ev) => ev.persona.medicationFlags.onSteroids,
+        alphaMultiplier: 2.0,
+        description: "On steroids → hyperglycemia prior doubled"
+    },
+    {
+        conditionPattern: /peptic_ulcer|gastritis|gi_bleed/i,
+        filter: (ev) => ev.persona.medicationFlags.onSteroids,
+        alphaMultiplier: 2.0,
+        description: "On steroids → peptic ulcer prior doubled"
+    },
+    {
+        conditionPattern: /bleed|hemorrhage|bruising/i,
+        filter: (ev) => ev.persona.medicationFlags.onAnticoagulants,
+        alphaMultiplier: 2.0,
+        description: "On anticoagulants → bleeding prior doubled"
+    },
+    {
+        conditionPattern: /hypothyroid|hyperthyroid|thyroid/i,
+        filter: (ev) => ev.persona.medicationFlags.onThyroidMeds,
+        alphaMultiplier: 2.0,
+        description: "On thyroid meds → thyroid disorder prior doubled"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // GROUP 12: PREGNANCY-SPECIFIC (3 rules)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        conditionPattern: /gestational_diabetes|gdm/i,
+        filter: (ev) => ev.isPregnant && ev.persona.isObese,
+        alphaMultiplier: 2.5,
+        description: "Pregnant + obese → gestational diabetes prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /preeclampsia|eclampsia/i,
+        filter: (ev) => ev.isPregnant && ev.hasHypertension,
+        alphaMultiplier: 2.5,
+        description: "Pregnant + hypertension → preeclampsia prior boosted ×2.5"
+    },
+    {
+        conditionPattern: /anemia|anaemia|iron_deficiency/i,
+        filter: (ev) => ev.isPregnant,
+        alphaMultiplier: 2.0,
+        description: "Pregnant → anemia prior doubled"
     },
 ];
 
@@ -308,7 +667,7 @@ export function extractEvidence(symptoms: UserSymptomData): EvidenceVector {
     const conditionsText = (profile?.conditions || []).join(' ').toLowerCase();
     const notesLower = (symptoms.additionalNotes || '').toLowerCase();
 
-    return {
+    const baseEvidence: EvidenceVector = {
         presentSymptoms,
         absentSymptoms,
         unknownSymptoms,
@@ -324,13 +683,26 @@ export function extractEvidence(symptoms: UserSymptomData): EvidenceVector {
         age: isNaN(age as number) ? null : age,
         sex,
         isSmoker: profile?.smoking === 'yes' || conditionsText.includes('smok') || notesLower.includes('smok'),
-        isObese: profile?.weight ? parseFloat(profile.weight) > 100 : false, // rough heuristic
+        isObese: profile?.weight ? parseFloat(profile.weight) > 100 : false, // rough heuristic — overridden by persona.isObese
         hasDiabetes: conditionsText.includes('diabet') || notesLower.includes('diabet'),
         hasHypertension: conditionsText.includes('hypertens') || conditionsText.includes('blood pressure') || notesLower.includes('bp high'),
-        familyHistory: profile?.familyHistory || [],
+        familyHistory: Array.isArray(profile?.familyHistory) ? profile.familyHistory : (profile?.familyHistory ? [profile.familyHistory] : []),
         isPregnant: profile?.pregnant || false,
         usesBirthControl: notesLower.includes('birth control') || notesLower.includes('contracepti') || notesLower.includes('pill'),
+        // ── Persona-Calibrated Fields ───────────────────────────────────────
+        persona: buildPersonaProfile(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (profile as any)?.medical_profile || profile,
+            { age: profile?.age, gender: profile?.gender, weight: profile?.weight, height: profile?.height }
+        ),
     };
+
+    // Override isObese with accurate BMI from persona if available
+    if (baseEvidence.persona.bmi !== null) {
+        baseEvidence.isObese = baseEvidence.persona.isObese;
+    }
+
+    return baseEvidence;
 }
 
 // ─── Mathematical Utilities ───────────────────────────────────────────────────
@@ -384,21 +756,24 @@ function clamp(x: number, lo: number, hi: number): number {
 function computeCovariateAdjustedPrior(
     condition: Condition,
     evidence: EvidenceVector
-): BetaParams {
+): { params: BetaParams; firedRules: string[] } {
     const prevalence = condition.prevalence || 'uncommon';
     const base = PREVALENCE_BETA_PRIORS[prevalence] || PREVALENCE_BETA_PRIORS['uncommon'];
     let adjustedAlpha = base.alpha;
+    const firedRules: string[] = [];
 
     for (const rule of COVARIATE_RULES) {
         if (rule.conditionPattern.test(condition.id) && rule.filter(evidence)) {
             adjustedAlpha *= rule.alphaMultiplier;
+            firedRules.push(rule.description);
         }
     }
 
-    // Clamp alpha to prevent extreme priors
-    adjustedAlpha = clamp(adjustedAlpha, 0.1, 100);
+    // Cap combined multiplier at 5× to prevent prior domination
+    const maxAlpha = base.alpha * 5.0;
+    adjustedAlpha = clamp(adjustedAlpha, 0.1, Math.min(maxAlpha, 100));
 
-    return { alpha: adjustedAlpha, beta: base.beta };
+    return { params: { alpha: adjustedAlpha, beta: base.beta }, firedRules };
 }
 
 /**
@@ -1091,7 +1466,7 @@ export function mcmcInfer(
     config: MCMCConfig = DEFAULT_CONFIG
 ): MCMCDiagnosisResult {
     // CP5: Compute covariate-adjusted prior
-    const priorParams = computeCovariateAdjustedPrior(condition, evidence);
+    const { params: priorParams, firedRules } = computeCovariateAdjustedPrior(condition, evidence);
 
     // Pre-compute log-likelihood (doesn't depend on θ — θ modulates the posterior)
     const likResult = computeLogLikelihood(condition, evidence, detectedPatterns);
@@ -1160,6 +1535,15 @@ export function mcmcInfer(
         },
         ...likResult.trace,
     ];
+
+    // Add persona-based profile trace entries
+    for (const ruleDesc of firedRules) {
+        fullTrace.push({
+            factor: `🧬 ${ruleDesc}`,
+            impact: 0, // informational, not scored
+            type: 'profile',
+        });
+    }
 
     // Add convergence info to trace
     if (!mcmc.converged) {

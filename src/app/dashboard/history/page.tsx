@@ -16,6 +16,7 @@ import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { pdf } from '@react-pdf/renderer';
 // eslint-disable-next-line no-restricted-imports
 import { MedicalReportDocument } from '@/components/chat/MedicalReportPDF';
+import type { SymptomDetailsSummary } from '@/components/chat/MedicalReportPDF';
 
 
 type SavedDiagnosis = {
@@ -185,7 +186,15 @@ export default function HistoryPage() {
                 seekHelp: consultation.diagnosis.seekHelp || '',
             };
 
-            // Generate PDF Blob using @react-pdf/renderer
+            const historyReportId = `HA-${new Date(consultation.created_at).toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+            const symptomDetails: SymptomDetailsSummary | undefined = consultation.symptoms ? {
+                duration: consultation.symptoms.duration,
+                sensation: consultation.symptoms.sensation,
+                intensity: typeof consultation.symptoms.intensity === 'string'
+                    ? parseInt(consultation.symptoms.intensity)
+                    : consultation.symptoms.intensity,
+            } : undefined;
+
             const blob = await pdf(
                 <MedicalReportDocument
                     condition={hydratedCondition}
@@ -193,7 +202,10 @@ export default function HistoryPage() {
                     uncertainty={consultation.uncertainty}
                     alerts={consultation.diagnosis.warnings || []}
                     symptoms={Object.values(consultation.symptoms?.location || []).concat(consultation.symptoms?.painType ? [consultation.symptoms.painType] : [])}
-                    userName={user?.user_metadata?.full_name || "Patient"}
+                    userName={user?.user_metadata?.full_name || 'Patient'}
+                    reportId={historyReportId}
+                    generatedAt={new Date()}
+                    symptomDetails={symptomDetails}
                 />
             ).toBlob();
 
@@ -211,7 +223,7 @@ export default function HistoryPage() {
             alert("Failed to generate report. Please try again.");
         } finally {
             setGeneratingId(null);
-            setReportData(null); // Actually this state might be redundant now if only used for the portal
+            setReportData(null);
         }
     };
 

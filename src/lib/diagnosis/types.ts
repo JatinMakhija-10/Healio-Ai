@@ -166,15 +166,18 @@ export interface UserSymptomData {
         diet?: string;
         sleepHours?: string;
         bloodPressure?: string;
-        medications?: string;
+        medications?: string | string[];
         pregnant?: boolean;
-        recentSurgery?: boolean;
-        familyHistory?: string[];
+        recentSurgery?: boolean | string;
+        familyHistory?: string | string[];
         occupation?: string;
         // Computed profiles
         healthRiskProfile?: HealthRiskProfile;
         ayurvedicProfile?: AyurvedicProfile;
         language?: 'en' | 'hi' | 'hinglish';
+        // Full medical_profile from onboarding (for PersonaEngine deep-parse)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        medical_profile?: Record<string, any>;
     };
 }
 

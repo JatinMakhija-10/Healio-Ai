@@ -1,0 +1,148 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-05-12T04:47:39.031Z",
+    "userEmail": "dudetfgibmeemailid@gmail.com",
+    "userName": "ALtt acc"
+  },
+  "extensionLogs": [
+    "2026-05-12 10:14:23.612 [info] I0512 10:14:23.607871 44480 server.go:1235] Starting language server process with pid 44480",
+    "2026-05-12 10:14:23.612 [info] I0512 10:14:23.608905 44480 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-05-12 10:14:23.615 [info] I0512 10:14:23.614614 44480 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-05-12 10:14:23.618 [info] I0512 10:14:23.617571 44480 server.go:454] Language server listening on random port at 51775 for HTTPS (gRPC)",
+    "2026-05-12 10:14:23.618 [info] I0512 10:14:23.618284 44480 server.go:461] Language server listening on random port at 51776 for HTTP",
+    "2026-05-12 10:14:24.097 [info] I0512 10:14:24.096805 44480 server.go:433] Created extension server client at port 50394",
+    "2026-05-12 10:14:24.137 [info] I0512 10:14:24.132796 44480 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-05-12 10:14:24.181 [info] (Antigravity) 2026-05-12 10:14:24.178 [INFO]: Language server started",
+    "2026-05-12 10:14:24.219 [info] I0512 10:14:24.203506 44480 server.go:1691] initialized server successfully in 594.601ms",
+    "2026-05-12 10:14:24.717 [info] (Antigravity) 2026-05-12 10:14:24.716 [INFO]: LS lspClient started successfully",
+    "2026-05-12 10:14:25.659 [info] I0512 10:14:25.528912 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xbf338d70fcb76245",
+    "2026-05-12 10:14:25.718 [info] I0512 10:14:25.718300 44480 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:51797/mcp, stopping watcher",
+    "2026-05-12 10:14:27.558 [info] I0512 10:14:27.557681 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x8d5c7a42d6ca5a34",
+    "2026-05-12 10:14:29.109 [info] I0512 10:14:29.109217 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x93008cdcbbfaee20",
+    "2026-05-12 10:14:29.258 [info] 2026/05/12 10:14:29 http: TLS handshake error from 127.0.0.1:50229: remote error: tls: unknown certificate",
+    "2026-05-12 10:14:29.262 [info] 2026/05/12 10:14:29 http: TLS handshake error from 127.0.0.1:53514: EOF",
+    "2026-05-12 10:14:29.264 [info] 2026/05/12 10:14:29 http: TLS handshake error from 127.0.0.1:65369: read tcp 127.0.0.1:51775->127.0.0.1:65369: wsarecv: An established connection was aborted by the software in your host machine.",
+    "2026-05-12 10:14:29.272 [info] E0512 10:14:29.271922 44480 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-05-12 10:14:32.151 [info] I0512 10:14:32.109130 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6",
+    "2026-05-12 10:14:32.151 [info] I0512 10:14:32.109130 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6",
+    "2026-05-12 10:14:32.151 [info] I0512 10:14:32.124388 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6",
+    "2026-05-12 10:14:55.972 [info] I0512 10:14:55.971691 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe3bb2da5309ac69a",
+    "2026-05-12 10:16:51.839 [info] I0512 10:16:51.838764 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xbc4091473e528ae2",
+    "2026-05-12 10:16:54.345 [info] I0512 10:16:54.345015 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x4acf16c06f65f49",
+    "2026-05-12 10:17:06.793 [info] I0512 10:17:06.792589 44480 planner_generator.go:283] Requesting planner with 94 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 10:17:07.911 [info] E0512 10:17:07.909269 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
+    "2026-05-12 10:17:15.941 [info] I0512 10:17:15.939790 44480 planner_generator.go:283] Requesting planner with 96 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 10:17:16.704 [info] E0512 10:17:16.704412 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
+    "2026-05-12 10:17:19.191 [info] I0512 10:17:19.186822 44480 planner_generator.go:283] Requesting planner with 98 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 10:17:20.368 [info] E0512 10:17:20.363277 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
+    "2026-05-12 10:17:26.551 [info] I0512 10:17:26.550553 44480 planner_generator.go:283] Requesting planner with 100 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 10:17:27.201 [info] E0512 10:17:27.200721 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
+    "2026-05-12 10:17:36.080 [info] I0512 10:17:36.079831 44480 planner_generator.go:283] Requesting planner with 102 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 10:17:37.107 [info] E0512 10:17:37.103954 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server"
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-05-12 10:14:24.058 [info] Initialized with 0 existing HTML files",
+      "2026-05-12 10:14:24.058 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-05-12 10:14:24.045 [info] Render performance baseline is 39ms",
+      "2026-05-12 10:14:35.738 [warning] Renderer reported VERY LONG TASK (935ms), starting profiling session '344c79dc-10bf-412e-8c4b-7e271b5b030e'"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-05-12 10:14:17.203 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 1a6dc1d928e7a310",
+      "2026-05-12 10:14:18.009 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 3ea6468541a759c7",
+      "2026-05-12 10:14:18.540 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: fec51a2460886be5",
+      "2026-05-12 10:14:19.520 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 66e5f89805c146ad",
+      "2026-05-12 10:14:20.719 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: df0538ae714ddfb8",
+      "2026-05-12 10:14:21.227 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 284057b0ea835afb"
+    ],
+    "auth": [
+      "2026-05-12 10:14:21.244 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0512 10:14:23.607871 44480 server.go:1235] Starting language server process with pid 44480\n",
+      "I0512 10:14:23.608905 44480 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0512 10:14:23.614614 44480 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0512 10:14:23.617571 44480 server.go:454] Language server listening on random port at 51775 for HTTPS (gRPC)\n",
+      "I0512 10:14:23.618284 44480 server.go:461] Language server listening on random port at 51776 for HTTP\n",
+      "I0512 10:14:24.096805 44480 server.go:433] Created extension server client at port 50394\n",
+      "I0512 10:14:24.132796 44480 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0512 10:14:24.203506 44480 server.go:1691] initialized server successfully in 594.601ms\n",
+      "I0512 10:14:25.528912 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xbf338d70fcb76245\n",
+      "I0512 10:14:25.718300 44480 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:51797/mcp, stopping watcher\n",
+      "I0512 10:14:27.557681 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x8d5c7a42d6ca5a34\n",
+      "I0512 10:14:29.109217 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x93008cdcbbfaee20\n",
+      "E0512 10:14:29.271922 44480 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0512 10:14:32.109130 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6\n",
+      "I0512 10:14:32.109130 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6\n",
+      "I0512 10:14:32.124388 44480 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6\n",
+      "I0512 10:14:55.971691 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe3bb2da5309ac69a\n",
+      "I0512 10:16:51.838764 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xbc4091473e528ae2\n",
+      "I0512 10:16:54.345015 44480 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x4acf16c06f65f49\n",
+      "I0512 10:17:06.792589 44480 planner_generator.go:283] Requesting planner with 94 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 10:17:07.909269 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server\n",
+      "I0512 10:17:15.939790 44480 planner_generator.go:283] Requesting planner with 96 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 10:17:16.704412 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server\n",
+      "I0512 10:17:19.186822 44480 planner_generator.go:283] Requesting planner with 98 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 10:17:20.363277 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server\n",
+      "I0512 10:17:26.550553 44480 planner_generator.go:283] Requesting planner with 100 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 10:17:27.200721 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server\n",
+      "I0512 10:17:36.079831 44480 planner_generator.go:283] Requesting planner with 102 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 10:17:37.103954 44480 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
+      "trajectoryId": "e3680f5a-63aa-4b1c-a9dd-41a4f43cf0c8",
+      "summary": "Healio Project Development Resumption",
+      "lastStepIndex": 550,
+      "lastModifiedTime": "2026-05-12T04:47:37.119Z"
+    },
+    {
+      "googleAgentId": "e028be98-2629-4a79-bcf2-20e5a2b5a9a1",
+      "trajectoryId": "91b8e48f-fab6-4555-a415-aa8a29d3beb7",
+      "summary": "Running OCR Processing Script",
+      "lastStepIndex": 425,
+      "lastModifiedTime": "2026-05-11T15:49:48.470Z"
+    },
+    {
+      "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
+      "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
+      "summary": "Fixing Healio Notification System",
+      "lastStepIndex": 118,
+      "lastModifiedTime": "2026-05-04T19:34:48.008Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    }
+  ]
+}

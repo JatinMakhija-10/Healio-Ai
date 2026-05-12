@@ -47,6 +47,8 @@ import { symptomCorrelationDetector, DetectedPattern } from "./advanced/SymptomC
 import { clinicalRules, RuleResult } from "./advanced/ClinicalDecisionRules";
 import { uncertaintyQuantifier, UncertaintyEstimate } from "./advanced/UncertaintyQuantification";
 import { infoGainSelector } from "./advanced/InformationGainSelector";
+import { checkInteractions, buildDDIPromptSection } from "./ddi";
+import type { DDIMeta, DDICheckResult } from "./ddi";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +101,7 @@ export interface OrchestratedResult {
         pipelineStages: string[];
         convergenceGated: boolean;
         posteriorRedFlags: string[];
+        ddi: DDIMeta;
         mcmcConvergence?: {
             effectiveSampleSize: number;
             gewekePValue: number;
@@ -268,6 +271,13 @@ export async function diagnose(
                         pipelineStages: completedStages,
                         convergenceGated: true,
                         posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
+                        ddi: {
+                            ddiApplied: false,
+                            ddiBlockedCount: 0,
+                            ddiFlaggedCount: 0,
+                            ddiAlerts: [],
+                            unrecognizedMeds: [],
+                        },
                         mcmcConvergence: topMcmc ? {
                             effectiveSampleSize: topMcmc.effectiveSampleSize,
                             gewekePValue: topMcmc.gewekePValue,
@@ -300,6 +310,67 @@ export async function diagnose(
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 2.5 — DDI Safety Filter (Stateless — re-evaluated per request)
+    //
+    // Cross-checks ALL recommended remedies from the top Bayesian candidate
+    // against the user's medication list AND pre-existing conditions.
+    // Blocked (contraindicated) remedies are removed from the AI prompt.
+    // Flagged (major/moderate) remedies receive ⚠ badges in the UI.
+    // ═══════════════════════════════════════════════════════════════════════
+    let ddiResult: DDICheckResult | null = null;
+    let ddiMeta: DDIMeta = {
+        ddiApplied: false,
+        ddiBlockedCount: 0,
+        ddiFlaggedCount: 0,
+        ddiAlerts: [],
+        unrecognizedMeds: [],
+    };
+
+    try {
+        const candidate = bayesianCandidates[0];
+        if (candidate) {
+            const rawMeds = symptoms.userProfile?.medications;
+            const userMedications: string[] = Array.isArray(rawMeds)
+                ? rawMeds as string[]
+                : typeof rawMeds === 'string' && rawMeds.trim()
+                    ? [rawMeds]
+                    : [];
+
+            const userConditions: string[] = symptoms.userProfile?.conditions || [];
+
+            ddiResult = checkInteractions({
+                userMedications,
+                userConditions,
+                homeopathicRemedies: candidate.remedies || [],
+                ayurvedicRemedies: [],  // enriched later by AI / RAG
+                homeRemedies: [],       // enriched later by AI / RAG
+                userProfile: {
+                    pregnant: symptoms.userProfile?.pregnant,
+                },
+            });
+
+            ddiMeta = {
+                ddiApplied: ddiResult.ddiApplied,
+                ddiBlockedCount: ddiResult.blockedRemedies.length,
+                ddiFlaggedCount: ddiResult.flaggedRemedies.length,
+                ddiAlerts: ddiResult.interactionAlerts,
+                unrecognizedMeds: ddiResult.unrecognizedMeds,
+            };
+
+            // Log for review when DDI actively filtered clinical output
+            if (ddiResult.blockedRemedies.length > 0) {
+                console.warn(
+                    `[Orchestrator] DDI FILTER: Blocked ${ddiResult.blockedRemedies.length} remedy/remedies for user with meds: ${userMedications.slice(0, 3).join(', ')}`
+                );
+            }
+
+            completedStages.push("ddi_filter");
+        }
+    } catch (e) {
+        console.error("[Orchestrator] DDI filter stage error:", e);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // STAGE 3 — AI Formatting (Bridge to Natural Language)
     // ═══════════════════════════════════════════════════════════════════════
     const primaryCandidate = bayesianCandidates[0];
@@ -325,6 +396,20 @@ export async function diagnose(
     let ragApplied = false;
     let ragRemediesFound: string[] = [];
 
+    // Build DDI prompt section (informs LLM about blocked/flagged remedies)
+    const ddiPromptSection = ddiResult ? buildDDIPromptSection(ddiResult) : '';
+
+    // Use safe remedies for structured prompt (blocked ones are excluded)
+    const safeStructuredRemedies = ddiResult
+        ? (ddiResult.safeRemedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
+            name: r.name,
+            description: r.description,
+          }))
+        : (primaryCandidate.remedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
+            name: r.name,
+            description: r.description,
+          }));
+
     try {
         const response = await fetch("/api/diagnose", {
             method: "POST",
@@ -336,15 +421,13 @@ export async function diagnose(
                     condition: primaryCandidate.conditionName,
                     bayesianScore: Math.round(primaryCandidate.score),
                     matchedKeywords: primaryCandidate.matchedKeywords.slice(0, 5),
-                    structuredRemedies: (primaryCandidate.remedies || []).slice(0, 5).map((r: { name: string; description: string }) => ({
-                        name: r.name,
-                        description: r.description,
-                    })),
+                    structuredRemedies: safeStructuredRemedies,
                 },
                 clinicalRuleAlerts: clinicalRuleResults
                     .map((r) => `${r.rule}: ${r.interpretation}`),
                 posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
-                detectedLanguage: symptoms.userProfile?.language || 'en'
+                detectedLanguage: symptoms.userProfile?.language || 'en',
+                ddiPromptSection,
             }),
         });
 
@@ -419,8 +502,9 @@ export async function diagnose(
     // Always Bayesian dominant now
     const fusionMethod: OrchestratedResult["orchestrationMeta"]["fusionMethod"] = "bayesian_dominant";
 
-    // Merge posterior red flags into main alerts
-    const mergedAlerts = [...alerts, ...new Set(allPosteriorRedFlags)];
+    // Merge posterior red flags + DDI alerts into main alerts
+    const ddiAlerts = ddiResult?.interactionAlerts || [];
+    const mergedAlerts = [...alerts, ...new Set(allPosteriorRedFlags), ...ddiAlerts];
 
     const orchestrationMeta: OrchestratedResult["orchestrationMeta"] = {
         bayesianTopK: bayesianCandidates.slice(0, 3).map((c) => ({
@@ -438,6 +522,7 @@ export async function diagnose(
         pipelineStages: completedStages,
         convergenceGated,
         posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
+        ddi: ddiMeta,
         mcmcConvergence: topMcmc ? {
             effectiveSampleSize: topMcmc.effectiveSampleSize,
             gewekePValue: topMcmc.gewekePValue,

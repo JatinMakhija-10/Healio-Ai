@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
+import { Condition, ReasoningTraceEntry, UserSymptomData } from "@/lib/diagnosis/types";
+import type { UserProfileSummary, SymptomDetailsSummary } from "./MedicalReportPDF";
+import type { FlaggedRemedy } from "@/lib/diagnosis/ddi";
 import {
     Video,
     Shield,
@@ -51,6 +53,11 @@ interface DiagnosisResultCardProps {
     diagnosisId?: string;
     showBookDoctor?: boolean;
     carePreferences?: string[];
+    // ─── DDI Safety Layer ──────────────────────────────────────────────────────
+    ddiAlerts?: string[];           // Banner alert strings from the DDI layer
+    ddiFlaggedRemedies?: FlaggedRemedy[]; // Remedies with ⚠ badges
+    ddiBlockedRemedies?: FlaggedRemedy[]; // Remedies shown with strikethrough
+    userSymptomData?: UserSymptomData;  // Full symptom + profile data for PDF
 }
 
 // ─── Severity Badge ───────────────────────────────────────────────────────────
@@ -142,6 +149,10 @@ export function DiagnosisResultCard({
     showBookDoctor = true,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     carePreferences: propCarePreferences,
+    ddiAlerts = [],
+    ddiFlaggedRemedies = [],
+    ddiBlockedRemedies = [],
+    userSymptomData,
 }: DiagnosisResultCardProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -189,6 +200,36 @@ export function DiagnosisResultCard({
 
     // ── PDF download handler ──────────────────────────────────────────────────
     const handleDownloadReport = async () => {
+        // Build a unique report ID for this session
+        const reportId = `HA-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.random().toString(36).substring(2,6).toUpperCase()}`;
+        const generatedAt = new Date();
+
+        // Build UserProfileSummary from userSymptomData if available
+        const up = userSymptomData?.userProfile;
+        const userProfile: UserProfileSummary | undefined = up ? {
+            age: up.age,
+            gender: up.gender,
+            weight: up.weight,
+            height: up.height,
+            bloodPressure: up.bloodPressure,
+            medications: up.medications,
+            allergies: up.allergies,
+            conditions: up.conditions,
+            familyHistory: up.familyHistory ? (Array.isArray(up.familyHistory) ? up.familyHistory : [up.familyHistory]) : undefined,
+            smoking: up.smoking,
+            alcohol: up.alcohol,
+            exercise: up.exercise,
+        } : undefined;
+
+        // Build SymptomDetailsSummary from userSymptomData
+        const symptomDetails: SymptomDetailsSummary | undefined = userSymptomData ? {
+            duration: userSymptomData.duration,
+            frequency: userSymptomData.frequency,
+            intensity: userSymptomData.intensity,
+            triggers: userSymptomData.triggers,
+            sensation: userSymptomData.sensation ?? userSymptomData.painType,
+        } : undefined;
+
         if (!isPremium) {
             // Watermarked 1-page preview for free tier (Notion/Canva pattern)
             setIsGenerating(true);
@@ -230,6 +271,12 @@ export function DiagnosisResultCard({
                     symptoms={symptoms}
                     clinicalRules={clinicalRules}
                     reasoningTrace={reasoningTrace}
+                    ddiAlerts={ddiAlerts}
+                    userProfile={userProfile}
+                    symptomDetails={symptomDetails}
+                    reportId={reportId}
+                    generatedAt={generatedAt}
+                    userName={user?.user_metadata?.full_name || 'Patient'}
                 />
             ).toBlob();
             const url = URL.createObjectURL(blob);
@@ -304,6 +351,111 @@ export function DiagnosisResultCard({
                         </div>
                     </div>
                 )}
+
+                {/* ── 1b. DDI INTERACTION BANNER ─────────────────────────────────────
+                    Sits directly below urgency banner — impossible to miss.
+                    Shown only when the DDI layer detected active interactions.
+                    Orange/purple palette to distinguish from clinical warnings.  */}
+                {(ddiAlerts.length > 0 || ddiBlockedRemedies.length > 0 || ddiFlaggedRemedies.length > 0) && (() => {
+                    // Separate alerts by type for tiered display
+                    const timingAlerts = ddiFlaggedRemedies.filter((f) => f.timingNote);
+                    const majorAlerts = ddiAlerts.filter(
+                        (a) => !a.includes('could not be verified') && !a.includes('Trikatu')
+                    );
+                    const piperineAlert = ddiAlerts.find((a) => a.includes('Trikatu'));
+                    const unverifiedAlert = ddiAlerts.find((a) => a.includes('could not be verified'));
+                    const moderateRemedies = ddiFlaggedRemedies.filter(
+                        (f) => (f.severity === 'moderate' || f.severity === 'minor') && !f.timingNote
+                    );
+
+                    return (
+                        <div className="border-b border-orange-200">
+
+                            {/* Timing interactions — distinct ⏱ panel */}
+                            {timingAlerts.length > 0 && (
+                                <div className="bg-amber-50 px-6 py-3 border-b border-amber-100">
+                                    <div className="flex items-start gap-3">
+                                        <Clock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                        <div>
+                                            <h4 className="text-xs font-bold text-amber-800 mb-1">⏱ Timing Interactions</h4>
+                                            <ul className="space-y-1">
+                                                {timingAlerts.map((f, i) => (
+                                                    <li key={i} className="text-xs text-amber-800 leading-[1.6]">
+                                                        {f.timingNote}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Major/contraindicated interaction banner */}
+                            {(majorAlerts.length > 0 || ddiBlockedRemedies.length > 0 || piperineAlert) && (
+                                <div className="bg-orange-50 px-6 py-4">
+                                    <div className="flex items-start gap-3">
+                                        <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-bold text-orange-800 mb-1">💊 Medication Interaction Notice</h4>
+                                            {ddiBlockedRemedies.length > 0 && (
+                                                <p className="text-xs text-orange-700 mb-2 leading-relaxed">
+                                                    <strong>{ddiBlockedRemedies.length} remedy/remedies</strong> have been flagged as potentially contraindicated with your medications.
+                                                </p>
+                                            )}
+                                            <ul className="space-y-1.5">
+                                                {majorAlerts.map((alert, i) => (
+                                                    <li key={i} className="text-xs text-orange-800 leading-[1.65] flex items-start gap-1.5">
+                                                        <span className="text-orange-500 mt-0.5 shrink-0">•</span>
+                                                        <span>{alert}</span>
+                                                    </li>
+                                                ))}
+                                                {piperineAlert && (
+                                                    <li className="text-xs text-orange-800 leading-[1.65] flex items-start gap-1.5">
+                                                        <span className="text-orange-500 mt-0.5 shrink-0">⚗</span>
+                                                        <span>{piperineAlert}</span>
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Moderate interactions — collapsed by default */}
+                            {moderateRemedies.length > 0 && (
+                                <RemedyAccordion
+                                    title={`${moderateRemedies.length} possible interaction${moderateRemedies.length > 1 ? 's' : ''} (moderate/minor)`}
+                                    emoji="ℹ️"
+                                    headerClass="bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                    defaultOpen={false}
+                                >
+                                    <ul className="space-y-2">
+                                        {moderateRemedies.map((f, i) => (
+                                            <li key={i} className="text-xs text-slate-700 leading-[1.65] flex items-start gap-1.5">
+                                                <span className="text-slate-400 mt-0.5 shrink-0">•</span>
+                                                <div>
+                                                    <span className="font-medium">
+                                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                        {(f.remedy as any)?.name ?? 'Remedy'}
+                                                    </span>
+                                                    {' — '}{f.reason}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </RemedyAccordion>
+                            )}
+
+                            {/* Unverified medication notice */}
+                            {unverifiedAlert && (
+                                <div className="bg-slate-50 px-6 py-2 border-t border-slate-100">
+                                    <p className="text-xs text-slate-600 italic">{unverifiedAlert}</p>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
+
 
                 {/* ── 2. DIAGNOSIS HEADER ───────────────────────────────────────────────
                     Tier 1 padding (px-6 py-6 = 24px) — primary zone                    */}

@@ -1,0 +1,135 @@
+{
+  "isRemote": false,
+  "systemInfo": {
+    "operatingSystem": "windows",
+    "timestamp": "2026-05-12T09:45:57.276Z",
+    "userEmail": "syntraa.business@gmail.com",
+    "userName": "Jatin"
+  },
+  "extensionLogs": [
+    "2026-05-12 15:13:35.605 [info] I0512 15:13:35.602886  3964 server.go:1235] Starting language server process with pid 3964",
+    "2026-05-12 15:13:35.606 [info] I0512 15:13:35.605723  3964 server.go:288] Setting GOMAXPROCS to 4",
+    "2026-05-12 15:13:35.613 [info] I0512 15:13:35.613096  3964 server.go:440] Language server will attempt to listen on host 127.0.0.1",
+    "2026-05-12 15:13:35.618 [info] I0512 15:13:35.618206  3964 server.go:454] Language server listening on random port at 61757 for HTTPS (gRPC)",
+    "2026-05-12 15:13:35.619 [info] I0512 15:13:35.618760  3964 server.go:461] Language server listening on random port at 61758 for HTTP",
+    "2026-05-12 15:13:36.201 [info] I0512 15:13:36.201042  3964 server.go:433] Created extension server client at port 60321",
+    "2026-05-12 15:13:36.348 [info] I0512 15:13:36.347552  3964 googleAgent_manager.go:815] Reactive state is disabled",
+    "2026-05-12 15:13:36.489 [info] (Antigravity) 2026-05-12 15:13:36.485 [INFO]: Language server started",
+    "2026-05-12 15:13:36.547 [info] I0512 15:13:36.521157  3964 server.go:1691] initialized server successfully in 915.4334ms",
+    "2026-05-12 15:13:37.478 [info] (Antigravity) 2026-05-12 15:13:37.477 [INFO]: LS lspClient started successfully",
+    "2026-05-12 15:13:37.969 [info] I0512 15:13:37.781530  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xac58cdc3f37d8516",
+    "2026-05-12 15:13:38.409 [info] I0512 15:13:38.408753  3964 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:49983/mcp, stopping watcher",
+    "2026-05-12 15:13:39.423 [info] I0512 15:13:39.302929  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x76ea2db58490b4f3",
+    "2026-05-12 15:13:42.663 [info] I0512 15:13:41.157967  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x4c57478ffa12ec23",
+    "2026-05-12 15:13:43.153 [info] 2026/05/12 15:13:43 http: TLS handshake error from 127.0.0.1:55270: remote error: tls: unknown certificate",
+    "2026-05-12 15:13:43.183 [info] E0512 15:13:43.182851  3964 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress",
+    "2026-05-12 15:13:43.951 [info] I0512 15:13:43.607102  3964 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6",
+    "2026-05-12 15:15:05.193 [info] E0512 15:15:05.192693  3964 log.go:398] executor is not currently running",
+    "2026-05-12 15:15:12.330 [info] I0512 15:15:12.329193  3964 planner_generator.go:283] Requesting planner with 109 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 15:15:18.348 [info] E0512 15:15:18.347654  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server",
+    "2026-05-12 15:15:28.731 [info] I0512 15:15:28.729137  3964 planner_generator.go:283] Requesting planner with 111 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 15:15:31.760 [info] E0512 15:15:31.726439  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server",
+    "2026-05-12 15:15:42.245 [info] I0512 15:15:42.244170  3964 planner_generator.go:283] Requesting planner with 113 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 15:15:43.565 [info] E0512 15:15:43.552929  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server",
+    "2026-05-12 15:15:51.557 [info] I0512 15:15:51.556842  3964 planner_generator.go:283] Requesting planner with 115 chat messages at model retry attempt 1 and API retry attempt 1",
+    "2026-05-12 15:15:55.390 [info] E0512 15:15:55.369241  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server"
+  ],
+  "rendererLogs": {
+    "ls-main": [],
+    "artifacts": [],
+    "antigravity-interactive-editor": [
+      "2026-05-12 15:13:33.144 [info] Initialized with 0 existing HTML files",
+      "2026-05-12 15:13:33.145 [info] Watching for HTML files in: file:///c%3A/Users/JATIN/.gemini/antigravity/html_artifacts"
+    ],
+    "rendererPerf": [
+      "2026-05-12 15:13:33.142 [info] Render performance baseline is 52ms",
+      "2026-05-12 15:14:54.099 [warning] Renderer reported VERY LONG TASK (2169ms), starting profiling session '67ae75ee-5182-48b4-816a-1ce6102bd33e'"
+    ]
+  },
+  "mainThreadLogs": {
+    "cloudcode": [
+      "2026-05-12 15:13:25.587 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: bc7303f45e40123a",
+      "2026-05-12 15:13:25.967 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: a8bdcffd2bb8f523",
+      "2026-05-12 15:13:27.545 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 7803459e2a145b40",
+      "2026-05-12 15:13:27.686 [info] [CloudCode] POST v1internal:loadCodeAssist traceId: 9bbb5486e1eb2fc1",
+      "2026-05-12 15:13:29.412 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: c3d5223be18aefb3",
+      "2026-05-12 15:13:30.008 [info] [CloudCode] POST v1internal:fetchAvailableModels traceId: 61f2df93adf8cd1e",
+      "2026-05-12 15:15:27.983 [info] [CloudCode] POST v1internal:recordCodeAssistMetrics traceId: 577be4cdf17719a"
+    ],
+    "auth": [
+      "2026-05-12 15:13:29.422 [info] [Auth] AntigravityAuthMainService initialized"
+    ]
+  },
+  "languageServerLogs": {
+    "$typeName": "exa.codeium_common_pb.LanguageServerDiagnostics",
+    "logs": [
+      "I0512 15:13:35.602886  3964 server.go:1235] Starting language server process with pid 3964\n",
+      "I0512 15:13:35.605723  3964 server.go:288] Setting GOMAXPROCS to 4\n",
+      "I0512 15:13:35.613096  3964 server.go:440] Language server will attempt to listen on host 127.0.0.1\n",
+      "I0512 15:13:35.618206  3964 server.go:454] Language server listening on random port at 61757 for HTTPS (gRPC)\n",
+      "I0512 15:13:35.618760  3964 server.go:461] Language server listening on random port at 61758 for HTTP\n",
+      "I0512 15:13:36.201042  3964 server.go:433] Created extension server client at port 60321\n",
+      "I0512 15:13:36.347552  3964 googleAgent_manager.go:815] Reactive state is disabled\n",
+      "I0512 15:13:36.521157  3964 server.go:1691] initialized server successfully in 915.4334ms\n",
+      "I0512 15:13:37.781530  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xac58cdc3f37d8516\n",
+      "I0512 15:13:38.408753  3964 system_mcps.go:78] Chrome DevTools MCP URL discovered at http://127.0.0.1:49983/mcp, stopping watcher\n",
+      "I0512 15:13:39.302929  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x76ea2db58490b4f3\n",
+      "I0512 15:13:41.157967  3964 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x4c57478ffa12ec23\n",
+      "E0512 15:13:43.182851  3964 interceptor.go:74] /exa.language_server_pb.LanguageServerService/RefreshMcpServers (unknown): loading already in progress\n",
+      "I0512 15:13:43.607102  3964 client.go:56] CEL: Sending error - type=LS_ERROR ideName=antigravity appName=antigravity_desktop version=1.21.6\n",
+      "E0512 15:15:05.192693  3964 log.go:398] executor is not currently running\n",
+      "I0512 15:15:12.329193  3964 planner_generator.go:283] Requesting planner with 109 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 15:15:18.347654  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server\n",
+      "I0512 15:15:28.729137  3964 planner_generator.go:283] Requesting planner with 111 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 15:15:31.726439  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server\n",
+      "I0512 15:15:42.244170  3964 planner_generator.go:283] Requesting planner with 113 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 15:15:43.552929  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server\n",
+      "I0512 15:15:51.556842  3964 planner_generator.go:283] Requesting planner with 115 chat messages at model retry attempt 1 and API retry attempt 1\n",
+      "E0512 15:15:55.369241  3964 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server: UNAVAILABLE (code 503): No capacity available for model gemini-pro-agent on the server\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
+      "trajectoryId": "80ff9d15-8ecb-4e5e-bdf6-c105d620c5fd",
+      "summary": "Healio Project Development Resumption",
+      "lastStepIndex": 899,
+      "lastModifiedTime": "2026-05-12T09:45:55.370Z"
+    },
+    {
+      "googleAgentId": "e028be98-2629-4a79-bcf2-20e5a2b5a9a1",
+      "trajectoryId": "91b8e48f-fab6-4555-a415-aa8a29d3beb7",
+      "summary": "Running OCR Processing Script",
+      "lastStepIndex": 425,
+      "lastModifiedTime": "2026-05-11T15:49:48.470Z"
+    },
+    {
+      "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
+      "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
+      "summary": "Fixing Healio Notification System",
+      "lastStepIndex": 118,
+      "lastModifiedTime": "2026-05-04T19:34:48.008Z"
+    },
+    {
+      "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
+      "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
+      "summary": "Healio Project Maintenance and Optimization",
+      "lastStepIndex": 6,
+      "lastModifiedTime": "2026-04-29T06:39:04.369Z"
+    },
+    {
+      "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
+      "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
+      "summary": "Healio UI Audit Remediation",
+      "lastStepIndex": 17,
+      "lastModifiedTime": "2026-04-28T19:17:47.266Z"
+    },
+    {
+      "googleAgentId": "c9a9f337-b426-4d6d-8f09-d510a9809057",
+      "trajectoryId": "46a55188-06af-4360-8dda-c44e973f849e",
+      "summary": "hi analyse",
+      "lastStepIndex": 1,
+      "lastModifiedTime": "2026-04-26T12:52:45.834Z"
+    }
+  ]
+}
