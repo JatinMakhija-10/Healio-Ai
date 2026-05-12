@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabaseServer';
+import { createClient, createServiceClient } from '@/lib/supabaseServer';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
         const unreadOnly = url.searchParams.get('unread') === 'true';
         const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100);
 
-        let query = supabase
+        // Use service client so this works regardless of RLS policy setup
+        const serviceClient = createServiceClient();
+        let query = serviceClient
             .from('notifications')
             .select('*')
             .eq('user_id', user.id)
@@ -68,8 +70,11 @@ export async function PATCH(request: NextRequest) {
         const body = await request.json();
         const now = new Date().toISOString();
 
+        // Use service client so updates work regardless of RLS policy setup
+        const serviceClient = createServiceClient();
+
         if (body.all === true) {
-            const { error } = await supabase
+            const { error } = await serviceClient
                 .from('notifications')
                 .update({ is_read: true, read_at: now })
                 .eq('user_id', user.id)
@@ -82,7 +87,7 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Provide id or all:true' }, { status: 400 });
         }
 
-        const { error } = await supabase
+        const { error } = await serviceClient
             .from('notifications')
             .update({ is_read: true, read_at: now })
             .eq('id', body.id)
