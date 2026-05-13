@@ -72,7 +72,7 @@ function PersonaRequiredBanner() {
 
                 {/* CTA */}
                 <button
-                    onClick={() => router.push("/onboarding")}
+                    onClick={() => router.push("/dashboard/assessment/prakriti")}
                     className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold text-[15px] shadow-lg shadow-teal-600/20 transition-all hover:scale-[1.02] active:scale-100"
                 >
                     Build My Persona →
@@ -211,8 +211,12 @@ function ConsultPageInner() {
     }
 
     // ── PERSONA GUARD ──
+    // onboarding_completed is set by the full onboarding flow;
+    // persona_built is set by the persona builder (/dashboard/assessment/prakriti).
+    // Either flag means the user has a usable medical profile.
     const isPersonaBuilt = Boolean(
         user?.user_metadata?.medical_profile?.onboarding_completed ||
+        user?.user_metadata?.medical_profile?.persona_built ||
         user?.user_metadata?.onboarding_completed
     );
 

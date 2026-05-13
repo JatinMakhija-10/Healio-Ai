@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, ArrowLeft, ChevronRight, ChevronLeft, UserCog, HeartPulse, ShieldCheck, Pill, CheckCircle, Plus, X } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronRight, ChevronLeft, UserCog, HeartPulse, ShieldCheck, Pill, CheckCircle, Plus, X, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 
@@ -315,6 +315,12 @@ export default function PersonaBuilderPage() {
                                                     onChange={(e) => update("height", e.target.value)} />
                                             </div>
                                         </div>
+                                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                                            <CheckCircle className="h-3.5 w-3.5 text-teal-500 mt-0.5 shrink-0" />
+                                            <p className="text-xs text-slate-500 leading-relaxed">
+                                                Your data is encrypted and stored securely. It is used only to personalise your health suggestions and is never shared or sold.
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
 
@@ -531,6 +537,15 @@ export default function PersonaBuilderPage() {
 
                             </CardContent>
 
+                            {/* Medical disclaimer footer — always visible */}
+                            <div className="px-6 pt-0 pb-3">
+                                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-100">
+                                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                                        <strong>Not medical advice.</strong> Healio.AI is an AI tool for general wellness guidance only. Always consult a qualified doctor before making health decisions. In an emergency, call <strong>112</strong>.
+                                    </p>
+                                </div>
+                            </div>
                             {/* Footer */}
                             <div className="px-6 py-4 border-t border-slate-100 flex justify-between bg-white">
                                 <Button variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}

@@ -446,7 +446,7 @@ export default function OnboardingWizard() {
     const { icon: StepIcon, title: stepTitle, desc: stepDesc } = STEP_META[step - 1];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center justify-center p-4 py-12">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center p-4 pt-8 pb-10">
             {/* Background decor */}
             <div className="fixed top-0 left-0 right-0 h-64 bg-gradient-to-b from-teal-50/60 to-transparent pointer-events-none -z-10" />
 
@@ -497,7 +497,7 @@ export default function OnboardingWizard() {
                                 <CardDescription className="text-slate-500 text-sm">{stepDesc}</CardDescription>
                             </CardHeader>
 
-                            <CardContent className="space-y-5 min-h-[280px]">
+                            <CardContent className="space-y-4">
 
                                 {/* ── Step 1: Basic Profile ──────────────────────── */}
                                 {step === 1 && (
@@ -837,60 +837,90 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 7: Consent ───────────────────────────── */}
+                                {/* ── Step 7: Consent & Legal ───────────────────── */}
                                 {step === 7 && (
-                                    <div className="space-y-6 text-center py-2">
-                                        <div className="relative mx-auto w-20 h-20">
-                                            <div className="absolute inset-0 bg-teal-100 rounded-full animate-ping opacity-20" />
-                                            <div className="relative bg-gradient-to-br from-teal-50 to-white w-20 h-20 rounded-full flex items-center justify-center border border-teal-100 shadow-sm">
-                                                <ShieldAlert className="h-10 w-10 text-teal-600" />
+                                    <div className="space-y-3">
+
+                                        {/* Compact header */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0">
+                                                <ShieldAlert className="h-5 w-5 text-teal-600" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-slate-900 text-base leading-tight">Your Health, Your Data</h3>
+                                                <p className="text-xs text-slate-500">Review how we protect and use your information.</p>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <h3 className="font-bold text-slate-900 text-2xl tracking-tight">Your Health, Your Data</h3>
-                                            <p className="text-slate-500 text-sm leading-relaxed max-w-md mx-auto">
-                                                We believe privacy is a fundamental right. Your medical information is protected by industry-leading security standards.
-                                            </p>
+                                        {/* Medical disclaimer — most prominent */}
+                                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                                            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                            <div>
+                                                <p className="text-xs font-semibold text-amber-800 mb-0.5">Medical Disclaimer</p>
+                                                <p className="text-xs text-amber-700 leading-relaxed">
+                                                    Healio.AI is <strong>not a licensed medical practitioner</strong>. Information provided is for educational purposes only and does <strong>not constitute medical advice, diagnosis, or treatment</strong>. Always consult a qualified doctor before making health decisions. In a medical emergency, call <strong>112</strong> (India).
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div className="grid gap-3 max-w-sm mx-auto text-left">
+                                        {/* Privacy points — compact 3-column grid */}
+                                        <div className="grid grid-cols-3 gap-2">
                                             {[
-                                                { title: "End-to-End Encryption", desc: "Your data is encrypted at rest and in transit." },
-                                                { title: "You Are In Control", desc: "Delete your data permanently at any time." },
-                                                { title: "Private by Design", desc: "We never sell your personal health data." },
+                                                { title: "End-to-End Encrypted", desc: "At rest & in transit" },
+                                                { title: "You Control Your Data", desc: "Delete anytime, permanently" },
+                                                { title: "Never Sold", desc: "We never sell your health data" },
                                             ].map((item, i) => (
-                                                <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 items-start">
-                                                    <div className="mt-0.5 min-w-4 h-4 rounded-full bg-teal-100 flex items-center justify-center">
-                                                        <CheckCircle className="h-3 w-3 text-teal-600" />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-semibold text-slate-800">{item.title}</h4>
-                                                        <p className="text-xs text-slate-500">{item.desc}</p>
-                                                    </div>
+                                                <div key={i} className="flex flex-col gap-1.5 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                                                    <CheckCircle className="h-3.5 w-3.5 text-teal-500" />
+                                                    <p className="text-xs font-semibold text-slate-700 leading-tight">{item.title}</p>
+                                                    <p className="text-[11px] text-slate-400 leading-tight">{item.desc}</p>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100 text-left max-w-sm mx-auto transition-all hover:bg-teal-50 hover:shadow-md">
+                                        {/* Data usage */}
+                                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                            <p className="text-xs font-semibold text-slate-700 mb-1.5">How we use your data</p>
+                                            <ul className="text-xs text-slate-500 space-y-1 leading-relaxed">
+                                                <li className="flex items-start gap-1.5"><span className="text-teal-500 mt-0.5">•</span> Personalise AI-generated health suggestions for you</li>
+                                                <li className="flex items-start gap-1.5"><span className="text-teal-500 mt-0.5">•</span> Flag drug interactions and allergy conflicts before suggesting remedies</li>
+                                                <li className="flex items-start gap-1.5"><span className="text-teal-500 mt-0.5">•</span> Stored encrypted in Supabase (SOC 2 compliant infrastructure)</li>
+                                                <li className="flex items-start gap-1.5"><span className="text-teal-500 mt-0.5">•</span> Retained for 2 years or until you delete your account — whichever is sooner</li>
+                                            </ul>
+                                        </div>
+
+                                        {/* AI limitations */}
+                                        <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                                            <p className="text-xs font-semibold text-blue-800 mb-1">AI Limitations & Scope</p>
+                                            <p className="text-xs text-blue-700 leading-relaxed">
+                                                Responses are generated by AI and may occasionally be inaccurate or incomplete. Healio.AI does not replace clinical examination, laboratory tests, imaging, or specialist consultation. The platform is intended for general wellness guidance only and is not suitable for diagnosing serious, chronic, or emergency conditions.
+                                            </p>
+                                        </div>
+
+                                        {/* Consent checkbox — full legal text */}
+                                        <div className={`p-3.5 rounded-xl border transition-all ${data.hasConsented ? "bg-teal-50 border-teal-300" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                                             <div className="flex items-start gap-3">
                                                 <Checkbox
                                                     id="consent"
                                                     checked={data.hasConsented}
                                                     onCheckedChange={(c) => setData((p) => ({ ...p, hasConsented: c === true }))}
-                                                    className="mt-1 border-teal-200 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                                                    className="mt-0.5 border-teal-200 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                                                 />
-                                                <div className="grid gap-1.5 leading-none">
-                                                    <Label htmlFor="consent" className="text-sm font-semibold text-slate-800 cursor-pointer">
-                                                        I agree to the Terms of Service
+                                                <div className="space-y-1">
+                                                    <Label htmlFor="consent" className="text-sm font-semibold text-slate-800 cursor-pointer leading-tight">
+                                                        I understand and agree
                                                     </Label>
-                                                    <p className="text-xs text-slate-500 leading-snug">
-                                                        I confirm that I am at least 18 years old and acknowledge the{" "}
-                                                        <a href="#" className="underline text-teal-700 hover:text-teal-800">Privacy Policy</a>.
+                                                    <p className="text-xs text-slate-500 leading-relaxed">
+                                                        I confirm I am at least <strong>18 years old</strong>, have read the{" "}
+                                                        <a href="/terms" className="underline text-teal-700 hover:text-teal-800">Terms of Service</a> and{" "}
+                                                        <a href="/privacy" className="underline text-teal-700 hover:text-teal-800">Privacy Policy</a>,
+                                                        acknowledge that Healio.AI is <strong>not a substitute for professional medical advice</strong>,
+                                                        and consent to my health data being processed as described above.
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
+
                                     </div>
                                 )}
 
