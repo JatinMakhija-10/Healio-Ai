@@ -241,6 +241,190 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false)
     }
 }
 
+// ── Build comprehensive patient profile context from user_metadata ──────────────
+// Extracts the FULL medical profile (onboarding + persona builder data) and
+// formats it for the system prompt so the AI always knows who it's talking to.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildPatientProfileContext(userMeta: Record<string, any>): string {
+    if (!userMeta) return '';
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mp: Record<string, any> = userMeta.medical_profile || {};
+    const vitals = mp.vitals || {};
+    const lifestyle = mp.lifestyle || {};
+
+    // Resolve fields (flat fields from persona builder win, nested from onboarding are fallback)
+    const age = mp.age ?? vitals.age ?? userMeta.age;
+    const gender = mp.gender ?? vitals.gender ?? userMeta.gender;
+    const weight = mp.weight ?? vitals.weight;
+    const height = mp.height ?? vitals.height;
+    const fullName = userMeta.full_name || userMeta.name;
+
+    // Conditions
+    const conditions: string[] = Array.isArray(mp.conditions) ? mp.conditions : [];
+
+    // Allergies — merge drug + food + flat
+    const allergies: string[] = [];
+    if (mp.allergies && typeof mp.allergies === 'string') allergies.push(mp.allergies);
+    if (Array.isArray(mp.drugAllergies)) allergies.push(...mp.drugAllergies);
+    if (Array.isArray(mp.foodAllergies)) allergies.push(...mp.foodAllergies);
+    const uniqueAllergies = [...new Set(allergies.filter(Boolean))];
+
+    // Medications
+    let medications: string[] = [];
+    if (Array.isArray(mp.medicationList)) {
+        medications = mp.medicationList.map((m: unknown): string =>
+            typeof m === 'string' ? m : String((m as Record<string, unknown>)?.name || '')
+        ).filter((s: string) => s.length > 0);
+    } else if (Array.isArray(mp.medications)) {
+        medications = mp.medications.map((m: unknown): string => typeof m === 'string' ? m : '').filter((s: string) => s.length > 0);
+    } else if (typeof mp.medications === 'string' && mp.medications) {
+        medications = mp.medications.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+
+    // Family history
+    const familyHistory: string[] = Array.isArray(mp.familyHistory)
+        ? mp.familyHistory
+        : Array.isArray(mp.family_history)
+            ? mp.family_history
+            : typeof mp.family_history === 'string' && mp.family_history
+                ? [mp.family_history]
+                : [];
+
+    // Lifestyle
+    const smoking = mp.smoking ?? lifestyle.smoking;
+    const alcohol = mp.alcohol ?? lifestyle.alcohol;
+    const diet = mp.diet ?? lifestyle.diet;
+    const exercise = mp.activityLevel ?? lifestyle.exercise ?? mp.exercise;
+    const sleep = lifestyle.sleepPattern ?? mp.sleepPattern ?? mp.sleep_hours;
+    const occupation = lifestyle.occupation ?? mp.occupation;
+
+    // Pregnancy / kidney-liver
+    const isPregnant = mp.isPregnant ?? mp.pregnant;
+    const kidneyLiver = mp.hasKidneyLiverDisease ?? mp.kidney_liver_disease;
+    const recentSurgery = mp.recent_surgery ?? mp.surgeries;
+
+    // Build lines — only include fields that have data
+    const lines: string[] = [
+        '\n\n=== PATIENT PROFILE (auto-injected from medical records) ===',
+        'Use this profile for EVERY response. It affects dosing, contraindications, and personalization.',
+    ];
+
+    if (fullName) lines.push(`Name: ${fullName}`);
+    if (age) lines.push(`Age: ${age} years`);
+    if (gender) lines.push(`Gender: ${gender}`);
+    if (weight) lines.push(`Weight: ${weight} kg`);
+    if (height) lines.push(`Height: ${height} cm`);
+
+    if (conditions.length) {
+        lines.push(`Pre-existing conditions: ${conditions.join(', ')}`);
+        lines.push('  -> Factor these into every differential diagnosis. Ask if current symptoms relate to known conditions.');
+    }
+
+    if (uniqueAllergies.length) {
+        lines.push(`ALLERGIES: ${uniqueAllergies.join(', ')}`);
+        lines.push('  -> CRITICAL: NEVER recommend any remedy, herb, or substance the patient is allergic to. Flag if a recommended remedy shares a class with a known allergen.');
+    }
+
+    if (medications.length) {
+        lines.push(`Current medications: ${medications.join(', ')}`);
+        lines.push('  -> Check for drug-drug interactions. Note if any homeopathic/ayurvedic remedy may conflict.');
+    }
+
+    if (familyHistory.length) {
+        lines.push(`Family history: ${familyHistory.join(', ')}`);
+        lines.push('  -> Consider hereditary risk factors in your differential.');
+    }
+
+    // Lifestyle block
+    const lifestyleParts: string[] = [];
+    if (smoking && smoking !== 'never' && smoking !== 'no') lifestyleParts.push(`Smoking: ${smoking}`);
+    if (alcohol && alcohol !== 'none' && alcohol !== 'no') lifestyleParts.push(`Alcohol: ${alcohol}`);
+    if (diet) lifestyleParts.push(`Diet: ${diet}`);
+    if (exercise) lifestyleParts.push(`Activity: ${exercise}`);
+    if (sleep) lifestyleParts.push(`Sleep: ${sleep}`);
+    if (occupation) lifestyleParts.push(`Occupation: ${occupation}`);
+    if (lifestyleParts.length) {
+        lines.push(`Lifestyle: ${lifestyleParts.join(' | ')}`);
+    }
+
+    // Safety flags
+    if (isPregnant) {
+        lines.push('PREGNANT: YES — NEVER suggest remedies contraindicated in pregnancy. Always flag pregnancy-safety explicitly.');
+    }
+    if (kidneyLiver) {
+        lines.push('KIDNEY/LIVER DISEASE: YES — Adjust dosages. Avoid nephrotoxic/hepatotoxic substances.');
+    }
+    if (recentSurgery && recentSurgery !== 'no' && recentSurgery !== 'none' && recentSurgery !== false) {
+        lines.push(`Recent surgery: ${typeof recentSurgery === 'string' ? recentSurgery : 'Yes'}`);
+    }
+
+    if (age && Number(age) <= 12) {
+        lines.push('PEDIATRIC PATIENT — Use child-safe dosages. Recommend consulting a pediatrician.');
+    }
+    if (age && Number(age) >= 65) {
+        lines.push('GERIATRIC PATIENT — Consider age-related sensitivities. Use conservative dosing.');
+    }
+
+    lines.push('=== END OF PATIENT PROFILE ===');
+
+    // Only return if we have meaningful data beyond the header
+    const hasData = age || gender || conditions.length || uniqueAllergies.length || medications.length;
+    return hasData ? lines.join('\n') : '';
+}
+
+// ── Build patient medical history context from past consultations ──────────────
+// Compact summary injected into the system prompt so the AI remembers past
+// diseases, conditions, and recommendations across sessions.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildMedicalHistoryContext(consultations: any[]): string {
+    if (!consultations?.length) return '';
+
+    const entries = consultations.slice(0, 10).map((c, i) => {
+        const d = c.diagnosis || {};
+        const dateStr = c.created_at
+            ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : 'unknown date';
+        const condition = d.condition || d.name || 'Unknown';
+        const severity = d.severity || 'unknown';
+        const confidence = typeof c.confidence === 'number' ? `${c.confidence}%` : 'N/A';
+
+        const remedies: string[] = [];
+        if (Array.isArray(d.remedies)) {
+            remedies.push(...d.remedies.slice(0, 3).map((r: unknown) => typeof r === 'string' ? r : (r as Record<string, unknown>)?.name || '').filter(Boolean));
+        }
+        if (Array.isArray(d.indianHomeRemedies)) {
+            remedies.push(...d.indianHomeRemedies.slice(0, 2).map((r: unknown) => typeof r === 'string' ? r : (r as Record<string, unknown>)?.name || '').filter(Boolean));
+        }
+
+        const symptoms = c.symptoms || {};
+        const location = Array.isArray(symptoms.location) ? symptoms.location.join(', ') : '';
+        const sensation = symptoms.sensation || symptoms.painType || '';
+
+        let entry = `  ${i + 1}. [${dateStr}] ${condition} (severity: ${severity}, confidence: ${confidence})`;
+        if (location) entry += `\n     Location: ${location}`;
+        if (sensation) entry += ` | Sensation: ${sensation}`;
+        if (remedies.length) entry += `\n     Remedies: ${remedies.join(', ')}`;
+        if (d.seekHelp) entry += `\n     Advised: ${typeof d.seekHelp === 'string' ? d.seekHelp.slice(0, 120) : ''}`;
+        if (d.is_followup) entry += ' [FOLLOW-UP]';
+        return entry;
+    });
+
+    return [
+        '\n\n=== PATIENT MEDICAL HISTORY (past consultations on Healio) ===',
+        'The following is the patient\'s consultation history. Use this to:',
+        '- Recognize recurring or chronic conditions',
+        '- Avoid re-asking about known conditions/allergies',
+        '- Reference past diagnoses when relevant ("I see you had X last month...")',
+        '- Notice patterns (e.g., recurring headaches, seasonal allergies)',
+        '- Adjust treatment if prior remedies were already prescribed',
+        '',
+        ...entries,
+        '',
+        'Do NOT re-diagnose past conditions unless the patient asks. Use this as background context only.',
+        '=== END OF MEDICAL HISTORY ===',
+    ].join('\n');
+}
 
 // ── Extract symptom summary from conversation for RAG ─────────────────────────
 function extractSymptomSummary(messages: { role: string; content: string }[]): string {
@@ -392,6 +576,11 @@ QUESTION PRIORITY (ask ONE at a time, skip if already answered):
   Q8: amelioration      — What gives relief?
   Q9: history           — How did it start? Any stress, poor sleep, dietary change?
 
+PROFILE-AWARE SKIP RULES:
+  - If PATIENT PROFILE provides the patient's age, gender, conditions, medications — do NOT ask about these. You already know.
+  - If MEDICAL HISTORY shows a recent consultation for a similar condition, reference it in Q1 context: "Is this related to the [condition] we discussed on [date], or something new?"
+  - For Q9: If the patient's lifestyle data (sleep, diet, stress, occupation) is in the profile, reference it instead of asking broadly. Example: "Your profile shows you have a desk job — could prolonged sitting be contributing?"
+
 STOPPING RULE: If after Q3 you have identified 1-2 probable conditions with ≥70% confidence → skip remaining questions and proceed to final diagnosis output.
 MINIMUM: 3 questions answered before final diagnosis.
 MAXIMUM: 9 questions total.
@@ -435,6 +624,41 @@ User: "Around a 6."
 Healio: "A 6 means it is clearly bothering you. What does the discomfort feel like? Choose the closest option, or describe it in your own words.
 {\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Throbbing / pulsing\", \"Pressure / tightness\", \"Sharp / stabbing\", \"Dull / aching\", \"Behind the eyes\", \"One-sided\", \"With nausea\", \"Other\"], \"question_type\": \"sensation\"}}"
 
+[PERSONALISATION RULES — USE PATIENT PROFILE & HISTORY]
+You will receive PATIENT PROFILE and MEDICAL HISTORY blocks in this prompt. These are NOT optional context — you MUST actively use them to personalise every response. Generic advice is a failure.
+
+AGE-BASED PERSONALISATION:
+- Children (≤12): Use gentle, simple language. Halve adult remedy doses. Always say "please also consult your child's pediatrician". Avoid harsh herbs (e.g., strong bitters, high-potency remedies).
+- Teens (13-17): Acknowledge their independence but recommend parental involvement for dosing.
+- Adults (18-64): Standard dosing. Factor in lifestyle data (occupation, activity, sleep) for practical advice.
+- Elderly (≥65): Conservative dosing (start at ⅔ standard dose). Flag age-related risks. Prioritise gentle remedies. Consider polypharmacy interactions with their current medications.
+
+GENDER-AWARE PERSONALISATION:
+- Female patients: Consider menstrual cycle, hormonal factors, pregnancy risk. If reproductive age and condition could be pregnancy-related, gently ask. For PCOS, thyroid, or hormonal conditions — tailor remedy choices accordingly.
+- Male patients: Consider prostate health for urinary symptoms in older patients. Factor in occupational exposure.
+
+CONDITION-AWARE BEHAVIOUR:
+- If the patient has KNOWN PRE-EXISTING CONDITIONS listed in their profile, ALWAYS cross-reference the current complaint against those conditions. Example: A diabetic patient with a foot wound → flag healing concerns and infection risk. An asthmatic patient with chest tightness → differentiate asthma flare vs new condition.
+- If the current symptom could be RELATED to a known condition, say so explicitly: "Given your history of [condition], this could be connected — let me ask a few more questions to understand."
+- NEVER ask about conditions/allergies/medications that are already listed in the patient profile. You already know them.
+
+MEDICATION INTERACTION AWARENESS:
+- If the patient is on listed medications, CHECK every remedy you suggest against potential interactions. If uncertain, flag it: "Since you are taking [medication], I would advise checking with your doctor before combining it with [remedy]."
+- For patients on blood thinners: avoid garlic supplements, high-dose ginger, guggulu.
+- For patients on antihypertensives: avoid licorice (mulethi/yashtimadhu).
+- For patients on antidiabetics: flag hypoglycemia risk with fenugreek (methi), bitter gourd (karela).
+
+MEDICAL HISTORY CONTINUITY:
+- If past consultations are provided, reference them naturally: "I see you dealt with [condition] recently — has that resolved, or is today's concern related?"
+- If the same or similar condition appears in history, acknowledge the pattern: "This seems to be a recurring issue for you. Let's see if something in your routine might be triggering it."
+- If past remedies were prescribed, ask about them: "Last time we discussed [remedy] for your [condition]. Did that help?"
+- Do NOT repeat the exact same remedy plan if a previous consultation already prescribed it and the patient is returning with the same issue — escalate or adjust instead.
+- For FIRST-TIME conditions with no history, proceed normally without referencing history.
+
+ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
+- BEFORE suggesting ANY remedy, mentally cross-check against the patient's allergy list.
+- If a remedy contains or is related to an allergen, DO NOT suggest it. Suggest an alternative and note why: "I would normally suggest [X] but given your [allergen] allergy, [Y] is a safer alternative."
+
 [WHAT HEALIO NEVER DOES]
 - Never suggest allopathic medicines (paracetamol, ibuprofen, antibiotics, antacids).
 - Never make a definitive diagnosis before the final JSON phase — always say "likely" or "this may suggest".
@@ -443,6 +667,8 @@ Healio: "A 6 means it is clearly bothering you. What does the discomfort feel li
 - Never output more than one question per turn.
 - Never use emojis, bullet lists, or numbered lists.
 - Never ask a question whose answer was already given earlier in the conversation.
+- Never ask about information already present in the PATIENT PROFILE (age, gender, conditions, medications, allergies). You already have it.
+- Never give generic advice that ignores the patient's known profile. Every suggestion must account for their age, conditions, and medications.
 - Never respond in Hindi or Hinglish when the user wrote their message in English. This is the #1 most critical rule.
 `;
 
@@ -483,16 +709,27 @@ MANDATORY RULES (apply to ALL sections):
   - NEVER list the same remedy twice within one section.
   - NEVER use placeholder text like "Remedy Name" or "herb name".
 
+PERSONALISATION RULES FOR FINAL OUTPUT (apply to ALL remedy suggestions):
+  - DOSING must be adjusted for the patient's age and weight from PATIENT PROFILE:
+    * Children ≤12: halve standard doses; use lower potencies (6C for homeopathy).
+    * Elderly ≥65: use ⅔ standard dose; prefer gentler herbs.
+    * Pregnant: EXCLUDE any remedy contraindicated in pregnancy. Add a "pregnancy_safe" note.
+  - ALLERGY CHECK: Cross-reference EVERY remedy against the patient's allergy list. If a remedy or its ingredients match an allergen, REPLACE it with a safe alternative and add an "allergy_note" explaining the substitution.
+  - MEDICATION INTERACTIONS: If the patient takes medications listed in their profile, note potential interactions in the remedy's "description" field. Example: "Note: may interact with [medication] — consult your doctor."
+  - CONDITION CONTEXT: The "description" field must reference how the current diagnosis relates to any known pre-existing conditions. Example: "Given your history of asthma, this bronchial inflammation may be exacerbation-related."
+  - HISTORY AWARENESS: If MEDICAL HISTORY shows a previous consultation for the same or related condition, mention it in "bayesianFactors". If the same remedy was prescribed before, either escalate potency or suggest an alternative.
+  - "lifestyle_advice" must be tailored to the patient's actual lifestyle data (diet, exercise, sleep, occupation) — not generic. Example: For a desk_job patient → "Take a 5-minute walk every hour"; for a smoker → "Reducing smoking will significantly improve recovery."
+
 \`\`\`json
 {
   "name": "Condition Name",
-  "description": "2-3 line summary of what you understood from their symptoms.",
+  "description": "2-3 line summary personalised to this patient — reference their age, relevant conditions, and how current symptoms fit their profile.",
   "severity": "mild | moderate | severe",
   "confidence": 75,
   "emergency": false,
-  "bayesianFactors": "Why this diagnosis fits — symptom pattern, modalities, duration, triggers",
+  "bayesianFactors": "Why this diagnosis fits — symptom pattern, modalities, duration, triggers. Reference patient history if relevant.",
   "differentialDiagnoses": [
-    { "name": "Alternate Condition", "likelihood": "low | medium", "rationale": "Why considered" }
+    { "name": "Alternate Condition", "likelihood": "low | medium", "rationale": "Why considered — factor in patient's known conditions" }
   ],
   "homeopathic_remedies": [
     {
@@ -518,7 +755,7 @@ MANDATORY RULES (apply to ALL sections):
       "preparation": "Step-by-step: quantities, method, timing, frequency"
     }
   ],
-  "lifestyle_advice": ["Rest", "Stay hydrated", "Steam inhalation twice daily"],
+  "lifestyle_advice": ["Personalised to patient's lifestyle — e.g. 'Since you have a desk job, take a 5-min walk every hour'", "Tailored diet advice based on their diet type", "Sleep/stress advice based on their reported sleep pattern"],
   "red_flags": ["If fever exceeds 103°F / 39.4°C", "If symptoms worsen after 5 days"],
   "see_doctor_if": ["Symptoms persist beyond 7 days", "Difficulty breathing"],
   "disclaimer": "This assessment is generated by an AI tool and is not a substitute for professional medical advice. Always consult a qualified physician for serious conditions."
@@ -571,7 +808,7 @@ export async function POST(req: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const serviceClient = getSupabaseAdmin() as any; // singleton
 
-        const [usageResult, personaResult] = await Promise.allSettled([
+        const [usageResult, personaResult, historyResult, userProfileResult] = await Promise.allSettled([
             // 1. Usage check
             serviceClient.rpc('increment_chat_count', { p_user_id: userId }),
             // 2. Persona fetch (skip if no personaId)
@@ -583,6 +820,15 @@ export async function POST(req: NextRequest) {
                     .eq('user_id', userId)
                     .single()
                 : Promise.resolve(null),
+            // 3. Past consultation history (last 10, most recent first)
+            serviceClient
+                .from('consultations')
+                .select('created_at, diagnosis, symptoms, confidence')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(10),
+            // 4. Full user profile (medical_profile from auth metadata)
+            serviceClient.auth.admin.getUserById(userId),
         ]);
 
         // Handle usage gate result
@@ -608,27 +854,43 @@ export async function POST(req: NextRequest) {
             console.warn('[chat/route] Usage check skipped:', usageResult.reason);
         }
 
-        // Handle persona result
+        // Handle persona result (family member override)
         let personaContext = '';
         if (personaResult.status === 'fulfilled' && personaResult.value) {
             const { data: persona } = personaResult.value as { data: Record<string, unknown> | null };
             if (persona) {
                 const p = persona as { name?: string; age?: number; gender?: string; relation?: string; conditions?: string[]; allergies?: string };
                 const parts = [
-                    `Patient Profile: ${p.name}`,
+                    `Consulting FOR: ${p.name} (${p.relation || 'family member'})`,
                     p.age    ? `Age: ${p.age} years` : null,
                     p.gender ? `Gender: ${p.gender}` : null,
-                    p.relation ? `Relation: ${p.relation}` : null,
                     p.conditions?.length ? `Pre-existing conditions: ${p.conditions.join(', ')}` : null,
                     p.allergies ? `Allergies: ${p.allergies}` : null,
                 ].filter(Boolean).join(', ');
-                personaContext = `\n\n=== PATIENT CONTEXT ===\n${parts}\n`;
+                personaContext = `\n\n=== FAMILY MEMBER CONTEXT (consulting on behalf of) ===\n${parts}\n`;
                 if (p.age && p.age <= 12) {
                     personaContext += `IMPORTANT: This patient is a child (${p.age} years old). Use gentle language. Always recommend consulting a pediatrician. Avoid adult-dose remedies.\n`;
                 }
+                personaContext += `Tailor ALL advice to this family member's profile, not the account holder.\n`;
             }
         } else if (personaResult.status === 'rejected') {
             console.warn('[chat/route] Persona fetch skipped:', personaResult.reason);
+        }
+
+        // Handle user's own medical profile (auto-injected into every prompt)
+        let patientProfileContext = '';
+        if (userProfileResult.status === 'fulfilled' && userProfileResult.value) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const profileResponse = userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } } };
+            const userMeta = profileResponse.data?.user?.user_metadata;
+            if (userMeta) {
+                patientProfileContext = buildPatientProfileContext(userMeta);
+                if (patientProfileContext) {
+                    console.log('[PROFILE] Patient profile injected into prompt');
+                }
+            }
+        } else if (userProfileResult.status === 'rejected') {
+            console.warn('[chat/route] User profile fetch failed:', userProfileResult.reason);
         }
 
         // Token overflow protection: sliding window (last 15 messages)
@@ -744,8 +1006,31 @@ ${SYSTEM_PROMPT}`
             finalSystemPrompt += '\n[NOTE: SECTION C RAG data was unavailable this turn due to embedding timeout. Use your authoritative traditional Indian household remedy knowledge for the home_remedies array. You MUST still include at least 2 home remedies. Do NOT leave it empty.]';
         }
 
+        // ── Patient profile injection (always present) ─────────────────────
+        if (patientProfileContext) {
+            finalSystemPrompt += patientProfileContext;
+        }
+
+        // ── Family member persona override (only when consulting for someone else)
         if (personaContext) {
             finalSystemPrompt += personaContext;
+        }
+
+        // ── Medical history injection (AI memory across sessions) ────────────
+        let medicalHistoryContext = '';
+        if (historyResult.status === 'fulfilled' && historyResult.value) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { data: pastConsultations } = historyResult.value as { data: any[] | null };
+            if (pastConsultations?.length) {
+                medicalHistoryContext = buildMedicalHistoryContext(pastConsultations);
+                console.log(`[HISTORY] Injected ${pastConsultations.length} past consultations into context`);
+            }
+        } else if (historyResult.status === 'rejected') {
+            console.warn('[chat/route] History fetch failed:', historyResult.reason);
+        }
+
+        if (medicalHistoryContext) {
+            finalSystemPrompt += medicalHistoryContext;
         }
 
         // ── Follow-up context injection ──────────────────────────────────────
