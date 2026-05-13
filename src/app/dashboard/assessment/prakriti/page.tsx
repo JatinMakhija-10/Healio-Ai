@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, ArrowLeft, ChevronRight, ChevronLeft, UserCog, HeartPulse, ShieldCheck, Pill, CheckCircle, Plus, X, AlertTriangle } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronRight, ChevronLeft, UserCog, HeartPulse, ShieldCheck, Pill, CheckCircle, Plus, X, AlertTriangle, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 
@@ -75,6 +75,126 @@ const STEPS = [
     { title: "Medical History", description: "Existing conditions we should know about.", icon: ShieldCheck },
 ];
 
+// ── API category → MedicationEntry type ─────────────────────────────────────
+const API_CAT_TO_TYPE: Record<string, MedicationEntry["type"]> = {
+    Allopathic:  "allopathic",
+    Homeopathic: "homeopathic",
+    Ayurvedic:   "ayurvedic",
+};
+
+// ── Searchable medicine combobox ─────────────────────────────────────────────
+function MedCombobox({
+    value,
+    onChange,
+    onSelect,
+}: {
+    value: string;
+    onChange: (name: string) => void;
+    onSelect: (name: string, type: MedicationEntry["type"]) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const [results, setResults] = useState<Array<{ name: string; category: string }>>([]);
+    const [searching, setSearching] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const fetchMeds = useCallback(async (q: string) => {
+        if (q.length < 2) { setResults([]); return; }
+        setSearching(true);
+        try {
+            const res = await fetch(`/api/medicines/search?q=${encodeURIComponent(q)}&limit=40`);
+            const json = await res.json();
+            setResults(json.results ?? []);
+        } catch {
+            setResults([]);
+        } finally {
+            setSearching(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => fetchMeds(value), 220);
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    }, [value, fetchMeds]);
+
+    const GROUPS = ["Allopathic", "Homeopathic", "Ayurvedic"] as const;
+
+    return (
+        <div ref={containerRef} className="relative">
+            <div className="relative">
+                {searching
+                    ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-500 animate-spin pointer-events-none" />
+                    : <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                }
+                <input
+                    type="text"
+                    placeholder="Search 224,000+ medicines — Allopathic, Ayurvedic, Homeopathic…"
+                    value={value}
+                    onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+                    onFocus={() => value.length >= 2 && setOpen(true)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setOpen(false); } }}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 placeholder:text-slate-400"
+                />
+            </div>
+            <AnimatePresence>
+                {open && value.length >= 2 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto"
+                    >
+                        {results.length === 0 && !searching && (
+                            <div className="px-4 py-3 text-sm text-slate-400 italic">
+                                No results for &quot;{value}&quot; — keep typing or use the name as-is.
+                            </div>
+                        )}
+                        {GROUPS.map((group) => {
+                            const items = results.filter((m) => m.category === group);
+                            if (items.length === 0) return null;
+                            return (
+                                <div key={group}>
+                                    <div className="px-3 py-1 text-[10px] font-bold tracking-widest uppercase text-slate-400 bg-slate-50 border-b border-slate-100 sticky top-0">
+                                        {group}
+                                    </div>
+                                    {items.map((m) => (
+                                        <button
+                                            key={m.name}
+                                            type="button"
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                onSelect(m.name, API_CAT_TO_TYPE[m.category] ?? "other");
+                                                setOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between"
+                                        >
+                                            <span>{m.name}</span>
+                                            <span className="text-[10px] text-slate-400">{m.category}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            );
+                        })}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            {!open && value.length < 2 && (
+                <p className="text-[11px] text-slate-400 mt-1 px-0.5">Type at least 2 characters to search across Allopathic, Ayurvedic &amp; Homeopathic medicines.</p>
+            )}
+        </div>
+    );
+}
+
 function needsDuration(type: string): boolean {
     return type === "allopathic" || type === "homeopathic";
 }
@@ -107,6 +227,7 @@ export default function PersonaBuilderPage() {
     const [isDone, setIsDone] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [newMed, setNewMed] = useState<MedicationEntry>({ name: "", type: "allopathic", duration: "" });
+    const [conditionSearch, setConditionSearch] = useState("");
 
     const totalSteps = STEPS.length;
     const progress = (step / totalSteps) * 100;
@@ -434,11 +555,10 @@ export default function PersonaBuilderPage() {
                                             <div className="border border-dashed border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50/50">
                                                 <div className="space-y-1">
                                                     <Label className="text-xs text-slate-500">Medicine name</Label>
-                                                    <Input
-                                                        placeholder="e.g. Metformin, Arnica 30C, Ashwagandha"
+                                                    <MedCombobox
                                                         value={newMed.name}
-                                                        onChange={(e) => setNewMed((p) => ({ ...p, name: e.target.value }))}
-                                                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMedication(); } }}
+                                                        onChange={(name) => setNewMed((p) => ({ ...p, name }))}
+                                                        onSelect={(name, type) => setNewMed((p) => ({ ...p, name, type, duration: "" }))}
                                                     />
                                                 </div>
                                                 <div className={`grid gap-2 ${needsDuration(newMed.type) ? "grid-cols-2" : "grid-cols-1"}`}>
@@ -498,8 +618,21 @@ export default function PersonaBuilderPage() {
                                     <div className="space-y-5">
                                         <div className="space-y-3">
                                             <Label>Existing Health Conditions <span className="text-slate-400 font-normal">(select all that apply)</span></Label>
+                                            {/* Condition search filter */}
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Filter conditions…"
+                                                    value={conditionSearch}
+                                                    onChange={(e) => setConditionSearch(e.target.value)}
+                                                    className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 placeholder:text-slate-400"
+                                                />
+                                            </div>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {KNOWN_CONDITIONS.map((c) => (
+                                                {KNOWN_CONDITIONS.filter((c) =>
+                                                    c.toLowerCase().includes(conditionSearch.toLowerCase())
+                                                ).map((c) => (
                                                     <div key={c}
                                                         className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-all ${data.conditions.includes(c) ? "bg-teal-50 border-teal-300" : "bg-white border-slate-100 hover:border-slate-200"}`}
                                                         onClick={() => toggleCondition(c)}>
