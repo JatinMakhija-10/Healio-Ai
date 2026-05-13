@@ -144,7 +144,7 @@ export default function ProfilePage() {
                             <Badge variant="secondary" className="bg-teal-50 text-teal-700 hover:bg-teal-100">
                                 Free Plan
                             </Badge>
-                            {metadata.onboarding_completed && (
+                            {(metadata.onboarding_completed || isPersonaBuilt) && (
                                 <Badge variant="outline" className="text-slate-600 border-slate-200">
                                     Profile Complete
                                 </Badge>
