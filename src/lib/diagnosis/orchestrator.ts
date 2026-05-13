@@ -49,6 +49,10 @@ import { uncertaintyQuantifier, UncertaintyEstimate } from "./advanced/Uncertain
 import { infoGainSelector } from "./advanced/InformationGainSelector";
 import { checkInteractions, buildDDIPromptSection } from "./ddi";
 import type { DDIMeta, DDICheckResult } from "./ddi";
+import { runIntelligenceLayer, mergeIntelligenceIntoResponse } from "./advanced/ClinicalIntelligenceLayer";
+import { buildPersonaProfile } from "./advanced/PersonaEngine";
+import type { IntelligenceContext, EnhancedDiagnosisOutput } from "./advanced/intelligenceTypes";
+import { enrichDiagnosisSession } from "./datasources";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -155,6 +159,39 @@ export async function diagnose(
     const allPosteriorRedFlags: string[] = [];
 
     // ═══════════════════════════════════════════════════════════════════════
+    // PRE-STAGE — Free Data Source Warm-Up (Fire-and-Forget)
+    //
+    // Fires enrichDiagnosisSession in the background immediately.
+    // By the time Stage 5 runs (~1-3s later), caches in each client
+    // will be warm. Zero latency impact on the critical path.
+    //
+    // Sources warmed up:
+    //   - RxNorm + OpenFDA adverse events  (drug profiles)
+    //   - OpenFDA Drug Labels              (contraindications, BBW)
+    //   - NCBI PubMed                      (rare disease enrichment)
+    //   - ClinicalTrials.gov               (condition profiles)
+    //   - MedlinePlus Connect              (ICD → health topics)
+    // ═══════════════════════════════════════════════════════════════════════
+    const userMeds: string[] = Array.isArray(symptoms.userProfile?.medications)
+        ? symptoms.userProfile.medications as string[]
+        : typeof symptoms.userProfile?.medications === 'string' && symptoms.userProfile.medications.trim()
+            ? [symptoms.userProfile.medications]
+            : [];
+
+    const userConditions: string[] = symptoms.userProfile?.conditions || [];
+
+    enrichDiagnosisSession({
+        medications: userMeds,
+        userConditions,
+        rareDiseaseNames: [],           // filled after Stage 1
+        topConditionNames: [],          // filled after Stage 1
+        icd10Codes: [],
+        isPregnant: symptoms.userProfile?.pregnant,
+    }).then(result => {
+        completedStages.push(`datasources:${Object.entries(result.availability).filter(([,v]) => v).map(([k]) => k).join(',') || 'none'}`);
+    }).catch(() => { /* non-fatal */ });
+
+    // ═══════════════════════════════════════════════════════════════════════
     // STAGE 0 — Safety Red-Flag Scan (always runs first)
     // ═══════════════════════════════════════════════════════════════════════
     const alerts = scanRedFlags(symptoms);
@@ -204,6 +241,18 @@ export async function diagnose(
             .sort((a, b) => b.score - a.score);
 
         completedStages.push("bayesian_mcmc");
+
+        // Fire targeted enrichment now that we know the top candidates
+        if (bayesianCandidates.length > 0) {
+            enrichDiagnosisSession({
+                medications: userMeds,
+                userConditions,
+                rareDiseaseNames: bayesianCandidates.slice(0, 2).map(c => c.conditionName),
+                topConditionNames: bayesianCandidates.slice(0, 3).map(c => c.conditionName),
+                icd10Codes: [],
+                isPregnant: symptoms.userProfile?.pregnant,
+            }).catch(() => { /* non-fatal */ });
+        }
     } catch (e) {
         console.error("[Orchestrator] Bayesian stage error:", e);
     }
@@ -508,6 +557,62 @@ export async function diagnose(
         console.error("[Orchestrator] Uncertainty quantification error:", e);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 5 — Clinical Intelligence Enhancement Layer (Augmentation)
+    //
+    // Runs 8 intelligence modules in parallel to enrich the diagnosis:
+    //   - Extended clinical patterns, differential diagnosis, rare disease screening
+    //   - Medication-aware reasoning, patient similarity, dynamic confidence
+    //   - Multi-modal reasoning, longitudinal tracking, safety assessment
+    //
+    // 100% fault-tolerant: any module failure is caught and skipped.
+    // Base diagnosis is NEVER modified — intelligence is additive only.
+    // ═══════════════════════════════════════════════════════════════════════
+    let intelligenceOutput: EnhancedDiagnosisOutput | undefined;
+    try {
+        const symptomList = extractSymptomList(symptoms);
+        const persona = buildPersonaProfile(
+            symptoms.userProfile?.medical_profile || symptoms.userProfile,
+            { age: symptoms.userProfile?.age, gender: symptoms.userProfile?.gender, weight: symptoms.userProfile?.weight, height: symptoms.userProfile?.height }
+        );
+
+        const intelligenceCtx: IntelligenceContext = {
+            symptoms,
+            persona,
+            bayesianCandidates: bayesianCandidates.map(c => ({
+                conditionId: c.conditionId,
+                conditionName: c.conditionName,
+                score: c.score,
+                matchedKeywords: c.matchedKeywords,
+                reasoningTrace: c.reasoningTrace,
+                posteriorRedFlags: c.posteriorRedFlags,
+                mcmcDiagnostics: c.mcmcDiagnostics ? {
+                    posteriorMean: c.mcmcDiagnostics.effectiveSampleSize > 0 ? c.score / 100 : 0,
+                    posteriorMedian: c.score / 100,
+                    credibleInterval: c.mcmcDiagnostics.credibleInterval,
+                    effectiveSampleSize: c.mcmcDiagnostics.effectiveSampleSize,
+                    gewekePValue: c.mcmcDiagnostics.gewekePValue,
+                    rHat: c.mcmcDiagnostics.rHat,
+                    numChains: c.mcmcDiagnostics.numChains,
+                    converged: c.mcmcDiagnostics.converged,
+                    samples: [],
+                    acceptanceRate: c.mcmcDiagnostics.acceptanceRate,
+                    priorDominated: c.mcmcDiagnostics.priorDominated,
+                    posteriorPredictiveP: c.mcmcDiagnostics.posteriorPredictiveP,
+                } : undefined,
+            })),
+            detectedPatterns,
+            symptomList,
+            allConditions: [],
+            existingAlerts: alerts,
+        };
+
+        intelligenceOutput = runIntelligenceLayer(intelligenceCtx);
+        completedStages.push("intelligence_layer");
+    } catch (e) {
+        console.error("[Orchestrator] Intelligence layer error (non-fatal):", e);
+    }
+
     // Always Bayesian dominant now
     const fusionMethod: OrchestratedResult["orchestrationMeta"]["fusionMethod"] = "bayesian_dominant";
 
@@ -545,15 +650,30 @@ export async function diagnose(
         } : undefined,
     };
 
-    return {
+    // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 6 — Merge Intelligence Layer into Response
+    // Additive only: merges safety alerts, red flags, and intelligence metadata.
+    // Never overwrites base diagnosis or confidence scores.
+    // ═══════════════════════════════════════════════════════════════════════
+    const baseResponse = {
         results: [aiResult],
         alerts: mergedAlerts,
         uncertainty,
         clinicalRules: clinicalRuleResults,
         orchestrationMeta,
     };
-}
 
-// ─── Private Helpers ──────────────────────────────────────────────────────────
+    if (intelligenceOutput) {
+        try {
+            const enhanced = mergeIntelligenceIntoResponse(baseResponse, intelligenceOutput);
+            completedStages.push("intelligence_merge");
+            return enhanced;
+        } catch (e) {
+            console.error("[Orchestrator] Intelligence merge error (non-fatal):", e);
+        }
+    }
+
+    return baseResponse;
+}
 
 // ─── Private Helpers ──────────────────────────────────────────────────────────

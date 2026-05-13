@@ -88,6 +88,139 @@ export async function searchConditions(symptoms: UserSymptomData): Promise<Condi
     return candidates.map(mapDbToEngine);
 }
 
+// ─── Clinical Cases Retrieval ─────────────────────────────────────────────────
+
+export interface ClinicalCaseMatch {
+    caseId: string;
+    source: 'pmc_patients' | 'mimic_demo' | 'cupcase' | 'multicare';
+    age: number | null;
+    ageGroup: string;
+    gender: string;
+    chiefComplaint: string;
+    presentingSymptoms: string[];
+    diagnosis: string[];
+    icdCodes: string[];
+    medications: string[];
+    narrative: string;
+    specialty: string | null;
+    similarity: number;
+}
+
+/**
+ * Search the clinical_cases table using:
+ *   1. Vector similarity (Gemini embedding of symptom text)
+ *   2. Symptom array overlap (GIN index — fast keyword match)
+ *
+ * Returns top matching real patient cases for PatientSimilarityEngine.
+ * Falls back silently if the table doesn't exist yet (pre-migration).
+ */
+export async function searchClinicalCases(
+    symptoms: UserSymptomData,
+    symptomKeywords: string[],
+    options: {
+        matchThreshold?: number;
+        matchCount?: number;
+        ageGroup?: string;
+        gender?: string;
+    } = {}
+): Promise<ClinicalCaseMatch[]> {
+    const {
+        matchThreshold = 0.65,
+        matchCount     = 8,
+        ageGroup,
+        gender,
+    } = options;
+
+    const symptomText = [
+        symptoms.location.join(' '),
+        symptoms.painType || '',
+        symptoms.additionalNotes || '',
+        symptomKeywords.join(' '),
+    ].filter(Boolean).join(' ');
+
+    try {
+        // Run vector search + keyword overlap in parallel
+        const [vectorResults, keywordResults] = await Promise.allSettled([
+            // 1. Vector similarity via match_clinical_cases RPC
+            (async () => {
+                if (!symptomText.trim()) return [];
+                const embedding = await getEmbedding(symptomText);
+                if (!embedding.length) return [];
+
+                const { data, error } = await supabase.rpc('match_clinical_cases', {
+                    query_embedding:  embedding,
+                    match_threshold:  matchThreshold,
+                    match_count:      matchCount,
+                    filter_age_group: ageGroup || null,
+                    filter_gender:    gender    || null,
+                    filter_source:    null,
+                });
+
+                if (error || !data) return [];
+                return data as Array<Record<string, unknown>>;
+            })(),
+
+            // 2. Symptom keyword overlap via find_cases_by_symptoms RPC
+            (async () => {
+                if (symptomKeywords.length < 2) return [];
+
+                const { data, error } = await supabase.rpc('find_cases_by_symptoms', {
+                    symptom_keywords: symptomKeywords,
+                    min_overlap:      2,
+                    result_limit:     matchCount,
+                });
+
+                if (error || !data) return [];
+                return data as Array<Record<string, unknown>>;
+            })(),
+        ]);
+
+        // Merge + deduplicate by case_id, prefer vector similarity score
+        const merged = new Map<string, ClinicalCaseMatch>();
+
+        const addResults = (results: Array<Record<string, unknown>>, source: 'vector' | 'keyword') => {
+            for (const r of results) {
+                const caseId = r.case_id as string;
+                if (!caseId) continue;
+
+                const existing = merged.get(caseId);
+                const similarity = source === 'vector'
+                    ? (r.similarity as number ?? 0)
+                    : (r.similarity_hint as number ?? 0.5);
+
+                if (!existing || similarity > existing.similarity) {
+                    merged.set(caseId, {
+                        caseId,
+                        source:             (r.source as ClinicalCaseMatch['source']) || 'pmc_patients',
+                        age:                (r.age as number) ?? null,
+                        ageGroup:           (r.age_group as string) || 'unknown',
+                        gender:             (r.gender as string)    || 'unknown',
+                        chiefComplaint:     (r.chief_complaint as string) || '',
+                        presentingSymptoms: (r.presenting_symptoms as string[]) || [],
+                        diagnosis:          (r.diagnosis as string[]) || [],
+                        icdCodes:           (r.icd_codes as string[]) || [],
+                        medications:        (r.medications as string[]) || [],
+                        narrative:          (r.narrative as string) || '',
+                        specialty:          (r.specialty as string) || null,
+                        similarity,
+                    });
+                }
+            }
+        };
+
+        if (vectorResults.status  === 'fulfilled') addResults(vectorResults.value,  'vector');
+        if (keywordResults.status === 'fulfilled') addResults(keywordResults.value, 'keyword');
+
+        return Array.from(merged.values())
+            .sort((a, b) => b.similarity - a.similarity)
+            .slice(0, matchCount);
+
+    } catch {
+        // Table not migrated yet or network error — fail silently
+        return [];
+    }
+}
+
 function mapDbToEngine(db: DatabaseCondition): Condition {
     return {
         id:                 db.id,
