@@ -11,14 +11,14 @@ describe("Subscription Plans", () => {
         expect(free.id).toBe("free");
         expect(free.price).toBe(0);
         expect(free.currency).toBe("INR");
-        expect(free.features).toContain("10 Monthly Consultations");
+        expect(free.features).toContain("5 Monthly Consultations");
     });
 
     it("plus plan has correct price and features", () => {
         const plus = PLANS.plus;
         expect(plus.id).toBe("plus");
         expect(plus.price).toBe(999);
-        expect(plus.features).toContain("Unlimited AI Diagnosis");
+        expect(plus.features).toContain("Unlimited AI Consultations");
         expect(plus.features).toContain("Family Profiles (up to 5)");
         expect(plus.features).toContain("PDF Health Reports");
     });

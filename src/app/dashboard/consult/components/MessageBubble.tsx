@@ -26,7 +26,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     let isParsingJson = false;
 
     // Usage limit detection
-    let usageLimitData: { limit: number; resets_at: string; current_count: number } | null = null;
+    let usageLimitData: {
+        limit: number;
+        resets_at: string;
+        current_count: number;
+        code?: string;
+        cooldown_remaining?: number;
+        credits_balance?: number;
+        daily_count?: number;
+        daily_limit?: number;
+        plan?: string;
+    } | null = null;
     if (message.content.startsWith("___JSON_USAGE_LIMIT___\n")) {
         try {
             const jsonText = message.content.replace("___JSON_USAGE_LIMIT___\n", "");
@@ -107,8 +117,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 {usageLimitData && (
                     <div className="mb-2 w-full">
                         <UsageLimitCard 
-                            limit={usageLimitData.limit} 
-                            resetsAt={usageLimitData.resets_at} 
+                            limit={usageLimitData.limit}
+                            resetsAt={usageLimitData.resets_at}
+                            code={usageLimitData.code}
+                            cooldownRemaining={usageLimitData.cooldown_remaining}
+                            creditsBalance={usageLimitData.credits_balance}
                             onUpgradeClick={() => {
                                 window.dispatchEvent(new CustomEvent("healio:open-upgrade", {
                                     detail: {

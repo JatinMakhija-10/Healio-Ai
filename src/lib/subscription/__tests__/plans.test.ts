@@ -2,13 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
     DEFAULT_PLATFORM_FEE_PERCENTAGE,
     FREE_MONTHLY_CONSULTATIONS,
+    FREE_DAILY_CONSULTATIONS,
+    FREE_COOLDOWN_SECONDS,
     PLANS,
     PRO_PLATFORM_FEE_PERCENTAGE,
     UNLIMITED_USAGE,
+    CREDIT_COSTS,
+    CREDIT_PACKS,
+    PLUS_MONTHLY_CREDITS,
     getFamilyProfileLimit,
     getMonthlyConsultationLimit,
+    getDailyConsultationLimit,
+    getCooldownSeconds,
     getPlatformFeePercentage,
     getUpgradePlanForFeature,
+    getCreditCost,
+    getCreditPackById,
+    getTotalCreditsForPack,
     hasFeature,
     normalizeSubscriptionPlan,
 } from "../plans";
@@ -59,5 +69,48 @@ describe("Healio subscription tier rules", () => {
         expect(getUpgradePlanForFeature("pdf_health_reports")).toBe("plus");
         expect(getUpgradePlanForFeature("clinical_sandbox")).toBe("pro");
         expect(getUpgradePlanForFeature("zero_platform_fee")).toBe("pro");
+    });
+
+    it("enforces daily consultation limits for free tier", () => {
+        expect(FREE_DAILY_CONSULTATIONS).toBe(2);
+        expect(getDailyConsultationLimit("free")).toBe(FREE_DAILY_CONSULTATIONS);
+        expect(getDailyConsultationLimit("plus")).toBe(UNLIMITED_USAGE);
+        expect(getDailyConsultationLimit("pro")).toBe(UNLIMITED_USAGE);
+    });
+
+    it("enforces cooldown only for free tier", () => {
+        expect(FREE_COOLDOWN_SECONDS).toBe(30);
+        expect(getCooldownSeconds("free")).toBe(FREE_COOLDOWN_SECONDS);
+        expect(getCooldownSeconds("plus")).toBe(0);
+        expect(getCooldownSeconds("pro")).toBe(0);
+    });
+
+    it("defines credit costs per feature action", () => {
+        expect(CREDIT_COSTS.consultation).toBe(1);
+        expect(CREDIT_COSTS.pdf_report).toBe(2);
+        expect(CREDIT_COSTS.priority_booking).toBe(3);
+        expect(CREDIT_COSTS.wellness_snapshot).toBe(1);
+        expect(getCreditCost("consultation")).toBe(1);
+    });
+
+    it("defines credit packs with correct totals", () => {
+        expect(CREDIT_PACKS.length).toBeGreaterThanOrEqual(3);
+        const popular = CREDIT_PACKS.find(p => p.popular);
+        expect(popular).toBeDefined();
+        expect(getTotalCreditsForPack(popular!)).toBe(popular!.credits + popular!.bonus);
+    });
+
+    it("looks up credit packs by id", () => {
+        expect(getCreditPackById("pack_5")?.credits).toBe(5);
+        expect(getCreditPackById("nonexistent")).toBeUndefined();
+    });
+
+    it("gives Plus subscribers 50 monthly credits", () => {
+        expect(PLUS_MONTHLY_CREDITS).toBe(50);
+    });
+
+    it("reduced free monthly limit from 10 to 5", () => {
+        expect(FREE_MONTHLY_CONSULTATIONS).toBe(5);
+        expect(getMonthlyConsultationLimit("free")).toBe(5);
     });
 });

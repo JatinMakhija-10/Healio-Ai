@@ -637,30 +637,32 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 });
 
                 if (!response.ok) {
-                    // Handle usage limit (429)
+                    // Handle usage limit (429) — covers COOLDOWN, DAILY_LIMIT, MONTHLY_LIMIT
                     if (response.status === 429) {
                         const errorData = await response.json().catch(() => ({}));
-                        if (errorData.code === 'USAGE_LIMIT') {
+                        const code = errorData.code || 'USAGE_LIMIT';
+                        if (['USAGE_LIMIT', 'MONTHLY_LIMIT', 'DAILY_LIMIT', 'COOLDOWN'].includes(code)) {
                             setMessages((prev) =>
                                 prev.map((m) =>
                                     m.id === assistantId
                                         ? {
                                             ...m,
                                             content: `___JSON_USAGE_LIMIT___\n${JSON.stringify({
-                                                limit: errorData.limit,
+                                                code,
+                                                limit: errorData.limit ?? errorData.daily_limit,
                                                 resets_at: errorData.resets_at,
-                                                current_count: errorData.current_count
+                                                current_count: errorData.current_count ?? errorData.daily_count,
+                                                daily_count: errorData.daily_count,
+                                                daily_limit: errorData.daily_limit,
+                                                cooldown_remaining: errorData.cooldown_remaining,
+                                                credits_balance: errorData.credits_balance ?? 0,
+                                                plan: errorData.plan,
                                             })}`,
                                         }
                                         : m
                                 )
                             );
                             setIsLoading(false);
-                            // Set short timeout then trigger modal
-                            setTimeout(() => {
-                                // We can trigger the global PlanSelectionModal event here if needed,
-                                // but for now, the card itself will have the upgrade button
-                            }, 500);
                             return;
                         }
                     }
@@ -668,13 +670,13 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 }
 
                 const contentType = response.headers.get("content-type") || "";
+                let fullContent = "";
 
                 if (contentType.includes("text/event-stream")) {
                     // Handle streaming response (from Groq)
                     const reader = response.body!.getReader();
                     const decoder = new TextDecoder();
                     let buffer = "";
-                    let fullContent = "";
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -710,10 +712,11 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 } else {
                     // Handle non-streaming response (Gemini fallback)
                     const data = await response.json();
+                    fullContent = data.content || "";
                     setMessages((prev) =>
                         prev.map((m) =>
                             m.id === assistantId
-                                ? { ...m, content: data.content || "" }
+                                ? { ...m, content: fullContent }
                                 : m
                         )
                     );

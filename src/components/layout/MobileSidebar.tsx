@@ -13,7 +13,8 @@ import {
     Stethoscope,
     X,
     BookOpen,
-    Loader2
+    Loader2,
+    CreditCard
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,12 @@ const allSidebarItems = [
         title: "Settings",
         href: "/dashboard/settings",
         icon: Settings,
+        visible: true,
+    },
+    {
+        title: "Plan & Credits",
+        href: "/dashboard/billing",
+        icon: CreditCard,
         visible: true,
     },
     // PHASE 2 — Learn Section

@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     Bell, Search, Menu, X, Info,
-    Calendar, UserCheck, XCircle, MessageSquare, Shield, Video, Megaphone,
+    Calendar, UserCheck, XCircle, MessageSquare, Shield, Video, Megaphone, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +23,7 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard/search": "Find Specialist",
     "/dashboard/learn": "Learn",
     "/dashboard/videos": "Videos",
+    "/dashboard/billing": "Plan & Credits",
 };
 
 /** Map notification type → icon + color */
@@ -83,7 +84,7 @@ interface DBNotification {
 }
 
 export function Header() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -307,9 +308,21 @@ export function Header() {
                             <p style={{ fontSize: 13, fontWeight: 600, color: "#1E293B", lineHeight: 1 }}>
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"}
                             </p>
-                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" as const, color: "#0D9488", marginTop: 3, display: "inline-block" }}>
-                                FREE PLAN
-                            </span>
+                            <button
+                                onClick={() => router.push('/dashboard/billing')}
+                                className="mt-1 inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                            >
+                                {(profile?.subscription_plan === 'plus' || profile?.subscription_plan === 'pro') ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded-full">
+                                        <Crown size={9} className="text-teal-600" />
+                                        {profile.subscription_plan === 'pro' ? 'PRO' : 'PLUS'}
+                                    </span>
+                                ) : (
+                                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" as const, color: "#94A3B8" }}>
+                                        FREE PLAN
+                                    </span>
+                                )}
+                            </button>
                         </div>
                         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 cursor-pointer">
                             <AvatarImage src={user?.user_metadata?.avatar_url || ""} alt={user?.email || "User"} />

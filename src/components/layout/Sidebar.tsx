@@ -12,7 +12,9 @@ import {
     LogOut,
     Stethoscope,
     BookOpen,
-    Video
+    Video,
+    CreditCard,
+    Crown
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -59,6 +61,12 @@ const allSidebarItems = [
         icon: Settings,
         visible: true, // Always visible
     },
+    {
+        title: "Plan & Credits",
+        href: "/dashboard/billing",
+        icon: CreditCard,
+        visible: true, // Always visible
+    },
     // PHASE 2 — Learn Section
     {
         title: "Learn",
@@ -79,7 +87,8 @@ const sidebarItems = allSidebarItems.filter(item => item.visible);
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { logout, profile } = useAuth();
+    const plan = profile?.subscription_plan || 'free';
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleLogout = async () => {
@@ -145,6 +154,31 @@ export function Sidebar() {
 
             {/* Footer */}
             <div className="px-4 py-4 border-t border-slate-100 flex flex-col gap-2">
+                {/* Plan Badge */}
+                <Link href="/dashboard/billing">
+                    <div className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 mb-1 transition-all duration-150 cursor-pointer ${
+                        plan === 'plus' || plan === 'pro'
+                            ? 'bg-teal-50 border border-teal-200 hover:bg-teal-100'
+                            : 'bg-slate-50 border border-slate-200 hover:bg-slate-100'
+                    }`}>
+                        {plan === 'plus' || plan === 'pro' ? (
+                            <Crown size={14} className="text-teal-600" />
+                        ) : (
+                            <CreditCard size={14} className="text-slate-400" />
+                        )}
+                        <div className="flex flex-col">
+                            <span className={`text-[11px] font-bold uppercase tracking-wider ${
+                                plan === 'plus' || plan === 'pro' ? 'text-teal-700' : 'text-slate-500'
+                            }`}>
+                                {plan === 'pro' ? 'Healio Pro' : plan === 'plus' ? 'Healio Plus' : 'Free Plan'}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                                {plan === 'free' ? 'Upgrade for more' : 'Active subscription'}
+                            </span>
+                        </div>
+                    </div>
+                </Link>
+
                 <button
                     className="w-full flex items-center gap-3 rounded-lg text-left text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ padding: "10px 12px", fontSize: "13.5px", fontWeight: 500 }}

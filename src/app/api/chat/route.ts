@@ -790,15 +790,25 @@ export async function POST(req: NextRequest) {
 
         logLatency('dbFetch', Date.now() - t0Db);
 
-        // Handle usage gate result
+        // Handle usage gate result (supports monthly, daily, cooldown limits + credit fallback)
         if (usageResult.status === 'fulfilled') {
             const { data: usage, error: usageError } = usageResult.value as { data: Record<string, unknown> | null; error: { message: string } | null };
             if (!usageError && usage && usage.allowed === false) {
+                const code = (usage.code as string) || 'USAGE_LIMIT';
+                const errorMessages: Record<string, string> = {
+                    COOLDOWN: 'Please wait before starting another consultation',
+                    DAILY_LIMIT: 'Daily consultation limit reached',
+                    MONTHLY_LIMIT: 'Monthly consultation limit reached',
+                };
                 return new Response(JSON.stringify({
-                    error: 'Monthly consultation limit reached',
-                    code: 'USAGE_LIMIT',
-                    current_count: usage.current_count,
-                    limit: usage.limit,
+                    error: errorMessages[code] || 'Usage limit reached',
+                    code,
+                    current_count: usage.current_count ?? usage.daily_count,
+                    limit: usage.limit ?? usage.daily_limit,
+                    daily_count: usage.daily_count,
+                    daily_limit: usage.daily_limit,
+                    cooldown_remaining: usage.cooldown_remaining,
+                    credits_balance: usage.credits_balance ?? 0,
                     plan: usage.plan,
                     resets_at: usage.resets_at,
                 }), {

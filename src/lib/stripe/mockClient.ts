@@ -1,8 +1,12 @@
 import { supabase } from '@/lib/supabase';
 export {
     PLANS,
+    CREDIT_PACKS,
+    CREDIT_COSTS,
+    PLUS_MONTHLY_CREDITS,
     type PlanDetails,
     type SubscriptionPlan,
+    type CreditPack,
     normalizeSubscriptionPlan,
 } from '@/lib/subscription/plans';
 import { normalizeSubscriptionPlan, type SubscriptionPlan } from '@/lib/subscription/plans';
