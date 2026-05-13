@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Healio.AI — Complete Diagnosis Pipeline</title>
+<style>
+  @page { margin: 1.5cm; size: A4; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1a1a2e; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+  h1 { color: #0f4c81; border-bottom: 3px solid #0f4c81; padding-bottom: 8px; }
+  h2 { color: #1a5276; border-bottom: 2px solid #85c1e9; padding-bottom: 4px; margin-top: 32px; }
+  h3 { color: #2e86c1; margin-top: 24px; }
+  .subtitle { color: #666; font-size: 0.95em; margin-top: -10px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.9em; }
+  th { background: #0f4c81; color: white; padding: 8px 12px; text-align: left; }
+  td { padding: 6px 12px; border-bottom: 1px solid #d5dbdb; }
+  tr:nth-child(even) { background: #eaf2f8; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 14px; border-radius: 6px; font-size: 0.82em; overflow-x: auto; }
+  code { background: #eaf2f8; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+  .stage { background: #eaf2f8; border-left: 4px solid #0f4c81; padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+  .stage-title { font-weight: bold; color: #0f4c81; font-size: 1.1em; }
+  .principle { background: #fef9e7; border-left: 4px solid #f1c40f; padding: 10px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #ccc; color: #888; font-size: 0.85em; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Healio.AI — Complete Diagnosis Pipeline</h1>
+<p class="subtitle"><strong>Architecture: Math-First v3</strong> &nbsp;|&nbsp; May 2026</p>
+
+<div class="principle">
+<strong>Core Principle:</strong> The Bayesian MCMC engine has <em>total authority</em> over diagnosis. The LLM (Groq/Gemini) is a Natural Language Formatter only — it writes compassionate explanations and formats remedies, but never invents or overrides the diagnosis.
+</div>
+
+<!-- PHASE 1 -->
+<h2>Phase 1: Persona Onboarding</h2>
+<p>User fills health profile → <code>PersonaEngine.ts</code> parses it deterministically (<strong>zero LLM calls</strong>):</p>
+
+<table>
+<tr><th>Category</th><th>Flags Produced</th></tr>
+<tr><td>BMI</td><td><code>isObese</code> (≥30), <code>isOverweight</code> (25-29.9), <code>isUnderweight</code> (&lt;18.5)</td></tr>
+<tr><td>Diet</td><td><code>isHighFat</code>, <code>isHighSalt</code>, <code>isVegetarian</code>, <code>isJunkHeavy</code></td></tr>
+<tr><td>Medications</td><td><code>onStatins</code>, <code>onSteroids</code>, <code>onAntidepressants</code>, <code>onInsulin</code>, <code>onAnticoagulants</code>, <code>onAntihypertensives</code></td></tr>
+<tr><td>Comorbidities</td><td><code>hasThyroid</code>, <code>hasPCOS</code>, <code>hasAnemia</code>, <code>hasAsthma</code>, <code>hasCKD</code>, <code>hasDepression</code>, <code>hasLiverDisease</code>, <code>hasAutoimmune</code></td></tr>
+<tr><td>Family History</td><td><code>cardiac</code>, <code>diabetes</code>, <code>cancer</code>, <code>stroke</code>, <code>hypertension</code>, <code>thyroid</code>, <code>kidney</code>, <code>autoimmune</code></td></tr>
+<tr><td>Lifestyle</td><td><code>isAlcoholUser</code>, <code>isHeavyDrinker</code>, <code>isSedentary</code>, <code>isVigorousExercise</code>, <code>hasLowSleep</code></td></tr>
+</table>
+
+<p>These become <strong>covariate adjustments</strong> for Bayesian priors — a 55-year-old male smoker with diabetes gets a different prior for MI than a 25-year-old female athlete.</p>
+
+<!-- PHASE 2 -->
+<h2>Phase 2: Symptom Input</h2>
+<p>User describes symptoms → <code>UserSymptomData</code>:</p>
+<pre>{
+  location: ["chest", "left_arm"],  painType: "crushing",
+  intensity: 8,  duration: "2 hours ago",  frequency: "constant",
+  triggers: "worse with exertion",
+  additionalNotes: "nauseous and sweating",
+  excludedSymptoms: ["no fever"],
+  userProfile: { ... }   // from Phase 1
+}</pre>
+
+<!-- PHASE 3 -->
+<h2>Phase 3: Orchestrator Pipeline (8 Stages)</h2>
+
+<!-- Stage 0 -->
+<div class="stage">
+<div class="stage-title">STAGE 0 — Safety Red-Flag Scan</div>
+<p>Runs first, always. Keyword-matches symptom text for emergencies:</p>
+<table>
+<tr><th>Emergency</th><th>Trigger</th></tr>
+<tr><td>Heart Attack</td><td>chest + sweating / arm pain / crushing</td></tr>
+<tr><td>Stroke (FAST)</td><td>face droop + arm weakness + slurred speech</td></tr>
+<tr><td>Aortic Dissection</td><td>chest + back + tearing/ripping pain</td></tr>
+<tr><td>Meningitis</td><td>headache + stiff neck</td></tr>
+<tr><td>Anaphylaxis</td><td>throat swelling + hives + breathing difficulty</td></tr>
+<tr><td>Suicide Crisis</td><td>suicide/self-harm keywords → 988 hotline</td></tr>
+<tr><td>Ectopic Pregnancy</td><td>pregnant + severe abdominal pain</td></tr>
+</table>
+</div>
+
+<!-- Stage 1 -->
+<div class="stage">
+<div class="stage-title">STAGE 1 — Bayesian MCMC Scoring (Mathematical Core)</div>
+
+<h3>1a. Condition Retrieval</h3>
+<p>Symptoms → <strong>Gemini embedding</strong> (768-dim vector) → Supabase vector similarity search → top 50 conditions. Falls back to keyword/location filtering if &lt; 5 results.</p>
+
+<h3>1b. Symptom Correlation Detection</h3>
+<p>Checks for multi-symptom clinical patterns. Example: <code>chest_pain + left_arm_pain + sweating + nausea</code> = "Typical MI" → <strong>5.0× multiplier</strong>.</p>
+
+<h3>1c. MCMC Bayesian Inference (per condition)</h3>
+<table>
+<tr><th>Step</th><th>Description</th></tr>
+<tr><td><strong>Covariate-Adjusted Prior</strong></td><td>Base prevalence × epidemiological rules. Age>45+male+smoker → 2.5× MI prior. BMI>30 → 1.8× DVT prior. Capped at 5×.</td></tr>
+<tr><td><strong>Log-Likelihood</strong></td><td>Weighted symptom matching (sensitivity/specificity), location hard-filters, temporal reasoning, pattern boosts, unknown symptom marginalisation (CP6).</td></tr>
+<tr><td><strong>3-Chain MCMC</strong></td><td>Metropolis-Hastings with logit-scale proposals, 2000 iterations, 500 burn-in, 2× thinning.</td></tr>
+<tr><td><strong>Convergence Check</strong></td><td>R̂ &lt; 1.05, ESS ≥ 100, Geweke p > 0.05, acceptance rate 15-60%.</td></tr>
+<tr><td><strong>Prior Sensitivity</strong></td><td>Re-run with weakened prior. If posterior barely changes → <code>priorDominated</code>.</td></tr>
+<tr><td><strong>Posterior Predictive</strong></td><td>Simulate expected symptoms vs actual report. High PPP → model fits.</td></tr>
+<tr><td><strong>Red Flag Escalation</strong></td><td>P(Sepsis)>5% → antibiotics. P(STEMI)>5% → cath lab. P(Aortic Dissection)>2% → CT angio.</td></tr>
+</table>
+
+<h3>1d. Filtering & Ranking</h3>
+<p>Filter: score ≥ 8 → Sort: descending → Keep: top 5 as <code>bayesianCandidates</code>.</p>
+</div>
+
+<!-- Stage 1b -->
+<div class="stage">
+<div class="stage-title">STAGE 1b — Convergence Gate (CP10)</div>
+<p>If top candidate's MCMC <strong>did not converge</strong> (R̂ > 1.05, ESS &lt; 100):</p>
+<ol>
+<li><strong>Halt immediately</strong> — do not feed unreliable math to AI</li>
+<li>Use <strong>Information Gain Selector</strong> to find the single most discriminating question</li>
+<li>Return question to user → answer → re-run entire pipeline</li>
+</ol>
+</div>
+
+<!-- Stage 2 -->
+<div class="stage">
+<div class="stage-title">STAGE 2 — Clinical Decision Rules</div>
+<p>Applies validated scoring systems:</p>
+<table>
+<tr><th>Rule</th><th>Use Case</th><th>Output</th></tr>
+<tr><td>Wells Score</td><td>DVT probability</td><td>Score + risk tier</td></tr>
+<tr><td>PERC Rule</td><td>PE exclusion</td><td>Pass / Fail</td></tr>
+<tr><td>HEART Score</td><td>Chest pain risk</td><td>0–10 score</td></tr>
+<tr><td>NEXUS Criteria</td><td>C-Spine imaging</td><td>Clear / Not Clear</td></tr>
+<tr><td>Ottawa Ankle Rules</td><td>Ankle X-ray</td><td>Required / Not</td></tr>
+</table>
+</div>
+
+<!-- Stage 2.5 -->
+<div class="stage">
+<div class="stage-title">STAGE 2.5 — DDI Safety Filter</div>
+<p>Cross-checks remedies against user's medications + conditions + pregnancy:</p>
+<table>
+<tr><th>Action</th><th>Meaning</th></tr>
+<tr><td><strong>Blocked</strong></td><td>Contraindicated — removed from AI prompt entirely</td></tr>
+<tr><td><strong>Flagged</strong></td><td>Major/moderate interaction — ⚠ badge in UI</td></tr>
+<tr><td><strong>Safe</strong></td><td>No interactions detected</td></tr>
+</table>
+</div>
+
+<!-- Stage 3 -->
+<div class="stage">
+<div class="stage-title">STAGE 3 — AI Formatting (Natural Language Bridge)</div>
+<p>Sends to <code>/api/diagnose</code> server-side:</p>
+<ol>
+<li><strong>Multi-Query RAG</strong>: Embeds symptoms → retrieves Boericke Materia Medica chunks</li>
+<li><strong>Enriched Prompt</strong>: Injects Bayesian priors + RAG + convergence warnings + DDI context</li>
+<li><strong>AI Inference</strong>: Groq (primary) → Gemini (fallback)</li>
+<li><strong>Structured JSON</strong>: description, rationale, remedies (with potencies/dosages), Indian home remedies, warnings, seekHelp flag</li>
+</ol>
+<p><strong>LLM's role:</strong> Format ONLY. Never invents conditions. Never overrides Bayesian confidence.</p>
+</div>
+
+<!-- Stage 4 -->
+<div class="stage">
+<div class="stage-title">STAGE 4 — Uncertainty Quantification</div>
+<p>Computes: confidence interval, evidence quality (strong/moderate/weak), calibration quality (excellent/good/moderate/poor), should-request-more-info flag.</p>
+</div>
+
+<!-- Stage 5 -->
+<div class="stage">
+<div class="stage-title">STAGE 5 — Clinical Intelligence Enhancement Layer (NEW v1)</div>
+<p>Runs <strong>8 modules</strong> in parallel. 100% fault-tolerant:</p>
+<table>
+<tr><th>#</th><th>Module</th><th>Goals</th><th>Key Data</th></tr>
+<tr><td>1</td><td>ClinicalKnowledgeBase</td><td>1,2,5,11</td><td>50+ patterns (MIMIC-IV/eICU/WHO), 12 differential pairs, 10 rare diseases</td></tr>
+<tr><td>2</td><td>MedicationIntelligence</td><td>3</td><td>14 drug profiles, side-effect detection, masking alerts</td></tr>
+<tr><td>3</td><td>PatientSimilarityEngine</td><td>4</td><td>22 archetypal cases, weighted Jaccard matching</td></tr>
+<tr><td>4</td><td>DynamicConfidenceEngine</td><td>6,7,10,13</td><td>7-factor scoring, risk prioritization, 5 meta-rules</td></tr>
+<tr><td>5</td><td>MultiModalReasoner</td><td>8</td><td>Cross-system correlation, 6 pathology cascades</td></tr>
+<tr><td>6</td><td>LongitudinalTracker</td><td>9</td><td>Session-to-session progression, temporal alerts</td></tr>
+<tr><td>7</td><td>SafetyGuardEnhancer</td><td>5,12,14</td><td>Age rules, 7 symptom red flags, 3 advanced behaviors</td></tr>
+<tr><td>8</td><td>Master Coordinator</td><td>All</td><td>Orchestrates all modules, builds context, merges output</td></tr>
+</table>
+</div>
+
+<!-- Stage 6 -->
+<div class="stage">
+<div class="stage-title">STAGE 6 — Intelligence Merge</div>
+<p>Safety alerts, red flags, and intelligence metadata merged into response. <strong>Base diagnosis NEVER modified</strong> — intelligence is additive only.</p>
+</div>
+
+<!-- Final Output -->
+<h2>Final Output Structure</h2>
+<pre>{
+  results: [{ condition, confidence: 87, matchedKeywords, reasoningTrace }],
+  alerts: ["🚨 CARDIAC EMERGENCY...", "⚠️ P(STEMI) > 5% — activate cath lab"],
+  uncertainty: { pointEstimate: 87, ci: { lower: 78, upper: 94 }, quality: "good" },
+  clinicalRules: [{ rule: "HEART Score", score: 7, interpretation: "High risk" }],
+  intelligence: { differentialAnalysis, medicationReasoning, safetyAssessment },
+  orchestrationMeta: {
+    pipelineStages: ["red_flags","bayesian_mcmc","clinical_rules","ddi_filter",
+      "ai_inference","uncertainty_quantification","intelligence_layer","intelligence_merge"],
+    aiProvider: "groq", aiLatencyMs: 1247, fusionMethod: "bayesian_dominant",
+    mcmcConvergence: { rHat: 1.008, ess: 342, converged: true }
+  }
+}</pre>
+
+<!-- Key Principles -->
+<h2>Key Principles</h2>
+<div class="principle"><strong>1.</strong> Bayesian math owns the diagnosis — condition name &amp; confidence from MCMC, never AI.</div>
+<div class="principle"><strong>2.</strong> AI only formats — compassionate explanations, pre-verified remedies, RAG enrichment.</div>
+<div class="principle"><strong>3.</strong> Intelligence layer only augments — adds safety, differentials, medication reasoning.</div>
+<div class="principle"><strong>4.</strong> 100% fault-tolerant — any module failure is caught, pipeline continues.</div>
+<div class="principle"><strong>5.</strong> Convergence-gated — unreliable MCMC → follow-up question, not garbage output.</div>
+
+<div class="footer">Healio.AI — Math-First Diagnosis Pipeline v3 &nbsp;|&nbsp; Generated May 2026</div>
+
+</body>
+</html>

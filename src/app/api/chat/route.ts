@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
+import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
+import { logLatency, alertIfSlow } from '@/lib/chat/latencyMonitor';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
@@ -373,58 +375,7 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
     return hasData ? lines.join('\n') : '';
 }
 
-// ── Build patient medical history context from past consultations ──────────────
-// Compact summary injected into the system prompt so the AI remembers past
-// diseases, conditions, and recommendations across sessions.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildMedicalHistoryContext(consultations: any[]): string {
-    if (!consultations?.length) return '';
-
-    const entries = consultations.slice(0, 10).map((c, i) => {
-        const d = c.diagnosis || {};
-        const dateStr = c.created_at
-            ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : 'unknown date';
-        const condition = d.condition || d.name || 'Unknown';
-        const severity = d.severity || 'unknown';
-        const confidence = typeof c.confidence === 'number' ? `${c.confidence}%` : 'N/A';
-
-        const remedies: string[] = [];
-        if (Array.isArray(d.remedies)) {
-            remedies.push(...d.remedies.slice(0, 3).map((r: unknown) => typeof r === 'string' ? r : (r as Record<string, unknown>)?.name || '').filter(Boolean));
-        }
-        if (Array.isArray(d.indianHomeRemedies)) {
-            remedies.push(...d.indianHomeRemedies.slice(0, 2).map((r: unknown) => typeof r === 'string' ? r : (r as Record<string, unknown>)?.name || '').filter(Boolean));
-        }
-
-        const symptoms = c.symptoms || {};
-        const location = Array.isArray(symptoms.location) ? symptoms.location.join(', ') : '';
-        const sensation = symptoms.sensation || symptoms.painType || '';
-
-        let entry = `  ${i + 1}. [${dateStr}] ${condition} (severity: ${severity}, confidence: ${confidence})`;
-        if (location) entry += `\n     Location: ${location}`;
-        if (sensation) entry += ` | Sensation: ${sensation}`;
-        if (remedies.length) entry += `\n     Remedies: ${remedies.join(', ')}`;
-        if (d.seekHelp) entry += `\n     Advised: ${typeof d.seekHelp === 'string' ? d.seekHelp.slice(0, 120) : ''}`;
-        if (d.is_followup) entry += ' [FOLLOW-UP]';
-        return entry;
-    });
-
-    return [
-        '\n\n=== PATIENT MEDICAL HISTORY (past consultations on Healio) ===',
-        'The following is the patient\'s consultation history. Use this to:',
-        '- Recognize recurring or chronic conditions',
-        '- Avoid re-asking about known conditions/allergies',
-        '- Reference past diagnoses when relevant ("I see you had X last month...")',
-        '- Notice patterns (e.g., recurring headaches, seasonal allergies)',
-        '- Adjust treatment if prior remedies were already prescribed',
-        '',
-        ...entries,
-        '',
-        'Do NOT re-diagnose past conditions unless the patient asks. Use this as background context only.',
-        '=== END OF MEDICAL HISTORY ===',
-    ].join('\n');
-}
+// buildMedicalHistoryContext imported from @/lib/chat/consultationHistory
 
 // ── Extract symptom summary from conversation for RAG ─────────────────────────
 function extractSymptomSummary(messages: { role: string; content: string }[]): string {
@@ -764,7 +715,10 @@ PERSONALISATION RULES FOR FINAL OUTPUT (apply to ALL remedy suggestions):
 `;
 
 
+// LATENCY_WARN, logLatency, alertIfSlow imported from @/lib/chat/latencyMonitor
+
 export async function POST(req: NextRequest) {
+    const requestStart = Date.now();
     // Raised to 55 s — safely inside the 60 s maxDuration boundary
     const timeoutPromise = new Promise<Response>((_, reject) => 
         setTimeout(() => reject(new Error('timeout')), 55_000)
@@ -785,7 +739,9 @@ export async function POST(req: NextRequest) {
             });
         }
         const token = authHeader.slice(7);
+        const t0Auth = Date.now();
         const userId = await verifyToken(token);
+        logLatency('auth', Date.now() - t0Auth);
         if (!userId) {
             return new Response(JSON.stringify({ error: 'Unauthorized — invalid token' }), {
                 status: 401,
@@ -808,6 +764,7 @@ export async function POST(req: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const serviceClient = getSupabaseAdmin() as any; // singleton
 
+        const t0Db = Date.now();
         const [usageResult, personaResult, historyResult, userProfileResult] = await Promise.allSettled([
             // 1. Usage check
             serviceClient.rpc('increment_chat_count', { p_user_id: userId }),
@@ -830,6 +787,8 @@ export async function POST(req: NextRequest) {
             // 4. Full user profile (medical_profile from auth metadata)
             serviceClient.auth.admin.getUserById(userId),
         ]);
+
+        logLatency('dbFetch', Date.now() - t0Db);
 
         // Handle usage gate result
         if (usageResult.status === 'fulfilled') {
@@ -969,7 +928,9 @@ export async function POST(req: NextRequest) {
             if (isSubstantive) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
                 // Skip slow 3072-dim home remedy embedding on non-final turns
+                const t0Rag = Date.now();
                 const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn);
+                logLatency('rag', Date.now() - t0Rag);
                 ragContext = ragResult.context;
                 homeRemediesAvailable = ragResult.homeRemediesAvailable;
                 if (ragContext) {
@@ -1066,11 +1027,13 @@ ${SYSTEM_PROMPT}`
         const retryDelay = AI_PHASE_CONFIG.generation.retryDelayMs;
         const timeoutMs = AI_PHASE_CONFIG.generation.timeoutMs;
 
+        let t0Groq = 0;
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+                t0Groq = Date.now();
                 groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -1100,7 +1063,10 @@ ${SYSTEM_PROMPT}`
 
                 clearTimeout(timeoutId);
 
-                if (groqResponse.ok) break; // Success — exit retry loop
+                if (groqResponse.ok) {
+                    logLatency('groqTTFT', Date.now() - t0Groq);
+                    break; // Success — exit retry loop
+                }
 
                 // If response is not ok but attempt < maxRetries, retry
                 if (attempt < maxRetries) {
@@ -1270,11 +1236,16 @@ ${SYSTEM_PROMPT}`
             },
         });
 
+        const totalMs = Date.now() - requestStart;
+        logLatency('total', totalMs);
+        alertIfSlow(totalMs);
+
         return new Response(stream, {
             headers: {
                 'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
+                'X-Response-Time': String(totalMs),
             },
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -363,6 +363,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
     const [isResumeMode, setIsResumeMode] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
     const resumeProcessedRef = useRef<string | null>(null);
+    const savedConsultationIds = useRef<Set<string>>(new Set());
     const { user } = useAuth();
 
     const resumeId = options?.resumeId || null;
@@ -719,17 +720,15 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 }
 
                 // Check if the AI's response contains the diagnosis markers
-                setMessages((prev) => {
-                    const last = prev[prev.length - 1];
-                    if (
-                        last?.role === "assistant" &&
-                        last.content.includes("```json")
-                    ) {
-                        // Consultation complete — save it
+                // Use fullContent directly (not inside setMessages) to avoid React
+                // calling the callback multiple times in strict mode (duplicate saves).
+                if (fullContent.includes("```json") && !savedConsultationIds.current.has(assistantId)) {
+                    savedConsultationIds.current.add(assistantId);
+                    setMessages((prev) => {
                         saveConsultation(prev);
-                    }
-                    return prev;
-                });
+                        return prev;
+                    });
+                }
             } catch (error) {
                 if ((error as Error).name !== "AbortError") {
                     console.error("Chat error:", error);
