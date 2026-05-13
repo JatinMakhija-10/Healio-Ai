@@ -16,6 +16,33 @@ from email_service import EmailService
 # Load environment variables
 load_dotenv()
 
+# ── Sentry — error monitoring ────────────────────────────────────────────────
+# Initialize BEFORE creating the FastAPI app so the SDK can hook into Starlette.
+# Falls back to a no-op when SENTRY_DSN is unset (e.g. local dev without Sentry).
+SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.starlette import StarletteIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            environment=os.getenv("SENTRY_ENVIRONMENT", os.getenv("NODE_ENV", "development")),
+            release=os.getenv("SENTRY_RELEASE"),
+            # Performance tracing — keep modest in production for cost control.
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+            # PHI/PII safety: never auto-attach request bodies, headers, or user IPs.
+            send_default_pii=False,
+            integrations=[
+                StarletteIntegration(transaction_style="endpoint"),
+                FastApiIntegration(transaction_style="endpoint"),
+            ],
+        )
+    except ImportError:
+        # sentry-sdk not installed — log and continue without monitoring.
+        print("[sentry] sentry-sdk not installed; skipping error monitoring init.")
+
 # Configuration from environment variables with secure defaults
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "100"))
