@@ -11,23 +11,27 @@ describe("Subscription Plans", () => {
         expect(free.id).toBe("free");
         expect(free.price).toBe(0);
         expect(free.currency).toBe("INR");
-        expect(free.features).toContain("5 Monthly Consultations");
+        expect(free.features).toContain("15 consultations/month");
     });
 
-    it("plus plan has correct price and features", () => {
+    it("plus plan has correct price and features (v2 ₹149/mo)", () => {
         const plus = PLANS.plus;
         expect(plus.id).toBe("plus");
-        expect(plus.price).toBe(999);
-        expect(plus.features).toContain("Unlimited AI Consultations");
-        expect(plus.features).toContain("Family Profiles (up to 5)");
-        expect(plus.features).toContain("PDF Health Reports");
+        expect(plus.price).toBe(149);
+        expect(plus.yearlyPrice).toBe(1299);
+        expect(plus.features).toContain("Unlimited AI consultations");
+        expect(plus.features).toContain("Family profiles (3)");
+        expect(plus.features).toContain("PDF medical reports");
     });
 
-    it("pro plan has correct price and features", () => {
+    it("pro plan has correct price and features (v2 ₹399/mo, patient)", () => {
         const pro = PLANS.pro;
         expect(pro.id).toBe("pro");
-        expect(pro.price).toBe(4999);
-        expect(pro.features).toContain("Patient Analytics Dashboard");
+        expect(pro.price).toBe(399);
+        expect(pro.yearlyPrice).toBe(3499);
+        expect(pro.audience).toBe("patient");
+        expect(pro.features).toContain("Everything in Healio Plus");
+        expect(pro.features).toContain("4 video consults/month with doctors");
     });
 
     it("all plan IDs are valid SubscriptionPlan types", () => {

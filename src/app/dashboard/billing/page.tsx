@@ -29,12 +29,18 @@ import {
     CREDIT_PACKS,
     CREDIT_COSTS,
     PLUS_MONTHLY_CREDITS,
+    PRO_MONTHLY_CREDITS,
     FREE_MONTHLY_CONSULTATIONS,
     FREE_DAILY_CONSULTATIONS,
     FREE_COOLDOWN_SECONDS,
     UNLIMITED_USAGE,
+    formatINR,
+    getEffectiveMonthlyPrice,
+    getYearlySavings,
+    getMonthlyCreditGrant,
     type SubscriptionPlan,
     type CreditPack,
+    type BillingCycle,
 } from "@/lib/subscription/plans";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 
@@ -69,6 +75,7 @@ export default function BillingPage() {
     const [history, setHistory] = useState<CreditTx[]>([]);
     const [purchasing, setPurchasing] = useState<string | null>(null);
     const [showUpgrade, setShowUpgrade] = useState(false);
+    const [billingCycle, setBillingCycle] = useState<BillingCycle>("month");
 
     const fetchBilling = useCallback(async () => {
         if (!user) return;
@@ -190,7 +197,7 @@ export default function BillingPage() {
                                 </div>
                                 <p className="text-sm text-slate-500">
                                     {isPaid
-                                        ? `₹${planDetails.price}/${planDetails.interval} · ${PLUS_MONTHLY_CREDITS} credits/month included`
+                                        ? `${formatINR(planDetails.price)}/${planDetails.interval} · ${getMonthlyCreditGrant(plan)} credits/month included`
                                         : `${FREE_MONTHLY_CONSULTATIONS} consultations/month · ${FREE_DAILY_CONSULTATIONS}/day · ${FREE_COOLDOWN_SECONDS}s cooldown`}
                                 </p>
                             </div>
@@ -308,9 +315,13 @@ export default function BillingPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[
                             { label: "AI Consultation", cost: CREDIT_COSTS.consultation, icon: Activity },
-                            { label: "PDF Report", cost: CREDIT_COSTS.pdf_report, icon: FileText },
-                            { label: "Priority Booking", cost: CREDIT_COSTS.priority_booking, icon: TrendingUp },
                             { label: "Wellness Snapshot", cost: CREDIT_COSTS.wellness_snapshot, icon: Heart },
+                            { label: "Family Consult", cost: CREDIT_COSTS.family_consult, icon: Users },
+                            { label: "PDF Medical Report", cost: CREDIT_COSTS.pdf_report, icon: FileText },
+                            { label: "Priority Booking", cost: CREDIT_COSTS.priority_booking, icon: TrendingUp },
+                            { label: "Specialist 2nd Opinion", cost: CREDIT_COSTS.specialist_opinion, icon: Sparkles },
+                            { label: "Lab Report Analysis", cost: CREDIT_COSTS.lab_report_analysis, icon: FileText },
+                            { label: "Video Consult (Doctor)", cost: CREDIT_COSTS.video_consult, icon: Activity },
                         ].map((item) => (
                             <div
                                 key={item.label}
@@ -374,9 +385,9 @@ export default function BillingPage() {
                                     )}
                                 </div>
                                 <div className="text-center mb-3">
-                                    <span className="text-lg font-bold text-slate-900">₹{pack.price}</span>
+                                    <span className="text-lg font-bold text-slate-900">{formatINR(pack.price)}</span>
                                     <span className="text-xs text-slate-400 ml-1">
-                                        (₹{(pack.price / (pack.credits + pack.bonus)).toFixed(1)}/credit)
+                                        (₹{(pack.price / (pack.credits + pack.bonus)).toFixed(2)}/credit)
                                     </span>
                                 </div>
                                 <Button
@@ -403,76 +414,118 @@ export default function BillingPage() {
                 </CardContent>
             </Card>
 
-            {/* ─── Healio Plus Comparison ──────────────────────────── */}
+            {/* ─── Three-Tier Comparison (Free / Plus / Pro) ──────────────── */}
             {!isPaid && (
                 <Card className="border-teal-200">
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Crown className="h-4 w-4 text-teal-600" />
-                            Healio Plus — Unlimited Everything
-                        </CardTitle>
+                        <div className="flex items-center justify-between flex-wrap gap-3">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Crown className="h-4 w-4 text-teal-600" />
+                                Choose Your Plan
+                            </CardTitle>
+                            {/* Monthly / Yearly toggle */}
+                            <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5 text-xs font-semibold">
+                                <button
+                                    onClick={() => setBillingCycle("month")}
+                                    className={`px-3 py-1.5 rounded-full transition-colors ${
+                                        billingCycle === "month" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                                    }`}
+                                >
+                                    Monthly
+                                </button>
+                                <button
+                                    onClick={() => setBillingCycle("year")}
+                                    className={`px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+                                        billingCycle === "year" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                                    }`}
+                                >
+                                    Yearly
+                                    <Badge className="bg-green-100 text-green-700 border-0 text-[9px] px-1.5 py-0">Save 27%</Badge>
+                                </button>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {/* Free tier */}
-                            <div className="rounded-xl border border-slate-200 p-5">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Shield className="h-4 w-4 text-slate-400" />
-                                    <h3 className="font-bold text-sm text-slate-700">
-                                        Healio Basic (Free)
-                                    </h3>
-                                </div>
-                                <ul className="space-y-2.5">
-                                    {PLANS.free.features.map((f, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-sm text-slate-500">
-                                            <Check className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-                                            {f}
-                                        </li>
-                                    ))}
-                                    <li className="flex items-center gap-2 text-sm text-slate-400 line-through">
-                                        <span className="w-3.5" />
-                                        PDF Health Reports
-                                    </li>
-                                    <li className="flex items-center gap-2 text-sm text-slate-400 line-through">
-                                        <span className="w-3.5" />
-                                        Family Profiles
-                                    </li>
-                                </ul>
-                            </div>
-
-                            {/* Plus tier */}
-                            <div className="rounded-xl border-2 border-teal-500 p-5 bg-teal-50/30 relative">
-                                <div className="absolute -top-2.5 left-4 bg-teal-500 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                                    Recommended
-                                </div>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Crown className="h-4 w-4 text-teal-600" />
-                                        <h3 className="font-bold text-sm text-teal-800">
-                                            Healio Plus
-                                        </h3>
+                        <div className="grid md:grid-cols-3 gap-4">
+                            {(["free", "plus", "pro"] as const).map((tierId) => {
+                                const t = PLANS[tierId];
+                                const isFree = tierId === "free";
+                                const isPlus = tierId === "plus";
+                                const monthly = getEffectiveMonthlyPrice(tierId, billingCycle);
+                                const savings = getYearlySavings(tierId);
+                                return (
+                                    <div
+                                        key={tierId}
+                                        className={`relative rounded-xl border-2 p-5 transition-all ${
+                                            isPlus
+                                                ? "border-teal-500 bg-teal-50/30 shadow-md scale-[1.02]"
+                                                : "border-slate-200 bg-white"
+                                        }`}
+                                    >
+                                        {isPlus && (
+                                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                                                Recommended
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 mb-2">
+                                            {isFree ? (
+                                                <Shield className="h-4 w-4 text-slate-400" />
+                                            ) : isPlus ? (
+                                                <Crown className="h-4 w-4 text-teal-600" />
+                                            ) : (
+                                                <Sparkles className="h-4 w-4 text-purple-600" />
+                                            )}
+                                            <h3 className={`font-bold text-sm ${isPlus ? "text-teal-800" : "text-slate-700"}`}>
+                                                {t.name}
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mb-3 min-h-[2.5em]">{t.tagline}</p>
+                                        <div className="mb-4">
+                                            <span className="text-2xl font-bold text-slate-900">
+                                                {isFree ? "Free" : formatINR(monthly)}
+                                            </span>
+                                            {!isFree && (
+                                                <span className="text-xs text-slate-500 ml-1">/mo</span>
+                                            )}
+                                            {!isFree && billingCycle === "year" && (
+                                                <p className="text-[10px] text-green-700 font-semibold mt-0.5">
+                                                    Billed {formatINR(t.yearlyPrice)}/yr · save {formatINR(savings)}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <ul className="space-y-2 mb-5">
+                                            {t.features.map((f, i) => (
+                                                <li key={i} className={`flex items-start gap-2 text-xs ${
+                                                    isPlus ? "text-teal-900" : "text-slate-600"
+                                                }`}>
+                                                    <Check className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${
+                                                        isFree ? "text-slate-300" : isPlus ? "text-teal-600" : "text-purple-600"
+                                                    }`} />
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <Button
+                                            disabled={isFree}
+                                            className={`w-full h-9 text-xs font-semibold ${
+                                                isPlus
+                                                    ? "bg-teal-600 hover:bg-teal-700"
+                                                    : isFree
+                                                        ? "bg-slate-100 text-slate-400"
+                                                        : "bg-purple-600 hover:bg-purple-700"
+                                            }`}
+                                            onClick={() => !isFree && setShowUpgrade(true)}
+                                        >
+                                            {isFree ? "Current Plan" : (
+                                                <>
+                                                    <Sparkles className="h-3 w-3 mr-1" />
+                                                    Upgrade to {t.name.replace("Healio ", "")}
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
-                                    <span className="text-lg font-bold text-teal-800">
-                                        ₹{PLANS.plus.price}
-                                        <span className="text-xs font-normal text-teal-600">/mo</span>
-                                    </span>
-                                </div>
-                                <ul className="space-y-2.5 mb-5">
-                                    {PLANS.plus.features.map((f, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-sm text-teal-900">
-                                            <Check className="h-3.5 w-3.5 text-teal-600 shrink-0" />
-                                            {f}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Button
-                                    className="w-full bg-teal-600 hover:bg-teal-700 gap-2"
-                                    onClick={() => setShowUpgrade(true)}
-                                >
-                                    <Sparkles className="h-4 w-4" />
-                                    Upgrade Now
-                                </Button>
-                            </div>
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>
@@ -484,19 +537,12 @@ export default function BillingPage() {
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Sparkles className="h-4 w-4 text-teal-600" />
-                            Your Plus Features
+                            Your {planDetails.name} Features
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {[
-                                { label: "Unlimited Consultations", icon: Activity, active: true },
-                                { label: "PDF Health Reports", icon: FileText, active: true },
-                                { label: "Family Profiles (5)", icon: Users, active: true },
-                                { label: "Wellness Tracking", icon: Heart, active: true },
-                                { label: "Priority Doctor Access", icon: TrendingUp, active: true },
-                                { label: `${PLUS_MONTHLY_CREDITS} Credits/Month`, icon: Zap, active: true },
-                            ].map((feat) => (
+                            {planDetails.features.map((feat) => ({ label: feat, icon: Check, active: true })).map((feat) => (
                                 <div
                                     key={feat.label}
                                     className="flex items-center gap-3 bg-teal-50 border border-teal-100 rounded-lg px-3 py-3"
