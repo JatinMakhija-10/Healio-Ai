@@ -64,6 +64,7 @@ export interface FlaggedRemedy {
     reason: string;
     interactingWith: string; // Which user med/condition triggered this
     isBlocked: boolean;      // true if contraindicated (removed from safe list)
+    category: RemedyCategory; // Medical system the remedy belongs to (for cross-system alerts)
     dilutionSafe?: boolean;  // true if homeopathic dilution likely renders inert
     timingNote?: string;     // e.g. "Take at least 4 hours apart" — not a contraindication
 }

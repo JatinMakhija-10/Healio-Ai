@@ -186,6 +186,7 @@ export function checkInteractions(input: CheckInteractionsInput): DDICheckResult
                         reason: rule.reason,
                         interactingWith: matchedTrigger,
                         isBlocked: rule.severity === 'contraindicated',
+                        category: remedyCategory,
                         dilutionSafe,
                         timingNote: rule.timingNote,
                     };
@@ -198,8 +199,11 @@ export function checkInteractions(input: CheckInteractionsInput): DDICheckResult
                 blockedRemedies.push(worstMatch);
                 // Build alert message for the banner
                 const displayName = getRemedyName(remedy);
+                const systemLabel = worstMatch.category !== 'allopathic' && worstMatch.category !== 'unknown'
+                    ? ` (${capitalize(worstMatch.category)})`
+                    : '';
                 alertSet.add(
-                    `⛔ ${capitalize(displayName)} is contraindicated with ${worstMatch.interactingWith}: ${worstMatch.reason}`
+                    `⛔ ${capitalize(displayName)}${systemLabel} is contraindicated with ${worstMatch.interactingWith}: ${worstMatch.reason}`
                 );
             } else {
                 // Still pass flagged remedies to safe list — but also add to flaggedRemedies for UI badges
@@ -207,8 +211,11 @@ export function checkInteractions(input: CheckInteractionsInput): DDICheckResult
                 safeRemedies.push(remedy); // flagged but not removed
                 if (worstMatch.severity === 'major') {
                     const displayName = getRemedyName(remedy);
+                    const systemLabel = worstMatch.category !== 'allopathic' && worstMatch.category !== 'unknown'
+                        ? ` (${capitalize(worstMatch.category)})`
+                        : '';
                     alertSet.add(
-                        `⚠️ ${capitalize(displayName)}: ${worstMatch.reason}`
+                        `⚠️ ${capitalize(displayName)}${systemLabel}: ${worstMatch.reason}`
                     );
                 }
             }

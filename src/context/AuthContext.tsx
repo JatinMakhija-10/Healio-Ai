@@ -46,6 +46,7 @@ interface AuthContextType {
     doctorProfile: DoctorProfile | null;
     updateProfile: (updates: Partial<Profile>) => Promise<void>;
     updateDoctorProfile: (updates: Partial<DoctorProfile>) => Promise<void>;
+    updateUserMetadata: (data: Record<string, unknown>) => Promise<void>;
     signup: (email: string, password: string, role?: UserRole) => Promise<void>;
     signInWithMagicLink: (email: string, role?: UserRole) => Promise<{ success: boolean; message: string }>;
     signInWithGoogle: (role?: UserRole) => Promise<void>;
@@ -346,6 +347,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(prev => prev ? { ...prev, ...updates } : null);
     };
 
+    // Update Supabase auth user_metadata and immediately sync local user state
+    const updateUserMetadata = async (data: Record<string, unknown>) => {
+        if (!user) throw new Error('No user logged in');
+        const { data: updated, error } = await supabase.auth.updateUser({ data });
+        if (error) throw error;
+        if (updated.user) setUser(updated.user);
+    };
+
     // Update doctor profile data
     const updateDoctorProfile = async (updates: Partial<DoctorProfile>) => {
         if (!user) throw new Error('No user logged in');
@@ -380,6 +389,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             doctorProfile,
             updateProfile,
             updateDoctorProfile,
+            updateUserMetadata,
             signup,
             signInWithMagicLink,
             signInWithGoogle,

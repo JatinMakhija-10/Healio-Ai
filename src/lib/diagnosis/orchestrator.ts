@@ -60,6 +60,10 @@ export interface BayesianCandidate {
     reasoningTrace: ReasoningTraceEntry[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remedies: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ayurvedicRemedies: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    homeRemedies: any[];
     posteriorRedFlags: string[];
     mcmcDiagnostics?: {
         effectiveSampleSize: number;
@@ -187,6 +191,11 @@ export async function diagnose(
                     matchedKeywords,
                     reasoningTrace,
                     remedies: condition.remedies || [],
+                    ayurvedicRemedies: condition.ayurvedic_remedies || [],
+                    homeRemedies: [
+                        ...(condition.home_remedies || []),
+                        ...(condition.indianHomeRemedies || []),
+                    ],
                     posteriorRedFlags,
                     mcmcDiagnostics,
                 };
@@ -342,8 +351,8 @@ export async function diagnose(
                 userMedications,
                 userConditions,
                 homeopathicRemedies: candidate.remedies || [],
-                ayurvedicRemedies: [],  // enriched later by AI / RAG
-                homeRemedies: [],       // enriched later by AI / RAG
+                ayurvedicRemedies: candidate.ayurvedicRemedies || [],
+                homeRemedies: candidate.homeRemedies || [],
                 userProfile: {
                     pregnant: symptoms.userProfile?.pregnant,
                 },

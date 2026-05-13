@@ -22,14 +22,20 @@ export default function ProfilePage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [latestConsultation, setLatestConsultation] = useState<any>(null);
 
+    // One-time session refresh on mount — ensures metadata is fresh when navigating directly to this page.
+    // Kept in a separate effect with stable deps to avoid a re-render loop:
+    //   refreshSession() → onAuthStateChange (TOKEN_REFRESHED) → setUser() → [user] dep changes → infinite.
+    useEffect(() => {
+        supabase.auth.refreshSession().catch((err) =>
+            console.error("Profile: refresh session failed:", err)
+        );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         if (!user) return;
 
         let cancelled = false;
-        (async () => {
-            const { error } = await supabase.auth.refreshSession();
-            if (error) console.error("Profile: refresh session failed:", error);
-        })();
 
         // 1. Pending onboarding blob (merged in resolveHealthPersona; server medical wins when authoritative)
         const pendingKey = `healio_pending_profile_${user.id}`;
@@ -51,23 +57,19 @@ export default function ProfilePage() {
             let consultations: any[] = [];
 
             // From Supabase
-            if (user) {
-                const { data } = await supabase
-                    .from('consultations')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                if (data && data.length > 0) consultations = data;
-            }
+            const { data } = await supabase
+                .from('consultations')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+            if (data && data.length > 0) consultations = data;
 
             // From LocalStorage (user-specific)
             try {
                 const storageKey = `healio_consultation_history_${user.id}`;
                 const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
                 if (localHistory.length > 0) {
-                    // If we have local history, compare dates.
-                    // Simple check: if local history has a newer item than supabase (or supabase empty)
                     consultations = [...consultations, ...localHistory];
                     consultations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
                 }
@@ -356,19 +358,39 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>Habits</Label>
-                            <div className="flex gap-2 text-sm text-slate-600">
+                            <Label>Habits &amp; Lifestyle</Label>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-600">
                                 <div>Smoking: <span className="font-medium text-slate-900 capitalize">{medical.smoking || "Unknown"}</span></div>
                                 <div>•</div>
                                 <div>Alcohol: <span className="font-medium text-slate-900 capitalize">{medical.alcohol || "Unknown"}</span></div>
+                                {medical.activityLevel && (
+                                    <>
+                                        <div>•</div>
+                                        <div>Activity: <span className="font-medium text-slate-900 capitalize">{medical.activityLevel}</span></div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label>Current Medications</Label>
-                            <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100 text-sm">
-                                {medical.medications || "None listed"}
-                            </div>
+                            {medical.medicationList && medical.medicationList.length > 0 ? (
+                                <div className="flex flex-col gap-1.5">
+                                    {medical.medicationList.map((m, i) => (
+                                        <div key={i} className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm text-slate-800 font-medium">{m.name}</span>
+                                            <Badge variant="outline" className="text-xs capitalize text-slate-500 border-slate-200">{m.type}</Badge>
+                                            {m.duration && (
+                                                <Badge variant="outline" className="text-xs text-teal-600 border-teal-200 bg-teal-50">{m.duration}</Badge>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-2 bg-slate-50 rounded-md text-slate-900 border border-slate-100 text-sm">
+                                    {medical.medications || "None listed"}
+                                </div>
+                            )}
                         </div>
 
                         {(medical.pregnant || medical.isPregnant || medical.kidney_liver_disease || medical.hasKidneyLiverDisease || medical.recent_surgery) && (

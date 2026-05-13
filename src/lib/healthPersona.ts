@@ -11,7 +11,11 @@ export type MedicalProfileRecord = {
     allergies?: string;
     smoking?: string;
     alcohol?: string;
+    activityLevel?: string;
+    /** Flat comma-separated string — written for DDI compat */
     medications?: string;
+    /** Structured list written by persona builder */
+    medicationList?: Array<{ name: string; type: string; duration: string }>;
     pregnant?: boolean;
     isPregnant?: boolean;
     kidney_liver_disease?: boolean;
