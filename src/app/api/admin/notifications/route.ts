@@ -22,6 +22,15 @@ export async function GET(request: NextRequest) {
             .from('profiles').select('role').eq('id', user.id).single();
         if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+        // Service key is required to bypass RLS for cross-user notification visibility
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('[Admin Notifications GET] SUPABASE_SERVICE_ROLE_KEY is not set — cannot read cross-user notifications');
+            return NextResponse.json(
+                { error: 'Server configuration error', message: 'SUPABASE_SERVICE_ROLE_KEY is not configured. Admin notification history requires the service role key to bypass RLS.' },
+                { status: 500 }
+            );
+        }
+
         // Fetch recent admin-sent notifications (grouped by batch)
         const serviceClient = createServiceClient();
         const { data, error } = await serviceClient
@@ -103,9 +112,18 @@ export async function POST(request: NextRequest) {
         // Resolve target user IDs
         let targetUserIds: string[] = [];
 
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
         if (target === 'specific') {
             if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
                 return NextResponse.json({ error: 'userIds required for specific target' }, { status: 400 });
+            }
+            const invalid = userIds.filter((id: unknown) => typeof id !== 'string' || !UUID_RE.test(id));
+            if (invalid.length > 0) {
+                return NextResponse.json(
+                    { error: `Invalid user ID format: ${invalid.slice(0, 3).join(', ')}` },
+                    { status: 400 }
+                );
             }
             targetUserIds = userIds;
         } else {

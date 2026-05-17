@@ -25,19 +25,8 @@
 
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { createClient } from "@supabase/supabase-js";
-import { AI_PHASE_CONFIG } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, getSupabaseAdmin } from "@/lib/ai/config";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
-
-function getSupabaseClient() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-            ""
-    );
-}
 
 interface BoerickeChunk {
     remedy_name: string;
@@ -50,6 +39,16 @@ export async function POST(req: Request) {
         // ── Rate limit: 15 req / 60 s per IP ─────────────────────────────────────
         const limited = rateLimitCheck(req, 'rag', 15, 60_000);
         if (limited) return limited;
+
+        // ── Auth guard — prevent unauthenticated Gemini API usage ────────────────
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const { data: { user }, error: authError } = await getSupabaseAdmin().auth.getUser(authHeader.slice(7));
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized — invalid token' }, { status: 401 });
+        }
 
         const body = await req.json();
         const {
@@ -93,7 +92,8 @@ export async function POST(req: Request) {
         }
 
         // ── Step 2: Query Boericke embeddings for each embedding in parallel ─────
-        const supabase = getSupabaseClient();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const supabase = getSupabaseAdmin() as any;
         const rpcResults = await Promise.allSettled(
             validEmbeddings.map((embedding) =>
                 supabase.rpc("match_boericke_embeddings", {

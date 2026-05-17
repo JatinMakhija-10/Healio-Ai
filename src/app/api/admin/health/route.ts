@@ -26,25 +26,29 @@ async function checkDatabaseHealth(): Promise<'operational' | 'degraded' | 'down
 }
 
 async function checkAIServiceHealth(): Promise<'operational' | 'degraded' | 'down'> {
+    const groqKey = process.env.GROQ_API_KEY;
+    if (!groqKey) return 'down';
     try {
-        // Check if we have recent AI latency metrics
-        // In a real implementation, you'd ping the actual AI service
-        // For now, we'll check the metrics table
-        const hasRecentMetrics = true; // Placeholder
-        return hasRecentMetrics ? 'operational' : 'degraded';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5_000);
+        const res = await fetch('https://api.groq.com/openai/v1/models', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${groqKey}` },
+            signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) return 'operational';
+        if (res.status >= 500) return 'down';
+        return 'degraded';
     } catch {
         return 'down';
     }
 }
 
 async function checkSupabaseHealth(): Promise<'operational' | 'degraded' | 'down'> {
-    try {
-        // Supabase health is implied by database connection
-        // In production, you might check Supabase status page API
-        return 'operational';
-    } catch {
-        return 'down';
-    }
+    // Supabase connectivity is already verified by checkDatabaseHealth above;
+    // a separate ping would be a redundant round-trip.
+    return checkDatabaseHealth();
 }
 
 function aggregateSystemStatus(services: { database: string; aiService: string; supabase: string }): 'operational' | 'degraded' | 'partial_outage' | 'major_outage' {
@@ -79,17 +83,15 @@ export async function GET(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        // Check authentication
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
-            .eq('id', session.user.id)
+            .eq('id', user.id)
             .single();
 
         if (profile?.role !== 'admin') {

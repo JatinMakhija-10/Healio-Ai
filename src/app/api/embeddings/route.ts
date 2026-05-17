@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
+import { getSupabaseAdmin } from '@/lib/ai/config';
 
 export async function POST(req: Request) {
     try {
         // ── Rate limit: 30 req / 60 s per IP ─────────────────────────────────────
         const limited = rateLimitCheck(req, 'embeddings', 30, 60_000);
         if (limited) return limited;
+
+        // ── Auth guard — prevent unauthenticated OpenAI API usage ───────────────
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const { data: { user }, error: authError } = await getSupabaseAdmin().auth.getUser(authHeader.slice(7));
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized — invalid token' }, { status: 401 });
+        }
 
         const { text } = await req.json();
 

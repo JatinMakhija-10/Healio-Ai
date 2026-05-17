@@ -11,11 +11,11 @@ export async function GET(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { data: profile } = await supabase
-            .from('profiles').select('role').eq('id', session.user.id).single();
+            .from('profiles').select('role').eq('id', user.id).single();
         if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         // ── All stat queries in ONE parallel batch — zero sequential round-trips ──
@@ -48,8 +48,9 @@ export async function GET(request: NextRequest) {
             // Active users (profiles updated in last 15 min) — now in the batch
             supabase.from('profiles').select('*', { count: 'exact', head: true })
                 .gte('updated_at', fifteenMin),
-            // Fetch only amount column — no row limit so revenue is accurate
-            supabase.from('transactions').select('amount'),
+            // Safety cap: prevents OOM on large datasets.
+            // TODO: Replace with a server-side SUM RPC for accurate large-scale totals.
+            supabase.from('transactions').select('amount').limit(10_000),
         ]);
 
         const totalRevenue = (revenueData || []).reduce(

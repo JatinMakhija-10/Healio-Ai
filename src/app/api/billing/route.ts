@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { CREDIT_PACKS, getTotalCreditsForPack, CREDIT_COSTS, type CreditAction } from '@/lib/subscription/plans';
-
-function getSupabaseAdmin() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
-    );
-}
+import { CREDIT_PACKS, getTotalCreditsForPack, CREDIT_COSTS, type CreditAction, FREE_MONTHLY_CONSULTATIONS, FREE_DAILY_CONSULTATIONS } from '@/lib/subscription/plans';
+import { getSupabaseAdmin } from '@/lib/ai/config';
 
 async function getUserId(req: NextRequest): Promise<string | null> {
     const authHeader = req.headers.get('authorization');
@@ -47,9 +40,9 @@ export async function GET(req: NextRequest) {
         summary: summary ?? {
             plan: 'free',
             monthly_used: 0,
-            monthly_limit: 5,
+            monthly_limit: FREE_MONTHLY_CONSULTATIONS,
             daily_used: 0,
-            daily_limit: 2,
+            daily_limit: FREE_DAILY_CONSULTATIONS,
             credits_balance: 0,
             resets_at: new Date(Date.now() + 30 * 86400000).toISOString(),
             last_chat_at: null,
@@ -79,6 +72,18 @@ export async function POST(req: NextRequest) {
         const pack = CREDIT_PACKS.find((p) => p.id === body.pack_id);
         if (!pack) {
             return NextResponse.json({ error: 'Invalid pack' }, { status: 400 });
+        }
+
+        // SECURITY: Require a payment_reference (Razorpay order_id / Stripe payment_intent_id).
+        // This prevents any authenticated user from self-granting credits without paying.
+        // TODO: Replace the non-empty check below with cryptographic verification against
+        //       the payment gateway (Razorpay signature HMAC or Stripe PaymentIntent status).
+        const paymentRef = typeof body.payment_reference === 'string' ? body.payment_reference.trim() : '';
+        if (!paymentRef) {
+            return NextResponse.json(
+                { error: 'payment_reference is required. Complete payment before calling this endpoint.' },
+                { status: 400 }
+            );
         }
 
         const totalCredits = getTotalCreditsForPack(pack);

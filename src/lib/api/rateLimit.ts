@@ -1,8 +1,15 @@
 /**
- * Server-Side Rate Limiter — Sliding Window
+ * Server-Side Rate Limiter — Sliding Window (In-Memory)
  *
- * Uses a module-level in-memory Map keyed by `${ip}:${endpoint}`.
- * Persists across warm Vercel lambda invocations (no Redis needed).
+ * ⚠️  IMPORTANT — SERVERLESS LIMITATION:
+ * This in-memory store is scoped to a single lambda instance. Under load, Vercel
+ * spins up multiple concurrent instances that do NOT share this Map. A single IP
+ * can bypass the limit by hitting different instances simultaneously.
+ *
+ * For production distributed rate limiting, install Upstash and set:
+ *   UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+ *   npm install @upstash/ratelimit @upstash/redis
+ * Then replace this module with the @upstash/ratelimit sliding-window adapter.
  *
  * Usage:
  *   const limited = rateLimitCheck(req, 'chat', 20, 60_000);
@@ -11,34 +18,44 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-interface Window {
+interface RateLimitWindow {
     timestamps: number[];
 }
 
-// Module-level store — survives warm restarts
-const store = new Map<string, Window>();
+const store = new Map<string, RateLimitWindow>();
 
-// Evict keys older than 10 minutes to prevent unbounded memory growth
-const MAX_TTL_MS = 10 * 60 * 1000;
-let lastEviction = Date.now();
+const MAX_TTL_MS    = 10 * 60 * 1000; // entries older than 10 min are stale
+const MAX_STORE_SIZE = 10_000;         // hard cap — evict 10% when breached
 
 function evictStale(): void {
     const now = Date.now();
-    if (now - lastEviction < 60_000) return; // evict at most once per minute
-    lastEviction = now;
-    for (const [key, win] of store.entries()) {
-        if (win.timestamps.length === 0 || now - win.timestamps[win.timestamps.length - 1] > MAX_TTL_MS) {
+
+    // Full stale sweep whenever the store grows past half the cap
+    if (store.size > MAX_STORE_SIZE / 2) {
+        for (const [key, win] of store.entries()) {
+            const lastSeen = win.timestamps[win.timestamps.length - 1] ?? 0;
+            if (win.timestamps.length === 0 || now - lastSeen > MAX_TTL_MS) {
+                store.delete(key);
+            }
+        }
+    }
+
+    // Hard cap: if still over limit after stale sweep, evict oldest 10%
+    if (store.size >= MAX_STORE_SIZE) {
+        const toDelete = Math.ceil(MAX_STORE_SIZE * 0.1);
+        let deleted = 0;
+        for (const key of store.keys()) {
+            if (deleted >= toDelete) break;
             store.delete(key);
+            deleted++;
         }
     }
 }
 
 function getIp(req: NextRequest | Request): string {
-    // NextRequest has headers as Headers object
-    const headers = req.headers;
     return (
-        headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-        headers.get('x-real-ip') ||
+        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+        req.headers.get('x-real-ip') ||
         'unknown'
     );
 }
@@ -59,7 +76,7 @@ export function rateLimitCheck(
 ): NextResponse | null {
     evictStale();
 
-    const ip = getIp(req);
+    const ip  = getIp(req);
     const key = `${ip}:${endpoint}`;
     const now = Date.now();
 
@@ -69,10 +86,8 @@ export function rateLimitCheck(
         store.set(key, win);
     }
 
-    // Slide the window — remove timestamps outside the window
     win.timestamps = win.timestamps.filter(ts => now - ts < windowMs);
 
-    const remaining = Math.max(0, max - win.timestamps.length);
     const resetAt = win.timestamps.length > 0
         ? Math.ceil((win.timestamps[0] + windowMs - now) / 1000)
         : 0;
@@ -96,8 +111,6 @@ export function rateLimitCheck(
         );
     }
 
-    // Allow — record this timestamp
     win.timestamps.push(now);
-
-    return null; // allowed
+    return null;
 }

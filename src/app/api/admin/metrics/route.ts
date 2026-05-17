@@ -11,17 +11,18 @@ export async function GET(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { data: profile } = await supabase
-            .from('profiles').select('role').eq('id', session.user.id).single();
+            .from('profiles').select('role').eq('id', user.id).single();
         if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const [
             { count: activeUsers },
             { count: pendingDoctors },
             { count: activeConsultations },
+            { count: flaggedSessions },
         ] = await Promise.all([
             supabase.from('profiles').select('*', { count: 'exact', head: true })
                 .gte('updated_at', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
@@ -29,14 +30,17 @@ export async function GET(request: NextRequest) {
                 .eq('verification_status', 'pending'),
             supabase.from('consultations').select('*', { count: 'exact', head: true })
                 .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
+            supabase.from('flagged_sessions').select('*', { count: 'exact', head: true }),
         ]);
 
         const metrics = {
-            uptime:             { last24h: 99.95, last7d: 99.9, last30d: 99.8 },
-            aiLatency:          { p50: 420, p95: 850, p99: 1200, avg: 490 },
-            pendingDoctors:     pendingDoctors || 0,
-            flaggedSessions:    0,
-            activeUsers:        activeUsers || 0,
+            // uptime and aiLatency require an external monitoring service (e.g. Upstash, Datadog).
+            // They are not computable server-side without a metrics store.
+            uptime:             null,
+            aiLatency:          null,
+            pendingDoctors:     pendingDoctors     || 0,
+            flaggedSessions:    flaggedSessions    || 0,
+            activeUsers:        activeUsers        || 0,
             activeConsultations: activeConsultations || 0,
         };
 

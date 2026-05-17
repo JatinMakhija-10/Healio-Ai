@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
         if (limited) return limited;
 
         const supabase = await createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
             { data: doctorRows },
             { data: roleRows },
         ] = await Promise.all([
-            supabase.from('profiles').select('role').eq('id', session.user.id).single(),
+            supabase.from('profiles').select('role').eq('id', user.id).single(),
             supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
             supabase.from('consultations').select('created_at').gte('created_at', thirtyDaysAgo),
             supabase.from('transactions').select('created_at, amount').gte('created_at', thirtyDaysAgo),

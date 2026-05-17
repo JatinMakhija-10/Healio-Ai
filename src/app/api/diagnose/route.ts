@@ -27,7 +27,6 @@ export const maxDuration = 60;
 
 import { NextResponse } from "next/server";
 import { AI_PHASE_CONFIG, getGeminiClient, getGroqClient, getSupabaseAdmin } from "@/lib/ai/config";
-import { infoGainSelector } from "@/lib/diagnosis/advanced/InformationGainSelector";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 

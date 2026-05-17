@@ -5,13 +5,20 @@ import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 // Cache the database in memory after first load (server-side only)
 let _db: Record<string, Record<string, string[]>> | null = null;
+let _dbLoadError: string | null = null; // sentinel — prevents retrying a failed load on every request
 
-function loadDB() {
+function loadDB(): Record<string, Record<string, string[]>> {
   if (_db) return _db;
-  const dbPath = path.join(process.cwd(), "data", "unified_medicines_database.json");
-  const raw = fs.readFileSync(dbPath, "utf-8");
-  _db = JSON.parse(raw);
-  return _db!;
+  if (_dbLoadError) throw new Error(_dbLoadError);
+  try {
+    const dbPath = path.join(process.cwd(), "data", "unified_medicines_database.json");
+    const raw = fs.readFileSync(dbPath, "utf-8");
+    _db = JSON.parse(raw) as Record<string, Record<string, string[]>>;
+    return _db;
+  } catch (err) {
+    _dbLoadError = err instanceof Error ? err.message : 'Failed to load medicines database';
+    throw new Error(_dbLoadError);
+  }
 }
 
 export async function GET(req: NextRequest) {

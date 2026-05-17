@@ -28,8 +28,19 @@ async function verifyToken(token: string): Promise<string | null> {
 
     AUTH_CACHE.set(token, { userId: user.id, exp: Date.now() + 30_000 });
     if (AUTH_CACHE.size > 500) {
-        const oldest = AUTH_CACHE.keys().next().value;
-        if (oldest) AUTH_CACHE.delete(oldest);
+        const now = Date.now();
+        for (const [k, v] of AUTH_CACHE.entries()) {
+            if (now >= v.exp) AUTH_CACHE.delete(k);
+        }
+        if (AUTH_CACHE.size > 500) {
+            const toDelete = Math.ceil(AUTH_CACHE.size * 0.1);
+            let deleted = 0;
+            for (const k of AUTH_CACHE.keys()) {
+                if (deleted >= toDelete) break;
+                AUTH_CACHE.delete(k);
+                deleted++;
+            }
+        }
     }
     return user.id;
 }
@@ -59,7 +70,7 @@ async function generateEmbedding3072(text: string): Promise<number[] | null> {
     try {
         const ai = getGeminiClient(); // singleton
         const embResp = await Promise.race([
-            ai.models.embedContent({ model: 'gemini-embedding-001', contents: text }),
+            ai.models.embedContent({ model: AI_PHASE_CONFIG.models.homeRemedyEmbedding, contents: text }),
             new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 3_000)),
         ]);
         return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
@@ -750,8 +761,7 @@ export async function POST(req: NextRequest) {
         }
 
         // ── Parse body early so we know personaId before parallel fetches ────
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { messages, personaId, sessionId, resumeContext } = await req.json() || {};
+        const { messages, personaId, resumeContext } = await req.json() || {};
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
