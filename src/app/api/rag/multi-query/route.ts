@@ -24,14 +24,18 @@
  */
 
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-import { AI_PHASE_CONFIG, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getSupabaseAdmin } from "@/lib/ai/config";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 interface BoerickeChunk {
     remedy_name: string;
     chunk_text: string;
     similarity: number;
+}
+
+function isInvalidGeminiKeyError(error: unknown): boolean {
+    const text = error instanceof Error ? error.message : String(error);
+    return /api key not valid|api_key_invalid|invalid api key/i.test(text);
 }
 
 export async function POST(req: Request) {
@@ -61,22 +65,34 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "queries array is required" }, { status: 400 });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
+        const geminiKeys = getGeminiApiKeys();
+        if (geminiKeys.length === 0) {
             console.warn("[RAG Multi-Query] GEMINI_API_KEY not set — returning empty context");
             return NextResponse.json({ combinedContext: "", remediesFound: [], chunkCount: 0 });
         }
 
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
         // ── Step 1: Embed all queries in parallel ────────────────────────────────
+        const embedQuery = async (query: string): Promise<number[]> => {
+            for (const geminiKey of geminiKeys) {
+                try {
+                    const ai = getGeminiClient(geminiKey);
+                    const response = await ai.models.embedContent({
+                        model: AI_PHASE_CONFIG.models.embedding,
+                        contents: query,
+                    });
+                    const values = response.embeddings?.[0]?.values ?? [];
+                    if (values.length > 0) return values;
+                } catch (error) {
+                    if (isInvalidGeminiKeyError(error)) {
+                        disableGeminiApiKey(geminiKey);
+                    }
+                }
+            }
+            return [];
+        };
+
         const embeddingResults = await Promise.allSettled(
-            queries.map(async (query: string) => {
-                const response = await ai.models.embedContent({
-                    model: AI_PHASE_CONFIG.models.embedding,
-                    contents: query,
-                });
-                return response.embeddings?.[0]?.values ?? [];
-            })
+            queries.map((query: string) => embedQuery(query))
         );
 
         const validEmbeddings = embeddingResults

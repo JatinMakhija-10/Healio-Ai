@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
-import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
+import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
 
@@ -45,59 +45,87 @@ async function verifyToken(token: string): Promise<string | null> {
     return user.id;
 }
 
+function providerErrorText(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return String(error);
+    }
+}
+
+function providerErrorStatus(error: unknown): number | null {
+    if (!error || typeof error !== 'object') return null;
+    const candidate = error as { status?: unknown; code?: unknown; error?: { code?: unknown } };
+    const rawStatus = candidate.status ?? candidate.code ?? candidate.error?.code;
+    return typeof rawStatus === 'number' ? rawStatus : null;
+}
+
+function isInvalidGeminiKeyError(error: unknown): boolean {
+    const text = providerErrorText(error);
+    return providerErrorStatus(error) === 400 ||
+        /api key not valid|api_key_invalid|invalid api key/i.test(text);
+}
+
+async function embedContentWithGeminiKeys(
+    model: string,
+    text: string,
+    timeoutMs: number,
+    config?: { outputDimensionality?: number }
+): Promise<number[] | null> {
+    const keys = getGeminiApiKeys();
+    if (!keys.length || !text) return null;
+
+    let lastError: unknown = null;
+    for (const apiKey of keys) {
+        const ai = getGeminiClient(apiKey);
+        try {
+            const request = config
+                ? { model, contents: text, config }
+                : { model, contents: text };
+            const embResp = await Promise.race([
+                ai.models.embedContent(request),
+                new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`${model}-timeout`)), timeoutMs)),
+            ]);
+            const values = (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>)
+                .embeddings?.[0]?.values;
+            if (values?.length) return values;
+        } catch (error) {
+            lastError = error;
+            if (isInvalidGeminiKeyError(error)) {
+                disableGeminiApiKey(apiKey);
+            }
+        }
+    }
+
+    if (lastError) {
+        console.warn(`[Gemini] ${model} embedding failed for all configured keys: ${providerErrorText(lastError).slice(0, 180)}`);
+    }
+    return null;
+}
+
 // ── Generate embedding via Gemini (3072-dim) — used for Boericke ──
 // Model: gemini-embedding-2-preview outputs 3072-dim vectors
 // Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
 async function generateEmbedding(text: string): Promise<number[] | null> {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || !text) return null;
-    try {
-        const ai = getGeminiClient(); // singleton
-        const embResp = await Promise.race([
-            ai.models.embedContent({ model: AI_PHASE_CONFIG.models.embedding, contents: text }),
-            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 8_000)),
-        ]);
-        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
-    } catch {
-        return null;
-    }
+    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.embedding, text, 8_000);
 }
 
 // ── Generate 768-dim embedding — used for Ayurvedic (re-ingested with output_dimensionality=768) ─
 async function generateEmbedding768(text: string): Promise<number[] | null> {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || !text) return null;
-    try {
-        const ai = getGeminiClient();
-        const embResp = await Promise.race([
-            ai.models.embedContent({
-                model: AI_PHASE_CONFIG.models.embedding,
-                contents: text,
-                config: { outputDimensionality: 768 },
-            }),
-            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
-        ]);
-        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
-    } catch {
-        return null;
-    }
+    return embedContentWithGeminiKeys(
+        AI_PHASE_CONFIG.models.embedding,
+        text,
+        8_000,
+        { outputDimensionality: 768 }
+    );
 }
 
 // ── Generate embedding via Gemini (3072-dim) — used for home_remedy_embeddings ─
 // home_remedy_embeddings was ingested with gemini-embedding-001 which produces 3072-dim vectors
 async function generateEmbedding3072(text: string): Promise<number[] | null> {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || !text) return null;
-    try {
-        const ai = getGeminiClient(); // singleton
-        const embResp = await Promise.race([
-            ai.models.embedContent({ model: AI_PHASE_CONFIG.models.homeRemedyEmbedding, contents: text }),
-            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 3_000)),
-        ]);
-        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
-    } catch {
-        return null;
-    }
+    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.homeRemedyEmbedding, text, 3_000);
 }
 
 // ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
@@ -1136,14 +1164,15 @@ ${SYSTEM_PROMPT}`
 
         // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
-        const maxRetries = AI_PHASE_CONFIG.generation.maxRetries;
         const retryDelay = AI_PHASE_CONFIG.generation.retryDelayMs;
         const timeoutMs = AI_PHASE_CONFIG.generation.timeoutMs;
+        const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
+        const groqStartIndex = Date.now() % groqKeyPool.length;
 
         let t0Groq = 0;
-        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        for (let attempt = 0; attempt < maxGroqAttempts; attempt++) {
             // Rotate key on each attempt so a rate-limited key is not retried
-            const groqKey = groqKeyPool[(Date.now() + attempt) % groqKeyPool.length];
+            const groqKey = groqKeyPool[(groqStartIndex + attempt) % groqKeyPool.length];
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -1189,8 +1218,8 @@ ${SYSTEM_PROMPT}`
                 const errBody = await groqResponse.text().catch(() => '');
                 console.error(`[Groq] attempt ${attempt + 1} failed — status=${groqResponse.status} key=...${groqKey.slice(-6)} body=${errBody.slice(0, 300)}`);
 
-                // If response is not ok but attempt < maxRetries, retry with next key
-                if (attempt < maxRetries) {
+                // If response is not ok but another attempt remains, retry with next key
+                if (attempt < maxGroqAttempts - 1) {
                     const delay = groqResponse.status === 429 ? retryDelay * Math.pow(2, attempt) : retryDelay;
                     groqResponse = null;
                     await new Promise(r => setTimeout(r, delay));
@@ -1198,7 +1227,7 @@ ${SYSTEM_PROMPT}`
             } catch (groqError) {
                 console.error(`Groq attempt ${attempt + 1} error:`, groqError);
                 groqResponse = null;
-                if (attempt < maxRetries) {
+                if (attempt < maxGroqAttempts - 1) {
                     await new Promise(r => setTimeout(r, retryDelay));
                 }
                 // Will fall through to Gemini fallback after all retries
@@ -1207,13 +1236,8 @@ ${SYSTEM_PROMPT}`
 
         if (!groqResponse || !groqResponse.ok) {
             // Fallback to Gemini — use GEMINI_API_KEYS pool if available, else single key
-            const geminiPool: string[] = process.env.GEMINI_API_KEYS
-                ? process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
-                : [];
-            const geminiKey = geminiPool.length > 0
-                ? geminiPool[Date.now() % geminiPool.length]
-                : process.env.GEMINI_API_KEY;
-            if (!geminiKey) {
+            const geminiKeys = getGeminiApiKeys();
+            if (geminiKeys.length === 0) {
                 console.error('[Groq+Gemini] Both failed — no GEMINI_API_KEY set');
                 const sse = [`data: ${JSON.stringify({ content: "I'm having trouble reaching the AI service. Please try again in a moment. 🙏" })}
 
@@ -1228,31 +1252,120 @@ ${SYSTEM_PROMPT}`
                 parts: [{ text: m.content }],
             }));
 
-            const geminiController = new AbortController();
-            const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
+            const geminiModels = [
+                AI_PHASE_CONFIG.models.gemini,
+                AI_PHASE_CONFIG.models.geminiLite,
+            ];
+            let geminiText = '';
+            let geminiSucceeded = false;
+            let geminiModelUsed = '';
+            let lastGeminiError = '';
 
-            const geminiResponse = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/${AI_PHASE_CONFIG.models.gemini}:generateContent?key=${geminiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        systemInstruction: { parts: [{ text: finalSystemPrompt }] },
-                        contents: geminiMessages,
-                        generationConfig: {
-                            temperature: AI_PHASE_CONFIG.generation.temperature,
-                            maxOutputTokens: AI_PHASE_CONFIG.generation.maxTokens,
-                        },
-                    }),
-                    signal: geminiController.signal,
+            for (const model of geminiModels) {
+                for (const geminiKey of geminiKeys) {
+                    const geminiController = new AbortController();
+                    const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
+
+                    try {
+                        const geminiResponse = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    systemInstruction: { parts: [{ text: finalSystemPrompt }] },
+                                    contents: geminiMessages,
+                                    generationConfig: {
+                                        temperature: AI_PHASE_CONFIG.generation.temperature,
+                                        maxOutputTokens: AI_PHASE_CONFIG.generation.maxTokens,
+                                    },
+                                }),
+                                signal: geminiController.signal,
+                            }
+                        );
+
+                        if (geminiResponse.ok) {
+                            const geminiData = await geminiResponse.json();
+                            geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            geminiSucceeded = true;
+                            geminiModelUsed = model;
+                            break;
+                        }
+
+                        const errorText = await geminiResponse.text();
+                        lastGeminiError = `${geminiResponse.status} ${errorText.slice(0, 300)}`;
+                        console.error(`[Gemini] ${model} failed status=${geminiResponse.status} body=${errorText.slice(0, 300)}`);
+                        if (geminiResponse.status === 400 && /api key not valid|api_key_invalid|invalid api key/i.test(errorText)) {
+                            disableGeminiApiKey(geminiKey);
+                        }
+                    } catch (error) {
+                        lastGeminiError = providerErrorText(error).slice(0, 300);
+                        console.error(`[Gemini] ${model} request failed: ${lastGeminiError}`);
+                        if (isInvalidGeminiKeyError(error)) {
+                            disableGeminiApiKey(geminiKey);
+                        }
+                    } finally {
+                        clearTimeout(geminiTimeoutId);
+                    }
                 }
-            );
 
-            clearTimeout(geminiTimeoutId);
+                if (geminiSucceeded) break;
+            }
 
-            if (!geminiResponse.ok) {
-                const errorText = await geminiResponse.text();
-                console.error('Gemini also failed:', geminiResponse.status, errorText);
+            if (!geminiSucceeded) {
+                console.error('Gemini also failed:', lastGeminiError);
+                for (const groqKey of groqKeyPool) {
+                    const rescueController = new AbortController();
+                    const rescueTimeout = setTimeout(() => rescueController.abort(), timeoutMs);
+
+                    try {
+                        const rescueResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${groqKey}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                model: AI_PHASE_CONFIG.models.groqFast,
+                                messages: [
+                                    { role: 'system', content: SYSTEM_PROMPT },
+                                    ...processedMessages.slice(-6),
+                                ],
+                                temperature: AI_PHASE_CONFIG.generation.temperature,
+                                max_tokens: Math.min(maxTokensForTurn, 500),
+                                stream: false,
+                            }),
+                            signal: rescueController.signal,
+                        });
+
+                        if (rescueResponse.ok) {
+                            const rescueData = await rescueResponse.json();
+                            const rescueText = rescueData.choices?.[0]?.message?.content || '';
+                            if (rescueText) {
+                                const rescueSSE = [
+                                    `data: ${JSON.stringify({ content: rescueText })}\n\n`,
+                                    `data: [DONE]\n\n`,
+                                ].join('');
+                                return new Response(rescueSSE, {
+                                    headers: {
+                                        'Content-Type': 'text/event-stream',
+                                        'Cache-Control': 'no-cache',
+                                        'X-Provider': 'groq-rescue',
+                                        'X-Model': AI_PHASE_CONFIG.models.groqFast,
+                                    },
+                                });
+                            }
+                        } else {
+                            const rescueError = await rescueResponse.text().catch(() => '');
+                            console.error(`[Groq rescue] failed status=${rescueResponse.status} body=${rescueError.slice(0, 300)}`);
+                        }
+                    } catch (error) {
+                        console.error(`[Groq rescue] request failed: ${providerErrorText(error).slice(0, 300)}`);
+                    } finally {
+                        clearTimeout(rescueTimeout);
+                    }
+                }
+
                 // Stream a friendly message instead of returning 503 (which triggers the error banner)
                 const fallbackSSE = [
                     `data: ${JSON.stringify({ content: "I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏" })}
@@ -1265,13 +1378,10 @@ ${SYSTEM_PROMPT}`
                 });
             }
 
-            const geminiData = await geminiResponse.json();
-            const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
             // Normalize Gemini response into SSE format to match Groq stream shape
             // so the frontend useChat hook can parse it identically (Failure Mode 3 fix)
             const geminiSSE = [
-                `data: ${JSON.stringify({ content: text })}\n\n`,
+                `data: ${JSON.stringify({ content: geminiText })}\n\n`,
                 `data: [DONE]\n\n`,
             ].join('');
 
@@ -1280,6 +1390,7 @@ ${SYSTEM_PROMPT}`
                     'Content-Type': 'text/event-stream',
                     'Cache-Control': 'no-cache',
                     'X-Provider': 'gemini',
+                    'X-Model': geminiModelUsed,
                 },
             });
         }

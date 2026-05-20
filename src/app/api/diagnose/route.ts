@@ -26,7 +26,7 @@ export const maxDuration = 60;
  */
 
 import { NextResponse } from "next/server";
-import { AI_PHASE_CONFIG, getGeminiClient, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
 import OpenAI from 'openai';
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
@@ -98,6 +98,20 @@ interface HomeRemedyChunk {
     similarity: number;
 }
 
+function providerErrorText(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return String(error);
+    }
+}
+
+function isInvalidGeminiKeyBody(text: string): boolean {
+    return /api key not valid|api_key_invalid|invalid api key/i.test(text);
+}
+
 // ─── RAG Helper ───────────────────────────────────────────────────────────────
 
 /**
@@ -108,7 +122,7 @@ async function fetchMultiQueryRAG(
     symptomText: string,
     primaryDiagnosis: PrimaryDiagnosis
 ): Promise<{ context: string; remediesFound: string[] }> {
-    if (!process.env.GEMINI_API_KEY) {
+    if (getGeminiApiKeys().length === 0) {
         return { context: "", remediesFound: [] };
     }
 
@@ -569,43 +583,77 @@ Based on all of the above, generate the formatting JSON.`;
             provider = AI_PHASE_CONFIG.fallback;
 
             // Fallback: Gemini 2.5 Flash — use GEMINI_API_KEYS pool; hard 45 s timeout
-            const geminiPool: string[] = process.env.GEMINI_API_KEYS
-                ? process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
-                : [];
-            const geminiKey = geminiPool.length > 0
-                ? geminiPool[Date.now() % geminiPool.length]
-                : process.env.GEMINI_API_KEY;
-            if (!geminiKey) throw new Error("Missing GEMINI_API_KEY");
+            const geminiKeys = getGeminiApiKeys();
+            if (geminiKeys.length === 0) throw new Error("Missing GEMINI_API_KEY");
 
-            const genai = new (await import('@google/genai').then(m => m.GoogleGenAI))({ apiKey: geminiKey });
-            const geminiAbort = new AbortController();
-            const geminiTimeout = setTimeout(() => geminiAbort.abort(), 45_000);
+            const geminiModels = [
+                AI_PHASE_CONFIG.models.gemini,
+                AI_PHASE_CONFIG.models.geminiLite,
+            ];
+            let geminiSucceeded = false;
+            let lastGeminiError = "";
 
-            try {
-                const response = await genai.models.generateContent({
-                    model: AI_PHASE_CONFIG.models.gemini,
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [
-                                {
-                                    text:
-                                        "System Instructions:\n" +
-                                        SYSTEM_PROMPT +
-                                        "\n\n" +
-                                        userPrompt,
-                                },
-                            ],
-                        },
-                    ],
-                    config: {
-                        temperature: dynamicTemperature,
-                        responseMimeType: "application/json",
-                    },
-                });
-                aiResponseContent = response.text || "{}";
-            } finally {
-                clearTimeout(geminiTimeout);
+            for (const model of geminiModels) {
+                for (const geminiKey of geminiKeys) {
+                    const geminiAbort = new AbortController();
+                    const geminiTimeout = setTimeout(() => geminiAbort.abort(), 45_000);
+
+                    try {
+                        const response = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    contents: [
+                                        {
+                                            role: "user",
+                                            parts: [
+                                                {
+                                                    text:
+                                                        "System Instructions:\n" +
+                                                        SYSTEM_PROMPT +
+                                                        "\n\n" +
+                                                        userPrompt,
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    generationConfig: {
+                                        temperature: dynamicTemperature,
+                                        responseMimeType: "application/json",
+                                    },
+                                }),
+                                signal: geminiAbort.signal,
+                            }
+                        );
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            aiResponseContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+                            geminiSucceeded = true;
+                            break;
+                        }
+
+                        const errorText = await response.text();
+                        lastGeminiError = `${response.status} ${errorText.slice(0, 300)}`;
+                        console.warn(`[Diagnose] Gemini ${model} failed: ${lastGeminiError}`);
+                        if (response.status === 400 && isInvalidGeminiKeyBody(errorText)) {
+                            disableGeminiApiKey(geminiKey);
+                        }
+                    } catch (error) {
+                        lastGeminiError = providerErrorText(error).slice(0, 300);
+                        console.warn(`[Diagnose] Gemini ${model} request failed: ${lastGeminiError}`);
+                    } finally {
+                        clearTimeout(geminiTimeout);
+                    }
+                }
+
+                if (geminiSucceeded) break;
+            }
+
+            if (!geminiSucceeded) {
+                throw new Error(`Gemini fallback failed: ${lastGeminiError || "no response"}`);
             }
         } finally {
             clearTimeout(groqTimeout);

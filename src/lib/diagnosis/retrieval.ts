@@ -1,7 +1,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { UserSymptomData, DatabaseCondition, Condition } from "./types";
-import { getGeminiClient } from "@/lib/ai/config";
+import { disableGeminiApiKey, getGeminiApiKeys, getGeminiClient } from "@/lib/ai/config";
 import { AI_PHASE_CONFIG } from "@/lib/ai/config";
 
 // Fallback / Cache
@@ -14,17 +14,29 @@ import { CONDITIONS } from "./conditions";
  */
 async function getEmbedding(text: string): Promise<number[]> {
     if (!text) return [];
-    try {
-        const ai = getGeminiClient();
-        const res = await ai.models.embedContent({
-            model: AI_PHASE_CONFIG.models.embedding,
-            contents: text,
-        });
-        return res.embeddings?.[0]?.values ?? [];
-    } catch (e) {
-        console.error("[retrieval] Embedding generation failed:", e);
-        return [];
+    const keys = getGeminiApiKeys();
+    let lastError: unknown = null;
+
+    for (const apiKey of keys) {
+        try {
+            const ai = getGeminiClient(apiKey);
+            const res = await ai.models.embedContent({
+                model: AI_PHASE_CONFIG.models.embedding,
+                contents: text,
+            });
+            const values = res.embeddings?.[0]?.values ?? [];
+            if (values.length > 0) return values;
+        } catch (e) {
+            lastError = e;
+            const message = e instanceof Error ? e.message : String(e);
+            if (/api key not valid|api_key_invalid|invalid api key/i.test(message)) {
+                disableGeminiApiKey(apiKey);
+            }
+        }
     }
+
+    console.error("[retrieval] Embedding generation failed:", lastError);
+    return [];
 }
 
 /**
@@ -239,4 +251,3 @@ function mapDbToEngine(db: DatabaseCondition): Condition {
         seekHelp:           db.seek_help || "Consult a doctor.",
     };
 }
-

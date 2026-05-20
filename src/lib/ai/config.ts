@@ -14,6 +14,7 @@ export const AI_PHASE_CONFIG = {
         groq: 'llama-3.3-70b-versatile',          // used ONLY for final diagnosis JSON
         groqFast: 'llama-3.1-8b-instant',           // used for conversational Q&A turns
         gemini: 'gemini-2.5-flash',
+        geminiLite: 'gemini-2.5-flash-lite',
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
         homeRemedyEmbedding: 'gemini-embedding-001', // 3072-dim — matches home_remedy_embeddings ingestion
     },
@@ -68,14 +69,35 @@ export const AI_PHASE_CONFIG = {
 // This eliminates ~100–200 ms of SDK constructor + TLS overhead on every call.
 
 let _groqClient: OpenAI | null = null;
+const _geminiClients = new Map<string, GoogleGenAI>();
+const _disabledGeminiKeys = new Set<string>();
+
+function parseApiKeys(...values: Array<string | undefined>): string[] {
+    const seen = new Set<string>();
+    const keys: string[] = [];
+
+    for (const value of values) {
+        if (!value) continue;
+        for (const rawKey of value.split(',')) {
+            const key = rawKey.trim().replace(/^['"]|['"]$/g, '');
+            if (!key || seen.has(key)) continue;
+            seen.add(key);
+            keys.push(key);
+        }
+    }
+
+    return keys;
+}
+
+export function getGroqApiKeys(): string[] {
+    return parseApiKeys(process.env.GROQ_API_KEYS, process.env.GROQ_API_KEY);
+}
 
 /** Returns the best available Groq API key (prefers GROQ_API_KEYS pool, falls back to GROQ_API_KEY). */
 export function getGroqApiKey(): string {
-    const pool = process.env.GROQ_API_KEYS
-        ? process.env.GROQ_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
-        : [];
+    const pool = getGroqApiKeys();
     if (pool.length > 0) return pool[Date.now() % pool.length];
-    return process.env.GROQ_API_KEY ?? '';
+    return '';
 }
 
 /** Returns a module-level singleton Groq client (OpenAI-compatible). */
@@ -89,13 +111,30 @@ export function getGroqClient(): OpenAI {
     return _groqClient;
 }
 
-let _geminiClient: GoogleGenAI | null = null;
+export function disableGeminiApiKey(apiKey: string): void {
+    if (apiKey) _disabledGeminiKeys.add(apiKey);
+}
+
+export function getGeminiApiKeys(options: { includeDisabled?: boolean } = {}): string[] {
+    const keys = parseApiKeys(process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEYS);
+    return options.includeDisabled ? keys : keys.filter(key => !_disabledGeminiKeys.has(key));
+}
+
+export function getGeminiApiKey(): string {
+    const pool = getGeminiApiKeys();
+    if (pool.length > 0) return pool[0];
+    return '';
+}
+
 /** Returns a module-level singleton Google GenAI client. */
-export function getGeminiClient(): GoogleGenAI {
-    if (!_geminiClient) {
-        _geminiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY ?? '' });
+export function getGeminiClient(apiKey = getGeminiApiKey()): GoogleGenAI {
+    const cacheKey = apiKey || '__missing_api_key__';
+    let client = _geminiClients.get(cacheKey);
+    if (!client) {
+        client = new GoogleGenAI({ apiKey });
+        _geminiClients.set(cacheKey, client);
     }
-    return _geminiClient;
+    return client;
 }
 
 let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
