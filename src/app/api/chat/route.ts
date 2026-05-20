@@ -1234,9 +1234,15 @@ ${SYSTEM_PROMPT}`
             if (!geminiResponse.ok) {
                 const errorText = await geminiResponse.text();
                 console.error('Gemini also failed:', geminiResponse.status, errorText);
-                return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
-                    status: 503,
-                    headers: { 'Content-Type': 'application/json' },
+                // Stream a friendly message instead of returning 503 (which triggers the error banner)
+                const fallbackSSE = [
+                    `data: ${JSON.stringify({ content: "I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏" })}
+
+`,
+                    `data: [DONE]\n\n`,
+                ].join('');
+                return new Response(fallbackSSE, {
+                    headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
                 });
             }
 
@@ -1360,9 +1366,14 @@ ${SYSTEM_PROMPT}`
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (innerError: any) {
             console.error('[chat/route] Inner error:', innerError);
-            return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
+            const errSSE = [
+                `data: ${JSON.stringify({ content: "Something went wrong on my end. Please try again in a moment. 🙏" })}
+
+`,
+                `data: [DONE]\n\n`,
+            ].join('');
+            return new Response(errSSE, {
+                headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
             });
         }
     };
@@ -1371,16 +1382,15 @@ ${SYSTEM_PROMPT}`
         return await Promise.race([processRequest(), timeoutPromise]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        if (error.message === 'timeout') {
-            return new Response(JSON.stringify({ error: 'Request timed out. Please try again.' }), {
-                status: 504,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-        console.error('[chat/route] Unhandled error:', error);
-        return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
+        const msg = error.message === 'timeout'
+            ? "This is taking longer than usual. Please try again. 🙏"
+            : "Something went wrong on my end. Please try again in a moment. 🙏";
+        console.error('[chat/route] Unhandled error:', error.message);
+        const sse = [`data: ${JSON.stringify({ content: msg })}
+
+`, `data: [DONE]\n\n`].join('');
+        return new Response(sse, {
+            headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
         });
     }
 }
