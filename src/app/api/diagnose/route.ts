@@ -26,7 +26,8 @@ export const maxDuration = 60;
  */
 
 import { NextResponse } from "next/server";
-import { AI_PHASE_CONFIG, getGeminiClient, getGroqClient, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, getGeminiClient, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
+import OpenAI from 'openai';
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 
@@ -543,9 +544,11 @@ Based on all of the above, generate the formatting JSON.`;
         const groqTimeout = setTimeout(() => groqAbort.abort(), 45_000);
 
         try {
-            if (!process.env.GROQ_API_KEY) throw new Error("Missing GROQ_API_KEY");
+            const activeGroqKey = getGroqApiKey();
+            if (!activeGroqKey) throw new Error("Missing GROQ_API_KEY");
 
-            const groq = getGroqClient(); // singleton — reuses existing connection
+            // Create per-request client so key rotation applies on every call
+            const groq = new OpenAI({ baseURL: AI_PHASE_CONFIG.endpoints.groq, apiKey: activeGroqKey });
 
             const completion = await groq.chat.completions.create(
                 {

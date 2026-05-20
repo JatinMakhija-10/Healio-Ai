@@ -68,12 +68,22 @@ export const AI_PHASE_CONFIG = {
 // This eliminates ~100–200 ms of SDK constructor + TLS overhead on every call.
 
 let _groqClient: OpenAI | null = null;
+
+/** Returns the best available Groq API key (prefers GROQ_API_KEYS pool, falls back to GROQ_API_KEY). */
+export function getGroqApiKey(): string {
+    const pool = process.env.GROQ_API_KEYS
+        ? process.env.GROQ_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+        : [];
+    if (pool.length > 0) return pool[Date.now() % pool.length];
+    return process.env.GROQ_API_KEY ?? '';
+}
+
 /** Returns a module-level singleton Groq client (OpenAI-compatible). */
 export function getGroqClient(): OpenAI {
     if (!_groqClient) {
         _groqClient = new OpenAI({
             baseURL: AI_PHASE_CONFIG.endpoints.groq,
-            apiKey: process.env.GROQ_API_KEY ?? '',
+            apiKey: getGroqApiKey(),
         });
     }
     return _groqClient;

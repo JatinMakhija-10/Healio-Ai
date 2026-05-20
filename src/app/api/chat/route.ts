@@ -45,7 +45,7 @@ async function verifyToken(token: string): Promise<string | null> {
     return user.id;
 }
 
-// ── Generate embedding via Gemini (3072-dim) — used for Boericke & Ayurvedic ──
+// ── Generate embedding via Gemini (3072-dim) — used for Boericke ──
 // Model: gemini-embedding-2-preview outputs 3072-dim vectors
 // Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
 async function generateEmbedding(text: string): Promise<number[] | null> {
@@ -55,7 +55,7 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
         const ai = getGeminiClient(); // singleton
         const embResp = await Promise.race([
             ai.models.embedContent({ model: AI_PHASE_CONFIG.models.embedding, contents: text }),
-            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
+            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-3072-timeout')), 8_000)),
         ]);
         return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
     } catch {
