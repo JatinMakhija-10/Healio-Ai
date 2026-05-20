@@ -963,13 +963,22 @@ export async function POST(req: NextRequest) {
         // strict User↔Assistant alternation to prevent API 400 rejections (Bug 2 fix)
         const processedMessages = buildSafeWindow(messages, dynamicMaxMessages);
 
-        const groqKey = process.env.GROQ_API_KEY;
-        if (!groqKey) {
-            return new Response(JSON.stringify({ error: 'Missing GROQ_API_KEY' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            });
+        // ── Groq key pool (supports GROQ_API_KEYS comma-separated OR single GROQ_API_KEY)
+        const groqKeyPool: string[] = (
+            process.env.GROQ_API_KEYS
+                ? process.env.GROQ_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+                : process.env.GROQ_API_KEY
+                    ? [process.env.GROQ_API_KEY]
+                    : []
+        );
+        if (groqKeyPool.length === 0) {
+            const noKeySSE = [`data: ${JSON.stringify({ content: 'AI service is not configured. Please contact support.' })}
+
+`, `data: [DONE]\n\n`].join('');
+            return new Response(noKeySSE, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
         }
+        // Round-robin pick — rotate on each request using request timestamp
+        const groqKey = groqKeyPool[Date.now() % groqKeyPool.length];
 
         // ── Turn phase detection ─────────────────────────────────────────────
         // PHASE A (turns 1-2): Pure Q&A — no RAG, 8B model, 200 token cap  → ~100-300ms
@@ -1175,10 +1184,13 @@ ${SYSTEM_PROMPT}`
                     break; // Success — exit retry loop
                 }
 
-                // If response is not ok but attempt < maxRetries, retry
+                // Log the actual error body for debugging
+                const errBody = await groqResponse.text().catch(() => '');
+                console.error(`[Groq] attempt ${attempt + 1} failed — status=${groqResponse.status} key=...${groqKey.slice(-6)} body=${errBody.slice(0, 300)}`);
+
+                // If response is not ok but attempt < maxRetries, retry with next key
                 if (attempt < maxRetries) {
                     const delay = groqResponse.status === 429 ? retryDelay * Math.pow(2, attempt) : retryDelay;
-                    console.warn(`Groq attempt ${attempt + 1} failed (${groqResponse.status}), retrying in ${delay}ms...`);
                     groqResponse = null;
                     await new Promise(r => setTimeout(r, delay));
                 }
@@ -1196,13 +1208,14 @@ ${SYSTEM_PROMPT}`
             // Fallback to Gemini
             const geminiKey = process.env.GEMINI_API_KEY;
             if (!geminiKey) {
-                return new Response(JSON.stringify({ error: 'Both Groq and Gemini failed' }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' },
-                });
+                console.error('[Groq+Gemini] Both failed — no GEMINI_API_KEY set');
+                const sse = [`data: ${JSON.stringify({ content: "I'm having trouble reaching the AI service. Please try again in a moment. 🙏" })}
+
+`, `data: [DONE]\n\n`].join('');
+                return new Response(sse, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
             }
 
-            console.log('Falling back to Gemini...');
+            console.log('[Groq] Failed — falling back to Gemini...');
 
             const geminiMessages = processedMessages.map((m: { role: string; content: string }) => ({
                 role: m.role === 'assistant' ? 'model' : 'user',
