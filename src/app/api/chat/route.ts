@@ -977,8 +977,7 @@ export async function POST(req: NextRequest) {
 `, `data: [DONE]\n\n`].join('');
             return new Response(noKeySSE, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
         }
-        // Round-robin pick — rotate on each request using request timestamp
-        const groqKey = groqKeyPool[Date.now() % groqKeyPool.length];
+        // Key selected per-attempt inside the retry loop (see below)
 
         // ── Turn phase detection ─────────────────────────────────────────────
         // PHASE A (turns 1-2): Pure Q&A — no RAG, 8B model, 200 token cap  → ~100-300ms
@@ -1143,6 +1142,8 @@ ${SYSTEM_PROMPT}`
 
         let t0Groq = 0;
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            // Rotate key on each attempt so a rate-limited key is not retried
+            const groqKey = groqKeyPool[(Date.now() + attempt) % groqKeyPool.length];
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -1205,8 +1206,13 @@ ${SYSTEM_PROMPT}`
         }
 
         if (!groqResponse || !groqResponse.ok) {
-            // Fallback to Gemini
-            const geminiKey = process.env.GEMINI_API_KEY;
+            // Fallback to Gemini — use GEMINI_API_KEYS pool if available, else single key
+            const geminiPool: string[] = process.env.GEMINI_API_KEYS
+                ? process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+                : [];
+            const geminiKey = geminiPool.length > 0
+                ? geminiPool[Date.now() % geminiPool.length]
+                : process.env.GEMINI_API_KEY;
             if (!geminiKey) {
                 console.error('[Groq+Gemini] Both failed — no GEMINI_API_KEY set');
                 const sse = [`data: ${JSON.stringify({ content: "I'm having trouble reaching the AI service. Please try again in a moment. 🙏" })}

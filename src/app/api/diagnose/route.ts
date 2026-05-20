@@ -568,10 +568,16 @@ Based on all of the above, generate the formatting JSON.`;
             console.warn("[Diagnose] Groq failed, falling back to Gemini:", groqError);
             provider = AI_PHASE_CONFIG.fallback;
 
-            // Fallback: Gemini 2.5 Flash — hard 45 s timeout
-            if (!process.env.GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY");
+            // Fallback: Gemini 2.5 Flash — use GEMINI_API_KEYS pool; hard 45 s timeout
+            const geminiPool: string[] = process.env.GEMINI_API_KEYS
+                ? process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+                : [];
+            const geminiKey = geminiPool.length > 0
+                ? geminiPool[Date.now() % geminiPool.length]
+                : process.env.GEMINI_API_KEY;
+            if (!geminiKey) throw new Error("Missing GEMINI_API_KEY");
 
-            const genai = getGeminiClient(); // singleton
+            const genai = new (await import('@google/genai').then(m => m.GoogleGenAI))({ apiKey: geminiKey });
             const geminiAbort = new AbortController();
             const geminiTimeout = setTimeout(() => geminiAbort.abort(), 45_000);
 
