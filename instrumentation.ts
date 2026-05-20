@@ -8,8 +8,6 @@
  * Docs: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation
  *       https://docs.sentry.io/platforms/javascript/guides/nextjs/
  */
-import * as Sentry from '@sentry/nextjs';
-
 export async function register() {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
         await import('./sentry.server.config');
@@ -19,4 +17,9 @@ export async function register() {
     }
 }
 
-export const onRequestError = Sentry.captureRequestError;
+export async function onRequestError(...args: Parameters<typeof import('@sentry/nextjs').captureRequestError>) {
+    const hasDsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+    if (!hasDsn) return;
+    const { captureRequestError } = await import('@sentry/nextjs');
+    return captureRequestError(...args);
+}
