@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:bones": "boneyard-js build"
+    "build:bones": "boneyard-js build",
+    "eval:rag": "tsx scripts/eval/rag_eval.ts"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",

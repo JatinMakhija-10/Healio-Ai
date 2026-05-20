@@ -1,0 +1,207 @@
+{
+  "description": "RAG quality evaluation ground truth — 25 symptom queries with expected retrieval results from each knowledge source. Run before/after any embedding or retrieval change.",
+  "version": "1.0.0",
+  "created": "2026-05-17",
+  "queries": [
+    {
+      "id": "eval-001",
+      "symptom_text": "I have a cold with runny nose and sneezing since 2 days",
+      "expected_boericke": ["Allium Cepa", "Arsenicum Album", "Natrum Muriaticum"],
+      "expected_ayurvedic": ["Tulsi", "Giloy"],
+      "expected_home_remedies": ["Adrak-Tulsi Kadha", "Haldi Doodh"],
+      "notes": "Classic acute coryza — should hit all 3 sources"
+    },
+    {
+      "id": "eval-002",
+      "symptom_text": "dry cough worse at night, no phlegm, throat feels scratchy",
+      "expected_boericke": ["Bryonia", "Drosera", "Spongia"],
+      "expected_ayurvedic": ["Tulsi", "Mulethi"],
+      "expected_home_remedies": ["Adrak-Shahad", "Mulethi"],
+      "notes": "Dry cough with nocturnal aggravation"
+    },
+    {
+      "id": "eval-003",
+      "symptom_text": "headache throbbing on one side with nausea and sensitivity to light",
+      "expected_boericke": ["Belladonna", "Sanguinaria", "Iris Versicolor"],
+      "expected_ayurvedic": ["Brahmi", "Jatamansi"],
+      "expected_home_remedies": ["Adrak", "Pudina"],
+      "notes": "Migraine presentation — unilateral + nausea"
+    },
+    {
+      "id": "eval-004",
+      "symptom_text": "acidity burning in chest after eating spicy food, sour taste in mouth",
+      "expected_boericke": ["Nux Vomica", "Robinia", "Iris Versicolor"],
+      "expected_ayurvedic": ["Amla", "Haridra"],
+      "expected_home_remedies": ["Ajwain", "Jeera"],
+      "notes": "GERD / acid reflux"
+    },
+    {
+      "id": "eval-005",
+      "symptom_text": "joint pain in knees worse in morning with stiffness",
+      "expected_boericke": ["Rhus Toxicodendron", "Bryonia", "Calcarea Carbonica"],
+      "expected_ayurvedic": ["Ashwagandha", "Shallaki"],
+      "expected_home_remedies": ["Haldi Doodh", "Methi"],
+      "notes": "Osteoarthritis-type pattern"
+    },
+    {
+      "id": "eval-006",
+      "symptom_text": "constipation since 4 days no urge to pass stool hard dry stools",
+      "expected_boericke": ["Nux Vomica", "Bryonia", "Alumina"],
+      "expected_ayurvedic": ["Triphala", "Haritaki"],
+      "expected_home_remedies": ["Isabgol", "Ajwain"],
+      "notes": "Chronic constipation with hard stools"
+    },
+    {
+      "id": "eval-007",
+      "symptom_text": "fever 101 body aches chills since yesterday",
+      "expected_boericke": ["Aconite", "Belladonna", "Gelsemium"],
+      "expected_ayurvedic": ["Giloy", "Tulsi"],
+      "expected_home_remedies": ["Adrak-Tulsi Kadha", "Haldi Doodh"],
+      "notes": "Acute viral fever presentation"
+    },
+    {
+      "id": "eval-008",
+      "symptom_text": "skin rash itching red patches on arms and legs spreading",
+      "expected_boericke": ["Sulphur", "Graphites", "Rhus Toxicodendron"],
+      "expected_ayurvedic": ["Neem", "Haridra"],
+      "expected_home_remedies": ["Neem", "Haldi"],
+      "notes": "Dermatitis / eczema pattern"
+    },
+    {
+      "id": "eval-009",
+      "symptom_text": "sore throat pain while swallowing with mild fever",
+      "expected_boericke": ["Belladonna", "Mercurius Solubilis", "Phytolacca"],
+      "expected_ayurvedic": ["Tulsi", "Mulethi"],
+      "expected_home_remedies": ["Adrak-Shahad", "Haldi Doodh"],
+      "notes": "Pharyngitis / tonsillitis"
+    },
+    {
+      "id": "eval-010",
+      "symptom_text": "stomach pain cramping after eating with gas and bloating",
+      "expected_boericke": ["Lycopodium", "Carbo Vegetabilis", "Nux Vomica"],
+      "expected_ayurvedic": ["Triphala", "Haridra"],
+      "expected_home_remedies": ["Ajwain", "Jeera"],
+      "notes": "Dyspepsia / IBS pattern"
+    },
+    {
+      "id": "eval-011",
+      "symptom_text": "anxiety unable to sleep racing thoughts at night",
+      "expected_boericke": ["Argentum Nitricum", "Coffea Cruda", "Ignatia"],
+      "expected_ayurvedic": ["Ashwagandha", "Brahmi"],
+      "expected_home_remedies": ["Haldi Doodh", "Chamomile"],
+      "notes": "Anxiety-induced insomnia"
+    },
+    {
+      "id": "eval-012",
+      "symptom_text": "back pain lower back dull ache worse sitting at desk",
+      "expected_boericke": ["Rhus Toxicodendron", "Bryonia", "Kali Carbonicum"],
+      "expected_ayurvedic": ["Ashwagandha", "Nirgundi"],
+      "expected_home_remedies": ["Haldi Doodh", "Methi"],
+      "notes": "Mechanical lower back pain"
+    },
+    {
+      "id": "eval-013",
+      "symptom_text": "nasal congestion blocked nose cannot breathe properly sinus pressure",
+      "expected_boericke": ["Kali Bichromicum", "Pulsatilla", "Sambucus"],
+      "expected_ayurvedic": ["Tulsi", "Haridra"],
+      "expected_home_remedies": ["Adrak-Tulsi Kadha", "Steam"],
+      "notes": "Sinusitis presentation"
+    },
+    {
+      "id": "eval-014",
+      "symptom_text": "indigestion heavy feeling after food with nausea and loss of appetite",
+      "expected_boericke": ["Nux Vomica", "Pulsatilla", "Antimonium Crudum"],
+      "expected_ayurvedic": ["Triphala", "Amla"],
+      "expected_home_remedies": ["Ajwain", "Jeera"],
+      "notes": "Functional dyspepsia"
+    },
+    {
+      "id": "eval-015",
+      "symptom_text": "hair fall excessive shedding thinning on top of head",
+      "expected_boericke": ["Phosphorus", "Lycopodium", "Silicea"],
+      "expected_ayurvedic": ["Amla", "Bhringraj"],
+      "expected_home_remedies": ["Amla", "Coconut oil"],
+      "notes": "Alopecia / hair thinning"
+    },
+    {
+      "id": "eval-016",
+      "symptom_text": "diarrhea loose watery stools 5 times today with stomach cramps",
+      "expected_boericke": ["Arsenicum Album", "Podophyllum", "Veratrum Album"],
+      "expected_ayurvedic": ["Kutaja", "Bilva"],
+      "expected_home_remedies": ["Jeera", "Dahi"],
+      "notes": "Acute gastroenteritis"
+    },
+    {
+      "id": "eval-017",
+      "symptom_text": "eye strain headache after screen work blurry vision tired eyes",
+      "expected_boericke": ["Ruta Graveolens", "Natrum Muriaticum", "Phosphorus"],
+      "expected_ayurvedic": ["Triphala", "Amla"],
+      "expected_home_remedies": ["Cucumber", "Rose water"],
+      "notes": "Digital eye strain / asthenopia"
+    },
+    {
+      "id": "eval-018",
+      "symptom_text": "menstrual cramps severe pain lower abdomen first day of period",
+      "expected_boericke": ["Magnesia Phosphorica", "Cimicifuga", "Pulsatilla"],
+      "expected_ayurvedic": ["Ashoka", "Shatavari"],
+      "expected_home_remedies": ["Ajwain", "Adrak"],
+      "notes": "Dysmenorrhea"
+    },
+    {
+      "id": "eval-019",
+      "symptom_text": "mouth ulcers painful sores inside cheek and tongue",
+      "expected_boericke": ["Borax", "Mercurius Solubilis", "Nitric Acid"],
+      "expected_ayurvedic": ["Haridra", "Mulethi"],
+      "expected_home_remedies": ["Honey", "Haldi"],
+      "notes": "Aphthous stomatitis"
+    },
+    {
+      "id": "eval-020",
+      "symptom_text": "fatigue tiredness weakness no energy for weeks",
+      "expected_boericke": ["Phosphoric Acid", "China", "Kali Phosphoricum"],
+      "expected_ayurvedic": ["Ashwagandha", "Amla"],
+      "expected_home_remedies": ["Haldi Doodh", "Chyawanprash"],
+      "notes": "Chronic fatigue / debility"
+    },
+    {
+      "id": "eval-021",
+      "symptom_text": "acne pimples on face and forehead oily skin",
+      "expected_boericke": ["Sulphur", "Berberis Aquifolium", "Kali Bromatum"],
+      "expected_ayurvedic": ["Neem", "Haridra"],
+      "expected_home_remedies": ["Neem", "Haldi"],
+      "notes": "Acne vulgaris"
+    },
+    {
+      "id": "eval-022",
+      "symptom_text": "gas excessive flatulence bloating abdomen feels distended",
+      "expected_boericke": ["Lycopodium", "Carbo Vegetabilis", "China"],
+      "expected_ayurvedic": ["Triphala", "Haridra"],
+      "expected_home_remedies": ["Ajwain", "Jeera"],
+      "notes": "Meteorism / flatulent dyspepsia"
+    },
+    {
+      "id": "eval-023",
+      "symptom_text": "cough with green phlegm and mild chest congestion",
+      "expected_boericke": ["Pulsatilla", "Hepar Sulph", "Antimonium Tartaricum"],
+      "expected_ayurvedic": ["Tulsi", "Vasaka"],
+      "expected_home_remedies": ["Adrak-Tulsi Kadha", "Steam"],
+      "notes": "Productive cough with mucopurulent sputum"
+    },
+    {
+      "id": "eval-024",
+      "symptom_text": "burning urination frequent urge to urinate lower abdomen pain",
+      "expected_boericke": ["Cantharis", "Apis Mellifica", "Berberis Vulgaris"],
+      "expected_ayurvedic": ["Gokshura", "Punarnava"],
+      "expected_home_remedies": ["Coconut water", "Jeera"],
+      "notes": "UTI presentation"
+    },
+    {
+      "id": "eval-025",
+      "symptom_text": "toothache severe throbbing pain in molar worse with cold water",
+      "expected_boericke": ["Plantago", "Mercurius Solubilis", "Chamomilla"],
+      "expected_ayurvedic": ["Haridra", "Triphala"],
+      "expected_home_remedies": ["Laung", "Kala namak"],
+      "notes": "Dental pulpitis"
+    }
+  ]
+}

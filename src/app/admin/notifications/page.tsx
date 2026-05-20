@@ -58,6 +58,14 @@ export default function AdminNotificationsPage() {
         fetchHistory();
     }, [fetchHistory]);
 
+    // Auto-dismiss success banner after 5s; keep errors visible
+    useEffect(() => {
+        if (result?.success) {
+            const t = setTimeout(() => setResult(null), 5000);
+            return () => clearTimeout(t);
+        }
+    }, [result]);
+
     const handleSend = async () => {
         if (!title.trim() || !message.trim()) {
             setResult({ success: false, message: 'Title and message are required.' });

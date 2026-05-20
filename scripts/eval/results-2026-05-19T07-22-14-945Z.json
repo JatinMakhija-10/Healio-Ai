@@ -1,0 +1,898 @@
+{
+  "summary": {
+    "totalQueries": 25,
+    "boerickeRecallAt5": 0,
+    "ayurvedicRecallAt5": 0,
+    "homeRemedyRecallAt5": 36,
+    "overallRecall": 12,
+    "avgEmbedMs768": 586,
+    "avgEmbedMs3072": 579,
+    "avgBoerickeRpcMs": 521,
+    "avgAyurvedicRpcMs": 274,
+    "avgHomeRemedyRpcMs": 422,
+    "failures": []
+  },
+  "results": [
+    {
+      "id": "eval-001",
+      "symptom_text": "I have a cold with runny nose and sneezing since 2 days",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 4007
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 2747
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Haldi Doodh"
+        ],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Haldi Doodh",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 4181
+      },
+      "embedMs": {
+        "e768": 716,
+        "e3072": 740
+      }
+    },
+    {
+      "id": "eval-002",
+      "symptom_text": "dry cough worse at night, no phlegm, throat feels scratchy",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 560
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 438
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Mulethi"
+        ],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Mulethi (Licorice Root) Chew"
+        ],
+        "ms": 575
+      },
+      "embedMs": {
+        "e768": 966,
+        "e3072": 1097
+      }
+    },
+    {
+      "id": "eval-003",
+      "symptom_text": "headache throbbing on one side with nausea and sensitivity to light",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 687
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 286
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Adrak"
+        ],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Adrak Paste Forehead",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Giloy Juice",
+          "Peppermint Oil Temple Massage"
+        ],
+        "ms": 793
+      },
+      "embedMs": {
+        "e768": 539,
+        "e3072": 494
+      }
+    },
+    {
+      "id": "eval-004",
+      "symptom_text": "acidity burning in chest after eating spicy food, sour taste in mouth",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 222
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 146
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 193
+      },
+      "embedMs": {
+        "e768": 519,
+        "e3072": 518
+      }
+    },
+    {
+      "id": "eval-005",
+      "symptom_text": "joint pain in knees worse in morning with stiffness",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 201
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 127
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Sarso Tel Maalish",
+          "Minor Home Treatment",
+          "Haldi-Adrak Anti-Inflammatory Milk",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 180
+      },
+      "embedMs": {
+        "e768": 518,
+        "e3072": 513
+      }
+    },
+    {
+      "id": "eval-006",
+      "symptom_text": "constipation since 4 days no urge to pass stool hard dry stools",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 229
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 121
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Warm Water with Nimbu-Shahad",
+          "Triphala before Bed",
+          "Kela aur Doodh",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 187
+      },
+      "embedMs": {
+        "e768": 526,
+        "e3072": 541
+      }
+    },
+    {
+      "id": "eval-007",
+      "symptom_text": "fever 101 body aches chills since yesterday",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 225
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 140
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 195
+      },
+      "embedMs": {
+        "e768": 511,
+        "e3072": 496
+      }
+    },
+    {
+      "id": "eval-008",
+      "symptom_text": "skin rash itching red patches on arms and legs spreading",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 353
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 183
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Neem"
+        ],
+        "returned": [
+          "Neem Paste",
+          "Multani Mitti-Rose Water Pack",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 268
+      },
+      "embedMs": {
+        "e768": 523,
+        "e3072": 528
+      }
+    },
+    {
+      "id": "eval-009",
+      "symptom_text": "sore throat pain while swallowing with mild fever",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 272
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 148
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 228
+      },
+      "embedMs": {
+        "e768": 617,
+        "e3072": 531
+      }
+    },
+    {
+      "id": "eval-010",
+      "symptom_text": "stomach pain cramping after eating with gas and bloating",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 244
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 139
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 193
+      },
+      "embedMs": {
+        "e768": 539,
+        "e3072": 549
+      }
+    },
+    {
+      "id": "eval-011",
+      "symptom_text": "anxiety unable to sleep racing thoughts at night",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 253
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 135
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Brahmi Tel Head Massage",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 206
+      },
+      "embedMs": {
+        "e768": 499,
+        "e3072": 499
+      }
+    },
+    {
+      "id": "eval-012",
+      "symptom_text": "back pain lower back dull ache worse sitting at desk",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 229
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 132
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Methi"
+        ],
+        "returned": [
+          "Minor Home Treatment",
+          "Warm Sarso Tel Maalish",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Methi Dana Kadha",
+          "Minor Home Treatment"
+        ],
+        "ms": 200
+      },
+      "embedMs": {
+        "e768": 582,
+        "e3072": 542
+      }
+    },
+    {
+      "id": "eval-013",
+      "symptom_text": "nasal congestion blocked nose cannot breathe properly sinus pressure",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 203
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 111
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 203
+      },
+      "embedMs": {
+        "e768": 785,
+        "e3072": 819
+      }
+    },
+    {
+      "id": "eval-014",
+      "symptom_text": "indigestion heavy feeling after food with nausea and loss of appetite",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 248
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 219
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Ajwain",
+          "Jeera"
+        ],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Jeera Paani",
+          "Minor Home Treatment",
+          "Hing-Ajwain Water",
+          "Minor Home Treatment",
+          "Saunf Post-Meal",
+          "Minor Home Treatment"
+        ],
+        "ms": 223
+      },
+      "embedMs": {
+        "e768": 600,
+        "e3072": 600
+      }
+    },
+    {
+      "id": "eval-015",
+      "symptom_text": "hair fall excessive shedding thinning on top of head",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 169
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 114
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Amla"
+        ],
+        "returned": [
+          "Pyaaz ka Ras (Onion Juice)",
+          "Amla-Brahmi Hair Mask",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 151
+      },
+      "embedMs": {
+        "e768": 610,
+        "e3072": 648
+      }
+    },
+    {
+      "id": "eval-016",
+      "symptom_text": "diarrhea loose watery stools 5 times today with stomach cramps",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 176
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 109
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 145
+      },
+      "embedMs": {
+        "e768": 564,
+        "e3072": 550
+      }
+    },
+    {
+      "id": "eval-017",
+      "symptom_text": "eye strain headache after screen work blurry vision tired eyes",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 170
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 103
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Palming (Cold Water)",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 151
+      },
+      "embedMs": {
+        "e768": 570,
+        "e3072": 569
+      }
+    },
+    {
+      "id": "eval-018",
+      "symptom_text": "menstrual cramps severe pain lower abdomen first day of period",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 164
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 100
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 143
+      },
+      "embedMs": {
+        "e768": 562,
+        "e3072": 486
+      }
+    },
+    {
+      "id": "eval-019",
+      "symptom_text": "mouth ulcers painful sores inside cheek and tongue",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 195
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 121
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 183
+      },
+      "embedMs": {
+        "e768": 521,
+        "e3072": 519
+      }
+    },
+    {
+      "id": "eval-020",
+      "symptom_text": "fatigue tiredness weakness no energy for weeks",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 203
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 116
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 170
+      },
+      "embedMs": {
+        "e768": 559,
+        "e3072": 524
+      }
+    },
+    {
+      "id": "eval-021",
+      "symptom_text": "acne pimples on face and forehead oily skin",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 183
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 109
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Multani Mitti-Rose Water Pack",
+          "Minor Home Treatment"
+        ],
+        "ms": 147
+      },
+      "embedMs": {
+        "e768": 469,
+        "e3072": 483
+      }
+    },
+    {
+      "id": "eval-022",
+      "symptom_text": "gas excessive flatulence bloating abdomen feels distended",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 3061
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 556
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Ajwain"
+        ],
+        "returned": [
+          "Hing-Ajwain Water",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 1019
+      },
+      "embedMs": {
+        "e768": 608,
+        "e3072": 470
+      }
+    },
+    {
+      "id": "eval-023",
+      "symptom_text": "cough with green phlegm and mild chest congestion",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 276
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 183
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Kali Mirch-Ghee",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 225
+      },
+      "embedMs": {
+        "e768": 670,
+        "e3072": 670
+      }
+    },
+    {
+      "id": "eval-024",
+      "symptom_text": "burning urination frequent urge to urinate lower abdomen pain",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 224
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 122
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Coriander (Dhaniya) Seed Water",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 195
+      },
+      "embedMs": {
+        "e768": 531,
+        "e3072": 538
+      }
+    },
+    {
+      "id": "eval-025",
+      "symptom_text": "toothache severe throbbing pain in molar worse with cold water",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 261
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 142
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Laung"
+        ],
+        "returned": [
+          "Clove Oil",
+          "Laung (Clove) on Tooth",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment",
+          "Minor Home Treatment"
+        ],
+        "ms": 206
+      },
+      "embedMs": {
+        "e768": 541,
+        "e3072": 542
+      }
+    }
+  ],
+  "generatedAt": "2026-05-19T07:22:14.946Z"
+}

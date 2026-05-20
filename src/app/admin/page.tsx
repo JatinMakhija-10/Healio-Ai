@@ -197,7 +197,7 @@ function AdminDashboardContent() {
                         onClick={s.onClick}
                     >
                         <CardContent className="p-4 flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl ${s.color.split(" ")[1]} flex items-center justify-center`}>
+                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
                                 <s.icon className={`h-5 w-5 ${s.color.split(" ")[0]}`} />
                             </div>
                             <div>

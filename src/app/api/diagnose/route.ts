@@ -137,13 +137,23 @@ async function fetchMultiQueryRAG(
         // finished, adding 1-2s of unnecessary sequential latency.
         const homeQuery = `${symptomText} ${primaryDiagnosis.condition}`.trim();
 
-        const [embeddingResults, homeEmbResp] = await Promise.allSettled([
-            // Batch: embed all queries in one Promise.allSettled
+        const [embeddingResults, ayurvedicEmbResults, homeEmbResp] = await Promise.allSettled([
+            // Batch: embed all queries in one Promise.allSettled (3072-dim for Boericke)
             Promise.allSettled(
                 queries.map((q) =>
                     ai.models.embedContent({
                         model: AI_PHASE_CONFIG.models.embedding,
                         contents: q,
+                    })
+                )
+            ),
+            // Ayurvedic: 768-dim (table was re-ingested with output_dimensionality=768)
+            Promise.allSettled(
+                queries.map((q) =>
+                    ai.models.embedContent({
+                        model: AI_PHASE_CONFIG.models.embedding,
+                        contents: q,
+                        config: { outputDimensionality: 768 },
                     })
                 )
             ),
@@ -154,9 +164,19 @@ async function fetchMultiQueryRAG(
             }),
         ]);
 
-        // Unwrap main embeddings
+        // Unwrap main embeddings (3072-dim for Boericke)
         const mainEmbedResults = embeddingResults.status === 'fulfilled' ? embeddingResults.value : [];
         const validEmbeddings = mainEmbedResults
+            .filter(
+                (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof ai.models.embedContent>>> =>
+                    r.status === "fulfilled"
+            )
+            .map((r) => r.value.embeddings?.[0]?.values)
+            .filter((e): e is number[] => !!e && e.length > 0);
+
+        // Unwrap Ayurvedic embeddings (768-dim)
+        const ayurvedicEmbedResults = ayurvedicEmbResults.status === 'fulfilled' ? ayurvedicEmbResults.value : [];
+        const validAyurvedicEmbeddings = ayurvedicEmbedResults
             .filter(
                 (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof ai.models.embedContent>>> =>
                     r.status === "fulfilled"
@@ -173,26 +193,33 @@ async function fetchMultiQueryRAG(
             ? homeEmbResp.value.embeddings?.[0]?.values
             : null;
 
-        // ── Fan-out all Supabase RPCs simultaneously ──────────────────────────
+        // ── Fan-out all Supabase RPCs simultaneously ──────────────────────────────────
         // Boericke + Ayurvedic per embedding + home remedies — all in parallel
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpcPromises: Promise<any>[] = [];
         validEmbeddings.forEach(embedding => {
-            // 1. Fetch Boericke
+            // 1. Fetch Boericke (3072-dim, threshold lowered to match actual similarity range)
             rpcPromises.push(
                 db.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
-                    match_threshold: AI_PHASE_CONFIG.rag.matchThreshold,
+                    match_threshold: 0.60,
                     match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
                 }).then((res: { data: unknown }) => ({ type: 'boericke', data: res.data }))
             );
-            // 2. Fetch Ayurvedic
+        });
+        // 2. Fetch Ayurvedic with 768-dim embeddings + 5s timeout guard
+        validAyurvedicEmbeddings.forEach(ayurvedicEmb => {
             rpcPromises.push(
-                db.rpc("search_ayurvedic_knowledge", {
-                    query_embedding: embedding,
-                    match_threshold: 0.62,
-                    match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
-                }).then((res: { data: unknown }) => ({ type: 'ayurvedic', data: res.data }))
+                Promise.race([
+                    db.rpc("search_ayurvedic_knowledge", {
+                        query_embedding: ayurvedicEmb,
+                        match_threshold: 0.55,
+                        match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
+                    }).then((res: { data: unknown }) => ({ type: 'ayurvedic', data: res.data })),
+                    new Promise<{ type: string; data: null }>((resolve) =>
+                        setTimeout(() => resolve({ type: 'ayurvedic', data: null }), 5_000)
+                    ),
+                ])
             );
         });
 
@@ -308,18 +335,34 @@ async function fetchMultiQueryRAG(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fdb = supabase as any;
 
-            // Fan-out all RPCs in parallel
+            // Generate 768-dim for Ayurvedic fallback (separate from 3072-dim Boericke)
+            let ayurvedicEmb768: number[] | null = null;
+            try {
+                const ayurvResp = await ai.models.embedContent({
+                    model: AI_PHASE_CONFIG.models.embedding,
+                    contents: symptomText,
+                    config: { outputDimensionality: 768 },
+                });
+                ayurvedicEmb768 = ayurvResp.embeddings?.[0]?.values ?? null;
+            } catch { /* skip Ayurvedic if embed fails */ }
+
+            // Fan-out all RPCs in parallel with timeouts
             const [boerickeRes, ayurvedicRes, homeRes] = await Promise.all([
                 fdb.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
-                    match_threshold: AI_PHASE_CONFIG.rag.singleQueryThreshold,
+                    match_threshold: 0.60,
                     match_count: 3,
                 }),
-                fdb.rpc("search_ayurvedic_knowledge", {
-                    query_embedding: embedding,
-                    match_threshold: 0.62,
-                    match_count: 3,
-                }),
+                ayurvedicEmb768
+                    ? Promise.race([
+                        fdb.rpc("search_ayurvedic_knowledge", {
+                            query_embedding: ayurvedicEmb768,
+                            match_threshold: 0.55,
+                            match_count: 3,
+                        }),
+                        new Promise<{ data: null }>((r) => setTimeout(() => r({ data: null }), 4_000)),
+                    ])
+                    : Promise.resolve({ data: null }),
                 homeEmb
                     ? fdb.rpc('match_home_remedy_embeddings', {
                         query_embedding: homeEmb,
@@ -412,14 +455,14 @@ export async function POST(req: Request) {
 
         try {
             if (primaryDiagnosis.condition) {
-                // Hard 15 s cap on RAG so a slow Gemini embedding never blocks AI inference
+                // Hard 7s cap on RAG so a slow DB (e.g. re-ingestion writes) never blocks AI
                 const ragResult = await Promise.race([
                     fetchMultiQueryRAG(symptomText, primaryDiagnosis),
                     new Promise<{ context: string; remediesFound: string[] }>((resolve) =>
                         setTimeout(() => {
                             console.warn("[Diagnose] RAG timed out — proceeding without knowledge base");
                             resolve({ context: "", remediesFound: [] });
-                        }, 15_000)
+                        }, 7_000)
                     ),
                 ]);
                 ragContext = ragResult.context;

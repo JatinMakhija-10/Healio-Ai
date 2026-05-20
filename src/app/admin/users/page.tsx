@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Users, Shield, UserCheck, MoreHorizontal } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Users, Shield, UserCheck, MoreHorizontal, KeyRound, Ban, CheckCircle2, Eye } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { UserActionsDialog } from "@/components/admin/users/UserActionsDialog";
 
 interface UserRow {
     id: string;
@@ -16,7 +27,10 @@ interface UserRow {
     role: string;
     created_at: string;
     updated_at: string;
+    is_suspended: boolean | null;
 }
+
+type ActionKind = "suspend" | "unsuspend" | "reset-password" | null;
 
 const ROLE_COLORS: Record<string, string> = {
     admin:   "bg-red-100 text-red-700",
@@ -24,35 +38,57 @@ const ROLE_COLORS: Record<string, string> = {
     patient: "bg-green-100 text-green-700",
 };
 
+const SELECT_COLS = "id, email, full_name, role, created_at, updated_at, is_suspended";
+
 export default function AdminUsersPage() {
+    return (
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <AdminUsersPageInner />
+        </Suspense>
+    );
+}
+
+function AdminUsersPageInner() {
+    const searchParams = useSearchParams();
+    const initialQ = searchParams?.get("q") ?? "";
+
     const [users, setUsers] = useState<UserRow[]>([]);
-    const [filtered, setFiltered] = useState<UserRow[]>([]);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(initialQ);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [actionFor, setActionFor] = useState<{ user: UserRow; kind: ActionKind } | null>(null);
 
     const fetchUsers = useCallback(async () => {
-        setLoading(true);
         const { data } = await supabase
             .from("profiles")
-            .select("id, email, full_name, role, created_at, updated_at")
+            .select(SELECT_COLS)
             .order("created_at", { ascending: false })
             .limit(200);
-        setUsers(data || []);
-        setFiltered(data || []);
+        setUsers((data as UserRow[]) || []);
         setLoading(false);
     }, []);
 
-    useEffect(() => { fetchUsers(); }, [fetchUsers]);
-
     useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const { data } = await supabase
+                .from("profiles")
+                .select(SELECT_COLS)
+                .order("created_at", { ascending: false })
+                .limit(200);
+            if (cancelled) return;
+            setUsers((data as UserRow[]) || []);
+            setLoading(false);
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
+    const filtered = useMemo(() => {
         const q = search.toLowerCase();
-        setFiltered(
-            users.filter(u =>
-                (u.email || "").toLowerCase().includes(q) ||
-                (u.full_name || "").toLowerCase().includes(q) ||
-                u.role.includes(q)
-            )
+        return users.filter(u =>
+            (u.email || "").toLowerCase().includes(q) ||
+            (u.full_name || "").toLowerCase().includes(q) ||
+            (u.role || "").toLowerCase().includes(q)
         );
     }, [search, users]);
 
@@ -146,9 +182,16 @@ export default function AdminUsersPage() {
                                             </td>
                                             <td className="px-6 py-4 text-slate-600">{user.email || "—"}</td>
                                             <td className="px-6 py-4">
-                                                <Badge className={`${ROLE_COLORS[user.role] || "bg-slate-100 text-slate-600"} border-0 text-xs`}>
-                                                    {user.role}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge className={`${ROLE_COLORS[user.role] || "bg-slate-100 text-slate-600"} border-0 text-xs`}>
+                                                        {user.role}
+                                                    </Badge>
+                                                    {user.is_suspended && (
+                                                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-[10px] gap-1">
+                                                            <Ban className="h-2.5 w-2.5" /> Suspended
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-slate-500">
                                                 {new Date(user.created_at).toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}
@@ -177,9 +220,47 @@ export default function AdminUsersPage() {
                                                             Make Admin
                                                         </Button>
                                                     )}
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-48">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/admin/users/${user.id}`} className="gap-2">
+                                                                    <Eye className="h-4 w-4" /> View details
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            {user.role !== "admin" && (
+                                                                <>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem
+                                                                        onClick={() => setActionFor({ user, kind: "reset-password" })}
+                                                                        disabled={!user.email}
+                                                                    >
+                                                                        <KeyRound className="mr-2 h-4 w-4" /> Reset password
+                                                                    </DropdownMenuItem>
+                                                                    {user.is_suspended ? (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => setActionFor({ user, kind: "unsuspend" })}
+                                                                            className="text-green-700 focus:text-green-700"
+                                                                        >
+                                                                            <CheckCircle2 className="mr-2 h-4 w-4" /> Re-instate
+                                                                        </DropdownMenuItem>
+                                                                    ) : (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => setActionFor({ user, kind: "suspend" })}
+                                                                            className="text-red-600 focus:text-red-600"
+                                                                        >
+                                                                            <Ban className="mr-2 h-4 w-4" /> Suspend
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </td>
                                         </tr>
@@ -193,6 +274,15 @@ export default function AdminUsersPage() {
                     )}
                 </CardContent>
             </Card>
+
+            <UserActionsDialog
+                userId={actionFor?.user.id ?? ""}
+                userEmail={actionFor?.user.email ?? null}
+                userFullName={actionFor?.user.full_name ?? null}
+                action={actionFor?.kind ?? null}
+                onClose={() => setActionFor(null)}
+                onCompleted={fetchUsers}
+            />
         </div>
     );
 }

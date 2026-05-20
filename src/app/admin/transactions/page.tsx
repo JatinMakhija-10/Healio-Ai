@@ -22,6 +22,14 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
     CreditCard,
     Search,
     Download,
@@ -85,6 +93,7 @@ export default function TransactionsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [selectedTxn, setSelectedTxn] = useState<EnrichedTransaction | null>(null);
 
     const fetchTransactions = useCallback(async () => {
         try {
@@ -377,7 +386,13 @@ export default function TransactionsPage() {
                                                         {format(new Date(txn.created_at), "dd MMM yyyy, HH:mm")}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            title="View transaction details"
+                                                            onClick={() => setSelectedTxn(txn)}
+                                                        >
                                                             <ArrowUpRight className="h-4 w-4" />
                                                         </Button>
                                                     </TableCell>
@@ -399,6 +414,88 @@ export default function TransactionsPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Transaction detail dialog */}
+            <Dialog open={selectedTxn !== null} onOpenChange={(o) => !o && setSelectedTxn(null)}>
+                <DialogContent className="sm:max-w-[560px]">
+                    <DialogHeader>
+                        <DialogTitle>Transaction details</DialogTitle>
+                        <DialogDescription>
+                            {selectedTxn ? (
+                                <span className="font-mono text-xs">{selectedTxn.transaction_id || selectedTxn.id}</span>
+                            ) : null}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {selectedTxn && (
+                        <div className="grid grid-cols-2 gap-4 py-2 text-sm">
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Type</p>
+                                <Badge variant="outline" className={typeConfig[selectedTxn.transaction_type]?.className}>
+                                    {typeConfig[selectedTxn.transaction_type]?.label || selectedTxn.transaction_type}
+                                </Badge>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Status</p>
+                                <Badge variant="outline" className={statusConfig[selectedTxn.status]?.className}>
+                                    {statusConfig[selectedTxn.status]?.label || selectedTxn.status}
+                                </Badge>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Amount</p>
+                                <p className="font-semibold text-lg">
+                                    ₹{selectedTxn.amount.toLocaleString("en-IN")} {selectedTxn.currency || ""}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Method</p>
+                                <p className="font-medium">{selectedTxn.payment_method || "—"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Patient</p>
+                                <Link
+                                    href={`/admin/users/${selectedTxn.patient_id}`}
+                                    className="font-medium text-purple-600 hover:underline"
+                                    onClick={() => setSelectedTxn(null)}
+                                >
+                                    {selectedTxn.patientName}
+                                </Link>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Doctor</p>
+                                <p className="font-medium">{selectedTxn.doctorName}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Created</p>
+                                <p className="font-medium">{format(new Date(selectedTxn.created_at), "dd MMM yyyy, HH:mm")}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Processed</p>
+                                <p className="font-medium">
+                                    {selectedTxn.processed_at
+                                        ? format(new Date(selectedTxn.processed_at), "dd MMM yyyy, HH:mm")
+                                        : "—"}
+                                </p>
+                            </div>
+                            {selectedTxn.invoice_id && (
+                                <div className="col-span-2">
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider">Invoice</p>
+                                    <Link
+                                        href={`/admin/invoices?id=${selectedTxn.invoice_id}`}
+                                        className="font-mono text-xs text-purple-600 hover:underline"
+                                    >
+                                        {selectedTxn.invoice_id}
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setSelectedTxn(null)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

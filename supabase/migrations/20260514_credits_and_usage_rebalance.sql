@@ -35,6 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_credit_tx_user ON credit_transactions(user_id, cr
 
 ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can read own credit transactions" ON credit_transactions;
 CREATE POLICY "Users can read own credit transactions"
     ON credit_transactions FOR SELECT
     USING (auth.uid() = user_id);

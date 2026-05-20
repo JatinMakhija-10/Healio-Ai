@@ -53,13 +53,19 @@ export function FlaggedSessionDialog({
     const handleAction = async (newStatus: 'resolved' | 'dismissed') => {
         try {
             setLoading(true);
+
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (userError || !userData.user) {
+                throw new Error('Could not identify resolver — please re-authenticate');
+            }
+
             const { error } = await supabase
                 .from('flagged_sessions')
                 .update({
                     status: newStatus,
                     resolution_notes: notes,
                     resolved_at: new Date().toISOString(),
-                    resolved_by: (await supabase.auth.getUser()).data.user?.id
+                    resolved_by: userData.user.id,
                 })
                 .eq('id', session.id);
 

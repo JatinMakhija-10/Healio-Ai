@@ -3,7 +3,7 @@ import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
-import { logLatency, alertIfSlow } from '@/lib/chat/latencyMonitor';
+import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
@@ -45,7 +45,8 @@ async function verifyToken(token: string): Promise<string | null> {
     return user.id;
 }
 
-// ── Generate embedding via Gemini (768-dim) — used for Boericke & Ayurvedic ───
+// ── Generate embedding via Gemini (3072-dim) — used for Boericke & Ayurvedic ──
+// Model: gemini-embedding-2-preview outputs 3072-dim vectors
 // Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
 async function generateEmbedding(text: string): Promise<number[] | null> {
     const geminiKey = process.env.GEMINI_API_KEY;
@@ -54,6 +55,26 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
         const ai = getGeminiClient(); // singleton
         const embResp = await Promise.race([
             ai.models.embedContent({ model: AI_PHASE_CONFIG.models.embedding, contents: text }),
+            new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
+        ]);
+        return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
+    } catch {
+        return null;
+    }
+}
+
+// ── Generate 768-dim embedding — used for Ayurvedic (re-ingested with output_dimensionality=768) ─
+async function generateEmbedding768(text: string): Promise<number[] | null> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || !text) return null;
+    try {
+        const ai = getGeminiClient();
+        const embResp = await Promise.race([
+            ai.models.embedContent({
+                model: AI_PHASE_CONFIG.models.embedding,
+                contents: text,
+                config: { outputDimensionality: 768 },
+            }),
             new Promise<never>((_, rej) => setTimeout(() => rej(new Error('embed-768-timeout')), 8_000)),
         ]);
         return (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>).embeddings?.[0]?.values ?? null;
@@ -87,7 +108,7 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data } = await (supabase as any).rpc('match_boericke_embeddings', {
             query_embedding: embedding,
-            match_threshold: 0.72,
+            match_threshold: 0.60,
             match_count: 10,
         });
         if (!data?.length) return '';
@@ -105,7 +126,7 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
         }
 
         return [...seen.values()]
-            .filter(c => (c.similarity ?? 0) >= 0.72)
+            .filter(c => (c.similarity ?? 0) >= 0.60)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
             .slice(0, 5)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,15 +142,20 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
 // Sources: Planet Ayurveda books, CCRAS e-books, classical Sanskrit texts
 // IMPORTANT: These are FORMAL Ayurvedic medicines — herbs, formulations, decoctions
 // that require purchase from an Ayurvedic pharmacy. NOT kitchen shelf items.
-async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
+// NOTE: ayurvedic_knowledge_embeddings uses vector(768) — pass 768-dim embedding only.
+async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
     try {
         const supabase = getSupabaseAdmin(); // singleton
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any).rpc('search_ayurvedic_knowledge', {
-            query_embedding: embedding,
-            match_threshold: 0.60,
+        const rpcCall = (supabase as any).rpc('search_ayurvedic_knowledge', {
+            query_embedding: embedding768,
+            match_threshold: 0.55,
             match_count: 12,
         });
+        const { data } = await Promise.race([
+            rpcCall,
+            new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 5_000)),
+        ]);
         if (!data?.length) return '';
 
         // Deduplicate: keep one entry per unique source+section combination
@@ -208,20 +234,57 @@ async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<s
 }
 
 
+// ── Chat RAG Cache ───────────────────────────────────────────────────────────
+// Per-symptom-text cache that survives warm serverless re-use.
+// Keyed by first 150 chars of symptom summary + skipHomeRemedies flag.
+// TTL: 5 min, max 150 entries.
+interface ChatRagCacheEntry {
+    context: string;
+    homeRemediesAvailable: boolean;
+    ts: number;
+}
+const CHAT_RAG_CACHE = new Map<string, ChatRagCacheEntry>();
+const CHAT_RAG_TTL   = 5 * 60 * 1_000; // 5 min
+const CHAT_RAG_MAX   = 150;
+
+function chatRagKey(symptomSummary: string, skipHome: boolean): string {
+    return `${symptomSummary.slice(0, 150).toLowerCase().trim()}::${skipHome}`;
+}
+
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
-async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false): Promise<{ context: string; homeRemediesAvailable: boolean }> {
+async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false, spans?: SpanCollector): Promise<{ context: string; homeRemediesAvailable: boolean }> {
+    // ── Cache check ──────────────────────────────────────────────────────────
+    const cacheKey = chatRagKey(symptomSummary, skipHomeRemedies);
+    const cached = CHAT_RAG_CACHE.get(cacheKey);
+    if (cached && Date.now() - cached.ts < CHAT_RAG_TTL) {
+        console.log('[RAG] Cache HIT — skipping embed + RPC cycle');
+        spans?.record('ragCacheHit', 0);
+        spans?.setMeta({ ragCacheHit: true });
+        return { context: cached.context, homeRemediesAvailable: cached.homeRemediesAvailable };
+    }
+
     try {
-        const [embedding, embedding3072] = await Promise.all([
+        const t0Embed = Date.now();
+        const [embedding, embedding768, embedding3072] = await Promise.all([
             generateEmbedding(symptomSummary),
+            generateEmbedding768(symptomSummary),
             skipHomeRemedies ? Promise.resolve(null) : generateEmbedding3072(symptomSummary),
         ]);
+        const embedDone = Date.now();
+        spans?.record('embed768', embedDone - t0Embed);
+        if (!skipHomeRemedies) spans?.record('embed3072', embedDone - t0Embed);
         if (!embedding) return { context: '', homeRemediesAvailable: false };
 
+        const t0Rpc = Date.now();
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
-            fetchAyurvedicContext(embedding),
+            embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
             fetchHomeRemedyContext(embedding3072),
         ]);
+        const rpcDone = Date.now();
+        spans?.record('ragBoericke', rpcDone - t0Rpc);
+        spans?.record('ragAyurvedic', rpcDone - t0Rpc);
+        if (!skipHomeRemedies) spans?.record('ragHomeRemedy', rpcDone - t0Rpc);
 
         // Track whether home remedies RAG data was actually retrieved
         const homeRemediesAvailable = !skipHomeRemedies && !!homeRemedyRaw;
@@ -246,8 +309,19 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false)
             ].join('\n'),
         ].filter(Boolean);
 
+        const context = sections.length ? sections.join('\n\n') : '';
         console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies})`);
-        return { context: sections.length ? sections.join('\n\n') : '', homeRemediesAvailable };
+
+        // ── Store in cache ───────────────────────────────────────────────────
+        if (context) {
+            if (CHAT_RAG_CACHE.size >= CHAT_RAG_MAX) {
+                const firstKey = CHAT_RAG_CACHE.keys().next().value;
+                if (firstKey) CHAT_RAG_CACHE.delete(firstKey);
+            }
+            CHAT_RAG_CACHE.set(cacheKey, { context, homeRemediesAvailable, ts: Date.now() });
+        }
+
+        return { context, homeRemediesAvailable };
     } catch (e) {
         console.error('[RAG] Combined fetch error:', e);
         return { context: '', homeRemediesAvailable: false };
@@ -730,6 +804,7 @@ PERSONALISATION RULES FOR FINAL OUTPUT (apply to ALL remedy suggestions):
 
 export async function POST(req: NextRequest) {
     const requestStart = Date.now();
+    const spans = new SpanCollector();
     // Raised to 55 s — safely inside the 60 s maxDuration boundary
     const timeoutPromise = new Promise<Response>((_, reject) => 
         setTimeout(() => reject(new Error('timeout')), 55_000)
@@ -752,7 +827,9 @@ export async function POST(req: NextRequest) {
         const token = authHeader.slice(7);
         const t0Auth = Date.now();
         const userId = await verifyToken(token);
-        logLatency('auth', Date.now() - t0Auth);
+        const authMs = Date.now() - t0Auth;
+        logLatency('auth', authMs);
+        spans.record('auth', authMs);
         if (!userId) {
             return new Response(JSON.stringify({ error: 'Unauthorized — invalid token' }), {
                 status: 401,
@@ -798,7 +875,9 @@ export async function POST(req: NextRequest) {
             serviceClient.auth.admin.getUserById(userId),
         ]);
 
-        logLatency('dbFetch', Date.now() - t0Db);
+        const dbMs = Date.now() - t0Db;
+        logLatency('dbFetch', dbMs);
+        spans.record('dbFetch', dbMs);
 
         // Handle usage gate result (supports monthly, daily, cooldown limits + credit fallback)
         if (usageResult.status === 'fulfilled') {
@@ -949,8 +1028,10 @@ export async function POST(req: NextRequest) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
                 // Skip slow 3072-dim home remedy embedding on non-final turns
                 const t0Rag = Date.now();
-                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn);
-                logLatency('rag', Date.now() - t0Rag);
+                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans);
+                const ragMs = Date.now() - t0Rag;
+                logLatency('rag', ragMs);
+                spans.record('rag', ragMs);
                 ragContext = ragResult.context;
                 homeRemediesAvailable = ragResult.homeRemediesAvailable;
                 if (ragContext) {
@@ -964,6 +1045,7 @@ export async function POST(req: NextRequest) {
 
         // RAG injected at TOP — before the role instructions — for maximum LLM weight
         // The knowledge base is labeled clearly so the model knows where to source each section
+        const t0Prompt = Date.now();
         let finalSystemPrompt = ragContext
             ? `=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
@@ -1041,6 +1123,9 @@ ${SYSTEM_PROMPT}`
             finalSystemPrompt += followUpBlock;
         }
 
+        spans.record('promptBuild', Date.now() - t0Prompt);
+        spans.setMeta({ turn: userTurns, model: groqModel, isFinal: isFinalTurn, ragCacheHit: false });
+
         // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
         const maxRetries = AI_PHASE_CONFIG.generation.maxRetries;
@@ -1084,7 +1169,9 @@ ${SYSTEM_PROMPT}`
                 clearTimeout(timeoutId);
 
                 if (groqResponse.ok) {
-                    logLatency('groqTTFT', Date.now() - t0Groq);
+                    const ttftMs = Date.now() - t0Groq;
+                    logLatency('groqTTFT', ttftMs);
+                    spans.record('groqTTFT', ttftMs);
                     break; // Success — exit retry loop
                 }
 
@@ -1259,6 +1346,8 @@ ${SYSTEM_PROMPT}`
         const totalMs = Date.now() - requestStart;
         logLatency('total', totalMs);
         alertIfSlow(totalMs);
+        spans.record('total', totalMs);
+        spans.flush();
 
         return new Response(stream, {
             headers: {

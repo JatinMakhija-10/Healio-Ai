@@ -1,0 +1,943 @@
+{
+  "summary": {
+    "totalQueries": 25,
+    "boerickeRecallAt5": 4,
+    "ayurvedicRecallAt5": 0,
+    "homeRemedyRecallAt5": 36,
+    "overallRecall": 13,
+    "avgEmbedMs768": 1040,
+    "avgEmbedMs3072": 1090,
+    "avgBoerickeRpcMs": 1656,
+    "avgAyurvedicRpcMs": 8682,
+    "avgHomeRemedyRpcMs": 1927,
+    "failures": []
+  },
+  "results": [
+    {
+      "id": "eval-001",
+      "symptom_text": "I have a cold with runny nose and sneezing since 2 days",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "AMBROSIA,",
+          "AMBROSIA,",
+          "AGRAPHIS    KDTAITS.",
+          "AGRAPHIS    KDTAITS.",
+          "LEMNA    MINOR.",
+          "AURATUM.",
+          "AURATUM.",
+          "KAOLIN.",
+          "ALLIUM    CEPA,",
+          "ALLIUM    CEPA,"
+        ],
+        "ms": 2164
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 9017
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Haldi Doodh"
+        ],
+        "returned": [
+          "Haldi Doodh"
+        ],
+        "ms": 2965
+      },
+      "embedMs": {
+        "e768": 7139,
+        "e3072": 7265
+      }
+    },
+    {
+      "id": "eval-002",
+      "symptom_text": "dry cough worse at night, no phlegm, throat feels scratchy",
+      "boericke": {
+        "hit": true,
+        "matched": [
+          "Drosera"
+        ],
+        "returned": [
+          "AMMONIUM    BROMATUM.",
+          "AMMONIUM    BROMATUM.",
+          "CODEINUM.",
+          "DROSERA.",
+          "WYETHIA.",
+          "HEPATICA.",
+          "'  I",
+          "KAOLIN.",
+          "CASTANEA    VESCA.",
+          "SINAPIS    NIGRA."
+        ],
+        "ms": 1612
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8933
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Mulethi"
+        ],
+        "returned": [
+          "Mulethi (Licorice Root) Chew"
+        ],
+        "ms": 1610
+      },
+      "embedMs": {
+        "e768": 643,
+        "e3072": 632
+      }
+    },
+    {
+      "id": "eval-003",
+      "symptom_text": "headache throbbing on one side with nausea and sensitivity to light",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "USNEA    BARBATA.",
+          "CITRUS  VULGARIS,",
+          "REPERTORY",
+          "OREODAPHNE.",
+          "AMMONIUM    PICRATUM.",
+          "AMMONIUM    PICRATUM.",
+          "HEAD",
+          "RBFERTORY",
+          "ONOSMODIUM,",
+          "GLOKOINE,"
+        ],
+        "ms": 1085
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8653
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Adrak"
+        ],
+        "returned": [
+          "Adrak Paste Forehead",
+          "Giloy Juice",
+          "Peppermint Oil Temple Massage"
+        ],
+        "ms": 1282
+      },
+      "embedMs": {
+        "e768": 1045,
+        "e3072": 646
+      }
+    },
+    {
+      "id": "eval-004",
+      "symptom_text": "acidity burning in chest after eating spicy food, sour taste in mouth",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "CITRUS  VULGARIS,",
+          "I  LACTICUM    ACIBUM,  M",
+          "TARTARICUM    ACIDUM.",
+          "K  V.",
+          "ATHAMANTA.",
+          "ACALYPHA     UTDICA.",
+          "ACALYPHA     UTDICA.",
+          "LEPIDIUM.",
+          "APIUM    GRAVEOLEKS.",
+          "GENTIANA    LUTEA."
+        ],
+        "ms": 1305
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 9172
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1518
+      },
+      "embedMs": {
+        "e768": 965,
+        "e3072": 951
+      }
+    },
+    {
+      "id": "eval-005",
+      "symptom_text": "joint pain in knees worse in morning with stiffness",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "MEKISPERMUM.",
+          "ANGUSTURA.",
+          "ANGUSTURA.",
+          "STELLARU    MEDIA.",
+          "FINDS    SYLVESTRIS.",
+          "AMMONIUM    PHOSPHORICUM.",
+          "AMMONIUM    PHOSPHORICUM."
+        ],
+        "ms": 3610
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 9071
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Sarso Tel Maalish",
+          "Haldi-Adrak Anti-Inflammatory Milk"
+        ],
+        "ms": 4033
+      },
+      "embedMs": {
+        "e768": 637,
+        "e3072": 1055
+      }
+    },
+    {
+      "id": "eval-006",
+      "symptom_text": "constipation since 4 days no urge to pass stool hard dry stools",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "CASCARILLA.",
+          "CASCARA    SAGRADA.",
+          "OPUKTIA    VULGARIS.",
+          "APIUM    GRAVEOLEKS.",
+          "TROMBIBUJM,",
+          "SENNA.",
+          "SEDTTM    ACRE.",
+          "GRATIOLA.",
+          "CUPHEA.",
+          "LAC    DEFLORATUM,"
+        ],
+        "ms": 2666
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 9496
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Warm Water with Nimbu-Shahad",
+          "Triphala before Bed",
+          "Kela aur Doodh"
+        ],
+        "ms": 3144
+      },
+      "embedMs": {
+        "e768": 697,
+        "e3072": 624
+      }
+    },
+    {
+      "id": "eval-007",
+      "symptom_text": "fever 101 body aches chills since yesterday",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "^  BOLETUS    LARICIS,",
+          "AZADIRACHTA    INDICA.",
+          "PYROGENIUM.",
+          "^^  I",
+          "ACONITUM    NAPELLUS.",
+          "ACONITUM    NAPELLUS.",
+          "BAPTISIA.",
+          "METHYLEITE    BLUE,",
+          "TRIOSTEUM    PERFOLIATUM.",
+          "MEKISPERMUM."
+        ],
+        "ms": 1066
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8834
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1316
+      },
+      "embedMs": {
+        "e768": 604,
+        "e3072": 1190
+      }
+    },
+    {
+      "id": "eval-008",
+      "symptom_text": "skin rash itching red patches on arms and legs spreading",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "ASTACUS.",
+          "KALI  ARSEHICUM.",
+          "FINDS    SYLVESTRIS.",
+          "TEUCRIUM    MARUM THAIXIOM.",
+          "CALTHA    PALUSTRIS."
+        ],
+        "ms": 1116
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8971
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Neem"
+        ],
+        "returned": [
+          "Neem Paste",
+          "Multani Mitti-Rose Water Pack"
+        ],
+        "ms": 1285
+      },
+      "embedMs": {
+        "e768": 767,
+        "e3072": 769
+      }
+    },
+    {
+      "id": "eval-009",
+      "symptom_text": "sore throat pain while swallowing with mild fever",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "ASIMIHA    TMILOBA.",
+          "WYETHIA.",
+          "HEPATICA.",
+          "AGRAPHIS    KDTAITS.",
+          "AGRAPHIS    KDTAITS.",
+          "DIPHTHERINUM.",
+          "SAPONARIA.",
+          "MEKISPERMUM.",
+          "^  BOLETUS    LARICIS,",
+          "FRAGARIA."
+        ],
+        "ms": 2818
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8524
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 3001
+      },
+      "embedMs": {
+        "e768": 651,
+        "e3072": 981
+      }
+    },
+    {
+      "id": "eval-010",
+      "symptom_text": "stomach pain cramping after eating with gas and bloating",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "GENTIANA    LUTEA.",
+          "CASCARILLA.",
+          "RAPHANUS.",
+          "GAULTHERIA.",
+          "K  V.",
+          "TARAXACUM.",
+          "GRATIOLA.",
+          "TROMBIBUJM,",
+          "ABIES  NIGRA.",
+          "ABIES  NIGRA."
+        ],
+        "ms": 952
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8836
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1194
+      },
+      "embedMs": {
+        "e768": 736,
+        "e3072": 977
+      }
+    },
+    {
+      "id": "eval-011",
+      "symptom_text": "anxiety unable to sleep racing thoughts at night",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 3354
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8507
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Brahmi Tel Head Massage"
+        ],
+        "ms": 3916
+      },
+      "embedMs": {
+        "e768": 1007,
+        "e3072": 786
+      }
+    },
+    {
+      "id": "eval-012",
+      "symptom_text": "back pain lower back dull ache worse sitting at desk",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 242
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8246
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Methi"
+        ],
+        "returned": [
+          "Warm Sarso Tel Maalish",
+          "Methi Dana Kadha"
+        ],
+        "ms": 247
+      },
+      "embedMs": {
+        "e768": 717,
+        "e3072": 622
+      }
+    },
+    {
+      "id": "eval-013",
+      "symptom_text": "nasal congestion blocked nose cannot breathe properly sinus pressure",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "LEMNA    MINOR.",
+          "NOSE",
+          "NOSE",
+          "TEUCRIUM     MARLM:",
+          "SINAPIS    NIGRA.",
+          "AGRAPHIS    KDTAITS.",
+          "AGRAPHIS    KDTAITS.",
+          "POTHOS    FCETIDUS.",
+          "BOTHROPS    LAJICIOLATUS.",
+          "NATRUM    ARSENICATUM."
+        ],
+        "ms": 1534
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 9174
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1706
+      },
+      "embedMs": {
+        "e768": 660,
+        "e3072": 959
+      }
+    },
+    {
+      "id": "eval-014",
+      "symptom_text": "indigestion heavy feeling after food with nausea and loss of appetite",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "GENTIANA    LUTEA.",
+          "ABIES  NIGRA.",
+          "ABIES  NIGRA.",
+          "TARAXACUM.",
+          "CASCARILLA.",
+          "OPUKTIA    VULGARIS.",
+          "APIUM    GRAVEOLEKS.",
+          "HOMARUS.",
+          "GRATIOLA.",
+          "K  V."
+        ],
+        "ms": 799
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8303
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Ajwain",
+          "Jeera"
+        ],
+        "returned": [
+          "Jeera Paani",
+          "Hing-Ajwain Water",
+          "Saunf Post-Meal"
+        ],
+        "ms": 1262
+      },
+      "embedMs": {
+        "e768": 657,
+        "e3072": 902
+      }
+    },
+    {
+      "id": "eval-015",
+      "symptom_text": "hair fall excessive shedding thinning on top of head",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 833
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8421
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Amla"
+        ],
+        "returned": [
+          "Pyaaz ka Ras (Onion Juice)",
+          "Amla-Brahmi Hair Mask"
+        ],
+        "ms": 1030
+      },
+      "embedMs": {
+        "e768": 614,
+        "e3072": 962
+      }
+    },
+    {
+      "id": "eval-016",
+      "symptom_text": "diarrhea loose watery stools 5 times today with stomach cramps",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "OPUKTIA    VULGARIS.",
+          "COTO.",
+          "ALSTONIA.",
+          "ALSTONIA.",
+          "TROMBIBUJM,",
+          "MERCUHIUS     SULPHURICUS.",
+          "CUPHEA.",
+          "NUPHAR    LUTEUM.",
+          "TARTARICUM    ACIDUM.",
+          "JALAPA."
+        ],
+        "ms": 846
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8447
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1034
+      },
+      "embedMs": {
+        "e768": 973,
+        "e3072": 648
+      }
+    },
+    {
+      "id": "eval-017",
+      "symptom_text": "eye strain headache after screen work blurry vision tired eyes",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "EYES",
+          "GUAREA,",
+          "ONOSMODIUM,"
+        ],
+        "ms": 1151
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8363
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Palming (Cold Water)"
+        ],
+        "ms": 1151
+      },
+      "embedMs": {
+        "e768": 928,
+        "e3072": 931
+      }
+    },
+    {
+      "id": "eval-018",
+      "symptom_text": "menstrual cramps severe pain lower abdomen first day of period",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "VIBURNUM    OPULUS.",
+          "CYCLAMEW,",
+          "MITCHELLA,",
+          "COCCULUS.",
+          "SENECIO."
+        ],
+        "ms": 2826
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8735
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 2783
+      },
+      "embedMs": {
+        "e768": 979,
+        "e3072": 593
+      }
+    },
+    {
+      "id": "eval-019",
+      "symptom_text": "mouth ulcers painful sores inside cheek and tongue",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "KALI    CHLORICUM.",
+          "TARAXACUM.",
+          "I  MERCURIUS    CYAHATUS.",
+          "FRAGARIA.",
+          "MURIATICUM    ACIDUM."
+        ],
+        "ms": 854
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8351
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 816
+      },
+      "embedMs": {
+        "e768": 882,
+        "e3072": 940
+      }
+    },
+    {
+      "id": "eval-020",
+      "symptom_text": "fatigue tiredness weakness no energy for weeks",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "AVENA   SATIVA.",
+          "TANACETUM    VULGARE,",
+          "ANGUSTURA.",
+          "ANGUSTURA.",
+          "LDTARIA.",
+          "ONOSMODIUM,",
+          "ALETRIS     FARINOSA.",
+          "ALETRIS     FARINOSA.",
+          "ASARUM.",
+          "CARBOHEUM     OXYGENISATUM."
+        ],
+        "ms": 1288
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8434
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 1909
+      },
+      "embedMs": {
+        "e768": 914,
+        "e3072": 981
+      }
+    },
+    {
+      "id": "eval-021",
+      "symptom_text": "acne pimples on face and forehead oily skin",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "EUGENIA    JAMBOS.",
+          "BERBERIS    AQUIFOLIUM.",
+          "I  JUGLANS    REGIA.  ,H",
+          "LAPPA.",
+          "REPERTORY",
+          "TAXUS    BACCATA."
+        ],
+        "ms": 1046
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8446
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Multani Mitti-Rose Water Pack"
+        ],
+        "ms": 1180
+      },
+      "embedMs": {
+        "e768": 699,
+        "e3072": 954
+      }
+    },
+    {
+      "id": "eval-022",
+      "symptom_text": "gas excessive flatulence bloating abdomen feels distended",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "RAPHANUS.",
+          "TARAXACUM.",
+          "FUCUS    VESICULOSUS.",
+          "POTHOS    FCETIDUS.",
+          "OPUKTIA    VULGARIS.",
+          "VALERIANA.",
+          "VALERIANA VANADIUM.",
+          "GRATIOLA.",
+          "NATRUM     NITRICUM.",
+          "CASCARILLA."
+        ],
+        "ms": 1008
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8847
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Ajwain"
+        ],
+        "returned": [
+          "Hing-Ajwain Water"
+        ],
+        "ms": 1231
+      },
+      "embedMs": {
+        "e768": 1014,
+        "e3072": 598
+      }
+    },
+    {
+      "id": "eval-023",
+      "symptom_text": "cough with green phlegm and mild chest congestion",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "HEPATICA.",
+          "KAOLIN.",
+          "SQUILLA   MARITIMA.",
+          "CASTANEA    VESCA.",
+          "COCHLEARIA,",
+          "ALLIUM   SATIVUM ALNUS.  ^J",
+          "ALLIUM   SATIVUM ALNUS.  ^J",
+          "AMMONIUM   MURIATICUM.",
+          "AMMONIUM   MURIATICUM.",
+          "AURATUM."
+        ],
+        "ms": 6395
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8746
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Kali Mirch-Ghee"
+        ],
+        "ms": 7328
+      },
+      "embedMs": {
+        "e768": 712,
+        "e3072": 696
+      }
+    },
+    {
+      "id": "eval-024",
+      "symptom_text": "burning urination frequent urge to urinate lower abdomen pain",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "MITCHELLA,",
+          "HYDRANGEA.",
+          "PETROSELIWUM.",
+          "UVA    URSI.",
+          "TRITICUM,",
+          "^^  EPIGEA.",
+          "CUBEBA.",
+          "PULEX    IRRITAIIS.",
+          "HEDEOMA.",
+          "SENECIO."
+        ],
+        "ms": 299
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8188
+      },
+      "homeRemedies": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "Coriander (Dhaniya) Seed Water"
+        ],
+        "ms": 233
+      },
+      "embedMs": {
+        "e768": 690,
+        "e3072": 954
+      }
+    },
+    {
+      "id": "eval-025",
+      "symptom_text": "toothache severe throbbing pain in molar worse with cold water",
+      "boericke": {
+        "hit": false,
+        "matched": [],
+        "returned": [
+          "COFFEA    CRUDA.",
+          "PLAMTAGO    MAJOR.",
+          "HEKLA   LAVA.",
+          "CITRUS  VULGARIS,",
+          "ANGUSTURA.",
+          "ANGUSTURA.",
+          "GAULTHERIA.",
+          "MAGHESIA     PHOSPHORIC  A,"
+        ],
+        "ms": 537
+      },
+      "ayurvedic": {
+        "hit": false,
+        "matched": [],
+        "returned": [],
+        "ms": 8338
+      },
+      "homeRemedies": {
+        "hit": true,
+        "matched": [
+          "Laung"
+        ],
+        "returned": [
+          "Clove Oil",
+          "Laung (Clove) on Tooth"
+        ],
+        "ms": 1009
+      },
+      "embedMs": {
+        "e768": 679,
+        "e3072": 636
+      }
+    }
+  ],
+  "generatedAt": "2026-05-19T09:35:54.997Z"
+}

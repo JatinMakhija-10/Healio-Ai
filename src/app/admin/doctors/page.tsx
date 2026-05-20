@@ -42,7 +42,19 @@ export default function AdminDoctorsPage() {
         setLoading(false);
     }, []);
 
-    useEffect(() => { fetchDoctors(); }, [fetchDoctors]);
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const { data } = await supabase
+                .from("doctors")
+                .select("*, profiles!inner(full_name, email)")
+                .order("created_at", { ascending: false });
+            if (cancelled) return;
+            setDoctors((data as DoctorRow[]) || []);
+            setLoading(false);
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     const updateStatus = async (doctorId: string, userId: string, status: string) => {
         setActionLoading(doctorId);

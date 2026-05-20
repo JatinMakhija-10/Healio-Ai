@@ -11,7 +11,6 @@ import {
     FileText,
     Settings,
     Shield,
-    Activity,
     Map,
     LogOut,
     ChevronLeft,
