@@ -156,3 +156,69 @@
 .text-confidence-low {
     color: var(--healio-confidence-low);
 }
+
+/* ── Wellness Repositioning Tokens ───────────────────────────
+ * Plan ref: Part II palette + Part IV §4.1
+ * Namespace: --healio-wellness-*
+ * These layer on top of the existing clinical token set.
+ * Do NOT replace --healio-brand-* or --healio-severity-* tokens.
+ */
+
+:root {
+    /* Primary — Tulsi green (#2D6A4F) */
+    --healio-wellness-primary:         #2D6A4F;
+    --healio-wellness-primary-light:   #4A9B75;
+    --healio-wellness-primary-dark:    #1E4D38;
+    --healio-wellness-primary-bg:      #EAF4EF;
+
+    /* Secondary — Marigold (#E9A21A) */
+    --healio-wellness-secondary:       #E9A21A;
+    --healio-wellness-secondary-light: #F0BC52;
+    --healio-wellness-secondary-bg:    #FEF6E0;
+
+    /* Accent — Indigo deep (#3D405B) */
+    --healio-wellness-accent:          #3D405B;
+    --healio-wellness-accent-light:    #5C6080;
+    --healio-wellness-accent-bg:       #ECEDF4;
+
+    /* Soft support — Rose clay (#C9675A) */
+    --healio-wellness-rose:            #C9675A;
+    --healio-wellness-rose-light:      #D98A80;
+    --healio-wellness-rose-bg:         #FAEEEC;
+
+    /* Background — Warm ivory */
+    --healio-wellness-ivory:           #FDF8F0;
+
+    /* Evidence label colours (plan §3 — 5 label types) */
+    --healio-evidence-established:     #2D6A4F;   /* Clinically established   → tulsi green */
+    --healio-evidence-established-bg:  #EAF4EF;
+    --healio-evidence-selfcare:        #E9A21A;   /* Common self-care         → marigold    */
+    --healio-evidence-selfcare-bg:     #FEF6E0;
+    --healio-evidence-traditional:     #3D405B;   /* Traditional practice     → indigo      */
+    --healio-evidence-traditional-bg:  #ECEDF4;
+    --healio-evidence-emerging:        #B45309;   /* Emerging / limited       → amber-700   */
+    --healio-evidence-emerging-bg:     #FEF3C7;
+    --healio-evidence-avoid:           #B91C1C;   /* Avoid or consult first   → red-700     */
+    --healio-evidence-avoid-bg:        #FEE2E2;
+
+    /* Escalation level colours (plan §3.5 — L1 → L5) */
+    --healio-escalation-l1:            #2D6A4F;   /* Routine self-care   */
+    --healio-escalation-l2:            #E9A21A;   /* Watchful waiting    */
+    --healio-escalation-l3:            #B45309;   /* Non-urgent consult  */
+    --healio-escalation-l4:            #C2410C;   /* Urgent consult      */
+    --healio-escalation-l5:            #B91C1C;   /* Emergency           */
+    --healio-escalation-l5-bg:         #FEE2E2;
+}
+
+/* Evidence label utility classes */
+.text-evidence-established  { color: var(--healio-evidence-established);  }
+.text-evidence-selfcare     { color: var(--healio-evidence-selfcare);     }
+.text-evidence-traditional  { color: var(--healio-evidence-traditional);  }
+.text-evidence-emerging     { color: var(--healio-evidence-emerging);     }
+.text-evidence-avoid        { color: var(--healio-evidence-avoid);        }
+
+.bg-evidence-established    { background-color: var(--healio-evidence-established-bg);  }
+.bg-evidence-selfcare       { background-color: var(--healio-evidence-selfcare-bg);     }
+.bg-evidence-traditional    { background-color: var(--healio-evidence-traditional-bg);  }
+.bg-evidence-emerging       { background-color: var(--healio-evidence-emerging-bg);     }
+.bg-evidence-avoid          { background-color: var(--healio-evidence-avoid-bg);        }

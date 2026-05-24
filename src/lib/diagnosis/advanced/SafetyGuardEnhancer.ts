@@ -431,12 +431,22 @@ export class SafetyGuardEnhancer {
         // Determine overall safety level
         const safetyLevel = this.determineSafetyLevel(alerts, forceSeekHelp);
 
+        // Map to plan's L1-L5 escalation ladder (plan ref: Part II §3.5 + Part IV §4.10)
+        const SAFETY_TO_ESCALATION: Record<SafetyAssessment['safetyLevel'], SafetyAssessment['escalationLevel']> = {
+            safe:      'L1',
+            caution:   'L2',
+            warning:   'L3',
+            danger:    'L4',
+            emergency: 'L5',
+        };
+
         return {
             safetyLevel,
             alerts,
             forceSeekHelp,
             seekHelpReason,
             mergedRedFlags: [...new Set(mergedRedFlags)], // Deduplicate
+            escalationLevel: SAFETY_TO_ESCALATION[safetyLevel],
         };
     }
 

@@ -7,7 +7,7 @@
 export const PHASE_CONFIG = {
     // Navigation & Sections
     showLearnSection: false,        // Phase 2
-    showWellnessSection: false,     // Phase 2
+    showWellnessSection: true,      // Phase 2 — ENABLED: Repositioning Plan active
     showVideoConsult: false,        // Phase 2
     showDoctorMarketplace: false,   // Phase 2
     showFamilyProfiles: false,      // Phase 2
@@ -18,7 +18,7 @@ export const PHASE_CONFIG = {
 
     // Dashboard Widgets
     showDoshaWidgets: false,        // Phase 2 — Prakriti/Vikriti/Dosha
-    showDailyTipCard: false,        // Phase 2
+    showDailyTipCard: true,         // Phase 2 — ENABLED: Repositioning Plan active
     showPainTrend: false,           // Phase 2
     showAppointments: false,        // Phase 2
 

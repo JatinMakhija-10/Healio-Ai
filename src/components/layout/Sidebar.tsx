@@ -14,7 +14,8 @@ import {
     BookOpen,
     Video,
     CreditCard,
-    Crown
+    Crown,
+    Leaf
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,13 @@ const allSidebarItems = [
         href: "/dashboard/profile",
         icon: UserCircle,
         visible: true, // Always visible
+    },
+    // PHASE 2 — Wellness Section
+    {
+        title: "Wellness",
+        href: "/dashboard/wellness",
+        icon: Leaf,
+        visible: PHASE_CONFIG.showWellnessSection,
     },
     // PHASE 2 — Find Specialist / Doctor Marketplace
     {

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 // PHASE 2 â€” DailyTipCard
-// import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
+import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
+import { WellnessEntryCards } from "@/components/wellness/WellnessEntryCards";
+import { PHASE_CONFIG } from "@/lib/phaseConfig";
+import { SeasonalBanner } from "@/components/wellness/SeasonalBanner";
 import { useAuth } from "@/context/AuthContext";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -219,7 +222,7 @@ export default function DashboardPage() {
                         {getGreeting()}, <span className="capitalize">{userName}</span>
                     </h1>
                     <p className="text-[15px] text-slate-500 mt-1">
-                        Here is a summary of your health consultations.
+                        Your calm, culturally familiar wellness guide.
                     </p>
                 </div>
                 <Link href="/dashboard/consult">
@@ -251,6 +254,22 @@ export default function DashboardPage() {
                         </Button>
                     </Link>
                 </div>
+
+            )}
+
+            {/* Wellness Entry Cards (Plan §6.2) */}
+            {PHASE_CONFIG.showWellnessSection && (
+                <WellnessEntryCards />
+            )}
+
+            {/* Seasonal Banner (Plan §8.3) */}
+            {PHASE_CONFIG.showWellnessSection && (
+                <SeasonalBanner />
+            )}
+
+            {/* Daily Tip Card (Phase 2) */}
+            {PHASE_CONFIG.showDailyTipCard && (
+                <DailyTipCard />
             )}
 
             {/* Stats / Quick Cards */}

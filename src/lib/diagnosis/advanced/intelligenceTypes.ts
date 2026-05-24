@@ -332,6 +332,18 @@ export interface SafetyAssessment {
     seekHelpReason?: string;
     /** Red flags from multiple sources (merged) */
     mergedRedFlags: string[];
+    /**
+     * Plan ref: Part II §3.5 + Part IV §4.10
+     * Maps safetyLevel to the plan's 5-level escalation ladder for UI rendering.
+     * L4/L5 must surface as non-dismissible EscalationAlert components.
+     *
+     *  safe      → L1 (Routine Self-Care)
+     *  caution   → L2 (Watchful Waiting)
+     *  warning   → L3 (Non-Urgent Consult)
+     *  danger    → L4 (Urgent Consult — non-dismissible)
+     *  emergency → L5 (Emergency — non-dismissible)
+     */
+    escalationLevel?: 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 }
 
 export interface SafetyAlert {

@@ -223,6 +223,15 @@ export default function WellnessPage() {
                     </div>
                 </div>
             </div>
+            {/* Remedies and Routines library entry point */}
+            <div className="mt-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 flex items-center justify-between gap-4">
+                <div>
+                    <p className="font-semibold text-emerald-900">Remedies &amp; Routines Library</p>
+                    <p className="text-sm text-emerald-700 mt-0.5">Traditional practices and everyday self-care, each with honest evidence context.</p>
+                </div>
+                <a href="/dashboard/wellness/library" className="shrink-0 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 transition-colors">Browse</a>
+            </div>
+
 
             <PlanSelectionModal
                 open={showUpgradeModal}
