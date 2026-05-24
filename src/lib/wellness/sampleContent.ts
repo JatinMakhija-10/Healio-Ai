@@ -1,4 +1,4 @@
-/**
+﻿﻿/**
  * Sample Wellness Content
  *
  * Plan ref: Part IV §4.6 + Enhanced Plan §10.2
@@ -549,6 +549,272 @@ export const SAMPLE_WELLNESS_CONTENT: WellnessContent[] = [
     category: 'movement',
     season: null,
   },
+
+
+  // ── Batch 2: Remaining §VI pilot topics ───────────────────────────────────
+
+  {
+    id: 'hair-oiling-safety',
+    title: 'Hair oiling — safe practice',
+    whatItIs: 'Traditional hair oiling before washing — using coconut, sesame, or amla oil — is a widely practised scalp-care ritual in Indian households.',
+    mayHelpWith: ['Scalp dryness', 'Hair breakage from dryness', 'Relaxation via scalp massage'],
+    traditionalUse: 'Coconut, sesame, and amla oils have been used in Indian hair care for centuries. Warm oil massage (champi) is a well-established pre-wash practice across Ayurveda and folk tradition.',
+    evidenceLabel: 'traditional_practice',
+    evidenceSummary: 'Limited clinical evidence exists for oiling improving hair growth. Coconut oil has some research support for reducing protein loss in hair. Amla has antioxidant properties studied in vitro. Cultural and anecdotal benefit is widely reported.',
+    avoidIf: [
+      'Active scalp infection, dandruff, or seborrhoeic dermatitis — oil can worsen fungal overgrowth',
+      'Open wounds or sores on the scalp',
+      'Known allergy to any of the oils used',
+    ],
+    howToUseSafely: 'Warm the oil slightly (test on wrist — not hot). Apply to scalp and hair 1–2 hours before washing; avoid leaving overnight if you have dandruff-prone scalp. Wash out thoroughly with mild shampoo. A tablespoon is enough for most hair lengths.',
+    seekHelpIf: [
+      'Scalp itching, flaking, or redness that worsens after oiling',
+      'Hair loss that is sudden or in patches',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'skin_hair',
+    season: null,
+  },
+
+  {
+    id: 'posture-desk-workers',
+    title: 'Posture for desk workers',
+    whatItIs: 'Ergonomic posture habits and movement breaks for people who sit at a desk for extended hours each day.',
+    mayHelpWith: ['Neck and upper back stiffness', 'Lower back discomfort', 'Eye strain from screens', 'Afternoon fatigue'],
+    traditionalUse: 'Yogic posture principles — alignment, breathing awareness, and periodic movement — inform many modern ergonomic guidelines and physiotherapy recommendations.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Strong evidence links prolonged sitting and poor ergonomics to musculoskeletal discomfort. Regular movement breaks and correct screen positioning are well-supported by occupational health research and WHO guidelines.',
+    avoidIf: [
+      'Acute disc prolapse or spinal injury — consult a physiotherapist before making postural changes',
+    ],
+    howToUseSafely: 'Screen at eye level, not below. Feet flat on floor or footrest. Chair supports lower back. Take a 2-minute movement break every 30–45 minutes: stand, walk, or do shoulder rolls. The 20-20-20 rule for eyes: every 20 minutes, look 20 feet away for 20 seconds.',
+    seekHelpIf: [
+      'Pain radiating down the arm or leg (numbness, tingling)',
+      'Neck or back pain that does not improve with rest or movement breaks',
+      'Headaches starting at the base of the skull',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'movement',
+    season: null,
+  },
+
+  {
+    id: 'healthy-morning-routine',
+    title: 'Healthy morning routine',
+    whatItIs: 'A consistent set of morning habits — hydration, light movement, and a proper breakfast — that supports energy, mood, and focus throughout the day.',
+    mayHelpWith: ['Sustained energy through the morning', 'Better mood and focus', 'Reducing reliance on caffeine'],
+    traditionalUse: 'Ayurvedic Dinacharya (daily routine) prescribes waking before sunrise, tongue scraping, oil pulling, and a warm breakfast — elements that align with modern sleep science and circadian rhythm research.',
+    evidenceLabel: 'common_self_care',
+    evidenceSummary: 'Consistent wake times, morning hydration, and eating breakfast are supported by circadian biology and behavioural research. Limiting early screen use is associated with better cortisol patterns. No single protocol is universally proven; consistency matters more than specifics.',
+    avoidIf: [
+      'No specific contraindications — adjust intensity if unwell or sleep-deprived',
+    ],
+    howToUseSafely: 'Wake at a consistent time. Drink one glass of warm or room-temperature water first. Spend 5–10 minutes on light stretching or breathing. Eat breakfast within 90 minutes of waking. Limit phone use for the first 20 minutes.',
+    seekHelpIf: [
+      'Persistent morning fatigue despite adequate sleep — rule out thyroid or anaemia',
+      'Difficulty eating in the morning combined with nausea — mention to your doctor',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'preventive',
+    season: null,
+  },
+
+  {
+    id: 'reducing-processed-sugar',
+    title: 'Reducing processed sugar',
+    whatItIs: 'Cutting back on added and processed sugar — from drinks, packaged snacks, and desserts — to support energy stability, weight, and long-term metabolic health.',
+    mayHelpWith: ['Energy stability (fewer blood sugar spikes and crashes)', 'Skin health', 'Weight management', 'Reducing dental caries'],
+    traditionalUse: 'Traditional Indian diets relied on natural sweetness from fruits, jaggery in moderation, and seasonal foods. Processed sugar is a modern addition with no traditional roots.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Robust clinical evidence links high added sugar intake to obesity, type 2 diabetes, and cardiovascular disease risk. WHO and Indian dietary guidelines recommend limiting free sugars to under 10% of total daily energy intake. Replacing sugar with whole fruit is consistently supported.',
+    avoidIf: [
+      'Diabetic patients should consult their doctor about sugar substitutes — some alternatives affect blood glucose differently',
+    ],
+    howToUseSafely: 'Remove one obvious source at a time: sweetened drinks, packaged biscuits, or daily dessert. Replace with fruit, plain nuts, or roasted chana. Read labels — sugar hides as corn syrup, dextrose, and maltose. Jaggery and honey are lower-glycaemic alternatives but are still sugar — use sparingly.',
+    seekHelpIf: [
+      'Intense sugar cravings that feel uncontrollable — could indicate blood sugar dysregulation',
+      'Any symptom of diabetes: unusual thirst, frequent urination, unexplained weight loss',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'preventive',
+    season: null,
+  },
+
+  {
+    id: 'evening-wind-down',
+    title: 'Evening wind-down routine',
+    whatItIs: 'A consistent set of calming habits in the 60–90 minutes before bed that improve sleep onset, sleep quality, and next-day energy.',
+    mayHelpWith: ['Falling asleep faster', 'Deeper, less fragmented sleep', 'Reducing next-day fatigue and irritability'],
+    traditionalUse: 'Ayurveda recommends Ratricharya (evening routine): light dinner, gentle walking, avoiding stimulating activity, and preparing the mind and body for sleep through calm rituals.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Sleep hygiene research consistently supports dim lighting, screen cessation, and consistent sleep timing as effective for improving sleep onset latency and quality. These recommendations are endorsed by AASM and international sleep medicine guidelines.',
+    avoidIf: [
+      'Clinical insomnia or sleep disorders — these need professional assessment alongside lifestyle changes',
+    ],
+    howToUseSafely: 'Dim lights and turn off screens 60 minutes before bed. Eat dinner at least 2 hours before sleep. A short walk after dinner aids digestion. 5 minutes of light stretching or breathing eases the body into rest. Avoid stressful news or work emails in the final hour.',
+    seekHelpIf: [
+      'Inability to fall or stay asleep consistently for more than 3 weeks',
+      'Snoring loudly or waking with headaches — possible sleep apnoea',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'sleep_stress',
+    season: null,
+  },
+
+  {
+    id: 'mindful-eating-basics',
+    title: 'Mindful eating basics',
+    whatItIs: 'The practice of eating slowly and with full attention — no screens, no multitasking — to improve digestion and awareness of hunger and fullness cues.',
+    mayHelpWith: ['Bloating and indigestion', 'Overeating and portion awareness', 'Improving relationship with food'],
+    traditionalUse: 'Ayurvedic eating principles include sitting to eat, chewing thoroughly, eating in a calm environment, and not eating when emotionally upset — consistent with modern mindful eating research.',
+    evidenceLabel: 'common_self_care',
+    evidenceSummary: 'Mindful eating is associated with reduced binge eating and improved satiety signalling in clinical reviews. It is included in evidence-based behavioural nutrition programmes. Effects on weight alone are modest; impact on food relationship and digestion comfort is better supported.',
+    avoidIf: [
+      'Eating disorders — mindful eating can be helpful but should be guided by a professional in clinical eating disorder contexts',
+    ],
+    howToUseSafely: 'Put the phone away during meals. Eat seated, not standing. Chew each mouthful thoroughly. Pause mid-meal to check hunger — are you still hungry or just eating out of habit? Take at least 20 minutes per main meal.',
+    seekHelpIf: [
+      'Persistent bloating, pain, or reflux despite dietary changes',
+      'Significant unintended weight loss or gain',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'digestion',
+    season: null,
+  },
+
+  {
+    id: 'safe-sun-exposure',
+    title: 'Safe sun exposure',
+    whatItIs: 'Brief, daily sun exposure — particularly in the early morning — to support Vitamin D synthesis and mood, while avoiding peak-UV midday sun.',
+    mayHelpWith: ['Vitamin D synthesis', 'Mood support (via serotonin)', 'Circadian rhythm regulation'],
+    traditionalUse: 'Surya Namaskar (sun salutation) and early morning sun exposure are longstanding Indian wellness traditions. Culturally, morning sun is considered sattvic and health-promoting.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'UVB exposure triggering cutaneous Vitamin D synthesis is well-established. Morning light exposure supporting circadian rhythm and serotonin is robustly supported in sleep and mood research. The risk of UV-induced skin damage at midday is also clinically established — balance is key.',
+    avoidIf: [
+      'History of skin cancer or very fair skin with sunburn history — limit and use SPF',
+      'Photosensitive conditions such as lupus',
+      'Certain medications increase photosensitivity (tetracyclines, some antifungals) — check with your doctor',
+    ],
+    howToUseSafely: 'Aim for 15–20 minutes on arms and face between 7–10 am. Avoid direct midday sun (11 am–3 pm) in Indian summers. Use SPF 30+ if staying outdoors beyond 20 minutes. Do not substitute sun exposure for medically confirmed Vitamin D supplementation.',
+    seekHelpIf: [
+      'Any new mole, skin lesion, or change in an existing mole — get it assessed',
+      'Severe sunburn with blistering',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'preventive',
+    season: 'summer',
+  },
+
+  {
+    id: 'basic-hand-hygiene',
+    title: 'Basic hand hygiene',
+    whatItIs: 'Handwashing with soap and water for at least 20 seconds — one of the most evidence-backed ways to prevent the spread of respiratory and gastrointestinal infections.',
+    mayHelpWith: ['Reducing transmission of cold and flu', 'Preventing food-borne illness', 'Protecting vulnerable family members (children, elderly)'],
+    traditionalUse: 'Washing hands before meals and after using the toilet is embedded in Indian household tradition and religious practice — consistent with modern infection control principles.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Handwashing with soap is one of the most cost-effective public health interventions, supported by WHO, CDC, and extensive epidemiological research. It reduces diarrhoeal disease incidence by up to 47% and respiratory infections by up to 23% in controlled studies.',
+    avoidIf: [
+      'No contraindications. Excessive washing with harsh soaps can cause skin dryness — use a moisturising hand cream if needed.',
+    ],
+    howToUseSafely: 'Wet hands, apply soap, lather for 20 seconds covering all surfaces including between fingers and under nails. Rinse thoroughly. Dry with a clean cloth or air. Key moments: before handling food, after the toilet, after public surfaces, after blowing the nose.',
+    seekHelpIf: [
+      'Recurrent skin cracking or bleeding from hand-washing — may indicate eczema or dermatitis needing dermatologist assessment',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'preventive',
+    season: null,
+  },
+
+  {
+    id: 'mild-seasonal-allergies',
+    title: 'Managing mild seasonal allergies',
+    whatItIs: 'Safe home strategies for managing seasonal sneezing, itchy eyes, and runny nose caused by pollen, dust, or environmental triggers.',
+    mayHelpWith: ['Sneezing and runny nose', 'Itchy, watery eyes', 'Mild nasal congestion'],
+    traditionalUse: 'Jal neti (nasal irrigation with saline) is a classical Hatha Yoga practice shown in modern research to help clear nasal passages and reduce allergy symptom burden.',
+    evidenceLabel: 'common_self_care',
+    evidenceSummary: 'Saline nasal irrigation has good clinical evidence for reducing allergic rhinitis symptoms (Cochrane reviews). Allergen avoidance is a cornerstone of allergy management. OTC antihistamines have established efficacy. Jal neti specifically has supporting small-scale trials.',
+    avoidIf: [
+      'Severe or sudden allergic reactions (hives, throat swelling, difficulty breathing) — these are emergencies, not seasonal allergy',
+      'Jal Neti: always use boiled, distilled, or sterile saline — never plain tap water',
+    ],
+    howToUseSafely: 'Keep windows closed during high-pollen periods. Rinse face and nasal passages after coming indoors. Saline nasal rinse twice daily reduces irritant load. Change pillowcases frequently. OTC antihistamine eye drops are generally safe for short-term use.',
+    seekHelpIf: [
+      'Symptoms lasting more than 2 weeks without improvement',
+      'Fever, facial pain, or thick coloured discharge — suggests sinusitis',
+      'Wheezing or difficulty breathing alongside nasal symptoms',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'seasonal',
+    season: 'summer',
+  },
+
+  {
+    id: 'back-stretching-safety',
+    title: 'Safe stretching for back discomfort',
+    whatItIs: 'Gentle, targeted stretches for mild, non-specific lower back discomfort — designed to release muscle tension without worsening underlying issues.',
+    mayHelpWith: ['Lower back stiffness from prolonged sitting', 'Muscle tension from stress', 'Post-exercise tightness'],
+    traditionalUse: 'Yoga asanas — Balasana (Child Pose), Setu Bandhasana (Bridge Pose), and Pawanmuktasana (Wind-release Pose) — have been used for centuries to address lower back tension and stiffness.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Stretching and yoga for non-specific lower back pain have strong evidence from multiple systematic reviews and clinical guidelines (NICE, ACP). Gentle movement is now preferred over bed rest for most acute and chronic lower back pain episodes.',
+    avoidIf: [
+      'Acute disc herniation, sciatica with radiating leg pain, or recent spinal surgery — consult a physiotherapist first',
+      'Any stretch that causes sharp, shooting, or worsening pain — stop immediately',
+    ],
+    howToUseSafely: 'Start with 2–3 minutes once or twice daily on a firm, flat surface. Knees-to-chest: lie on your back, hug both knees for 30 seconds. Cat-cow: on hands and knees, alternate arching and rounding for 8–10 slow breaths. Child pose: kneel and stretch arms forward, forehead down for 30 seconds. Never bounce or force a stretch.',
+    seekHelpIf: [
+      'Pain radiating down one or both legs, or tingling or numbness in feet',
+      'Back pain that wakes you from sleep or is significantly worse in the morning',
+      'Back pain alongside fever, unexplained weight loss, or bladder/bowel difficulty',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'movement',
+    season: null,
+  },
+
+  {
+    id: 'seasonal-food-habits',
+    title: 'Seasonal food habits',
+    whatItIs: 'The practice of eating foods naturally available and appropriate to each season — a principle shared by Ayurveda, traditional Indian cooking, and modern nutritional ecology.',
+    mayHelpWith: ['Digestive comfort', 'Seasonal immunity support', 'Reducing bloating and heaviness'],
+    traditionalUse: 'Ritucharya (seasonal routine) in Ayurveda prescribes specific foods, tastes, and practices for each season: cooling foods in summer, warming foods in winter, light foods during monsoon when Agni (digestive fire) is considered weakest.',
+    evidenceLabel: 'traditional_practice',
+    evidenceSummary: 'Modern evidence supports eating locally and seasonally for micronutrient density (seasonal produce is fresher and nutritionally richer). Specific Ayurvedic seasonal protocols have limited clinical trial data but align with general principles of variety and appropriate-calorie diets.',
+    avoidIf: [
+      'No general contraindications; specific dietary conditions (diabetes, kidney disease, IBS) require dietitian guidance',
+    ],
+    howToUseSafely: 'Summer: prioritise cooling foods — cucumber, coconut water, curd, mint, watermelon. Monsoon: eat light, well-cooked foods; include ginger and turmeric for digestive support; avoid raw salads and street food. Winter: warm soups, ghee in moderation, seasonal root vegetables, jaggery. Year-round: prefer seasonal over cold-stored produce.',
+    seekHelpIf: [
+      'Persistent digestive symptoms regardless of diet — needs clinical assessment',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'seasonal',
+    season: null,
+  },
+
+  {
+    id: 'homeopathy-evidence-review',
+    title: 'Homeopathy — honest evidence review',
+    whatItIs: 'A balanced, evidence-informed overview of homeopathy — what it is, where evidence supports its use, and where it should not replace conventional care.',
+    mayHelpWith: ['Chronic low-severity complaints (patient-reported benefit for recurrent colds, mild skin conditions, functional digestive issues)', 'As a complement to conventional care for chronic management'],
+    traditionalUse: 'Developed in the late 18th century by Samuel Hahnemann. Widely practised in India under the AYUSH framework. Classical homeopathy uses highly diluted preparations matched to individual symptom patterns (constitutional prescribing).',
+    evidenceLabel: 'traditional_practice',
+    evidenceSummary: 'Current systematic reviews (Cochrane, UK NHS, Australian NHMRC) find no reliable evidence that homeopathy is more effective than placebo for any health condition. Patient-reported improvement is common and may reflect the therapeutic consultation, placebo effect, or natural disease resolution. It is not appropriate as a substitute for evidence-based care in serious or acute conditions.',
+    avoidIf: [
+      'Acute emergencies — homeopathy is not appropriate as a primary treatment for infections, sepsis, trauma, or any emergency',
+      'Do not replace prescribed medication with homeopathy without discussing with your doctor',
+      'Avoid remedies marketed as vaccine replacements — no evidence supports this use',
+    ],
+    howToUseSafely: 'If using for chronic, low-severity concerns, consult a registered practitioner (BHMS/MD Homeopathy). Keep your allopathic doctor informed. Do not discontinue prescribed medications. Use as a complement, not a replacement. Be cautious of practitioners who claim to treat serious conditions exclusively with homeopathy.',
+    seekHelpIf: [
+      'Any condition that is worsening, acute, or involves danger signs — seek conventional medical care immediately',
+      'You feel pressured to stop prescribed medication in favour of homeopathy',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'kitchen_care',
+    season: null,
+  },
+
+
 ];
 
 /** Get a single content item by ID */
