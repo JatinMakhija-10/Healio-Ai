@@ -19,8 +19,10 @@ import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Activity,
     Trash2,
-    Loader2
+    Loader2,
+    Info
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,10 +62,21 @@ export default function FamilyPage() {
     // Form state
     const [formName, setFormName] = useState("");
     const [formRelation, setFormRelation] = useState("Child");
-    const [formAge, setFormAge] = useState("");
+    const [formAgeBand, setFormAgeBand] = useState("");
     const [formGender, setFormGender] = useState("");
     const [formConditions, setFormConditions] = useState("");
     const [formAllergies, setFormAllergies] = useState("");
+    const [formDpdpConsent, setFormDpdpConsent] = useState(false);
+
+    // Age-band → representative age for AI personalisation (DPDP §4 data-minimisation)
+    const AGE_BANDS: { label: string; value: string; repAge: number }[] = [
+        { label: "Under 5", value: "under_5", repAge: 3 },
+        { label: "5 – 12  (Child)", value: "5_12", repAge: 8 },
+        { label: "13 – 17  (Teen)", value: "13_17", repAge: 15 },
+        { label: "18 – 35  (Young adult)", value: "18_35", repAge: 26 },
+        { label: "36 – 59  (Adult)", value: "36_59", repAge: 47 },
+        { label: "60 +  (Senior)", value: "60_plus", repAge: 68 },
+    ];
 
     const loadPersonas = useCallback(async () => {
         if (!user) return;
@@ -96,10 +109,11 @@ export default function FamilyPage() {
     const resetForm = () => {
         setFormName("");
         setFormRelation("Child");
-        setFormAge("");
+        setFormAgeBand("");
         setFormGender("");
         setFormConditions("");
         setFormAllergies("");
+        setFormDpdpConsent(false);
     };
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -113,11 +127,12 @@ export default function FamilyPage() {
 
         setIsSaving(true);
         try {
+            const band = AGE_BANDS.find(b => b.value === formAgeBand);
             const { error } = await supabase.from("personas").insert({
                 user_id: user.id,
                 name: formName.trim(),
                 relation: formRelation,
-                age: formAge ? parseInt(formAge) : null,
+                age: band ? band.repAge : null,
                 gender: formGender || null,
                 conditions: formConditions ? formConditions.split(",").map(c => c.trim()).filter(Boolean) : [],
                 allergies: formAllergies.trim(),
@@ -175,15 +190,26 @@ export default function FamilyPage() {
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">Family Profiles</h1>
-                    <p className="text-slate-500">Manage health records for your loved ones in one place.</p>
+                    <p className="text-slate-500">Manage health context for your loved ones so Healio can give them safer guidance.</p>
                 </div>
-                {!isPremium && (
+            </div>
+
+            {/* DPDP Privacy Notice */}
+            <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+                <p className="text-xs text-blue-700 leading-relaxed">
+                    <strong>Data protection notice (DPDP Act, 2023):</strong> Health data added here is stored only for the purpose of personalising wellness guidance within Healio. We collect age bands instead of exact dates of birth to minimise personal data. You may delete any profile at any time. Only add a profile for someone if you have their consent to store their health context on their behalf.
+                </p>
+            </div>
+
+            {!isPremium && (
+                <div className="flex justify-end">
                     <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5">
                         <Lock className="h-3 w-3" />
                         Premium Feature
                     </Badge>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="relative">
@@ -246,8 +272,17 @@ export default function FamilyPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Age</Label>
-                                        <Input type="number" placeholder="25" min={0} max={150} value={formAge} onChange={e => setFormAge(e.target.value)} />
+                                        <Label>Age group</Label>
+                                        <select
+                                            value={formAgeBand}
+                                            onChange={e => setFormAgeBand(e.target.value)}
+                                            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        >
+                                            <option value="">Select age group</option>
+                                            {AGE_BANDS.map(b => (
+                                                <option key={b.value} value={b.value}>{b.label}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -271,8 +306,20 @@ export default function FamilyPage() {
                                     <Label>Allergies</Label>
                                     <Input placeholder="e.g. Penicillin, Peanuts" value={formAllergies} onChange={e => setFormAllergies(e.target.value)} />
                                 </div>
+                                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 space-y-2">
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <Checkbox
+                                            checked={formDpdpConsent}
+                                            onCheckedChange={(v) => setFormDpdpConsent(!!v)}
+                                            className="mt-0.5 shrink-0"
+                                        />
+                                        <span className="text-xs text-slate-600 leading-relaxed">
+                                            I confirm this person has consented to their health context being stored in Healio for personalised wellness guidance.
+                                        </span>
+                                    </label>
+                                </div>
                                 <DialogFooter>
-                                    <Button type="submit" disabled={!formName.trim() || isSaving}>
+                                    <Button type="submit" disabled={!formName.trim() || !formDpdpConsent || isSaving}>
                                         {isSaving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving...</> : "Create Profile"}
                                     </Button>
                                 </DialogFooter>
@@ -305,7 +352,9 @@ export default function FamilyPage() {
                                     <div className="mt-4">
                                         <h3 className="font-bold text-lg text-slate-900">{member.name}</h3>
                                         <p className="text-sm text-slate-500">
-                                            {member.relation}{member.age ? ` • ${member.age} yrs` : ""}
+                                            {member.relation}{member.age ? ` • ${[
+                                                [3, "Under 5"],[8, "Age 5–12"],[15, "Age 13–17"],[26, "Age 18–35"],[47, "Age 36–59"],[68, "Age 60+"]
+                                            ].find(([r]) => r === member.age)?.[1] ?? `${member.age} yrs`}` : ""}
                                         </p>
                                     </div>
 
