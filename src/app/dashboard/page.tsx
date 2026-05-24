@@ -257,12 +257,12 @@ export default function DashboardPage() {
 
             )}
 
-            {/* Wellness Entry Cards (Plan ง6.2) */}
+            {/* Wellness Entry Cards (Plan ยง6.2) */}
             {PHASE_CONFIG.showWellnessSection && (
                 <WellnessEntryCards />
             )}
 
-            {/* Seasonal Banner (Plan ง8.3) */}
+            {/* Seasonal Banner (Plan ยง8.3) */}
             {PHASE_CONFIG.showWellnessSection && (
                 <SeasonalBanner />
             )}
