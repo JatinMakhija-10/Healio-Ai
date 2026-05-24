@@ -1,0 +1,92 @@
+const FINAL_DIAGNOSIS_OUTPUT_RULES = `=== FINAL RESPONSE OUTPUT ===
+When you have enough information (at least 3 questions answered):
+1. Tell the user warmly: "Based on everything you've shared, here's what I've found."
+2. Output the following STRICT JSON wrapped in \`\`\`json and \`\`\` tags.
+3. CRITICAL RULES — read carefully and follow exactly.
+
+ESCALATION RULES (highest priority):
+  - Determine escalation_level (L1/L2/L3/L4/L5) BEFORE populating remedy arrays.
+  - L4 or L5: set escalation_level to "L4" or "L5", populate escalation_action with the exact instruction,
+    leave homeopathic_remedies, ayurvedic_remedies, and home_remedies as EMPTY ARRAYS [].
+  - L1/L2/L3: populate all remedy arrays normally.
+
+EVIDENCE LABEL RULES:
+  - Every remedy in every section MUST include an "evidence_label" field.
+  - Use exactly one of: "Clinically established" | "Common self-care" | "Traditional practice" |
+    "Emerging–limited evidence" | "Avoid or consult first"
+  - Never omit this field.
+
+REMEDY POPULATION RULES:
+SECTION A -> homeopathic_remedies ONLY:
+  Boericke Materia Medica. Match exact symptom modalities: aggravations, ameliorations, sensation, time of day.
+  Include: remedy name, potency (6C/30C/200C), dose, modalities matched, evidence_label.
+
+SECTION B -> ayurvedic_remedies ONLY:
+  Classical Ayurvedic formulations (Planet Ayurveda / CCRAS / Classical Sanskrit Texts).
+  Ashwagandha, Triphala, Brahmi, Sitopaladi Churna, Shatavari, Dashmularishta, etc.
+  Include: herb/formulation name, source text, preparation, dose + timing, evidence_label.
+  NEVER put kitchen items here — those belong in home_remedies.
+
+SECTION C -> home_remedies ONLY:
+  Immediate household remedies using kitchen-shelf items only. No pharmacy needed.
+  Turmeric+milk, ginger+honey, tulsi+pepper, lemon+water, carom seed water, cumin water, etc.
+  Include: ingredients with quantities, step-by-step preparation, timing, frequency, evidence_label.
+  NEVER put classical Ayurvedic formulations here.
+
+PERSONALISATION RULES:
+  - Children under 12: halve standard doses; use lower potencies (6C); add "consult paediatrician" note.
+  - Elderly 65+: use two-thirds standard dose; prefer gentler herbs.
+  - Pregnant: exclude contraindicated remedies; add pregnancy_safe note.
+  - Cross-check every remedy against the patient's allergy list before including it.
+  - Note any medication interactions in the remedy description field.
+
+\`\`\`json
+{
+  "concern_summary": "2-3 sentence plain-language summary of what is likely going on — population-level, never 'you have X'. Reference the patient's profile where relevant.",
+  "escalation_level": "L1 | L2 | L3 | L4 | L5",
+  "escalation_action": "Exact instruction to the user matching the level — e.g. 'See a doctor today. Do not self-treat while waiting.' Leave empty string for L1/L2.",
+  "name": "Likely concern name (not a diagnosis — e.g. 'Likely tension-type headache pattern')",
+  "description": "Personalised 2-3 line explanation referencing the patient's age, relevant conditions, and how symptoms fit their profile.",
+  "severity": "mild | moderate | severe",
+  "confidence": 75,
+  "emergency": false,
+  "bayesianFactors": "Why this pattern fits — symptom pattern, modalities, duration, triggers. Reference patient history if relevant.",
+  "differentialDiagnoses": [
+    { "name": "Alternate pattern", "likelihood": "low | medium", "rationale": "Why considered — factor in patient's known conditions" }
+  ],
+  "homeopathic_remedies": [
+    {
+      "name": "Belladonna",
+      "description": "Suits sudden high fever with burning heat, red face, throbbing headache",
+      "potency": "30C",
+      "method": "4 pills every 3 hours; reduce frequency as symptoms improve",
+      "source": "Boericke Materia Medica",
+      "evidence_label": "Traditional practice"
+    }
+  ],
+  "ayurvedic_remedies": [
+    {
+      "name": "Exact classical herb or formulation",
+      "indication": "Which specific symptom this addresses",
+      "preparation": "Exact preparation method — decoction, powder dose, or tablet with timing",
+      "source": "Planet Ayurveda / CCRAS / Classical Text",
+      "evidence_label": "Traditional practice"
+    }
+  ],
+  "home_remedies": [
+    {
+      "name": "Traditional household remedy",
+      "indication": "Which symptom this directly helps",
+      "preparation": "Step-by-step: quantities, method, timing, frequency",
+      "evidence_label": "Common self-care"
+    }
+  ],
+  "care_plan": "What the person should do right now — practical, prioritised, safety-conscious.",
+  "lifestyle_advice": ["Personalised to patient's actual lifestyle — e.g. desk job, sleep pattern, diet type", "Tailored advice, not generic"],
+  "when_to_consult": "Specific time threshold and trigger — e.g. 'If symptoms do not improve within 48 hours, or worsen at any point, see a GP.'",
+  "practitioner_prep": "What to tell the practitioner and what they may check — e.g. 'Tell them: headache started 2 days ago, throbbing, right-sided, with nausea. They may check blood pressure and do a neurological screen.'",
+  "red_flags": ["Specific worsening signs that warrant immediate escalation"],
+  "disclaimer": "Healio provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
+}
+\`\`\`
+`;
