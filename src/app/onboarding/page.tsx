@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import {
     ChevronRight, ChevronLeft, ShieldAlert, CheckCircle, X, Search,
-    User, HeartPulse, Pill, AlertTriangle, Users, Leaf, Loader2
+    User, HeartPulse, Pill, AlertTriangle, Users, Leaf, Loader2,
+    Smile, CalendarDays, HelpCircle, Stethoscope
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -59,6 +60,8 @@ type OnboardingData = {
     diet: string;
     exercise: string;
     sleepPattern: string;
+    // Step 0: Wellness Goal
+    wellnessGoal: string;
     // Step 7: Consent
     hasConsented: boolean;
 };
@@ -83,17 +86,26 @@ const INITIAL_DATA: OnboardingData = {
     diet: "mixed",
     exercise: "moderate",
     sleepPattern: "7-8h",
+    wellnessGoal: "",
     hasConsented: false,
 };
 
+const WELLNESS_GOALS = [
+    { id: "feel_better", icon: Smile, label: "Feel better day to day", desc: "Calm, safe guidance on everyday symptoms and concerns" },
+    { id: "build_routines", icon: CalendarDays, label: "Build healthy routines", desc: "Morning and evening habits, seasonal self-care" },
+    { id: "understand_concern", icon: HelpCircle, label: "Understand a concern safely", desc: "Learn what symptoms could mean — without panic" },
+    { id: "find_practitioner", icon: Stethoscope, label: "Find a practitioner", desc: "Navigate to the right type of professional care" },
+];
+
 const STEP_META = [
-    { icon: User, title: "Basic Profile", desc: "Tell us about yourself so we can personalise your care." },
-    { icon: HeartPulse, title: "Medical History", desc: "Help us understand your health background." },
+    { icon: Smile, title: "Your Wellness Goal", desc: "What brings you to Healio? This shapes everything we show you." },
+    { icon: User, title: "About You", desc: "A few basics so we can personalise your experience." },
+    { icon: HeartPulse, title: "Health Context", desc: "Help us give you safer, more relevant guidance." },
     { icon: Pill, title: "Current Medications", desc: "Search and select any medicines you are currently taking." },
-    { icon: AlertTriangle, title: "Allergies", desc: "Critical for safe prescriptions — drug and food allergies." },
-    { icon: Users, title: "Family History", desc: "Hereditary conditions that may affect your risk profile." },
+    { icon: AlertTriangle, title: "Allergies", desc: "Critical for your safety — drug and food allergies." },
+    { icon: Users, title: "Family Health History", desc: "Hereditary patterns that may affect your risk profile." },
     { icon: Leaf, title: "Lifestyle", desc: "Your day-to-day habits help us personalise recommendations." },
-    { icon: ShieldAlert, title: "Consent & Privacy", desc: "Review how we handle your data." },
+    { icon: ShieldAlert, title: "Consent & Privacy", desc: "How we protect your data — plain language, no jargon." },
 ];
 
 // ─── Medicine Combobox (API-driven, 224k+ medicines) ─────────────────────────
@@ -328,7 +340,7 @@ export default function OnboardingWizard() {
     const [step, setStep] = useState(1);
     const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
     const [saving, setSaving] = useState(false);
-    const totalSteps = 7;
+    const totalSteps = 8;
     const progress = (step / totalSteps) * 100;
     const router = useRouter();
     const { user, loading } = useAuth();
@@ -340,6 +352,11 @@ export default function OnboardingWizard() {
 
     const handleBack = () => {
         if (step > 1) setStep(step - 1);
+    };
+
+    const selectGoal = (goalId: string) => {
+        updateData("wellnessGoal", goalId);
+        setStep(2);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -410,6 +427,7 @@ export default function OnboardingWizard() {
             gender: data.gender,
             onboarding_completed: true,
             medical_profile,
+            wellness_goal: data.wellnessGoal,
         };
 
         // Persist to localStorage first (offline fallback)
@@ -499,8 +517,41 @@ export default function OnboardingWizard() {
 
                             <CardContent className="space-y-4">
 
-                                {/* ── Step 1: Basic Profile ──────────────────────── */}
+                                {/* ── Step 1: Wellness Goal ─────────────────────── */}
                                 {step === 1 && (
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {WELLNESS_GOALS.map((goal) => {
+                                            const GoalIcon = goal.icon;
+                                            const selected = data.wellnessGoal === goal.id;
+                                            return (
+                                                <button
+                                                    key={goal.id}
+                                                    onClick={() => selectGoal(goal.id)}
+                                                    className={`flex items-start gap-4 rounded-xl border-2 px-4 py-3.5 text-left transition-all ${
+                                                        selected
+                                                            ? "border-teal-500 bg-teal-50"
+                                                            : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40"
+                                                    }`}
+                                                >
+                                                    <span className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ${
+                                                        selected ? "bg-teal-100" : "bg-slate-100"
+                                                    }`}>
+                                                        <GoalIcon className={`size-5 ${ selected ? "text-teal-600" : "text-slate-500" }`} />
+                                                    </span>
+                                                    <div>
+                                                        <p className={`text-sm font-semibold ${ selected ? "text-teal-900" : "text-slate-800" }`}>{goal.label}</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{goal.desc}</p>
+                                                    </div>
+                                                    {selected && <CheckCircle className="ml-auto mt-1 size-5 shrink-0 text-teal-500" />}
+                                                </button>
+                                            );
+                                        })}
+                                        <p className="text-center text-xs text-slate-400 pt-1">You can change this any time in your profile.</p>
+                                    </div>
+                                )}
+
+                                {/* ── Step 2: About You ──────────────────────────── */}
+                                {step === 2 && (
                                     <div className="space-y-4">
                                         <div className="space-y-1.5">
                                             <Label htmlFor="fullName">Full Name <span className="text-slate-400 font-normal text-xs">(optional)</span></Label>
@@ -580,8 +631,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 2: Medical History ────────────────────── */}
-                                {step === 2 && (
+                                {/* ── Step 3: Health Context ────────────────────── */}
+                                {step === 3 && (
                                     <div className="space-y-5">
                                         <div className="space-y-2">
                                             <Label className="text-sm font-semibold text-slate-700">Existing Conditions <span className="text-slate-400 font-normal text-xs">(select all that apply)</span></Label>
@@ -641,8 +692,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 3: Medications ────────────────────────── */}
-                                {step === 3 && (
+                                {/* ── Step 4: Medications ────────────────────────── */}
+                                {step === 4 && (
                                     <div className="space-y-5">
                                         <MedicineCombobox selected={data.medicationList} onToggle={toggleMedicine} />
 
@@ -690,8 +741,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 4: Allergies ─────────────────────────── */}
-                                {step === 4 && (
+                                {/* ── Step 5: Allergies ─────────────────────────── */}
+                                {step === 5 && (
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-3 p-3 rounded-xl bg-red-50 border border-red-100">
                                             <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
@@ -724,8 +775,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 5: Family History ─────────────────────── */}
-                                {step === 5 && (
+                                {/* ── Step 6: Family Health History ──────────────── */}
+                                {step === 6 && (
                                     <div className="space-y-3">
                                         <Label className="text-sm font-semibold text-slate-700">Conditions in close family <span className="text-slate-400 font-normal text-xs">(parents, siblings, grandparents)</span></Label>
                                         <div className="grid grid-cols-2 gap-2.5">
@@ -762,8 +813,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 6: Lifestyle ─────────────────────────── */}
-                                {step === 6 && (
+                                {/* ── Step 7: Lifestyle ─────────────────────────── */}
+                                {step === 7 && (
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
@@ -837,8 +888,8 @@ export default function OnboardingWizard() {
                                     </div>
                                 )}
 
-                                {/* ── Step 7: Consent & Legal ───────────────────── */}
-                                {step === 7 && (
+                                {/* ── Step 8: Consent & Privacy ─────────────────── */}
+                                {step === 8 && (
                                     <div className="space-y-3">
 
                                         {/* Compact header */}
@@ -931,7 +982,7 @@ export default function OnboardingWizard() {
                                 <Button
                                     variant="outline"
                                     onClick={handleBack}
-                                    disabled={step === 1}
+                                    disabled={step <= 1}
                                     className="text-slate-500 border-slate-200 hover:bg-slate-50"
                                 >
                                     <ChevronLeft className="mr-1 h-4 w-4" /> Back
@@ -939,7 +990,7 @@ export default function OnboardingWizard() {
 
                                 <Button
                                     onClick={handleNext}
-                                    disabled={(step === 7 && !data.hasConsented) || saving}
+                                    disabled={(step === 8 && !data.hasConsented) || (step === 1 && !data.wellnessGoal) || saving}
                                     className={`min-w-[150px] transition-all ${step === totalSteps
                                         ? "bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white shadow-lg shadow-teal-600/20 border-0"
                                         : "bg-slate-900 hover:bg-slate-800 text-white"}`}
