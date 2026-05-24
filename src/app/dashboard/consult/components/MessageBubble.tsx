@@ -5,6 +5,8 @@ import { ChatMessage } from "../hooks/useChat";
 import { DiagnosisResultCard } from "@/components/chat/DiagnosisResultCard";
 import { Condition } from "@/lib/diagnosis/types";
 import { UsageLimitCard } from "./UsageLimitCard";
+import { AskHealioResponseRenderer } from "@/components/wellness/AskHealioResponseRenderer";
+import type { AskHealioResponse } from "@/lib/wellness/askHealioResponse";
 
 interface MessageBubbleProps {
     message: ChatMessage;
@@ -24,6 +26,18 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     let displayText = message.content;
     let parsedCondition: Condition | null = null;
     let isParsingJson = false;
+
+    // Wellness 7-block response detection
+    let wellnessResponse: AskHealioResponse | null = null;
+    if (message.content.startsWith("___WELLNESS_RESPONSE___\n")) {
+        try {
+            const jsonText = message.content.replace("___WELLNESS_RESPONSE___\n", "");
+            wellnessResponse = JSON.parse(jsonText) as AskHealioResponse;
+            displayText = "";
+        } catch (e) {
+            console.error("[MessageBubble] Failed to parse wellness response:", e);
+        }
+    }
 
     // Usage limit detection
     let usageLimitData: {
@@ -90,8 +104,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     }
 
     // Hide bubble completely if it's just an empty string after stripping JSON
-    // but show it if it's generating the card or if it's a usage limit card
-    if (!displayText && !parsedCondition && !isParsingJson && !isUser && !usageLimitData) {
+    // but show it if it's generating the card, usage limit card, or wellness response
+    if (!displayText && !parsedCondition && !isParsingJson && !isUser && !usageLimitData && !wellnessResponse) {
         return null;
     }
 
@@ -143,6 +157,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                             }`}
                     >
                         {renderContent(displayText)}
+                    </div>
+                )}
+
+                {/* Wellness 7-block response */}
+                {wellnessResponse && (
+                    <div className="mt-1 w-full">
+                        <AskHealioResponseRenderer response={wellnessResponse} />
                     </div>
                 )}
 

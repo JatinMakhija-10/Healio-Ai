@@ -8,4 +8,8 @@ export { EscalationAlert } from './EscalationAlert';
 export { ContentCard } from './ContentCard';
 export { RoutineCard } from './RoutineCard';
 export { AskHealioResponseRenderer, AskHealioResponseSkeleton } from './AskHealioResponseRenderer';
+export { WellnessEntryCards } from './WellnessEntryCards';
+export { SeasonalBanner } from './SeasonalBanner';
+export { PractitionerEscalationCard } from './PractitionerEscalationCard';
 export type { EscalationLevel, EscalationAlertProps } from './EscalationAlert';
+export type { EscalationReason } from './PractitionerEscalationCard';
