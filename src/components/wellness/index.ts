@@ -11,5 +11,6 @@ export { AskHealioResponseRenderer, AskHealioResponseSkeleton } from './AskHeali
 export { WellnessEntryCards } from './WellnessEntryCards';
 export { SeasonalBanner } from './SeasonalBanner';
 export { PractitionerEscalationCard } from './PractitionerEscalationCard';
+export { WellnessSectionHeader } from './WellnessSectionHeader';
 export type { EscalationLevel, EscalationAlertProps } from './EscalationAlert';
 export type { EscalationReason } from './PractitionerEscalationCard';

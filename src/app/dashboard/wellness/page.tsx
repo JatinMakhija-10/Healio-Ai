@@ -233,6 +233,16 @@ export default function WellnessPage() {
             </div>
 
 
+
+            {/* Routine Builder entry point */}
+            <div className="mt-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 flex items-center justify-between gap-4">
+                <div>
+                    <p className="font-semibold text-indigo-900">Daily Routine Builder</p>
+                    <p className="text-sm text-indigo-700 mt-0.5">Build a sustainable morning and evening routine from modular wellness blocks.</p>
+                </div>
+                <a href="/dashboard/wellness/routines" className="shrink-0 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 transition-colors">Build</a>
+            </div>
+
             <PlanSelectionModal
                 open={showUpgradeModal}
                 onOpenChange={setShowUpgradeModal}
