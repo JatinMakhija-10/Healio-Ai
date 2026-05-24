@@ -20,9 +20,11 @@ import {
     ChevronUp,
     Activity,
     User,
-    Mic
+    Mic,
+    Loader2
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 // Helper for Switch UI (Moved outside component to prevent re-creation on render)
 const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
@@ -61,6 +63,40 @@ export default function SettingsPage() {
 
     // Emergency Contact State
     const [emergencyContact, setEmergencyContact] = useState({ name: "", phone: "" });
+
+    // DPDP Account Deletion State
+    const [deletionConfirm, setDeletionConfirm] = useState("");
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+    const handleDeleteAccount = async () => {
+        if (deletionConfirm !== "DELETE" || !user) return;
+        setIsDeletingAccount(true);
+        try {
+            const { data, error } = await supabase.rpc("request_data_deletion", { p_user_id: user.id });
+            if (error) throw error;
+
+            const suffix = `_${user.id}`;
+            [
+                `healio_history${suffix}`, `healio_consultation_history${suffix}`,
+                `healio_user_profile${suffix}`, `healio_pending_profile${suffix}`,
+                `healio_pref_detailed${suffix}`,
+            ].forEach(k => localStorage.removeItem(k));
+
+            alert(
+                `Your account data has been queued for deletion.\n\n` +
+                `Deleted immediately:\n• All family profiles\n• Local consultation history\n\n` +
+                `Your account will be fully removed within 30 days (DPDP §11 SLA).\n\n` +
+                (data?.personas_deleted ? `${data.personas_deleted} family profile(s) deleted.` : "")
+            );
+            await logout();
+        } catch (err) {
+            console.error("Deletion error:", err);
+            alert("Failed to request deletion. Please try again or contact support@healio.ai.");
+        } finally {
+            setIsDeletingAccount(false);
+            setDeletionConfirm("");
+        }
+    };
 
     useEffect(() => {
         // Skip if no user
@@ -611,6 +647,44 @@ export default function SettingsPage() {
                         <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700" onClick={handleClearData}>
                             <Trash2 className="mr-2 h-4 w-4" /> Clear
                         </Button>
+                    </div>
+
+                    {/* DPDP §11 Right to Erasure */}
+                    <div className="border-t border-red-100 pt-4 space-y-3">
+                        <div className="space-y-0.5">
+                            <Label className="text-base text-red-700">Delete My Account &amp; Data</Label>
+                            <p className="text-sm text-slate-500">
+                                Permanently delete your account and all health data. Under the DPDP Act 2023, your data will be fully erased within 30 days. This cannot be undone.
+                            </p>
+                        </div>
+                        <div className="rounded-lg border border-red-100 bg-red-50 p-3 space-y-1.5">
+                            <p className="text-xs text-red-700 font-medium">This will delete:</p>
+                            <ul className="text-xs text-red-600 space-y-0.5 list-disc list-inside">
+                                <li>Your profile and all medical history</li>
+                                <li>All family profiles</li>
+                                <li>Consultation history and diagnosis records</li>
+                                <li>Your account login</li>
+                            </ul>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                            <Input
+                                placeholder="Type DELETE to confirm"
+                                value={deletionConfirm}
+                                onChange={e => setDeletionConfirm(e.target.value)}
+                                className="text-sm border-red-200 focus-visible:ring-red-400 max-w-[220px]"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-700 border-red-300 hover:bg-red-100 whitespace-nowrap"
+                                disabled={deletionConfirm !== "DELETE" || isDeletingAccount}
+                                onClick={handleDeleteAccount}
+                            >
+                                {isDeletingAccount
+                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Deleting&hellip;</>
+                                    : <><Trash2 className="mr-2 h-4 w-4" />Delete Account</>}
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
