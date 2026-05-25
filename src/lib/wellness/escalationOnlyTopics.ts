@@ -166,4 +166,32 @@ export const ESCALATION_GUIDANCE: EscalationOnlyGuidance[] = [
     callToAction: 'Call iCall: 9152987821',
     urgency: 'L5',
   },
+  {
+    topicId: 'pregnancy-bleeding',
+    heading: 'Bleeding during pregnancy needs same-day emergency care',
+    body: 'Any vaginal bleeding during pregnancy — especially with pain, fever, or dizziness — requires immediate assessment. Do not wait. Go to the nearest maternity emergency or call 112.',
+    callToAction: 'Go to maternity emergency now',
+    urgency: 'L5',
+  },
+  {
+    topicId: 'severe-dehydration',
+    heading: 'Severe dehydration can become life-threatening',
+    body: 'If you or a family member cannot keep any fluids down, has not passed urine in 8+ hours, is very dizzy or confused, or a child is limp and unresponsive — this is a medical emergency. Go to emergency immediately.',
+    callToAction: 'Go to emergency or call 112',
+    urgency: 'L4',
+  },
+  {
+    topicId: 'severe-abdominal-pain',
+    heading: 'Severe abdominal pain needs urgent assessment',
+    body: 'Sudden severe abdominal pain — especially with fever, rigid abdomen, or vomiting — can indicate a surgical emergency (appendicitis, perforation). Do not attempt home management. Seek emergency care now.',
+    callToAction: 'Go to emergency now',
+    urgency: 'L5',
+  },
+  {
+    topicId: 'blood-in-stool-vomit',
+    heading: 'Blood in vomit or stool requires urgent care',
+    body: 'Vomiting blood or passing black tarry stools indicates bleeding in the digestive tract. This is a medical emergency. Do not wait for symptoms to resolve. Call 112 or go to the nearest emergency department immediately.',
+    callToAction: 'Call 112 or go to emergency',
+    urgency: 'L5',
+  },
 ];

@@ -7,10 +7,10 @@
 export const PHASE_CONFIG = {
     // Navigation & Sections
     showLearnSection: false,        // Phase 2
-    showWellnessSection: false,     // Phase 2
+    showWellnessSection: true,      // Phase 2 — enabled: content library ready, DPDP compliance done
     showVideoConsult: false,        // Phase 2
     showDoctorMarketplace: false,   // Phase 2
-    showFamilyProfiles: false,      // Phase 2
+    showFamilyProfiles: true,       // Phase 2 — enabled: DPDP age-band + consent done
     showPathway: false,             // Phase 2
     showInbox: false,               // Phase 2
     showPatientAnalytics: false,    // Phase 2
@@ -18,7 +18,7 @@ export const PHASE_CONFIG = {
 
     // Dashboard Widgets
     showDoshaWidgets: false,        // Phase 2 — Prakriti/Vikriti/Dosha
-    showDailyTipCard: false,        // Phase 2
+    showDailyTipCard: true,         // Phase 2 — enabled: 32 content cards available
     showPainTrend: false,           // Phase 2
     showAppointments: false,        // Phase 2
 

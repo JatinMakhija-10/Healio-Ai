@@ -815,6 +815,152 @@ export const SAMPLE_WELLNESS_CONTENT: WellnessContent[] = [
   },
 
 
+
+  // ── Batch 3: §15.2 Traditional Practice Topics ───────────────────────────────
+
+  {
+    id: 'tulsi-tea-comfort',
+    title: 'Tulsi tea — comfort use',
+    whatItIs: 'A warm infusion of fresh or dried Tulsi (Holy Basil) leaves, widely used in Indian households for respiratory comfort, mild cold symptoms, and as a daily wellness ritual.',
+    mayHelpWith: ['Mild cold and cough', 'Sore throat comfort', 'Mild stress and anxiety', 'Seasonal immune support'],
+    traditionalUse: 'Tulsi is revered in Ayurveda as an adaptogen and Rasayana herb. It has been used for centuries for respiratory health, fever management, and as a daily tonic. Drinking Tulsi tea is one of the most widespread Indian home-care practices.',
+    evidenceLabel: 'traditional_practice',
+    evidenceSummary: 'Tulsi has antimicrobial, anti-inflammatory, and adaptogenic properties shown in preclinical studies. Small human trials suggest benefit for stress and blood sugar regulation. Clinical evidence specifically for Tulsi tea for colds is limited. It is safe for most people as a food-grade beverage at typical culinary doses.',
+    avoidIf: [
+      'Pregnancy — some sources caution against large medicinal doses; culinary amounts in food are generally fine',
+      'Blood-thinning medications (warfarin, aspirin) — Tulsi may add to anticoagulant effect at high doses',
+      'Before planned surgery — discuss with your doctor',
+    ],
+    howToUseSafely: 'Steep 8–10 fresh Tulsi leaves (or 1 tsp dried) in a cup of boiling water for 5 minutes. Strain and drink warm, up to 2–3 times daily. Add ginger and honey for sore throat. Use as a comfort beverage — not as a substitute for medical treatment of infection.',
+    seekHelpIf: [
+      'Cold or cough lasting more than 7–10 days',
+      'Fever above 38.5°C that persists',
+      'Difficulty breathing or wheezing alongside cold symptoms',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'cough_cold',
+    season: 'monsoon',
+  },
+
+  {
+    id: 'steam-inhalation-safety',
+    title: 'Steam inhalation — comfort and burn safety',
+    whatItIs: 'Inhaling warm steam to relieve nasal and upper respiratory congestion — one of the most common Indian home remedies for colds, blocked nose, and sinus discomfort.',
+    mayHelpWith: ['Nasal congestion from colds', 'Sinus pressure discomfort', 'Dry throat comfort'],
+    traditionalUse: 'Steam inhalation — often with added eucalyptus oil, Vicks, ajwain, or Tulsi — is a deeply embedded Indian home practice, recommended across households and by traditional practitioners for upper respiratory congestion.',
+    evidenceLabel: 'common_self_care',
+    evidenceSummary: 'Steam inhalation provides symptomatic relief from nasal congestion in clinical studies, primarily through mucosal hydration. It does not treat the underlying infection. Serious burns from steam are well-documented and preventable with proper technique. Evidence for added oils (eucalyptus, ajwain) improving outcomes over plain steam is limited.',
+    avoidIf: [
+      'Children under 12 — serious burn risk; use a cool-mist humidifier instead',
+      'Elderly or those with impaired sensation — burn risk',
+      'Asthma — steam can trigger bronchospasm in some people; use with caution',
+    ],
+    howToUseSafely: 'Use a steam inhaler device if available (safer than a bowl). If using a bowl: boil water, let it cool for 2–3 minutes before use — never use boiling water. Keep face at least 30 cm from the surface. Cover head loosely with a towel. Inhale gently for 5–10 minutes. Do not add oils near children or in asthma. Never leave children unsupervised near steam.',
+    seekHelpIf: [
+      'Any burn — run under cool water for 10 minutes, then seek medical care',
+      'Congestion persisting beyond 10 days',
+      'Facial pain or pressure with fever — possible sinusitis',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'cough_cold',
+    season: 'winter',
+  },
+
+  {
+    id: 'ajwain-water-traditional',
+    title: 'Ajwain water — traditional digestive use',
+    whatItIs: 'Warm water infused with Ajwain (carom seeds / Trachyspermum ammi) — a traditional Indian remedy for bloating, indigestion, and flatulence used across generations.',
+    mayHelpWith: ['Bloating and gas', 'Mild indigestion after meals', 'Stomach cramping from gas', 'Nausea comfort'],
+    traditionalUse: 'Ajwain is a cornerstone of Indian kitchen medicine. Ajwain water (ajwain boiled in water) is prescribed in Ayurveda for Vata and Kapha digestive imbalances. Mothers routinely give diluted ajwain water to infants for colic and gas in many Indian households.',
+    evidenceLabel: 'traditional_practice',
+    evidenceSummary: 'Thymol (the active compound in ajwain) has antispasmodic and carminative properties demonstrated in laboratory studies. Limited human clinical trials exist. Traditional use is widely documented. It is generally safe at culinary doses but medicinal use in infants should be approached with caution.',
+    avoidIf: [
+      'Liver disease — thymol is metabolised hepatically; avoid high doses',
+      'Peptic ulcer disease — may worsen acidity in some',
+      'Infants under 6 months — consult a paediatrician before use',
+      'Pregnancy in large medicinal doses — culinary amounts in food are fine',
+    ],
+    howToUseSafely: 'Add 1 tsp of ajwain seeds to 2 cups of water, boil for 5 minutes, strain, and drink warm after meals. One cup once or twice daily is typical. For adults only at medicinal doses; for children, use a very weak dilution and consult your doctor.',
+    seekHelpIf: [
+      'Abdominal pain that is severe, worsening, or accompanied by fever',
+      'Vomiting that prevents keeping fluids down',
+      'Bloating or indigestion persisting more than a week despite dietary changes',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'digestion',
+    season: null,
+  },
+
+  {
+    id: 'curd-rice-stomach-upset',
+    title: 'Curd and rice for stomach upset',
+    whatItIs: 'Plain cooked rice mixed with fresh curd (yoghurt) — a traditional South and North Indian comfort food for diarrhoea, stomach upset, and recovery from gut illness.',
+    mayHelpWith: ['Mild diarrhoea', 'Post-illness gut recovery', 'Nausea with an upset stomach', 'Oral rehydration support alongside fluids'],
+    traditionalUse: 'Curd rice (thayir sadam) is a cultural staple in South India and widely recommended across Indian households as the first soft food after stomach illness. Ayurveda classifies rice as laghu (light, easy to digest) and curd as a probiotic and binding agent.',
+    evidenceLabel: 'common_self_care',
+    evidenceSummary: 'Plain white rice is low in fibre and easy to digest, supporting recovery from gastroenteritis. Curd contains Lactobacillus cultures that may help restore gut flora. The probiotic benefit is mild and strain-dependent. Curd with live cultures has clinical support for reducing diarrhoea duration in mild cases. It is not a treatment for bacterial or parasitic infection.',
+    avoidIf: [
+      'Lactose intolerance — curd may worsen diarrhoea',
+      'Severe dehydration — oral rehydration salts (ORS) are the priority, not solid food',
+      'Do not give curd to infants under 12 months as a primary food',
+    ],
+    howToUseSafely: 'Use well-cooked plain white rice (not brown rice — harder to digest when unwell). Mix with fresh, unsweetened plain curd. Eat small portions at room temperature. Ensure adequate fluid intake — water, coconut water, or ORS alongside. Avoid spices, oil, or vegetables until symptoms improve.',
+    seekHelpIf: [
+      'Diarrhoea lasting more than 2 days in adults, or 24 hours in children',
+      'Blood or mucus in stools',
+      'Signs of dehydration: no urine, dry mouth, sunken eyes, extreme weakness',
+      'Fever above 38.5°C with stomach upset',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'digestion',
+    season: 'monsoon',
+  },
+
+  {
+    id: 'yoga-nidra-relaxation',
+    title: 'Yoga nidra for relaxation',
+    whatItIs: 'A guided body-scan meditation practice done lying down, designed to bring the body into a state of deep conscious rest between waking and sleep — sometimes called "yogic sleep".',
+    mayHelpWith: ['Stress and anxiety relief', 'Improving sleep quality', 'Reducing mental fatigue', 'Emotional regulation'],
+    traditionalUse: 'Yoga nidra is a classical Tantra and Yoga practice described in the Mandukya Upanishad and formalised as a technique by Swami Satyananda Saraswati of the Bihar School of Yoga in the 1970s. It is widely practised in India for rest, recovery, and self-inquiry.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Multiple randomised trials and systematic reviews support Yoga nidra for reducing anxiety, stress, and improving sleep quality. It is used in military PTSD programmes (iRest protocol) and clinical psychology settings. Effects on cortisol and sympathetic nervous system activity have been measured in controlled studies.',
+    avoidIf: [
+      'Severe psychiatric conditions — consult a mental health professional before using guided meditations for dissociation-related conditions',
+      'Avoid if the guided audio or practice consistently causes distress',
+    ],
+    howToUseSafely: 'Lie flat on your back in a warm, quiet room. Use a guided Yoga nidra recording (20–45 minutes is ideal). Stay awake but completely still — the aim is conscious rest, not sleep (though falling asleep occasionally is fine for beginners). Practise daily for at least 2 weeks to notice consistent benefits. Free recordings are available from Yoga Nidra Network and BISWA/Bihar School.',
+    seekHelpIf: [
+      'Anxiety or sleep problems persisting beyond 4 weeks despite consistent practice — consider speaking to a mental health professional',
+      'Panic attacks during practice — stop and seek guidance',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'sleep_stress',
+    season: null,
+  },
+
+  {
+    id: 'pranayama-safety',
+    title: 'Pranayama breathing — safe practice',
+    whatItIs: 'Yogic breathing exercises — including Anulom Vilom (alternate nostril breathing), Bhramari (humming bee breath), and Kapalbhati — practised for stress reduction, respiratory health, and mental clarity.',
+    mayHelpWith: ['Stress and anxiety reduction', 'Improving respiratory capacity', 'Focus and mental clarity', 'Sleep preparation'],
+    traditionalUse: 'Pranayama is a foundational limb of Ashtanga Yoga (Patanjali Yoga Sutras, ~200 CE). It is one of the most widely taught wellness practices in India, integrated into school physical education, yoga centres, and Ayurvedic treatment protocols.',
+    evidenceLabel: 'clinically_established',
+    evidenceSummary: 'Slow-paced pranayama (Anulom Vilom, Bhramari) has strong evidence for reducing anxiety, lowering blood pressure, and improving HRV (heart rate variability). Kapalbhati has more limited evidence and higher risk in certain populations. A 2022 systematic review (International Journal of Yoga) confirmed significant effects on cortisol and autonomic tone.',
+    avoidIf: [
+      'Kapalbhati and Bhastrika (forceful breath): avoid in pregnancy, hypertension, heart disease, epilepsy, recent abdominal surgery, glaucoma, or vertigo',
+      'Any pranayama: stop if you feel dizzy, lightheaded, or short of breath — this means you are over-breathing',
+      'Breath retention (Kumbhaka): not suitable for beginners, or those with cardiovascular or respiratory conditions',
+    ],
+    howToUseSafely: 'Start with gentle, slow practices only: Anulom Vilom (alternate nostril, no retention) and Bhramari for 5–10 minutes daily. Sit upright, comfortably. Never force the breath or strain. Learn Kapalbhati only from a qualified yoga teacher in person. Avoid strong pranayama on a full stomach. Morning is preferred in Ayurvedic tradition.',
+    seekHelpIf: [
+      'Persistent dizziness, palpitations, or tingling during or after practice',
+      'Worsening breathlessness or chest discomfort',
+    ],
+    reviewer: 'Healio Medical Review — v1 (May 2026)',
+    category: 'sleep_stress',
+    season: null,
+  },
+
 ];
 
 /** Get a single content item by ID */
