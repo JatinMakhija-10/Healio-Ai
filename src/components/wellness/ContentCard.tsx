@@ -15,6 +15,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import {
   ChevronDown,
   ChevronUp,
@@ -24,6 +25,7 @@ import {
   Clock,
   Users,
   ExternalLink,
+  ArrowUpRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EvidenceLabelBadge } from "@/components/wellness/EvidenceLabelBadge";
@@ -36,6 +38,8 @@ interface ContentCardProps {
   className?: string;
   /** Called when user taps "Consult a practitioner" */
   onConsultClick?: () => void;
+  /** If provided, renders a "Full guide" link in the card header */
+  detailHref?: string;
 }
 
 export function ContentCard({
@@ -43,6 +47,7 @@ export function ContentCard({
   defaultExpanded = false,
   className,
   onConsultClick,
+  detailHref,
 }: ContentCardProps) {
   const [expanded, setExpanded] = React.useState(defaultExpanded);
 
@@ -82,24 +87,34 @@ export function ContentCard({
           </div>
         )}
 
-        {/* Expand / collapse toggle */}
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-3 flex items-center gap-1 text-xs font-medium text-[#2D6A4F] hover:text-[#1E4D38] transition-colors"
-          aria-expanded={expanded}
-        >
-          {expanded ? (
-            <>
-              <ChevronUp className="size-3.5" />
-              Hide details
-            </>
-          ) : (
-            <>
-              <ChevronDown className="size-3.5" />
-              Why this helps &amp; Safety notes
-            </>
+        {/* Expand / collapse toggle + optional detail link */}
+        <div className="mt-3 flex items-center justify-between">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1 text-xs font-medium text-[#2D6A4F] hover:text-[#1E4D38] transition-colors"
+            aria-expanded={expanded}
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="size-3.5" />
+                Hide details
+              </>
+            ) : (
+              <>
+                <ChevronDown className="size-3.5" />
+                Why this helps &amp; Safety notes
+              </>
+            )}
+          </button>
+          {detailHref && (
+            <Link
+              href={detailHref}
+              className="flex items-center gap-0.5 text-xs font-medium text-gray-400 hover:text-[#2D6A4F] transition-colors"
+            >
+              Full guide <ArrowUpRight className="size-3" />
+            </Link>
           )}
-        </button>
+        </div>
       </div>
 
       {/* ── Expandable detail section (Fields 3–8) ────────────────────────── */}

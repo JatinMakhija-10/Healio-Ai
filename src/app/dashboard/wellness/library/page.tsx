@@ -211,6 +211,7 @@ export default function WellnessLibraryPage() {
                 key={item.id}
                 content={item}
                 defaultExpanded={false}
+                detailHref={`/dashboard/wellness/library/${item.id}`}
               />
             ))}
           </div>

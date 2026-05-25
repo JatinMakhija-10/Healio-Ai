@@ -15,7 +15,8 @@ import {
     Video,
     CreditCard,
     Crown,
-    Leaf
+    Leaf,
+    Sun
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,18 @@ const allSidebarItems = [
         title: "Wellness",
         href: "/dashboard/wellness",
         icon: Leaf,
+        visible: PHASE_CONFIG.showWellnessSection,
+    },
+    {
+        title: "Remedies & Routines",
+        href: "/dashboard/wellness/library",
+        icon: BookOpen,
+        visible: PHASE_CONFIG.showWellnessSection,
+    },
+    {
+        title: "Daily Routine",
+        href: "/dashboard/wellness/routines",
+        icon: Sun,
         visible: PHASE_CONFIG.showWellnessSection,
     },
     // PHASE 2 — Find Specialist / Doctor Marketplace
