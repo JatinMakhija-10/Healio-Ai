@@ -12,6 +12,7 @@ import {
     LogOut,
     Stethoscope,
     BookOpen,
+    GraduationCap,
     Video,
     CreditCard,
     Crown,
@@ -100,7 +101,7 @@ const allSidebarItems = [
     {
         title: "Learn",
         href: "/dashboard/learn",
-        icon: BookOpen,
+        icon: GraduationCap,
         visible: PHASE_CONFIG.showLearnSection,
     },
     // PHASE 2 — Videos Section

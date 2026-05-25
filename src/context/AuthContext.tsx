@@ -138,13 +138,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
-        // Check active session — pass maybeDoctor hint from JWT metadata to parallelise
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let profileSubscription: any = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let doctorSubscription: any = null;
+
+        const setupRealtimeSubscriptions = (sessionUser: User) => {
+            profileSubscription = supabase
+                .channel('profile_changes')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'profiles',
+                    filter: `id=eq.${sessionUser.id}`
+                }, (payload) => {
+                    if (payload.new) {
+                        setProfile(payload.new as Profile);
+                    }
+                })
+                .subscribe();
+
+            if (sessionUser.user_metadata?.role === 'doctor') {
+                doctorSubscription = supabase
+                    .channel('doctor_profile_changes')
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'doctors',
+                        filter: `user_id=eq.${sessionUser.id}`
+                    }, (payload) => {
+                        if (payload.new) {
+                            setDoctorProfile(payload.new as DoctorProfile);
+                        }
+                    })
+                    .subscribe();
+            }
+        };
+
+        // Read session from local JWT — no network call
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
             setPreviousUserId(session?.user?.id ?? null);
             if (session?.user) {
                 const isDoctor = session.user.user_metadata?.role === 'doctor';
                 fetchProfile(session.user.id, isDoctor);
+                setupRealtimeSubscriptions(session.user);
             }
             setLoading(false);
         });
@@ -155,12 +193,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } = supabase.auth.onAuthStateChange((_event, session) => {
             const newUserId = session?.user?.id ?? null;
 
-            // If user changed (different user logged in), clear all previous user data
             if (newUserId && previousUserId && newUserId !== previousUserId) {
                 clearAllUserData();
             }
 
-            // If logged out, also clear data
             if (!newUserId && previousUserId) {
                 clearAllUserData();
             }
@@ -175,48 +211,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setDoctorProfile(null);
             }
             setLoading(false);
-        });
-
-        // Set up real-time subscriptions for profile changes
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let profileSubscription: any = null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let doctorSubscription: any = null;
-
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user) {
-                // Subscribe to profile changes
-                profileSubscription = supabase
-                    .channel('profile_changes')
-                    .on('postgres_changes', {
-                        event: '*',
-                        schema: 'public',
-                        table: 'profiles',
-                        filter: `id=eq.${user.id}`
-                    }, (payload) => {
-                        if (payload.new) {
-                            setProfile(payload.new as Profile);
-                        }
-                    })
-                    .subscribe();
-
-                // Subscribe to doctor profile changes if applicable
-                if (user.user_metadata?.role === 'doctor') {
-                    doctorSubscription = supabase
-                        .channel('doctor_profile_changes')
-                        .on('postgres_changes', {
-                            event: '*',
-                            schema: 'public',
-                            table: 'doctors',
-                            filter: `user_id=eq.${user.id}`
-                        }, (payload) => {
-                            if (payload.new) {
-                                setDoctorProfile(payload.new as DoctorProfile);
-                            }
-                        })
-                        .subscribe();
-                }
-            }
         });
 
         return () => {
@@ -298,7 +292,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 redirectTo: `${window.location.origin}/auth/callback`,
                 queryParams: {
                     access_type: 'offline',
-                    prompt: 'consent',
+                    prompt: 'select_account',
                 },
             },
         });

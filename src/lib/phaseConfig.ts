@@ -6,7 +6,7 @@
 
 export const PHASE_CONFIG = {
     // Navigation & Sections
-    showLearnSection: false,        // Phase 2
+    showLearnSection: true,         // Phase 2 — enabled: myth checks, evidence guide, seasonal care, safety notes done
     showWellnessSection: true,      // Phase 2 — enabled: content library ready, DPDP compliance done
     showVideoConsult: false,        // Phase 2
     showDoctorMarketplace: false,   // Phase 2

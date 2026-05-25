@@ -23,11 +23,7 @@ function getDashboardRoute(role: UserRole): string {
 // Redirects all Phase 2 routes to /dashboard.
 // When Phase 2 launches, remove routes from these arrays.
 const PHASE2_DASHBOARD_ROUTES = [
-    '/dashboard/learn',
-    '/dashboard/wellness',
     '/dashboard/meet',
-    '/dashboard/search',
-    '/dashboard/family',
     '/dashboard/pathway',
     '/dashboard/inbox',
     '/dashboard/videos',
@@ -58,6 +54,12 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
+    // Skip auth check for public routes — no Supabase client needed
+    const publicRoutes = ['/', '/login', '/signup', '/privacy', '/terms', '/medical-disclaimer'];
+    if (publicRoutes.includes(pathname)) {
+        return NextResponse.next();
+    }
+
     let supabaseResponse = NextResponse.next({ request })
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -86,8 +88,9 @@ export async function middleware(request: NextRequest) {
         },
     })
 
-    // Refresh auth session
-    const { data: { user } } = await supabase.auth.getUser()
+    // Read session from cookie (no network call — prevents Edge timeout)
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user ?? null
 
     // --- RBAC Enforcement ---
     const protectedPrefixes = ['/admin', '/doctor', '/dashboard'];

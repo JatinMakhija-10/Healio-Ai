@@ -1,47 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// PHASE 2 — DailyTipCard
 import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
 import { WellnessEntryCards } from "@/components/wellness/WellnessEntryCards";
 import { PHASE_CONFIG } from "@/lib/phaseConfig";
 import { SeasonalBanner } from "@/components/wellness/SeasonalBanner";
 import { useAuth } from "@/context/AuthContext";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Plus, Clock, Activity, ArrowRight, Calendar, AlertTriangle, MessageSquare, Info } from "lucide-react";
+import { Plus, Clock, Activity, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Dialog,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogContent,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogDescription,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogHeader,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogTitle,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogTrigger,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    DialogFooter
-} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// PHASE 2 — Care Pathways
-// import { PathwayCard } from "@/components/diagnosis/care-pathways/PathwayCard";
-// import { fetchPathwayForCondition } from "@/lib/diagnosis/pathwayClient";
-// import { generatePersonalizedPathway, calculateCurrentDay } from "@/lib/diagnosis/care-pathways/pathwayEngine";
-// import { PersonalizedPathway } from "@/lib/diagnosis/care-pathways/types";
 import { api } from "@/lib/api";
-// PHASE 2 — Real-time Appointments
-// import { useRealtimeAppointments } from "@/hooks/useRealtimeAppointments";
-
-
 
 // Type definition for stored consultation
 type Consultation = {
@@ -63,25 +34,7 @@ export default function DashboardPage() {
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [localName, setLocalName] = useState<string | null>(null);
-    // PHASE 2 — Care Pathways
-    // const [activePathway, setActivePathway] = useState<PersonalizedPathway | null>(null);
-    // PHASE 2 — Appointments
-    // const [activeAppointments, setActiveAppointments] = useState<any[]>([]);
     const router = useRouter();
-
-    // PHASE 2 — Enable real-time appointment updates
-    // useRealtimeAppointments({
-    //     enabled: !!user,
-    //     onAppointmentCreated: (appointment) => {
-    //         loadAppointments();
-    //     },
-    //     onAppointmentUpdated: (appointment) => {
-    //         loadAppointments();
-    //     },
-    //     onAppointmentDeleted: () => {
-    //         loadAppointments();
-    //     }
-    // });
 
     useEffect(() => {
         if (!user && !loading) {
@@ -91,55 +44,27 @@ export default function DashboardPage() {
     }, [user, loading, router]);
 
     useEffect(() => {
-        // Try to recover name from local storage only if user is logged in
         if (user) {
             const storageKey = `healio_pending_profile_${user.id}`;
             const storedProfile = localStorage.getItem(storageKey);
             if (storedProfile) {
                 try {
                     const parsed = JSON.parse(storedProfile);
-                    // eslint-disable-next-line
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     if (parsed.full_name) setLocalName(parsed.full_name);
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                } catch (e) { /* ignore */ }
+                } catch {
+                    /* ignore */
+                }
             }
         }
 
-        // Fetch history
         async function loadDashboardData() {
             if (!user) return;
             try {
-                // Fetch from DB instead of localStorage for isolation and persistence
                 const parsed = await api.getPatientConsultations(user.id);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setHistory(parsed as any[]); // Cast to Consultation type
-
-                // Also update localStorage for backup/offline if needed (user-specific)
+                setHistory(parsed as Consultation[]);
                 const historyKey = `healio_consultation_history_${user.id}`;
                 localStorage.setItem(historyKey, JSON.stringify(parsed));
-
-                // PHASE 2 — Care Pathway loading
-                // if (parsed.length > 0) {
-                //     const latest = parsed[0];
-                //     const conditionId = (latest.diagnosis as Record<string, any>).id ||
-                //         latest.diagnosis.condition.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-                //     const base = await fetchPathwayForCondition(conditionId);
-                //     if (base) {
-                //         const personalized = generatePersonalizedPathway(
-                //             {
-                //                 condition: { id: conditionId, name: base.conditionName } as any,
-                //                 confidence: 0.8,
-                //                 matchedKeywords: []
-                //             },
-                //             base,
-                //             user?.user_metadata?.ayurvedic_profile || null,
-                //             null,
-                //             null
-                //         );
-                //         setActivePathway(personalized);
-                //     }
-                // }
-
             } catch (e) {
                 console.error("Failed to load dashboard data", e);
             }
@@ -147,35 +72,8 @@ export default function DashboardPage() {
         }
 
         loadDashboardData();
-        // PHASE 2 — loadAppointments();
-    }, [user]); // Re-run when user profile loads
+    }, [user]);
 
-    // PHASE 2 — Fetch upcoming appointments - extracted for real-time updates
-    // const loadAppointments = async () => {
-    //     if (!user) return;
-    //     try {
-    //         const raw = await api.getPatientAppointments(user.id);
-    //         const now = new Date();
-    //         const upcoming = raw
-    //             .map((a: any) => ({
-    //                 id: a.id,
-    //                 doctorName: a.doctor?.full_name || 'Healio Doctor',
-    //                 scheduledAt: a.scheduled_at,
-    //                 type: 'video',
-    //                 status: a.status
-    //             }))
-    //             .filter((a: any) => new Date(a.scheduledAt) > now && a.status !== 'cancelled')
-    //             .sort((a: any, b: any) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-    //         setActiveAppointments(upcoming);
-    //     } catch (e) {
-    //         console.error("Failed to load appointments", e);
-    //     }
-    // };
-
-    // ... existing variables (userName, lastSession, getTimeAgo)
-
-    // Determine display name with fallbacks
-    // Prioritize DB profile (updated via Settings) -> MetaData (from Onboarding) -> Local -> Email
     const userName = profile?.full_name || user?.user_metadata?.full_name || localName || user?.email?.split("@")[0] || "User";
     const isPersonaBuilt = Boolean(
         user?.user_metadata?.medical_profile?.onboarding_completed ||
@@ -184,7 +82,6 @@ export default function DashboardPage() {
 
     const lastSession = history[0];
 
-    // Simple time ago helper
     const getTimeAgo = (dateStr: string) => {
         try {
             const date = new Date(dateStr);
@@ -199,13 +96,11 @@ export default function DashboardPage() {
             const days = Math.floor(hours / 24);
             if (days < 7) return `${days} day${days !== 1 ? 's' : ''} ago`;
             return date.toLocaleDateString();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
+        } catch {
             return "Recently";
         }
     };
 
-    // Dynamic greeting based on time of day
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return "Good Morning";
@@ -254,27 +149,16 @@ export default function DashboardPage() {
                         </Button>
                     </Link>
                 </div>
-
+
+
             )}
 
-            {/* Wellness Entry Cards (Plan §6.2) */}
-            {PHASE_CONFIG.showWellnessSection && (
-                <WellnessEntryCards />
-            )}
+            {PHASE_CONFIG.showWellnessSection && <WellnessEntryCards />}
+            {PHASE_CONFIG.showWellnessSection && <SeasonalBanner />}
+            {PHASE_CONFIG.showDailyTipCard && <DailyTipCard />}
 
-            {/* Seasonal Banner (Plan §8.3) */}
-            {PHASE_CONFIG.showWellnessSection && (
-                <SeasonalBanner />
-            )}
-
-            {/* Daily Tip Card (Phase 2) */}
-            {PHASE_CONFIG.showDailyTipCard && (
-                <DailyTipCard />
-            )}
-
-            {/* Stats / Quick Cards */}
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Last Assessment Card */}
+                {/* Last Assessment */}
                 <Card className="rounded-xl border border-slate-200 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow duration-200 overflow-hidden bg-white">
                     <div className="p-6 pb-5">
                         <div className="flex justify-between items-start mb-5">
@@ -299,7 +183,7 @@ export default function DashboardPage() {
                     </div>
                 </Card>
 
-                {/* Total Consultations Card */}
+                {/* Total Consultations */}
                 <Card className="rounded-xl border border-slate-200 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow duration-200 overflow-hidden bg-white">
                     <div className="p-6 pb-5">
                         <div className="flex justify-between items-start mb-5">
@@ -325,7 +209,6 @@ export default function DashboardPage() {
                 </Card>
             </div>
 
-            {/* Recent Sessions */}
             <div className="pt-4">
                 <div className="flex justify-between items-end mb-4 px-1 group">
                     <div>
@@ -340,15 +223,12 @@ export default function DashboardPage() {
                 </div>
 
                 <Card className="rounded-xl border border-slate-200 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.04)] overflow-hidden bg-white">
-                    {/* Table Header */}
                     <div className="hidden md:grid grid-cols-[1fr_120px_100px_90px] gap-4 px-6 py-3.5 bg-slate-50/50 border-b border-slate-100">
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>Diagnosis</div>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>Date</div>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>Duration</div>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9CA3AF" }}>Status</div>
                     </div>
-
-                    {/* List */}
                     {loadingHistory ? (
                         <div className="p-4 space-y-3">
                             {[1, 2, 3].map((i) => (
@@ -364,7 +244,6 @@ export default function DashboardPage() {
                     ) : history.length > 0 ? (
                         <div className="divide-y divide-slate-100">
                             {history.slice(0, 5).map((session, index) => {
-                                // Mocking duration for UI match, since it's not strictly in DB right now
                                 const mockDuration = `${8 + index * 3} min`;
                                 const sessionDate = new Date(session.created_at);
                                 const formattedDate = sessionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
