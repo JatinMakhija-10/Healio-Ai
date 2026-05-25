@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Lock, Stethoscope } from "lucide-react";
+import { ArrowRight, ShieldCheck, Lock, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -23,7 +23,7 @@ export default function LandingPage() {
         <div className="flex justify-center mb-6">
           <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
             <div className="bg-teal-600 text-white p-2 rounded-xl">
-              <Stethoscope size={32} strokeWidth={2.5} />
+              <Leaf size={32} strokeWidth={2.5} />
             </div>
           </div>
         </div>
@@ -31,11 +31,11 @@ export default function LandingPage() {
         {/* Hero Text */}
         <div className="space-y-4">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-            Understand your pain. <br />
-            <span className="text-teal-600">Safely.</span>
+            Everyday wellness,{" "}
+            <span className="text-teal-600">understood simply.</span>
           </h1>
           <p className="text-slate-500 text-lg leading-relaxed">
-            A clinical-grade assistant to help you make sense of your symptoms before seeing a doctor.
+            Calm, culturally familiar wellness guidance for Indian families — home care routines, honest traditional knowledge, and safe next steps without panic.
           </p>
         </div>
 
@@ -75,15 +75,15 @@ export default function LandingPage() {
         >
           <div className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="text-teal-600" />
-            <span>Privacy First</span>
+            <span>Evidence labels on all content</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Lock size={14} className="text-teal-600" />
-            <span>Encrypted</span>
+            <span>DPDP-compliant privacy</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 bg-teal-600 rounded-full" />
-            <span>Educational Use Only</span>
+            <Leaf size={14} className="text-teal-600" />
+            <span>Wellness, not diagnosis</span>
           </div>
         </motion.div>
 

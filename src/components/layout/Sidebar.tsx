@@ -16,7 +16,8 @@ import {
     CreditCard,
     Crown,
     Leaf,
-    Sun
+    Sun,
+    Users
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,13 @@ const allSidebarItems = [
         href: "/dashboard/wellness/routines",
         icon: Sun,
         visible: PHASE_CONFIG.showWellnessSection,
+    },
+    // PHASE 2 — Family Profiles
+    {
+        title: "Family Profiles",
+        href: "/dashboard/family",
+        icon: Users,
+        visible: PHASE_CONFIG.showFamilyProfiles,
     },
     // PHASE 2 — Find Specialist / Doctor Marketplace
     {
