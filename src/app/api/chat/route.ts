@@ -26,7 +26,7 @@ async function verifyToken(token: string): Promise<string | null> {
     const { data: { user }, error } = await authClient.auth.getUser();
     if (error || !user) return null;
 
-    AUTH_CACHE.set(token, { userId: user.id, exp: Date.now() + 30_000 });
+    AUTH_CACHE.set(token, { userId: user.id, exp: Date.now() + 120_000 });
     if (AUTH_CACHE.size > 500) {
         const now = Date.now();
         for (const [k, v] of AUTH_CACHE.entries()) {
@@ -109,7 +109,7 @@ async function embedContentWithGeminiKeys(
 // Model: gemini-embedding-2-preview outputs 3072-dim vectors
 // Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
 async function generateEmbedding(text: string): Promise<number[] | null> {
-    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.embedding, text, 8_000);
+    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.embedding, text, 4_000);
 }
 
 // ── Generate 768-dim embedding — used for Ayurvedic (re-ingested with output_dimensionality=768) ─
@@ -117,7 +117,7 @@ async function generateEmbedding768(text: string): Promise<number[] | null> {
     return embedContentWithGeminiKeys(
         AI_PHASE_CONFIG.models.embedding,
         text,
-        8_000,
+        4_000,
         { outputDimensionality: 768 }
     );
 }
@@ -923,7 +923,7 @@ export async function POST(req: NextRequest) {
                 .order('created_at', { ascending: false })
                 .limit(10),
             // 4. Full user profile (medical_profile from auth metadata)
-            serviceClient.auth.admin.getUserById(userId),
+            Promise.resolve({ data: { user: { user_metadata: (()=>{try{return JSON.parse(Buffer.from((token.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'),'base64').toString())?.user_metadata??null}catch{return null}})() } } }),
         ]);
 
         const dbMs = Date.now() - t0Db;
