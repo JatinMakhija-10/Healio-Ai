@@ -10,12 +10,11 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS consented_at       TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS deletion_requested_at TIMESTAMPTZ;
 
--- 2. Back-fill consented_at for existing profiles that completed onboarding
+-- 2. Back-fill consented_at for existing profiles (treat all existing accounts as implicitly consented)
 UPDATE public.profiles
 SET consented_at = created_at,
     consent_version = '1.0'
-WHERE consented_at IS NULL
-  AND onboarding_completed = TRUE;
+WHERE consented_at IS NULL;
 
 -- 3. RPC: request_data_deletion
 --    - Records the deletion request timestamp (30-day SLA)
