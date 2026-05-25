@@ -111,7 +111,7 @@ export function computeBMI(
         const inches = parseInt(ftInMatch[2] || '0', 10);
         heightM = (feet * 12 + inches) * 0.0254;
     } else {
-        let heightVal = parseFloat(heightStr.replace(/[^0-9.]/g, ''));
+        const heightVal = parseFloat(heightStr.replace(/[^0-9.]/g, ''));
         if (isNaN(heightVal) || heightVal <= 0) return null;
 
         // Heuristic: if < 10, probably meters; if < 100, probably inches; else cm

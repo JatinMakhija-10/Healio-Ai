@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { hasFeature } from "@/lib/subscription/plans";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
@@ -229,7 +230,7 @@ export default function WellnessPage() {
                     <p className="font-semibold text-emerald-900">Remedies &amp; Routines Library</p>
                     <p className="text-sm text-emerald-700 mt-0.5">Traditional practices and everyday self-care, each with honest evidence context.</p>
                 </div>
-                <a href="/dashboard/wellness/library" className="shrink-0 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 transition-colors">Browse</a>
+                <Link href="/dashboard/wellness/library" className="shrink-0 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 transition-colors">Browse</Link>
             </div>
 
 
@@ -240,7 +241,7 @@ export default function WellnessPage() {
                     <p className="font-semibold text-indigo-900">Daily Routine Builder</p>
                     <p className="text-sm text-indigo-700 mt-0.5">Build a sustainable morning and evening routine from modular wellness blocks.</p>
                 </div>
-                <a href="/dashboard/wellness/routines" className="shrink-0 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 transition-colors">Build</a>
+                <Link href="/dashboard/wellness/routines" className="shrink-0 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 transition-colors">Build</Link>
             </div>
 
             <PlanSelectionModal

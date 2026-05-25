@@ -110,9 +110,10 @@ export function DoctorHeader() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const userId = user?.id;
     const handleMarkAllRead = useCallback(() => {
-        if (user?.id) markAllReadMutation.mutate(user.id);
-    }, [user?.id, markAllReadMutation]);
+        if (userId) markAllReadMutation.mutate(userId);
+    }, [userId, markAllReadMutation]);
 
     const handleMarkRead = useCallback((notifId: string, actionUrl?: string | null) => {
         markReadMutation.mutate(notifId);

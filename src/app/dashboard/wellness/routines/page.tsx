@@ -156,17 +156,15 @@ const STORAGE_KEY = "healio_routine_v1";
 
 export default function RoutineBuilderPage() {
   const [activeSlot, setActiveSlot] = useState<RoutineSlot>("morning");
-  const [userRoutine, setUserRoutine] = useState<UserRoutine[]>([]);
-  const [showPicker, setShowPicker] = useState(false);
-  const [todayDate] = useState(new Date().toDateString());
-
-  // Load from localStorage
-  useEffect(() => {
+  const [userRoutine, setUserRoutine] = useState<UserRoutine[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setUserRoutine(JSON.parse(raw));
+      if (raw) return JSON.parse(raw) as UserRoutine[];
     } catch { /* ignore */ }
-  }, []);
+    return [];
+  });
+  const [showPicker, setShowPicker] = useState(false);
+  const [todayDate] = useState(new Date().toDateString());
 
   const save = useCallback((next: UserRoutine[]) => {
     setUserRoutine(next);

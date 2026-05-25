@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -237,6 +237,7 @@ export default function PersonaBuilderPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mp = user?.user_metadata?.medical_profile as any;
         if (!mp?.persona_built) return;
+        startTransition(() => {
         setIsEditMode(true);
         setData({
             age: String(mp.age ?? mp.vitals?.age ?? ""),
@@ -255,6 +256,7 @@ export default function PersonaBuilderPage() {
             conditions: mp.conditions ?? [],
             isPregnant: mp.isPregnant ?? mp.pregnant ?? false,
             hasKidneyLiverDisease: mp.hasKidneyLiverDisease ?? mp.kidney_liver_disease ?? false,
+        });
         });
     }, [user]);
 

@@ -145,11 +145,12 @@ export function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const userId = user?.id;
     const handleMarkAllRead = useCallback(() => {
-        if (user?.id) {
-            markAllReadMutation.mutate(user.id);
+        if (userId) {
+            markAllReadMutation.mutate(userId);
         }
-    }, [user?.id, markAllReadMutation]);
+    }, [userId, markAllReadMutation]);
 
     const handleMarkRead = useCallback((notifId: string, actionUrl?: string | null) => {
         markReadMutation.mutate(notifId);

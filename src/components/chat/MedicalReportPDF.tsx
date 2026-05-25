@@ -725,7 +725,7 @@ interface MedicalReportPreviewProps {
 
 // ─── Severity badge helper ────────────────────────────────────────────────────
 // WCAG 1.4.1: shape-prefix symbols alongside color for color-blind users
-const getSeverityBadge = (severity?: string): { style: any; prefix: string } => {
+const getSeverityBadge = (severity?: string): { style: Record<string, string | number>; prefix: string } => {
     if (!severity) return { style: styles.badgeDefault, prefix: '' };
     const s = severity.toLowerCase();
     if (s.includes('severe') || s.includes('critical'))

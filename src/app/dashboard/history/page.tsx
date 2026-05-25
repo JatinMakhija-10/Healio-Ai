@@ -16,6 +16,7 @@ import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { pdf } from '@react-pdf/renderer';
 // eslint-disable-next-line no-restricted-imports
 import { MedicalReportDocument } from '@/components/chat/MedicalReportPDF';
+// eslint-disable-next-line no-restricted-imports
 import type { SymptomDetailsSummary } from '@/components/chat/MedicalReportPDF';
 
 
