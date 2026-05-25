@@ -87,10 +87,10 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
     // Empty state — show a welcoming hero with starter prompts
     if (messages.length === 0 && !isLoading) {
         const starterPrompts = [
-            "I have had a persistent headache for 3 days",
-            "I have been running a fever since yesterday",
-            "I am experiencing stomach pain and nausea",
-            "I have a skin rash on my arms",
+            "I have a cold and blocked nose since yesterday",
+            "I feel bloated and heavy after meals",
+            "I have been stressed and sleeping badly this week",
+            "I have a mild fever — what can I do at home?",
         ];
 
         return (
@@ -110,10 +110,10 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
                     </h1>
 
                     <p className="text-slate-500 text-[15px] leading-relaxed">
-                        I am Healio, your homeopathic health assistant.
+                        I am Healio — your everyday wellness guide.
                     </p>
                     <p className="text-slate-400 text-[14px] mt-1.5 mb-7">
-                        Respond in Hindi, English, or Hinglish — your choice.
+                        Home care, traditional knowledge, and safe next steps. Hindi, English, or Hinglish — your choice.
                     </p>
 
                     {/* Starter Prompt Chips */}

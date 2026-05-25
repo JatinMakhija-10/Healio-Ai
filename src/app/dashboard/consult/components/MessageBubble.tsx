@@ -7,6 +7,8 @@ import { Condition } from "@/lib/diagnosis/types";
 import { UsageLimitCard } from "./UsageLimitCard";
 import { AskHealioResponseRenderer } from "@/components/wellness/AskHealioResponseRenderer";
 import type { AskHealioResponse } from "@/lib/wellness/askHealioResponse";
+import { EscalationAlert } from "@/components/wellness/EscalationAlert";
+import type { EscalationLevel } from "@/components/wellness/EscalationAlert";
 
 interface MessageBubbleProps {
     message: ChatMessage;
@@ -166,6 +168,23 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                         <AskHealioResponseRenderer response={wellnessResponse} />
                     </div>
                 )}
+
+                {/* Escalation ladder alert — rendered ABOVE the diagnosis card */}
+                {parsedCondition?.escalation_level && (() => {
+                    const lvl = parsedCondition.escalation_level as EscalationLevel;
+                    const validLevels: EscalationLevel[] = ["L1", "L2", "L3", "L4", "L5"];
+                    if (!validLevels.includes(lvl)) return null;
+                    return (
+                        <div className="mt-2 w-full">
+                            <EscalationAlert
+                                level={lvl}
+                                reason={parsedCondition.concern_summary ?? parsedCondition.description ?? ""}
+                                action={parsedCondition.escalation_action ?? parsedCondition.when_to_consult ?? ""}
+                                practitionerTip={parsedCondition.practitioner_prep}
+                            />
+                        </div>
+                    );
+                })()}
 
                 {/* Structured Card */}
                 {parsedCondition && (

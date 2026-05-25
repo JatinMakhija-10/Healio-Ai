@@ -75,6 +75,12 @@ export interface Condition {
     exercises?: Exercise[];
     warnings: string[];
     seekHelp: string;
+    // Escalation ladder fields (from API diagnosis JSON)
+    escalation_level?: string;
+    escalation_action?: string;
+    concern_summary?: string;
+    when_to_consult?: string;
+    practitioner_prep?: string;
 }
 
 // Health Risk Profile - calculated from onboarding data
