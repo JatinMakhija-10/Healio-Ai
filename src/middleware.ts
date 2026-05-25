@@ -55,7 +55,16 @@ export async function middleware(request: NextRequest) {
     }
 
     // Skip auth check for public routes — no Supabase client needed
-    const publicRoutes = ['/', '/login', '/signup', '/privacy', '/terms', '/medical-disclaimer'];
+    const publicRoutes = [
+        '/',
+        '/login',
+        '/signup',
+        '/doctor/signup',
+        '/doctor/register',
+        '/privacy',
+        '/terms',
+        '/medical-disclaimer',
+    ];
     if (publicRoutes.includes(pathname)) {
         return NextResponse.next();
     }
