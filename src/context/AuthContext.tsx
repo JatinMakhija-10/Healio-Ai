@@ -285,9 +285,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const signInWithGoogle = async (signupRole: UserRole = 'patient') => {
-        // Add a 5 second timeout to prevent indefinite hanging
+        // Add a 30 second timeout to prevent indefinite hanging (allows time for Supabase cold starts)
         const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Connection timed out. Please check your internet connection or ad-blocker.')), 8000)
+            setTimeout(() => reject(new Error('Connection timed out. If Supabase is waking up from sleep, this can take up to 60 seconds.')), 30000)
         );
 
         const authPromise = supabase.auth.signInWithOAuth({
