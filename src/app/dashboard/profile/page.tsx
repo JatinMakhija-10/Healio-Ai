@@ -29,7 +29,6 @@ export default function ProfilePage() {
         supabase.auth.refreshSession().catch((err) =>
             console.error("Profile: refresh session failed:", err)
         );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -40,16 +39,19 @@ export default function ProfilePage() {
         // 1. Pending onboarding blob (merged in resolveHealthPersona; server medical wins when authoritative)
         const pendingKey = `healio_pending_profile_${user.id}`;
         const pending = localStorage.getItem(pendingKey);
-        if (pending) {
-            try {
-                const parsed = JSON.parse(pending);
-                if (!cancelled) setLocalProfile(parsed);
-            } catch (e) {
-                console.error("Failed to parse pending profile:", e);
+        Promise.resolve().then(() => {
+            if (cancelled) return;
+            if (pending) {
+                try {
+                    const parsed = JSON.parse(pending);
+                    setLocalProfile(parsed);
+                } catch (e) {
+                    console.error("Failed to parse pending profile:", e);
+                }
+            } else {
+                setLocalProfile(null);
             }
-        } else if (!cancelled) {
-            setLocalProfile(null);
-        }
+        });
 
         // 2. Get Vikriti (Latest Consultation)
         const fetchHistory = async () => {

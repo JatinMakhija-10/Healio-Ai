@@ -36,11 +36,11 @@ const ajwain        = { name: 'Ajwain Water', preparation: 'Boil in water and dr
 const henna         = { name: 'Mehndi Paste', preparation: 'Apply and consume leaf tea' };
 const karela        = { name: 'Karela Juice', method: 'Drink 200ml daily' };
 const shelcal       = { name: 'Shelcal', preparation: 'Take with meals' };
-const calcium       = { name: 'Calcium carbonate', preparation: 'Take daily' };
+const _calcium      = { name: 'Calcium carbonate', preparation: 'Take daily' };
 const trikatu       = { name: 'Trikatu Churna', preparation: 'Mix in honey' };
-const ginseng       = { name: 'Ginseng Root', preparation: 'Brew as tea' };
-const arjuna        = { name: 'Arjuna Bark Tea', preparation: 'Boil and drink' };
-const punarnava     = { name: 'Punarnava Powder', preparation: 'Mix in water' };
+const _ginseng      = { name: 'Ginseng Root', preparation: 'Brew as tea' };
+const _arjuna       = { name: 'Arjuna Bark Tea', preparation: 'Boil and drink' };
+const _punarnava    = { name: 'Punarnava Powder', preparation: 'Mix in water' };
 
 // ─── Original Tests (all still passing) ───────────────────────────────────────
 

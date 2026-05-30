@@ -59,7 +59,6 @@ function normalizeMedical(raw: unknown): MedicalProfileRecord {
  *
  * Persona builder writes flat fields directly.  Both shapes are accepted here.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function flattenMedical(mp: MedicalProfileRecord): MedicalProfileRecord {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const raw = mp as any;

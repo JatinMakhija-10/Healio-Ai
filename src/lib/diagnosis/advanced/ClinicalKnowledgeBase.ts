@@ -904,7 +904,8 @@ export class ClinicalKnowledgeBase {
             const distinguishPresent = entry.distinguishingSymptoms.filter(s => normalizedSymptoms.has(s)).length;
 
             const overlapScore = sharedPresent / Math.max(entry.sharedSymptoms.length, 1);
-            const distinguishScore = distinguishPresent / Math.max(entry.distinguishingSymptoms.length, 1);
+            const _distinguishScore = distinguishPresent / Math.max(entry.distinguishingSymptoms.length, 1);
+            void _distinguishScore; // available for future confidence weighting
 
             return {
                 conditionId: otherConditionId,

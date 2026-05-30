@@ -126,10 +126,9 @@ export interface OrchestratedResult {
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
-/**
- * Top-K Bayesian candidates forwarded to the AI prompt
- */
-const TOP_K = 5;
+/** Top-K Bayesian candidates forwarded to the AI prompt (reserved for future slice refactor) */
+const _TOP_K = 5;
+void _TOP_K;
 
 /**
  * Minimum Bayesian score to be considered (0-100 scale after sigmoid)

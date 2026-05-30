@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import type { SubscriptionPlan } from "@/lib/subscription/plans";
 import { X, ArrowLeft, History, MessageSquareHeart, Plus } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 // ─── Persona Required Banner ──────────────────────────────────────────────────
 function PersonaRequiredBanner() {
@@ -184,6 +185,24 @@ function ConsultPageInner() {
         setWidgetActive(active);
     }, []);
 
+    // Track first message sent in a consultation
+    const [hasTrackedStart, setHasTrackedStart] = useState(false);
+    const handleSendMessage = useCallback((msg: string) => {
+        if (!hasTrackedStart) {
+            trackEvent.consultationStarted('text');
+            setHasTrackedStart(true);
+        }
+        sendMessage(msg);
+    }, [hasTrackedStart, sendMessage]);
+
+    const handleStartRecording = useCallback(() => {
+        if (!hasTrackedStart) {
+            trackEvent.consultationStarted('voice');
+            setHasTrackedStart(true);
+        }
+        startRecording();
+    }, [hasTrackedStart, startRecording]);
+
     useEffect(() => {
         const handleUpgradeEvent = (event: Event) => {
             const detail = (event as CustomEvent<{
@@ -242,7 +261,7 @@ function ConsultPageInner() {
             <ChatWindow
                 messages={messages}
                 isLoading={isLoading}
-                onSendMessage={sendMessage}
+                onSendMessage={handleSendMessage}
                 onWidgetActive={handleWidgetActive}
             />
 
@@ -283,7 +302,7 @@ function ConsultPageInner() {
                 isRecording={isRecording}
                 voiceSupported={isSupported}
                 transcript={transcript}
-                onStartRecording={startRecording}
+                onStartRecording={handleStartRecording}
                 onStopRecording={stopRecording}
                 onClearTranscript={clearTranscript}
             />

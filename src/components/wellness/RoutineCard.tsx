@@ -58,7 +58,11 @@ export function RoutineCard({
   const toggleSlot = (slot: RoutineTimeSlot) =>
     setOpenSlots((prev) => {
       const next = new Set(prev);
-      next.has(slot) ? next.delete(slot) : next.add(slot);
+      if (next.has(slot)) {
+        next.delete(slot);
+      } else {
+        next.add(slot);
+      }
       return next;
     });
 

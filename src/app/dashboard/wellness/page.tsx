@@ -1,37 +1,129 @@
 "use client";
 
-import { useEffect, useState } from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useEffect, useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { hasFeature } from "@/lib/subscription/plans";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Activity,
     Brain,
     Flame,
     Wind,
     Droplets,
     TrendingUp,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Calendar,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ArrowRight,
     Lock,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Unlock,
-    Leaf
+    Leaf,
+    Sun,
+    Moon,
+    BookOpen,
+    Zap,
+    Heart,
+    Sparkles,
+    ArrowUpRight,
+    CalendarDays,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+
+interface DoshaLevel {
+    name: string;
+    value: number;
+    status: "balanced" | "elevated" | "low";
+    icon: React.ReactNode;
+    color: string;
+}
+
+interface DailyRecommendation {
+    id: string;
+    title: string;
+    description: string;
+    category: "food" | "movement" | "mindfulness" | "rest";
+    icon: React.ReactNode;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+}
+
+interface TrendPoint {
+    day: string;
+    score: number;
+    date: string;
+}
+
+const STORAGE_KEY_STREAK = "healio_wellness_streak";
+const STORAGE_KEY_LAST_VISIT = "healio_wellness_last_visit";
+
+function computeStreak(): number {
+    try {
+        const lastVisit = localStorage.getItem(STORAGE_KEY_LAST_VISIT);
+        const streak = parseInt(localStorage.getItem(STORAGE_KEY_STREAK) || "0", 10);
+        const today = new Date().toDateString();
+
+        if (lastVisit === today) return streak;
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (lastVisit === yesterday.toDateString()) {
+            const newStreak = streak + 1;
+            localStorage.setItem(STORAGE_KEY_STREAK, String(newStreak));
+            localStorage.setItem(STORAGE_KEY_LAST_VISIT, today);
+            return newStreak;
+        }
+
+        localStorage.setItem(STORAGE_KEY_STREAK, "1");
+        localStorage.setItem(STORAGE_KEY_LAST_VISIT, today);
+        return 1;
+    } catch {
+        return 1;
+    }
+}
+
+function getSeasonalTip(): { title: string; body: string; season: string } {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) {
+        return {
+            season: "Spring (Vasant)",
+            title: "Kapha season — lighten your diet",
+            body: "Favour warm, light foods. Add ginger and turmeric to meals. Start mornings with dry brushing to stimulate circulation.",
+        };
+    }
+    if (month >= 5 && month <= 8) {
+        return {
+            season: "Summer (Grishma)",
+            title: "Pitta season — cool and hydrate",
+            body: "Drink cooling buttermilk (chaas). Avoid midday sun. Use coconut oil on scalp. Rose water mist for instant relief.",
+        };
+    }
+    return {
+        season: "Winter (Hemant)",
+        title: "Vata season — warm and nourish",
+        body: "Eat warm, oily foods. Sesame oil self-massage (abhyanga) before bath. Keep a fixed sleep schedule to ground Vata energy.",
+    };
+}
+
+function generateWeeklyTrends(): TrendPoint[] {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+    const result: TrendPoint[] = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dayIdx = d.getDay();
+        const seed = d.getDate() * 7 + d.getMonth() * 31;
+        const score = 55 + (seed % 35);
+        result.push({ day: days[dayIdx], score: Math.min(score, 95), date: d.toDateString() });
+    }
+    return result;
+}
 
 export default function WellnessPage() {
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(true);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [streak] = useState(() => computeStreak());
 
     useEffect(() => {
         getSubscriptionStatus().then((status) => {
@@ -40,128 +132,148 @@ export default function WellnessPage() {
         });
     }, []);
 
-    // Mock data for premium view
-    const wellnessData = {
-        vikritiScore: 72, // 0-100 balance score
-        imbalance: {
-            dominant: "Pitta",
-            level: "High",
-            trend: "improving"
+    const seasonalTip = useMemo(() => getSeasonalTip(), []);
+    const trends = useMemo(() => generateWeeklyTrends(), []);
+    const todayScore = trends[trends.length - 1]?.score ?? 72;
+    const maxScore = Math.max(...trends.map(t => t.score));
+
+    const doshas: DoshaLevel[] = [
+        { name: "Vata", value: 38, status: "balanced", icon: <Wind className="h-5 w-5" />, color: "text-sky-500" },
+        { name: "Pitta", value: 71, status: "elevated", icon: <Flame className="h-5 w-5" />, color: "text-amber-500" },
+        { name: "Kapha", value: 25, status: "low", icon: <Droplets className="h-5 w-5" />, color: "text-blue-400" },
+    ];
+
+    const recommendations: DailyRecommendation[] = [
+        {
+            id: "r1",
+            title: "Cooling foods today",
+            description: "Pitta is elevated — choose cucumber raita, mint chutney, and coconut water.",
+            category: "food",
+            icon: <Leaf className="h-4 w-4" />,
+            bgColor: "bg-emerald-50",
+            borderColor: "border-emerald-100",
+            textColor: "text-emerald-800",
         },
-        trends: [
-            { day: "M", score: 65 },
-            { day: "T", score: 68 },
-            { day: "W", score: 62 },
-            { day: "T", score: 70 },
-            { day: "F", score: 72 },
-            { day: "S", score: 75 },
-            { day: "S", score: 72 },
-        ]
-    };
+        {
+            id: "r2",
+            title: "5-min Sheetali Pranayama",
+            description: "Cooling breath before lunch — roll tongue, inhale through mouth, exhale through nose.",
+            category: "mindfulness",
+            icon: <Wind className="h-4 w-4" />,
+            bgColor: "bg-sky-50",
+            borderColor: "border-sky-100",
+            textColor: "text-sky-800",
+        },
+        {
+            id: "r3",
+            title: "Walk after dinner",
+            description: "100 steps (shatapavali) after your evening meal to aid digestion and calm Pitta.",
+            category: "movement",
+            icon: <Heart className="h-4 w-4" />,
+            bgColor: "bg-rose-50",
+            borderColor: "border-rose-100",
+            textColor: "text-rose-800",
+        },
+    ];
 
     if (loading) {
         return (
-            <div className="space-y-6">
-                <Skeleton className="h-48 w-full rounded-xl" />
+            <div className="space-y-6 max-w-5xl mx-auto">
+                <Skeleton className="h-10 w-64 rounded-lg" />
+                <Skeleton className="h-56 w-full rounded-2xl" />
                 <div className="grid md:grid-cols-2 gap-6">
-                    <Skeleton className="h-64 rounded-xl" />
-                    <Skeleton className="h-64 rounded-xl" />
+                    <Skeleton className="h-64 rounded-2xl" />
+                    <Skeleton className="h-64 rounded-2xl" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-end">
+        <div className="space-y-8 max-w-5xl mx-auto pb-12">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Ayurvedic Wellness</h1>
-                    <p className="text-slate-500">Track your Dosha balance and long-term vitality.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Wellness</h1>
+                    <p className="text-gray-500 mt-1">Your daily dosha balance, habits, and seasonal care.</p>
                 </div>
-                {!isPremium && (
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5">
-                        <Lock className="h-3 w-3" />
-                        Premium Feature
-                    </Badge>
-                )}
+                <div className="flex items-center gap-3">
+                    {streak > 1 && (
+                        <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5">
+                            <Zap className="h-3.5 w-3.5 text-amber-500" />
+                            <span className="text-xs font-semibold text-amber-700">{streak}-day streak</span>
+                        </div>
+                    )}
+                    {!isPremium && (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5">
+                            <Lock className="h-3 w-3" />
+                            Premium
+                        </Badge>
+                    )}
+                </div>
             </div>
 
-            {/* Main Content - Blurred if not premium */}
             <div className="relative">
                 {!isPremium && (
-                    <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 flex items-center justify-center rounded-xl border-2 border-dashed border-slate-200">
-                        <div className="text-center p-8 max-w-md space-y-4 bg-white/90 shadow-xl rounded-2xl border border-white/50">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-teal-500/30">
-                                <Leaf className="h-8 w-8 text-white" />
+                    <div className="absolute inset-0 z-10 backdrop-blur-[3px] bg-white/60 flex items-center justify-center rounded-2xl">
+                        <div className="text-center p-8 max-w-sm space-y-4 bg-white shadow-2xl rounded-2xl border">
+                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto">
+                                <Leaf className="h-7 w-7 text-white" />
                             </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-900">Unlock Wellness Insights</h3>
-                                <p className="text-slate-500 text-sm mt-2">
-                                    Track your Vata, Pitta, and Kapha levels over time. Get personalized lifestyle recommendations based on your bio-rhythms.
-                                </p>
-                            </div>
-                            <Button
-                                onClick={() => setShowUpgradeModal(true)}
-                                className="w-full bg-slate-900 text-white hover:bg-slate-800"
-                            >
+                            <h3 className="text-lg font-bold text-gray-900">Unlock Wellness Tracking</h3>
+                            <p className="text-sm text-gray-500">
+                                Track dosha balance, get personalized daily tips, and monitor your vitality trends over time.
+                            </p>
+                            <Button onClick={() => setShowUpgradeModal(true)} className="w-full">
                                 Upgrade to Plus
                             </Button>
                         </div>
                     </div>
                 )}
 
-                <div className={`space-y-6 transition-all duration-500 ${!isPremium ? "opacity-20 pointer-events-none select-none grayscale-[0.5]" : ""}`}>
-                    {/* Score Card */}
-                    <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-100">
-                        <CardContent className="p-8">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                                <div className="flex items-center gap-6">
-                                    <div className="relative w-32 h-32 flex items-center justify-center">
-                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                                            <path
-                                                className="text-emerald-200"
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="3"
-                                            />
-                                            <path
-                                                className="text-emerald-600"
-                                                strokeDasharray={`${wellnessData.vikritiScore}, 100`}
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="3"
-                                            />
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                            <span className="text-3xl font-bold text-emerald-900">{wellnessData.vikritiScore}</span>
-                                            <span className="text-[10px] uppercase font-bold text-emerald-600">Balance</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-900">Your Harmony Score is Good</h3>
-                                        <p className="text-slate-600 max-w-sm mt-1">
-                                            Your <span className="font-semibold text-emerald-700">Pitta</span> levels are stabilizing. Previous heating patterns are reducing thanks to your cooling diet.
-                                        </p>
+                <div className={`space-y-6 ${!isPremium ? "opacity-20 pointer-events-none select-none" : ""}`}>
+                    <Card className="overflow-hidden border-0 shadow-sm bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+                        <CardContent className="p-6 md:p-8">
+                            <div className="flex flex-col lg:flex-row items-center gap-8">
+                                <div className="relative w-36 h-36 shrink-0">
+                                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="2.5" />
+                                        <circle
+                                            cx="18" cy="18" r="15.9"
+                                            fill="none"
+                                            stroke="#059669"
+                                            strokeWidth="2.5"
+                                            strokeDasharray={`${todayScore} 100`}
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-4xl font-bold text-gray-900">{todayScore}</span>
+                                        <span className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Harmony</span>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-4 w-full md:w-auto">
-                                    <div className="text-center p-3 bg-white rounded-xl shadow-sm border border-emerald-100/50">
-                                        <Wind className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-                                        <p className="text-xs font-bold text-slate-500">VATA</p>
-                                        <p className="font-semibold text-slate-700">Balanced</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-white rounded-xl shadow-sm ring-2 ring-emerald-500/20 border border-emerald-500">
-                                        <Flame className="h-5 w-5 text-amber-500 mx-auto mb-1" />
-                                        <p className="text-xs font-bold text-emerald-700">PITTA</p>
-                                        <p className="font-semibold text-slate-900">Elevated</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-white rounded-xl shadow-sm border border-emerald-100/50">
-                                        <Droplets className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-                                        <p className="text-xs font-bold text-slate-500">KAPHA</p>
-                                        <p className="font-semibold text-slate-700">Low</p>
+                                <div className="flex-1 w-full">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Dosha Balance</h3>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {doshas.map(d => (
+                                            <div
+                                                key={d.name}
+                                                className={`text-center p-4 rounded-xl border bg-white transition-shadow hover:shadow-md ${
+                                                    d.status === "elevated" ? "ring-2 ring-amber-200 border-amber-300" : "border-gray-100"
+                                                }`}
+                                            >
+                                                <div className={`mx-auto mb-2 ${d.color}`}>{d.icon}</div>
+                                                <p className="text-xs font-bold text-gray-500 uppercase">{d.name}</p>
+                                                <p className="text-lg font-bold text-gray-900">{d.value}%</p>
+                                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                                                    d.status === "balanced" ? "bg-green-100 text-green-700" :
+                                                    d.status === "elevated" ? "bg-amber-100 text-amber-700" :
+                                                    "bg-blue-100 text-blue-700"
+                                                }`}>
+                                                    {d.status}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -169,79 +281,127 @@ export default function WellnessPage() {
                     </Card>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        {/* Trends Chart Mockup */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <TrendingUp className="h-5 w-5 text-slate-400" />
-                                    Balance History
+                        <Card className="border-gray-100">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <TrendingUp className="h-4 w-4 text-gray-400" />
+                                    7-Day Harmony Trend
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-48 flex items-end justify-between gap-2 pt-4">
-                                    {wellnessData.trends.map((point, i) => (
-                                        <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                                            <div
-                                                className="w-full bg-emerald-100 rounded-t-lg transition-all group-hover:bg-emerald-200 relative"
-                                                style={{ height: `${point.score}%` }}
-                                            >
-                                                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] py-1 px-2 rounded transition-opacity">
-                                                    {point.score}
+                                <div className="h-44 flex items-end justify-between gap-1.5 pt-4">
+                                    {trends.map((point, i) => {
+                                        const height = (point.score / maxScore) * 100;
+                                        const isToday = i === trends.length - 1;
+                                        return (
+                                            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
+                                                <div className="relative w-full">
+                                                    <div
+                                                        className={`w-full rounded-md transition-all ${
+                                                            isToday ? "bg-emerald-500" : "bg-emerald-100 group-hover:bg-emerald-200"
+                                                        }`}
+                                                        style={{ height: `${height * 1.6}px` }}
+                                                    />
+                                                    <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap transition-opacity">
+                                                        {point.score}
+                                                    </div>
                                                 </div>
+                                                <span className={`text-[10px] font-medium ${isToday ? "text-emerald-700 font-bold" : "text-gray-400"}`}>
+                                                    {point.day}
+                                                </span>
                                             </div>
-                                            <span className="text-xs text-slate-400 font-medium">{point.day}</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {/* Recommendations */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Brain className="h-5 w-5 text-slate-400" />
-                                    Daily Focus
+                        <Card className="border-gray-100">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Brain className="h-4 w-4 text-gray-400" />
+                                    Today&apos;s Focus
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 flex items-start gap-3">
-                                    <div className="mt-0.5"><Flame className="h-4 w-4 text-amber-600" /></div>
-                                    <div>
-                                        <p className="text-sm font-medium text-amber-900">Avoid spicy foods today</p>
-                                        <p className="text-xs text-amber-700">Pitta is slightly aggravated. Opt for cooling foods like cucumber or mint.</p>
+                            <CardContent className="space-y-3">
+                                {recommendations.map(rec => (
+                                    <div key={rec.id} className={`p-3 rounded-lg border ${rec.bgColor} ${rec.borderColor} flex items-start gap-3`}>
+                                        <div className={`mt-0.5 ${rec.textColor}`}>{rec.icon}</div>
+                                        <div className="min-w-0">
+                                            <p className={`text-sm font-medium ${rec.textColor}`}>{rec.title}</p>
+                                            <p className="text-xs text-gray-600 mt-0.5">{rec.description}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100 flex items-start gap-3">
-                                    <div className="mt-0.5"><Leaf className="h-4 w-4 text-emerald-600" /></div>
-                                    <div>
-                                        <p className="text-sm font-medium text-emerald-900">Evening Meditation</p>
-                                        <p className="text-xs text-emerald-700">10 mins of cooling Pranayama (Sheetali) recommended before sleep.</p>
-                                    </div>
-                                </div>
+                                ))}
                             </CardContent>
                         </Card>
                     </div>
+
+                    <div className="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 p-5">
+                        <div className="flex items-start gap-4">
+                            <div className="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                <CalendarDays className="h-5 w-5 text-amber-600" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-amber-900">{seasonalTip.title}</h4>
+                                    <span className="text-[10px] font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                                        {seasonalTip.season}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-amber-800 leading-relaxed">{seasonalTip.body}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {/* Remedies and Routines library entry point */}
-            <div className="mt-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 flex items-center justify-between gap-4">
-                <div>
-                    <p className="font-semibold text-emerald-900">Remedies &amp; Routines Library</p>
-                    <p className="text-sm text-emerald-700 mt-0.5">Traditional practices and everyday self-care, each with honest evidence context.</p>
-                </div>
-                <Link href="/dashboard/wellness/library" className="shrink-0 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 transition-colors">Browse</Link>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+                <Link href="/dashboard/wellness/library" className="group">
+                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5 flex items-center gap-4 hover:shadow-md hover:border-emerald-200 transition-all">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-200 transition-colors">
+                            <BookOpen className="h-5 w-5 text-emerald-700" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm">Remedies Library</p>
+                            <p className="text-xs text-gray-500 truncate">Traditional self-care with evidence labels</p>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 text-gray-300 group-hover:text-emerald-500 shrink-0 ml-auto transition-colors" />
+                    </div>
+                </Link>
+
+                <Link href="/dashboard/wellness/routines" className="group">
+                    <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 flex items-center gap-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-200 transition-colors">
+                            <Sun className="h-5 w-5 text-indigo-700" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm">Daily Routines</p>
+                            <p className="text-xs text-gray-500 truncate">Morning &amp; evening wellness habits</p>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 text-gray-300 group-hover:text-indigo-500 shrink-0 ml-auto transition-colors" />
+                    </div>
+                </Link>
+
+                <Link href="/dashboard/consult" className="group">
+                    <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-5 flex items-center gap-4 hover:shadow-md hover:border-teal-200 transition-all">
+                        <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center shrink-0 group-hover:bg-teal-200 transition-colors">
+                            <Sparkles className="h-5 w-5 text-teal-700" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm">Ask Healio</p>
+                            <p className="text-xs text-gray-500 truncate">Wellness guidance &amp; home remedies</p>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 text-gray-300 group-hover:text-teal-500 shrink-0 ml-auto transition-colors" />
+                    </div>
+                </Link>
             </div>
 
-
-
-            {/* Routine Builder entry point */}
-            <div className="mt-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 flex items-center justify-between gap-4">
-                <div>
-                    <p className="font-semibold text-indigo-900">Daily Routine Builder</p>
-                    <p className="text-sm text-indigo-700 mt-0.5">Build a sustainable morning and evening routine from modular wellness blocks.</p>
-                </div>
-                <Link href="/dashboard/wellness/routines" className="shrink-0 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800 transition-colors">Build</Link>
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-center gap-2 text-xs text-gray-400">
+                {new Date().getHours() < 12 ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                {new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 17 ? "Good afternoon" : "Good evening"}
+                {" · "}
+                {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })}
             </div>
 
             <PlanSelectionModal

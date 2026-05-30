@@ -15,10 +15,6 @@ import {
     Share2,
     FileText,
     Loader2,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Stethoscope,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ArrowRight,
     Lock,
     Dumbbell,
     Clock,
@@ -158,7 +154,6 @@ export function DiagnosisResultCard({
     const [copied, setCopied] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { user } = useAuth();
 
     useEffect(() => {
@@ -182,9 +177,9 @@ export function DiagnosisResultCard({
             w.toLowerCase().includes("911")
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const shouldRecommendDoctor =
+    const _shouldRecommendDoctor =
         confidence < 80 || allWarnings.length > 0 || clinicalRules.length > 0;
+    void _shouldRecommendDoctor; // reserved for Phase 2 doctor flow
 
     // ── Copy button handler with 2s success feedback ──────────────────────────
     const handleCopy = () => {
@@ -294,10 +289,8 @@ export function DiagnosisResultCard({
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleBookingComplete = (appointmentId: string) => {
-        console.log("Appointment booked:", appointmentId);
-    };
+    // Phase 2: doctor booking callback (unused until DoctorSelectionModal is re-enabled)
+    // const handleBookingComplete = (appointmentId: string) => { ... };
 
     // Remedy section visibility flags
     const hasHomeRemedies =

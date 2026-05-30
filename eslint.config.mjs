@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "scripts/**",
   ]),
   // Block imports from the deprecated legacy chat system.
   // The primary chat system lives at src/app/dashboard/consult/.

@@ -98,7 +98,7 @@ describe('Severity Precedence — worst-match wins', () => {
 
 describe('Structural Invariants — exclusivity and count', () => {
 
-    function totalInputCount(result: ReturnType<typeof checkInteractions>): number {
+    function _totalInputCount(result: ReturnType<typeof checkInteractions>): number {
         const allSafe = new Set(result.safeRemedies.map((r: object) => JSON.stringify(r)));
         return (
             result.blockedRemedies.length +                         // blocked NOT in safe

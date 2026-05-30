@@ -31,7 +31,6 @@ import type {
     ExplainabilityReport,
     SafetyAssessment,
     IntelligenceAdjustment,
-    EnhancedReasoningTrace,
 } from './intelligenceTypes';
 
 import { clinicalKnowledgeBase } from './ClinicalKnowledgeBase';

@@ -374,7 +374,6 @@ export default function OnboardingWizard() {
         });
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const toggleMedicine = (name: string, _category?: string) => {
         setData((prev) => ({
             ...prev,

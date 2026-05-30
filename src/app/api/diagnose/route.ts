@@ -446,7 +446,7 @@ export async function POST(req: Request) {
             primaryDiagnosis = {} as PrimaryDiagnosis,
             clinicalRuleAlerts = [] as string[],
             posteriorRedFlags = [] as string[],
-            detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
+            _detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
             ddiPromptSection = '' as string,
         } = body;
 
