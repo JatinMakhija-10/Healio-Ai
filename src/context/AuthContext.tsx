@@ -286,7 +286,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const signInWithGoogle = async (signupRole: UserRole = 'patient') => {
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
                 redirectTo: `${window.location.origin}/auth/callback`,
@@ -294,9 +294,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     access_type: 'offline',
                     prompt: 'select_account',
                 },
+                skipBrowserRedirect: true,
             },
         });
+        
         if (error) throw error;
+        
+        if (data?.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error("Failed to initialize Google login. Please try again.");
+        }
     };
 
     const login = async (email: string, password: string) => {
