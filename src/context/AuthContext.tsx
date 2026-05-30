@@ -284,9 +284,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const signInWithGoogle = async (signupRole: UserRole = 'patient') => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        // Add a 5 second timeout to prevent indefinite hanging
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timed out. Please check your internet connection or ad-blocker.')), 8000)
+        );
+
+        const authPromise = supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
                 redirectTo: `${window.location.origin}/auth/callback`,
@@ -297,11 +301,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 skipBrowserRedirect: true,
             },
         });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
         
         if (error) throw error;
         
         if (data?.url) {
             window.location.href = data.url;
+            // Wait a bit to allow redirect to happen before resolving
+            await new Promise(resolve => setTimeout(resolve, 2000));
         } else {
             throw new Error("Failed to initialize Google login. Please try again.");
         }
