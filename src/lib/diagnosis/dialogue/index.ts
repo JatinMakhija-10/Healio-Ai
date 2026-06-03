@@ -44,6 +44,40 @@ export {
     medicalNER
 } from './MedicalNER';
 
+// Conversation Intake State
+export {
+    type IntakeFieldKey,
+    type IntakePhaseStatus,
+    type IntakeFieldDefinition,
+    type ConversationIntakeState,
+    type ChatTranscriptMessage,
+    INTAKE_FIELD_DEFINITIONS,
+    buildConversationIntakeState,
+    formatConversationIntakeStateForPrompt,
+    hasMinimumDiagnosticData,
+    inferAskedFieldFromAssistant
+} from './ConversationIntakeState';
+
+export {
+    type SymptomSchemaId,
+    type IntakeResponseType,
+    type SymptomQuestionField,
+    type SymptomQuestionSchema,
+    GENERIC_SCHEMA,
+    SYMPTOM_QUESTION_SCHEMAS,
+    selectSymptomQuestionSchema,
+    getSchemaFieldByKey,
+    resolveSchemaFieldKey,
+    getRequiredPriorityOneFields
+} from './SymptomQuestionSchemas';
+
+export {
+    type NextQuestionDecisionType,
+    type NextQuestionDecision,
+    selectNextQuestionDecision,
+    formatNextQuestionDecisionForPrompt
+} from './NextQuestionSelector';
+
 // Response Generation
 export {
     EmpatheticResponseGenerator,

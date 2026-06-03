@@ -1,9 +1,16 @@
-﻿﻿﻿import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
+import {
+    buildConversationIntakeState,
+    formatConversationIntakeStateForPrompt,
+    hasMinimumDiagnosticData,
+    formatNextQuestionDecisionForPrompt,
+    selectNextQuestionDecision,
+} from '@/lib/diagnosis/dialogue';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
@@ -755,6 +762,11 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - Never ask about information already present in the PATIENT PROFILE (age, gender, conditions, medications, allergies).
 - Never respond in Hindi or Hinglish when the user wrote in English. This is the most critical language rule.
 
+[STATIC RULES (ALWAYS IN SYSTEM PROMPT)]
+- Ask exactly one question per turn. Never bundle two questions in one reply.
+- Never ask for information already in collectedData. The state is ground truth, not conversation history.
+- If the user volunteers information not yet asked, extract and mark all matching fields as answered before deciding what to ask next.
+- Do not ask lifestyle, background, or optional questions until all priority-1 fields are filled.
 `;
 
 const FINAL_DIAGNOSIS_OUTPUT_RULES = `=== FINAL RESPONSE OUTPUT ===
@@ -851,8 +863,19 @@ PERSONALISATION RULES:
 `;
 
 
-// LATENCY_WARN, logLatency, alertIfSlow imported from @/lib/chat/latencyMonitor
-
+function streamTextResponse(text: string, customHeaders?: Record<string, string>): Response {
+    const sse = [
+        `data: ${JSON.stringify({ content: text })}\n\n`,
+        `data: [DONE]\n\n`
+    ].join('');
+    return new Response(sse, {
+        headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            ...customHeaders
+        }
+    });
+}
 export async function POST(req: NextRequest) {
     const requestStart = Date.now();
     const spans = new SpanCollector();
@@ -1041,6 +1064,17 @@ export async function POST(req: NextRequest) {
             .filter(m => m.role === 'user')
             .pop()?.content ?? '';
 
+        const conversationIntakeState = buildConversationIntakeState(processedMessages);
+        const hasMinimumIntakeData = hasMinimumDiagnosticData(conversationIntakeState);
+        const nextQuestionDecision = selectNextQuestionDecision(conversationIntakeState);
+
+        if (nextQuestionDecision.type === 'escalate') {
+            return streamTextResponse(
+                'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Healio cannot assist with potential emergencies.',
+                { 'X-Intake-Decision': 'escalate' }
+            );
+        }
+
         // Detect user language programmatically — prompt-level rules are too weak for 8B models
         const detectedLang = detectUserLanguage(lastUserMsg);
         console.log(`[LANG] Detected: ${detectedLang} for input: "${lastUserMsg.slice(0, 60)}"`);
@@ -1052,13 +1086,17 @@ export async function POST(req: NextRequest) {
             /remedy|remedies|prescription|treatment|suggest|can i|should i|how (do|can) i|what should i do/i
                 .test(lastUserMsg);
 
-        const isFinalTurn = isFollowUpMode
+        const isFinalTurnCandidate = isFollowUpMode
             ? asksForFreshDiagnosis && userTurns >= 3
             : userTurns >= 6 ||
                 processedMessages.length >= 10 ||
                 asksForFreshDiagnosis ||
                 asksForAdviceOnly ||
                 /summary|tell.*me/i.test(lastUserMsg);
+        const isFinalTurn = nextQuestionDecision.type === 'summarize' ||
+            (conversationIntakeState.phaseStatus !== 'escalated' &&
+                (hasMinimumIntakeData || userTurns >= 9) &&
+                isFinalTurnCandidate);
 
         // Model + token budget per phase
         const groqModel = isFinalTurn
@@ -1155,6 +1193,9 @@ ${SYSTEM_PROMPT}`
             finalSystemPrompt += medicalHistoryContext;
         }
 
+        finalSystemPrompt += formatConversationIntakeStateForPrompt(conversationIntakeState);
+        finalSystemPrompt += formatNextQuestionDecisionForPrompt(nextQuestionDecision);
+
         // ── Follow-up context injection ──────────────────────────────────────
         if (resumeContext && typeof resumeContext === 'object') {
             const rc = resumeContext;
@@ -1181,6 +1222,22 @@ ${SYSTEM_PROMPT}`
 
             finalSystemPrompt += followUpBlock;
         }
+
+        const answeredFieldsStr = Array.from(conversationIntakeState.answeredFields).join(', ');
+        const nextQuestionStr = nextQuestionDecision.field?.question ?? (conversationIntakeState.pendingQueue[0]?.question ?? 'none');
+        const collectedDataObj = Object.fromEntries(conversationIntakeState.collectedData);
+        const collectedDataStr = JSON.stringify(collectedDataObj);
+        const phaseStatusStr = conversationIntakeState.phaseStatus;
+
+        const dynamicStateInjection = `
+
+// Injected at bottom of system prompt each turn:
+ALREADY ANSWERED: ${answeredFieldsStr}
+NEXT QUESTION TO ASK: ${nextQuestionStr}
+COLLECTED SO FAR: ${collectedDataStr}
+CURRENT PHASE: ${phaseStatusStr}`;
+
+        finalSystemPrompt += dynamicStateInjection;
 
         spans.record('promptBuild', Date.now() - t0Prompt);
         spans.setMeta({ turn: userTurns, model: groqModel, isFinal: isFinalTurn, ragCacheHit: false });
