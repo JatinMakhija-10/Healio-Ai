@@ -97,3 +97,5 @@ export {
     EmpatheticResponseGenerator,
     responseGenerator
 } from './EmpatheticResponseGenerator';
+
+export { CHIP_OPTIONS, resolveChipOptionsForSchema } from "./ChipOptionsRegistry";

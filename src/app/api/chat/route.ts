@@ -12,6 +12,8 @@ import {
     selectNextQuestionDecision,
     computeRefinementDecision,
     formatRefinementDecisionForPrompt,
+    CHIP_OPTIONS,
+    resolveChipOptionsForSchema,
 } from '@/lib/diagnosis/dialogue';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
@@ -685,26 +687,23 @@ NEVER inject remedies if any red flag is present or severity ≥ 8.
 After certain questions, append a ui_hint JSON on a new line AFTER your conversational text. The JSON must be on its own line with no prose around it.
 
 Rules for generating options:
-- Options must be SPECIFIC to the patient's exact symptom reported. Never generic.
-- Generate 6-8 options per chip question.
-- For sensation, ask exactly: "What does the discomfort feel like? Choose the closest option, or describe it in your own words."
-- Sensation options must use globally understandable layman language. Cover pain and non-pain symptoms: Sharp/stabbing, Dull/aching, Burning, Itching, Tingling/numb, Pressure/tightness, Throbbing/pulsing, Cramping, Swollen/tender, Blocked/congested, Nausea/uneasy stomach, Weak/tired/heavy, Other.
-- Adapt sensation options to the complaint when obvious: skin/rash -> Itching, Burning, Tingling/numb, Swollen/tender, Dry/flaky, Spreading, Tender to touch, Other; nose/sinus -> Blocked/congested, Runny/watery, Sneezing, Pressure/tightness, Burning/dryness, Post-nasal drip, Other; stomach -> Cramping, Burning, Bloating/gas, Nausea/uneasy stomach, Pressure/fullness, Other.
-- For aggravation/amelioration: derive options from the specific body system affected.
+- DO NOT generate your own random options for chips. 
+- You MUST use the EXACT options provided in the "DYNAMIC CHIP OPTIONS FOR THIS SESSION" block below for the specific question type.
+- Always include an "Other - I'll type it" option if not already present.
 
 QUESTION → UI_HINT mapping (use exact type values):
-  Q2 duration     → {"ui_hint": {"type": "chips", "options": ["Today","1-3 days","4-7 days","1-2 weeks","1-2 months","3+ months"], "question_type": "duration"}}
+  Q2 duration     → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS duration>], "question_type": "duration"}}
   Q3 severity     → {"ui_hint": {"type": "slider", "min": 1, "max": 10, "question_type": "severity"}}
-  Q5 sensation    → {"ui_hint": {"type": "chips", "options": [<generate 6-8 layman sensation/discomfort options specific to their complaint, always include "Other">], "question_type": "sensation"}}
-  Q7 aggravation  → {"ui_hint": {"type": "chips", "options": [<generate 6-8 triggers specific to their complaint>], "question_type": "aggravation"}}
-  Q8 amelioration → {"ui_hint": {"type": "chips", "options": [<generate 6-8 relief factors specific to their complaint>], "question_type": "amelioration"}}
-  Q6 associated   → {"ui_hint": {"type": "chips", "options": [<generate 6-8 associated symptoms specific to their complaint>], "question_type": "associated_symptoms"}}
+  Q5 sensation    → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS sensation>], "question_type": "sensation"}}
+  Q7 aggravation  → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS aggravation>], "question_type": "aggravation"}}
+  Q8 amelioration → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS amelioration>], "question_type": "amelioration"}}
+  Q6 associated   → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS associated_symptoms>], "question_type": "associated_symptoms"}}
 FALLBACK: If unsure which type applies, default to chips with contextually relevant options. Never skip the ui_hint entirely for Q3, Q5, Q7, Q8.
 
 FEW-SHOT EXAMPLE (headache patient):
 User: "I have a headache."
 Healio: "I'm sorry you're dealing with this — headaches can be very disruptive. How long have you been experiencing it?
-{\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Today\", \"1-3 days\", \"4-7 days\", \"1-2 weeks\", \"1+ month\"], \"question_type\": \"duration\"}}"
+{\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Today\", \"1-3 days\", \"4-7 days\", \"1-2 weeks\", \"Recurring\", \"Other - I'll type it\"], \"question_type\": \"duration\"}}"
 
 User: "Since yesterday."
 Healio: "Understood — starting yesterday. How would you rate the intensity of the headache right now, on a scale of 1 to 10?
@@ -712,7 +711,7 @@ Healio: "Understood — starting yesterday. How would you rate the intensity of 
 
 User: "Around a 6."
 Healio: "A 6 means it is clearly bothering you. What does the discomfort feel like? Choose the closest option, or describe it in your own words.
-{\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Throbbing / pulsing\", \"Pressure / tightness\", \"Sharp / stabbing\", \"Dull / aching\", \"Behind the eyes\", \"One-sided\", \"With nausea\", \"Other\"], \"question_type\": \"sensation\"}}"
+{\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Throbbing/pulsing\", \"Pressure/tightness\", \"Sharp/stabbing\", \"Dull/aching\", \"One-sided\", \"Behind eyes\", \"Other - I'll type it\"], \"question_type\": \"sensation\"}}"
 
 [PERSONALISATION RULES — USE PATIENT PROFILE & HISTORY]
 You will receive PATIENT PROFILE and MEDICAL HISTORY blocks in this prompt. These are NOT optional context — you MUST actively use them to personalise every response. Generic advice is a failure.
@@ -1257,6 +1256,8 @@ ${SYSTEM_PROMPT}`
             ? conversationIntakeState.confirmedSymptoms.join(', ')
             : 'none';
 
+        const activeSchemaId = conversationIntakeState.activeSchemaId || 'generic';
+        
         const dynamicStateInjection = `
 
 // Injected at bottom of system prompt each turn:
@@ -1265,7 +1266,14 @@ NEXT QUESTION TO ASK: ${nextQuestionStr}
 COLLECTED SO FAR: ${collectedDataStr}
 CURRENT PHASE: ${phaseStatusStr}
 CONFIRMED SYMPTOMS (Yes answers): ${confirmedStr}
-EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
+EXCLUDED SYMPTOMS (No answers): ${excludedStr}
+
+DYNAMIC CHIP OPTIONS FOR THIS SESSION:
+duration: ${JSON.stringify(resolveChipOptionsForSchema('duration', activeSchemaId))}
+sensation: ${JSON.stringify(resolveChipOptionsForSchema('sensation', activeSchemaId))}
+aggravation: ${JSON.stringify(resolveChipOptionsForSchema('aggravation', activeSchemaId))}
+amelioration: ${JSON.stringify(resolveChipOptionsForSchema('amelioration', activeSchemaId))}
+associated_symptoms: ${JSON.stringify(resolveChipOptionsForSchema('associated_symptoms', activeSchemaId))}`;
 
         finalSystemPrompt += dynamicStateInjection;
 

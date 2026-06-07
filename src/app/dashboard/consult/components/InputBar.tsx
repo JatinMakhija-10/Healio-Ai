@@ -56,6 +56,15 @@ export function InputBar({
         ta.style.height = Math.min(ta.scrollHeight, 160) + "px";
     }, [value]);
 
+    // Handle external focus requests (e.g. from "Other" chip selection)
+    useEffect(() => {
+        const handleFocus = () => {
+            textareaRef.current?.focus();
+        };
+        window.addEventListener("focus-chat-input", handleFocus);
+        return () => window.removeEventListener("focus-chat-input", handleFocus);
+    }, []);
+
     const handleSend = () => {
         if (!value.trim() || isInputDisabled) return;
         onSend(value.trim());

@@ -14,6 +14,10 @@ export function QuickReplyChips({ options, onSelect }: QuickReplyChipsProps) {
     const [selected, setSelected] = useState<string | null>(null);
 
     const handleSelect = (option: string) => {
+        if (option.includes("Other")) {
+            window.dispatchEvent(new CustomEvent('focus-chat-input'));
+            return;
+        }
         setSelected(option);
         setIsOpen(false);
         onSelect(option);
