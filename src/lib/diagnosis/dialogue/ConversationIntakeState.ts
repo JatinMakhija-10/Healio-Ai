@@ -38,6 +38,10 @@ export interface ConversationIntakeState {
     redFlagsFound: string[];
     clarifyPending: { field: IntakeFieldKey; reason: string } | null;
     phaseStatus: IntakePhaseStatus;
+    /** Phase 5: Symptoms confirmed via yes/no clarification answers */
+    confirmedSymptoms: string[];
+    /** Phase 5: Symptoms denied via yes/no clarification answers (feeds Bayesian excluded list) */
+    excludedSymptoms: string[];
 }
 
 export interface ChatTranscriptMessage {
@@ -289,6 +293,38 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
             ? { field: lastAskedField, reason: 'The latest reply did not contain a clear value for the pending field.' }
             : null;
 
+    // ── Phase 5: Yes/No symptom tracking ─────────────────────────────────────
+    // Scans transcript for binary question/answer pairs to extract confirmed
+    // and excluded symptoms for Bayesian re-scoring.
+    const confirmedSymptoms: string[] = [];
+    const excludedSymptoms: string[] = [];
+    const YES_RE = /^(yes|yeah|yep|haan|ha|correct|true|definitely|absolutely|sure)\b/i;
+    const NO_RE = /^(no|nope|nah|nahi|not|never|false|don't|dont|na)\b/i;
+    const BINARY_Q_RE = /\b(do you|are you|have you|did you|is there|does it|can you|would you)\b.*\?/i;
+
+    let lastBinaryField: string | null = null;
+    for (const msg of messages) {
+        if (msg.role === 'assistant') {
+            if (BINARY_Q_RE.test(msg.content)) {
+                // Extract a quoted keyword as the field label
+                const m = msg.content.match(/"([^"]{2,40})"/);
+                lastBinaryField = m?.[1] ?? null;
+            } else {
+                lastBinaryField = null;
+            }
+            continue;
+        }
+        if (msg.role === 'user' && lastBinaryField) {
+            const trimmed = msg.content.trim();
+            if (YES_RE.test(trimmed) && !confirmedSymptoms.includes(lastBinaryField)) {
+                confirmedSymptoms.push(lastBinaryField);
+            } else if (NO_RE.test(trimmed) && !excludedSymptoms.includes(lastBinaryField)) {
+                excludedSymptoms.push(lastBinaryField);
+            }
+            lastBinaryField = null;
+        }
+    }
+
     return {
         chiefComplaint: collectedData.get('chief_complaint') ?? null,
         activeSchemaId: activeSchema.id,
@@ -301,11 +337,22 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         redFlagsFound,
         clarifyPending,
         phaseStatus: redFlagsFound.length > 0 ? 'escalated' : pendingQueue.length === 0 ? 'summary' : 'intake',
+        confirmedSymptoms,
+        excludedSymptoms,
     };
 }
 
 export function hasMinimumDiagnosticData(state: ConversationIntakeState): boolean {
     return state.requiredPriorityOneFields.every((field) => state.answeredFields.has(field));
+}
+
+/**
+ * Phase 5: Returns the list of symptoms explicitly denied by the user via yes/no answers.
+ * These should be passed to the Bayesian engine as `excludedSymptoms` to prevent
+ * false-positive scoring.
+ */
+export function getExcludedSymptoms(state: ConversationIntakeState): string[] {
+    return state.excludedSymptoms;
 }
 
 export function formatConversationIntakeStateForPrompt(state: ConversationIntakeState): string {

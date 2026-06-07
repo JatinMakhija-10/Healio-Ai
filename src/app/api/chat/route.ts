@@ -10,6 +10,8 @@ import {
     hasMinimumDiagnosticData,
     formatNextQuestionDecisionForPrompt,
     selectNextQuestionDecision,
+    computeRefinementDecision,
+    formatRefinementDecisionForPrompt,
 } from '@/lib/diagnosis/dialogue';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
@@ -1086,6 +1088,16 @@ export async function POST(req: NextRequest) {
             /remedy|remedies|prescription|treatment|suggest|can i|should i|how (do|can) i|what should i do/i
                 .test(lastUserMsg);
 
+        // ── Phase 5: Iterative Refinement Loop ───────────────────────────────
+        // Compute refinement decision based on confidence history, plateau, ambiguity.
+        // This layer sits ON TOP of the field-queue logic and can trigger early
+        // finalization or an info-gain question.
+        const refinementDecision = computeRefinementDecision(
+            conversationIntakeState,
+            processedMessages,
+            detectedLang as 'en' | 'hi' | 'hinglish'
+        );
+
         const isFinalTurnCandidate = isFollowUpMode
             ? asksForFreshDiagnosis && userTurns >= 3
             : userTurns >= 6 ||
@@ -1093,10 +1105,18 @@ export async function POST(req: NextRequest) {
                 asksForFreshDiagnosis ||
                 asksForAdviceOnly ||
                 /summary|tell.*me/i.test(lastUserMsg);
-        const isFinalTurn = nextQuestionDecision.type === 'summarize' ||
+
+        // Phase 5 override: finalize or finalize_best_guess forces isFinalTurn = true
+        const phase5Finalize = refinementDecision.action === 'finalize' ||
+            refinementDecision.action === 'finalize_best_guess';
+
+        const isFinalTurn = phase5Finalize ||
+            nextQuestionDecision.type === 'summarize' ||
             (conversationIntakeState.phaseStatus !== 'escalated' &&
                 (hasMinimumIntakeData || userTurns >= 9) &&
                 isFinalTurnCandidate);
+
+        console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
 
         // Model + token budget per phase
         const groqModel = isFinalTurn
@@ -1195,6 +1215,8 @@ ${SYSTEM_PROMPT}`
 
         finalSystemPrompt += formatConversationIntakeStateForPrompt(conversationIntakeState);
         finalSystemPrompt += formatNextQuestionDecisionForPrompt(nextQuestionDecision);
+        // Phase 5: Inject iterative refinement decision
+        finalSystemPrompt += formatRefinementDecisionForPrompt(refinementDecision);
 
         // ── Follow-up context injection ──────────────────────────────────────
         if (resumeContext && typeof resumeContext === 'object') {
@@ -1228,6 +1250,12 @@ ${SYSTEM_PROMPT}`
         const collectedDataObj = Object.fromEntries(conversationIntakeState.collectedData);
         const collectedDataStr = JSON.stringify(collectedDataObj);
         const phaseStatusStr = conversationIntakeState.phaseStatus;
+        const excludedStr = conversationIntakeState.excludedSymptoms.length
+            ? conversationIntakeState.excludedSymptoms.join(', ')
+            : 'none';
+        const confirmedStr = conversationIntakeState.confirmedSymptoms.length
+            ? conversationIntakeState.confirmedSymptoms.join(', ')
+            : 'none';
 
         const dynamicStateInjection = `
 
@@ -1235,7 +1263,9 @@ ${SYSTEM_PROMPT}`
 ALREADY ANSWERED: ${answeredFieldsStr}
 NEXT QUESTION TO ASK: ${nextQuestionStr}
 COLLECTED SO FAR: ${collectedDataStr}
-CURRENT PHASE: ${phaseStatusStr}`;
+CURRENT PHASE: ${phaseStatusStr}
+CONFIRMED SYMPTOMS (Yes answers): ${confirmedStr}
+EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
 
         finalSystemPrompt += dynamicStateInjection;
 

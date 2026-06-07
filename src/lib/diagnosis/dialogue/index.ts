@@ -55,8 +55,22 @@ export {
     buildConversationIntakeState,
     formatConversationIntakeStateForPrompt,
     hasMinimumDiagnosticData,
-    inferAskedFieldFromAssistant
+    inferAskedFieldFromAssistant,
+    getExcludedSymptoms,
 } from './ConversationIntakeState';
+
+// Phase 5: Iterative Refinement Engine
+export {
+    type RefinementAction,
+    type RefinementDecision,
+    type YesNoAnswer,
+    computeRefinementDecision,
+    formatRefinementDecisionForPrompt,
+    extractConfidenceHistory,
+    detectPlateau,
+    parseYesNoAnswers,
+    deriveSymptomUpdates,
+} from './IterativeRefinementEngine';
 
 export {
     type SymptomSchemaId,
