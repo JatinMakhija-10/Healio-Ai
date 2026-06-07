@@ -70,19 +70,24 @@ const SYMPTOM_PATTERN =
     /\b(fever|headache|cough|cold|rash|vomiting|diarrhea|loose motion|nausea|dizziness|fatigue|weakness|pain|ache|burning|itching|congestion|sore throat|chills|breathless|anxiety|palpitations|swelling|bukhar|khansi|ulti|dast|chakkar|thakan|jalan|khujli)\b/i;
 
 const SENSATION_PATTERN =
-    /\b(sharp|stabbing|dull|aching|burning|itching|tingling|numb|pressure|tightness|throbbing|pulsing|cramping|swollen|tender|blocked|congested|runny|watery|heavy|weak|tired|nausea|uneasy)\b/i;
+    /\b(sharp|stabbing|dull|aching|burning|itching|tingling|numb|pressure|tightness|throbbing|pulsing|cramping|swollen|tender|blocked|congested|runny|watery|heavy|weak|tired|nausea|uneasy|dry|wet|productive|tight|scratchy|hoarse|sore|raw|stiff|achy)\b/i;
 
 const ASSOCIATED_SYMPTOM_PATTERN =
-    /\b(fever|chills|cough|sore throat|burning urine|rash|vomiting|nausea|headache|dizziness|fatigue|weakness|diarrhea|loose motion|body ache|shortness of breath|sweating)\b/i;
+    /\b(fever|chills|cough|sore throat|burning urine|rash|vomiting|nausea|headache|dizziness|fatigue|weakness|diarrhea|loose motion|body ache|shortness of breath|sweating|runny nose|blocked nose|ear pain|palpitations|joint pain|back pain)\b/i;
 
+// Matches durations with OR without leading preposition ("for", "since", "from")
+// Also handles bare relative times: "morning", "evening", "afternoon", "last night"
 const DURATION_PATTERN =
-    /\b(?:for|since|from)?\s*((?:today|yesterday|last night|this morning|few hours|a few hours|couple of hours|couple of days|several days|[1-9]\d?\s*(?:minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)|one\s+(?:hour|day|week|month|year)|two\s+(?:hours|days|weeks|months|years)|three\s+(?:hours|days|weeks|months|years)))\b/i;
+    /\b(?:for|since|from)?\s*((?:today|yesterday|last night|this morning|this evening|this afternoon|few hours|a few hours|couple of hours|couple of days|several days|morning|evening|afternoon|[1-9]\d?\s*(?:minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)|one\s+(?:hour|day|week|month|year)|two\s+(?:hours|days|weeks|months|years)|three\s+(?:hours|days|weeks|months|years)))\b/i;
 
+// IMPORTANT: Severity MUST be anchored with context ("X/10", "X out of 10", "severity is X", "X on a scale")
+// to avoid matching bare numbers like the "3" in "for 3 days"
 const SEVERITY_PATTERN =
-    /\b(?:severity|intensity|pain|rate|rating)?\s*(?:is|was|around|about|:)?\s*([1-9]|10)\s*(?:\/\s*10|out of 10|on a scale)?\b/i;
+    /(?:(?:severity|intensity|pain level|pain|rate|rating|score)\s*(?:is|was|around|about|of|:)?\s*([1-9]|10)\b)|(?:\b([1-9]|10)\s*(?:\/\s*10|out of 10|on a scale))/i;
 
+// Matches temperature with or without space between number and unit: "100f", "100 F", "100.5F", "38.5C", "38.5 c"
 const TEMPERATURE_PATTERN =
-    /\b((?:9[5-9]|10[0-9]|11[0-9])(?:\.\d+)?)\s*(?:°?\s*f|fahrenheit)?\b|\b([3-4]\d(?:\.\d+)?)\s*(?:°?\s*c|celsius)\b/i;
+    /(?<![\d])((?:9[5-9]|10[0-9]|11[0-9])(?:\.\d+)?)[\s]*(degrees?[\s]*)?([fF]|fahrenheit)(?![a-zA-Z])|(?<![\d])([3-4]\d(?:\.\d+)?)[\s]*(degrees?[\s]*)?([cC]|celsius)(?![a-zA-Z])/;
 
 function normalizeValue(value: string): string {
     return value.replace(/\s+/g, ' ').trim();
@@ -162,19 +167,29 @@ function extractFieldValues(
 
     if (activeSchema.id === 'fever') {
         const temperatureMatch = normalized.match(TEMPERATURE_PATTERN);
+        // Group 1+3 = Fahrenheit, Group 4+6 = Celsius
         const temperature = temperatureMatch?.[1]
             ? `${temperatureMatch[1]}F`
-            : temperatureMatch?.[2]
-                ? `${temperatureMatch[2]}C`
+            : temperatureMatch?.[4]
+                ? `${temperatureMatch[4]}C`
                 : undefined;
         setValue('fever.temp_value', temperature);
     }
 
-    const explicitSeverity = normalized.match(SEVERITY_PATTERN)?.[1];
-    if (explicitSeverity && (/\b(\/\s*10|out of 10|scale|severity|intensity|pain|rate|rating)\b/i.test(normalized) || pendingField === 'severity')) {
+    // Severity: capture group 1 = labelled ("severity is 7"), group 2 = anchored ("7/10" or "7 out of 10")
+    const severityMatch = normalized.match(SEVERITY_PATTERN);
+    const explicitSeverity = severityMatch?.[1] ?? severityMatch?.[2];
+    if (explicitSeverity) {
         setValue('severity', `${explicitSeverity}/10`);
+    } else if (pendingField === 'severity' || pendingField?.endsWith('.severity')) {
+        // If the bot just asked for severity and user said a word descriptor, use it
+        const wordSeverity = normalized.match(/\b(mild|slight|moderate|medium|severe|bad|very bad|unbearable|extreme)\b/i)?.[1];
+        if (wordSeverity) setValue('severity', wordSeverity);
     } else if (/\b(mild|slight|moderate|medium|severe|bad|very bad|unbearable|extreme)\b/i.test(normalized)) {
-        setValue('severity', normalized.match(/\b(mild|slight|moderate|medium|severe|bad|very bad|unbearable|extreme)\b/i)?.[1]);
+        // Word severity is only safe when there's no competing number in the message
+        if (!normalized.match(/\b[1-9]\d?\s*(days?|weeks?|months?|hours?|minutes?)\b/i)) {
+            setValue('severity', normalized.match(/\b(mild|slight|moderate|medium|severe|bad|very bad|unbearable|extreme)\b/i)?.[1]);
+        }
     }
 
     const location = normalized.match(BODY_LOCATION_PATTERN)?.[1];
@@ -188,11 +203,12 @@ function extractFieldValues(
         setValue('associated', Array.from(new Set(associatedMatches.map(normalizeValue))).join(', '));
     }
 
-    if (/\b(worse|triggered by|after eating|after food|on walking|while walking|lying down|exercise|stress|cold air|movement)\b/i.test(normalized)) {
+    // Aggravation: match triggers including time-of-day and food patterns
+    if (/\b(worse|gets worse|worsens|triggered by|aggravated|after eating|after food|after meals|on walking|while walking|lying down|on exertion|exercise|stress|cold air|movement|at night|in morning|bending|breathing|deep breath|spicy|fatty|dairy|alcohol)\b/i.test(normalized)) {
         setValue('aggravation', normalized);
     }
 
-    if (/\b(better|relief|helps|improves|rest|sleep|warm|cold compress|medicine|after eating|drinking water)\b/i.test(normalized)) {
+    if (/\b(better|relief|helps|improves|rest|sleep|warm|cold compress|ice|medicine|after eating|drinking water|antacid|painkiller|lying down|sitting up|fresh air)\b/i.test(normalized)) {
         setValue('amelioration', normalized);
     }
 
