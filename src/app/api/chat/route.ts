@@ -12,7 +12,6 @@ import {
     selectNextQuestionDecision,
     computeRefinementDecision,
     formatRefinementDecisionForPrompt,
-    CHIP_OPTIONS,
     resolveChipOptionsForSchema,
 } from '@/lib/diagnosis/dialogue';
 
@@ -673,9 +672,10 @@ PROFILE-AWARE SKIP RULES:
   - If MEDICAL HISTORY shows a recent consultation for a similar condition, reference it in Q1 context: "Is this related to the [condition] we discussed on [date], or something new?"
   - For Q9: If the patient's lifestyle data (sleep, diet, stress, occupation) is in the profile, reference it instead of asking broadly. Example: "Your profile shows you have a desk job — could prolonged sitting be contributing?"
 
-STOPPING RULE: If after Q3 you have identified 1-2 probable conditions with ≥70% confidence → skip remaining questions and proceed to final diagnosis output.
-MINIMUM: 3 questions answered before final diagnosis.
-MAXIMUM: 9 questions total.
+ANTI-HALLUCINATION RULES:
+- Never say "You have [Condition]". Always use "This symptom pattern is commonly associated with [Condition]".
+- If you lack required data, explicitly state it (e.g. "Without knowing your temperature, I cannot fully rule out...").
+- Rely strictly on the injected ConversationIntakeState to know when to stop asking questions. Do NOT decide to summarize on your own.
 
 [EARLY HOME REMEDY INJECTION]
 After Q3 is answered, IF the condition appears mild (cold, indigestion, mild headache, acidity) AND severity ≤ 5:
@@ -1066,7 +1066,7 @@ export async function POST(req: NextRequest) {
             .pop()?.content ?? '';
 
         const conversationIntakeState = buildConversationIntakeState(processedMessages);
-        const hasMinimumIntakeData = hasMinimumDiagnosticData(conversationIntakeState);
+        const _hasMinimumIntakeData = hasMinimumDiagnosticData(conversationIntakeState);
         const nextQuestionDecision = selectNextQuestionDecision(conversationIntakeState);
 
         if (nextQuestionDecision.type === 'escalate') {
@@ -1080,7 +1080,7 @@ export async function POST(req: NextRequest) {
         const detectedLang = detectUserLanguage(lastUserMsg);
         console.log(`[LANG] Detected: ${detectedLang} for input: "${lastUserMsg.slice(0, 60)}"`);
 
-        const asksForFreshDiagnosis =
+        const _asksForFreshDiagnosis =
             /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result/i
                 .test(lastUserMsg);
         const asksForAdviceOnly =
@@ -1097,23 +1097,15 @@ export async function POST(req: NextRequest) {
             detectedLang as 'en' | 'hi' | 'hinglish'
         );
 
-        const isFinalTurnCandidate = isFollowUpMode
-            ? asksForFreshDiagnosis && userTurns >= 3
-            : userTurns >= 6 ||
-                processedMessages.length >= 10 ||
-                asksForFreshDiagnosis ||
-                asksForAdviceOnly ||
-                /summary|tell.*me/i.test(lastUserMsg);
+        // Phase 5 override: finalize or finalize_best_guess ONLY allowed if P1 coverage is 100%
+        const phase5Finalize = (refinementDecision.action === 'finalize' ||
+            refinementDecision.action === 'finalize_best_guess') && 
+            conversationIntakeState.coverageScore === 100;
 
-        // Phase 5 override: finalize or finalize_best_guess forces isFinalTurn = true
-        const phase5Finalize = refinementDecision.action === 'finalize' ||
-            refinementDecision.action === 'finalize_best_guess';
-
-        const isFinalTurn = phase5Finalize ||
+        const isFinalTurn = 
             nextQuestionDecision.type === 'summarize' ||
-            (conversationIntakeState.phaseStatus !== 'escalated' &&
-                (hasMinimumIntakeData || userTurns >= 9) &&
-                isFinalTurnCandidate);
+            conversationIntakeState.phaseStatus === 'summary' ||
+            phase5Finalize;
 
         console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
 

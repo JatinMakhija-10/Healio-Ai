@@ -20,7 +20,6 @@ export interface SymptomQuestionField extends IntakeFieldDefinition {
     responseType: IntakeResponseType;
     aliases?: IntakeFieldKey[];
     triggerIf?: string;
-    redFlagWhen?: string;
 }
 
 export interface SymptomQuestionSchema {
@@ -54,11 +53,11 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
         match: /\b(fever|temperature|feverish|bukhar|high temp)\b/i,
         fields: [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
-            { key: 'fever.temp_value', priority: 1, required: true, responseType: 'number', question: 'What is your temperature reading?', redFlagWhen: '>40C or <35C' },
-            { key: 'fever.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How many days have you had the fever?', redFlagWhen: '>7 days' },
+            { key: 'fever.temp_value', priority: 1, required: true, responseType: 'number', question: 'What is your temperature reading?', redFlagFn: (v) => { const n = parseFloat(v); return v.toUpperCase().includes('F') ? (n > 104 || n < 95) : (n > 40 || n < 35); } },
+            { key: 'fever.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How many days have you had the fever?', redFlagFn: (v) => parseInt(v) > 7 },
             { key: 'fever.rigors', priority: 1, required: true, responseType: 'boolean', question: 'Any chills or shaking?' },
-            { key: 'fever.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any confusion, difficulty breathing, stiff neck, or persistent high fever?', redFlagWhen: 'any=true' },
-            { key: 'fever.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any cough, sore throat, burning urine, rash, vomiting, or headache?' },
+            { key: 'fever.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any confusion, difficulty breathing, stiff neck, or persistent high fever?', redFlagFn: (v) => v === 'yes' },
+            { key: 'fever.associated', aliases: ['associated'], priority: 1, required: true, responseType: 'multi_select', question: 'Any cough, sore throat, burning urine, rash, vomiting, or headache?' },
             { key: 'fever.travel', priority: 2, required: false, responseType: 'boolean', question: 'Any recent travel or contact with a sick person?', triggerIf: 'duration > 3 days' },
         ],
     },
@@ -70,7 +69,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'headache.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long have you had the headache?' },
             { key: 'headache.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'headache.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Was it sudden and severe, or is there weakness, confusion, fainting, fever, or neck stiffness?', redFlagWhen: 'any=true' },
+            { key: 'headache.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Was it sudden and severe, or is there weakness, confusion, fainting, fever, or neck stiffness?', redFlagFn: (v) => v === 'yes' },
             { key: 'headache.location', aliases: ['location'], priority: 2, required: false, responseType: 'text', question: 'Where is the headache felt most?' },
             { key: 'headache.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'What does the headache feel like?' },
             { key: 'headache.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any nausea, vomiting, light sensitivity, blurred vision, or sinus symptoms?' },
@@ -85,7 +84,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'chest_pain.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'When did the chest discomfort start?' },
             { key: 'chest_pain.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'chest_pain.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Is there sweating, breathlessness, fainting, nausea, or pain spreading to the arm, jaw, or back?', redFlagWhen: 'any=true' },
+            { key: 'chest_pain.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Is there sweating, breathlessness, fainting, nausea, or pain spreading to the arm, jaw, or back?', redFlagFn: (v) => v === 'yes' },
             { key: 'chest_pain.character', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'Does it feel like pressure, burning, sharp pain, or tightness?' },
             { key: 'chest_pain.exertion', aliases: ['aggravation'], priority: 2, required: false, responseType: 'boolean', question: 'Does it get worse with walking, climbing stairs, or exertion?' },
             { key: 'chest_pain.relief', aliases: ['amelioration'], priority: 2, required: false, responseType: 'text', question: 'Does rest, antacid, position change, or anything else relieve it?' },
@@ -100,7 +99,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'abdominal_pain.location', aliases: ['location'], priority: 1, required: true, responseType: 'text', question: 'Where exactly is the abdominal pain?' },
             { key: 'abdominal_pain.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the abdominal pain been present?' },
             { key: 'abdominal_pain.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'abdominal_pain.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any severe worsening, rigid belly, fainting, blood in stool or vomit, or pregnancy possibility?', redFlagWhen: 'any=true' },
+            { key: 'abdominal_pain.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any severe worsening, rigid belly, fainting, blood in stool or vomit, or pregnancy possibility?', redFlagFn: (v) => v === 'yes' },
             { key: 'abdominal_pain.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any vomiting, diarrhea, fever, burning urine, constipation, or bloating?' },
             { key: 'abdominal_pain.food_stool', aliases: ['history'], priority: 3, required: false, responseType: 'text', question: 'Did it start after food, travel, alcohol, or a bowel change?' },
         ],
@@ -112,7 +111,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
         fields: [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'cough_cold.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How many days have you had the cough or cold symptoms?' },
-            { key: 'cough_cold.breathing_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any difficulty breathing, chest pain, blue lips, or coughing blood?', redFlagWhen: 'any=true' },
+            { key: 'cough_cold.breathing_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any difficulty breathing, chest pain, blue lips, or coughing blood?', redFlagFn: (v) => v === 'yes' },
             { key: 'cough_cold.fever', priority: 2, required: false, responseType: 'boolean', question: 'Do you also have fever or chills?' },
             { key: 'cough_cold.sputum', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'Is the cough dry, or are you bringing up mucus?' },
             { key: 'cough_cold.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any sore throat, runny nose, wheezing, body ache, or headache?' },
@@ -127,7 +126,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'vomiting_diarrhea.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the vomiting or diarrhea been happening?' },
             { key: 'vomiting_diarrhea.frequency', priority: 1, required: true, responseType: 'number', question: 'How many times has it happened in the last 24 hours?' },
-            { key: 'vomiting_diarrhea.dehydration_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any very low urine, extreme weakness, dizziness, blood, black stool, or inability to keep fluids down?', redFlagWhen: 'any=true' },
+            { key: 'vomiting_diarrhea.dehydration_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any very low urine, extreme weakness, dizziness, blood, black stool, or inability to keep fluids down?', redFlagFn: (v) => v === 'yes' },
             { key: 'vomiting_diarrhea.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any fever, abdominal pain, headache, recent outside food, or travel?' },
             { key: 'vomiting_diarrhea.intake', aliases: ['amelioration'], priority: 2, required: false, responseType: 'text', question: 'Are you able to drink water or ORS and keep it down?' },
         ],
@@ -140,7 +139,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'skin_rash.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the rash or skin symptom been present?' },
             { key: 'skin_rash.spread_location', aliases: ['location'], priority: 1, required: true, responseType: 'text', question: 'Where is it, and is it spreading?' },
-            { key: 'skin_rash.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any swelling of lips or face, breathing difficulty, fever, severe pain, blisters, or purple spots?', redFlagWhen: 'any=true' },
+            { key: 'skin_rash.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any swelling of lips or face, breathing difficulty, fever, severe pain, blisters, or purple spots?', redFlagFn: (v) => v === 'yes' },
             { key: 'skin_rash.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'Is it itchy, painful, burning, dry, or oozing?' },
             { key: 'skin_rash.exposure', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'Any new food, medicine, skincare product, insect bite, or plant/contact exposure?' },
         ],
@@ -153,7 +152,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'dizziness.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the dizziness been happening?' },
             { key: 'dizziness.type', aliases: ['sensation'], priority: 1, required: true, responseType: 'text', question: 'Does it feel like spinning, lightheadedness, imbalance, or near-fainting?' },
-            { key: 'dizziness.neuro_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any weakness, slurred speech, chest pain, fainting, severe headache, or new vision trouble?', redFlagWhen: 'any=true' },
+            { key: 'dizziness.neuro_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any weakness, slurred speech, chest pain, fainting, severe headache, or new vision trouble?', redFlagFn: (v) => v === 'yes' },
             { key: 'dizziness.triggers', aliases: ['aggravation'], priority: 2, required: false, responseType: 'text', question: 'Does it happen with standing, head movement, exertion, or not eating?' },
             { key: 'dizziness.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any nausea, ear symptoms, palpitations, sweating, fever, or dehydration?' },
         ],
@@ -166,7 +165,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'fatigue.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long have you been feeling this tired or weak?' },
             { key: 'fatigue.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How much is it affecting daily activity on a scale of 1 to 10?' },
-            { key: 'fatigue.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any chest pain, breathlessness, fainting, fever, unexplained weight loss, or black stools?', redFlagWhen: 'any=true' },
+            { key: 'fatigue.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any chest pain, breathlessness, fainting, fever, unexplained weight loss, or black stools?', redFlagFn: (v) => v === 'yes' },
             { key: 'fatigue.sleep_stress', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'How have sleep, stress, diet, and workload been recently?' },
             { key: 'fatigue.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any fever, body ache, low mood, heavy periods, dizziness, or appetite change?' },
         ],
@@ -177,7 +176,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
         match: /\b(anxiety|panic|depression|sad|stress|low mood|hopeless|mental health|ghabrahat|udas)\b/i,
         fields: [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
-            { key: 'mental_health.safety', priority: 1, required: true, responseType: 'boolean', question: 'Are you having thoughts of harming yourself or feeling unsafe right now?', redFlagWhen: 'yes=true' },
+            { key: 'mental_health.safety', priority: 1, required: true, responseType: 'boolean', question: 'Are you having thoughts of harming yourself or feeling unsafe right now?', redFlagFn: (v) => v === 'yes' },
             { key: 'mental_health.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long have you been feeling this way?' },
             { key: 'mental_health.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How intense does it feel on a scale of 1 to 10?' },
             { key: 'mental_health.sleep_appetite', aliases: ['associated'], priority: 2, required: false, responseType: 'text', question: 'How are your sleep, appetite, energy, and concentration?' },

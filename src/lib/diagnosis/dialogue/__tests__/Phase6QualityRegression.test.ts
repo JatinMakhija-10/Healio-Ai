@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { scoreTurn } from '../../testing/QualityScoringEngine';
 import { buildConversationIntakeState, ChatTranscriptMessage } from '../ConversationIntakeState';
-import { SYMPTOM_QUESTION_SCHEMAS } from '../SymptomQuestionSchemas';
+import { SYMPTOM_QUESTION_SCHEMAS as _SYMPTOM_QUESTION_SCHEMAS } from '../SymptomQuestionSchemas';
 
 describe('Phase 6: Quality Scoring Framework & Regression Suite', () => {
     

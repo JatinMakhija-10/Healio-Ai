@@ -24,6 +24,8 @@ export interface IntakeFieldDefinition {
     question: string;
     aliases?: IntakeFieldKey[];
     required?: boolean;
+    extractFn?: (userText: string) => string | null;
+    redFlagFn?: (value: string) => boolean;
 }
 
 export interface ConversationIntakeState {
@@ -42,6 +44,7 @@ export interface ConversationIntakeState {
     confirmedSymptoms: string[];
     /** Phase 5: Symptoms denied via yes/no clarification answers (feeds Bayesian excluded list) */
     excludedSymptoms: string[];
+    coverageScore: number;
 }
 
 export interface ChatTranscriptMessage {
@@ -57,10 +60,14 @@ const RED_FLAG_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
     { label: 'stroke signs', pattern: /\b(slurred speech|face drooping|facial droop|sudden numbness|arm weakness)\b/i },
     { label: 'loss of consciousness', pattern: /\b(loss of consciousness|passed out|unconscious|fainted)\b/i },
     { label: 'coughing blood', pattern: /\b(coughing blood|blood in cough|khoon.*khansi)\b/i },
-    { label: 'seizure', pattern: /\b(seizure|convulsion|fitting)\b/i },
+    { label: 'seizure', pattern: /\b(seizure|convulsion|fitting|mirgi)\b/i },
     { label: 'suicidal thoughts', pattern: /\b(suicidal|suicide|kill myself|end my life|want to die|self.?harm)\b/i },
     { label: 'sudden severe headache', pattern: /\b(worst headache|sudden severe headache|thunderclap headache)\b/i },
     { label: 'severe abdominal pain', pattern: /\b(severe abdominal pain|rigid abdomen|unbearable stomach pain)\b/i },
+    { label: 'anaphylaxis', pattern: /\b(lips swelling|throat swelling|tongue swelling|anaphylaxis|severe allergic reaction)\b/i },
+    { label: 'pregnancy emergency', pattern: /\b(pregnant.*bleeding|pregnant.*severe pain|pregnancy.*emergency)\b/i },
+    { label: 'altered consciousness', pattern: /\b(confusion|hallucinating|delirious|not making sense)\b/i },
+    { label: 'severe bleeding', pattern: /\b(vomiting blood|blood in vomit|black stool|severe bleeding|heavy bleeding)\b/i }
 ];
 
 const BODY_LOCATION_PATTERN =
@@ -248,6 +255,24 @@ function extractFieldValues(
         }
     }
 
+    // Apply strict extractFn and redFlagFn from the schema definitions if provided
+    activeSchema.fields.forEach(field => {
+        if (field.extractFn) {
+            const extracted = field.extractFn(normalized);
+            if (extracted !== null) {
+                values[field.key] = extracted;
+            }
+        }
+        // Run redFlagFn on the value if it exists
+        const val = values[field.key];
+        if (val && field.redFlagFn) {
+            if (field.redFlagFn(val)) {
+                // Synthesize a red flag trigger
+                values[`${field.key}_red_flag_trigger`] = 'yes'; 
+            }
+        }
+    });
+
     return values;
 }
 
@@ -287,14 +312,29 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
                 collectedData.set(definition.key, normalizeValue(value));
             }
         }
+        
+        // Also capture synthesized red flags into collectedData
+        for (const key of Object.keys(extracted)) {
+            if (key.endsWith('_red_flag_trigger') && extracted[key]) {
+                collectedData.set(key, extracted[key]!);
+            }
+        }
 
         previousAssistantField = null;
     }
 
     const answeredFields = new Set(collectedData.keys());
     const redFlagsFound = findRedFlags(messages);
+    
+    // Add synthesized red flags from specific field answers
+    for (const [key, value] of collectedData.entries()) {
+        if (key.endsWith('_red_flag_trigger') && value === 'yes') {
+            redFlagsFound.push(key.replace('_red_flag_trigger', ''));
+        }
+    }
+
     const pendingQueue = fieldDefinitions
-        .filter((definition) => !answeredFields.has(definition.key))
+        .filter((definition) => !answeredFields.has(definition.key) && !definition.key.endsWith('_red_flag_trigger'))
         .sort((a, b) => a.priority - b.priority);
 
     const lastAssistantField = [...messages]
@@ -341,12 +381,16 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         }
     }
 
+    const p1Fields = getRequiredPriorityOneFields(activeSchema);
+    const answeredP1Fields = p1Fields.filter((field) => answeredFields.has(field));
+    const coverageScore = p1Fields.length > 0 ? Math.round((answeredP1Fields.length / p1Fields.length) * 100) : 100;
+
     return {
         chiefComplaint: collectedData.get('chief_complaint') ?? null,
         activeSchemaId: activeSchema.id,
         activeSchemaLabel: activeSchema.label,
         fieldDefinitions,
-        requiredPriorityOneFields: getRequiredPriorityOneFields(activeSchema),
+        requiredPriorityOneFields: p1Fields,
         answeredFields,
         collectedData,
         pendingQueue,
@@ -355,6 +399,7 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         phaseStatus: redFlagsFound.length > 0 ? 'escalated' : pendingQueue.length === 0 ? 'summary' : 'intake',
         confirmedSymptoms,
         excludedSymptoms,
+        coverageScore,
     };
 }
 
@@ -385,6 +430,7 @@ export function formatConversationIntakeStateForPrompt(state: ConversationIntake
         '\n\n=== SERVER CONVERSATION STATE MACHINE ===',
         `activeSchema: ${state.activeSchemaId} (${state.activeSchemaLabel})`,
         `phaseStatus: ${state.phaseStatus}`,
+        `coverageScore: ${state.coverageScore}%`,
         `chiefComplaint: ${state.chiefComplaint ?? 'unknown'}`,
         `requiredPriorityOneFields: ${state.requiredPriorityOneFields.join(', ') || 'none'}`,
         `answeredFields: ${answered.length ? answered.join(', ') : 'none'}`,

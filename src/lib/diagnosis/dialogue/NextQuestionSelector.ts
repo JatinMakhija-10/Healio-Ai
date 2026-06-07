@@ -91,12 +91,6 @@ function isTriggerSatisfied(field: TriggerableField, state: ConversationIntakeSt
     return true;
 }
 
-function hasAnsweredAnyContextField(state: ConversationIntakeState): boolean {
-    return state.fieldDefinitions.some((field) =>
-        field.priority === 2 && state.answeredFields.has(field.key)
-    );
-}
-
 function getField(state: ConversationIntakeState, key: IntakeFieldKey): IntakeFieldDefinition | null {
     return state.fieldDefinitions.find((field) => field.key === key) ?? null;
 }
@@ -144,15 +138,6 @@ export function selectNextQuestionDecision(state: ConversationIntakeState): Next
         };
     }
 
-    if (hasAnsweredAnyContextField(state) || state.pendingQueue.every((field) => field.priority === 3)) {
-        return {
-            type: 'summarize',
-            field: null,
-            reason: 'Required fields and relevant contextual fields are complete.',
-            stopQuestioning: true,
-        };
-    }
-
     const optionalField = state.pendingQueue.find((field) => field.priority === 3);
     if (optionalField) {
         return {
@@ -166,7 +151,7 @@ export function selectNextQuestionDecision(state: ConversationIntakeState): Next
     return {
         type: 'summarize',
         field: null,
-        reason: 'No unanswered intake fields remain.',
+        reason: 'Required fields and relevant contextual fields are complete (Sufficiency met).',
         stopQuestioning: true,
     };
 }
