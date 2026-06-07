@@ -232,7 +232,7 @@ function extractFieldValues(
     }
 
     if (/\b(confusion|difficulty breathing|stiff neck|persistent high fever|blood|fainting|blue lips|slurred speech|face drooping|self.?harm|suicid)\b/i.test(normalized)) {
-        const redFlagField = activeSchema.fields.find((field) => field.redFlagWhen)?.key;
+        const redFlagField = activeSchema.fields.find((field) => field.redFlagFn)?.key;
         if (redFlagField) values[redFlagField] = normalized;
     }
 
