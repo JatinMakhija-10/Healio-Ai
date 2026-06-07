@@ -282,9 +282,32 @@ function findRedFlags(messages: ChatTranscriptMessage[]): string[] {
         .map((message) => message.content)
         .join('\n');
 
-    return RED_FLAG_PATTERNS
-        .filter(({ pattern }) => pattern.test(userText))
-        .map(({ label }) => label);
+    const redFlags: string[] = [];
+    for (const { label, pattern } of RED_FLAG_PATTERNS) {
+        let match: RegExpExecArray | null;
+        const localPattern = new RegExp(pattern.source, 'gi');
+        while ((match = localPattern.exec(userText)) !== null) {
+            const matchIndex = match.index;
+            const matchText = match[0];
+            
+            // Check context before match (English/Hinglish pre-negation)
+            const contextBefore = userText.slice(Math.max(0, matchIndex - 25), matchIndex).toLowerCase();
+            const isPreNegated = /\b(no|not|dont|don't|without|free of|nahi|na|no\s+other|denies|denied)\b\s*$/i.test(contextBefore) ||
+                                 /\b(no|not|dont|don't|without|free of|nahi|na|no\s+other|denies|denied)\s+\w+\s*$/i.test(contextBefore) ||
+                                 /\b(no|not|dont|don't|without|free of|nahi|na|no\s+other|denies|denied)\s+\w+\s+\w+\s*$/i.test(contextBefore);
+
+            // Check context after match (Hindi/Hinglish post-negation)
+            const contextAfter = userText.slice(matchIndex + matchText.length, matchIndex + matchText.length + 20).toLowerCase();
+            const isPostNegated = /^\s*\b(nahi|na|no|not|nil|none)\b/i.test(contextAfter) ||
+                                  /^\s*\w+\s+\b(nahi|na|no|not|nil|none)\b/i.test(contextAfter);
+
+            if (!isPreNegated && !isPostNegated) {
+                redFlags.push(label);
+                break;
+            }
+        }
+    }
+    return redFlags;
 }
 
 export function buildConversationIntakeState(messages: ChatTranscriptMessage[]): ConversationIntakeState {

@@ -163,4 +163,18 @@ describe('Healio AI Quality Optimization v2.0 Regression Suite', () => {
         expect(state.requiredPriorityOneFields).toContain('body_pain.red_flags');
         expect(state.coverageScore).toBeLessThan(100);
     });
+
+    it('TC-12: Does not trigger escalation when red flags are explicitly negated', () => {
+        const messages1 = [{ role: 'user', content: 'I have a cough but absolutely no chest pain and no breathing difficulty' }];
+        const state1 = buildConversationIntakeState(messages1);
+        expect(state1.redFlagsFound).not.toContain('chest pain');
+        expect(state1.redFlagsFound).not.toContain('breathing difficulty');
+        expect(state1.phaseStatus).not.toBe('escalated');
+
+        const messages2 = [{ role: 'user', content: 'mujhe cold hai, but chest pain nahi hai aur breathlessness bhi nahi' }];
+        const state2 = buildConversationIntakeState(messages2);
+        expect(state2.redFlagsFound).not.toContain('chest pain');
+        expect(state2.redFlagsFound).not.toContain('breathing difficulty');
+        expect(state2.phaseStatus).not.toBe('escalated');
+    });
 });
