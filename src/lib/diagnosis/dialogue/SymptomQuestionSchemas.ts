@@ -11,7 +11,8 @@ export type SymptomSchemaId =
     | 'skin_rash'
     | 'dizziness'
     | 'fatigue'
-    | 'mental_health';
+    | 'mental_health'
+    | 'body_pain';
 
 export type IntakeResponseType = 'text' | 'number' | 'boolean' | 'multi_select';
 
@@ -181,6 +182,22 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'mental_health.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How intense does it feel on a scale of 1 to 10?' },
             { key: 'mental_health.sleep_appetite', aliases: ['associated'], priority: 2, required: false, responseType: 'text', question: 'How are your sleep, appetite, energy, and concentration?' },
             { key: 'mental_health.triggers_support', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'Did anything trigger this, and do you have someone safe you can talk to?' },
+        ],
+    },
+    {
+        id: 'body_pain',
+        label: 'Body pain',
+        match: /\b(pain|injury|hurt|sprain|strain|fracture|broken|joint|back|neck|shoulder|arm|leg|finger|toe|wrist|ankle|knee|hip|muscle|cramp|soreness|dard|shoulder pain|knee pain|back pain|joint pain|muscle pain)\b/i,
+        fields: [
+            { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
+            { key: 'body_pain.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the pain been present?' },
+            { key: 'body_pain.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
+            { key: 'body_pain.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any numbness, tingling, weakness, inability to bear weight, visible deformity, fever, or sudden loss of bowel or bladder control?', redFlagFn: (v) => v === 'yes' },
+            { key: 'body_pain.location', aliases: ['location'], priority: 2, required: false, responseType: 'text', question: 'Where is the pain located?' },
+            { key: 'body_pain.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'What does the pain feel like (e.g. sharp, dull, aching, throbbing)?' },
+            { key: 'body_pain.onset', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'How did this start, or what were you doing before the pain began?' },
+            { key: 'body_pain.aggravation', aliases: ['aggravation'], priority: 2, required: false, responseType: 'text', question: 'What makes the pain worse?' },
+            { key: 'body_pain.amelioration', aliases: ['amelioration'], priority: 2, required: false, responseType: 'text', question: 'What gives relief?' },
         ],
     },
 ];

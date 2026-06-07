@@ -6,6 +6,7 @@ export const CHIP_OPTIONS: Record<string, Record<string, string[]>> = {
     cough_cold:     ["Today", "1-3 days", "4-7 days", "1-2 weeks", "3+ weeks"],
     mental_health:  ["A few weeks", "1-2 months", "3-6 months", "Over 6 months", "Over a year"],
     skin_rash:      ["Today", "1-3 days", "4-7 days", "1-2 weeks", "Weeks to months"],
+    body_pain:      ["Today", "1-3 days", "4-7 days", "1-2 weeks", "Weeks to months", "Other"],
     generic:        ["Today", "1-3 days", "4-7 days", "1-2 weeks", "1-2 months", "3+ months"],
   },
   // sensation — schema-specific, medically accurate
@@ -19,6 +20,7 @@ export const CHIP_OPTIONS: Record<string, Record<string, string[]>> = {
     dizziness:      ["Room spinning", "Lightheaded/faint", "Off-balance", "With nausea", "Vision blurry", "Worse on standing", "Other"],
     fatigue:        ["Weak/heavy limbs", "Brain fog", "No energy", "Sleepy all day", "After mild effort", "With body aches", "Other"],
     mental_health:  ["Low mood/sad", "Anxious/worried", "Unable to sleep", "No motivation", "Overwhelmed", "Irritable", "Hopeless", "Other"],
+    body_pain:      ["Sharp/stabbing", "Dull/aching", "Throbbing/pulsing", "Stiff/tight", "Swollen/tender", "Cramping", "Burning", "Numbness/tingling", "Other"],
     generic:        ["Sharp/stabbing", "Dull/aching", "Burning", "Throbbing/pulsing", "Pressure/tightness", "Tingling/numb", "Other"],
   },
   // associated symptoms — schema-specific
@@ -31,6 +33,7 @@ export const CHIP_OPTIONS: Record<string, Record<string, string[]>> = {
     skin_rash:      ["Fever", "Itching", "Swelling", "Discharge/pus", "Joint pain", "Spreading", "New areas"],
     dizziness:      ["Nausea/vomiting", "Headache", "Ear ringing", "Hearing loss", "Sweating", "Palpitations"],
     mental_health:  ["Sleep problems", "Low appetite", "Poor concentration", "Fatigue", "Irritability", "Social withdrawal"],
+    body_pain:      ["Swelling", "Stiffness", "Warmth/redness", "Numbness/tingling", "Weakness", "Fever", "None"],
     generic:        ["Fever", "Nausea", "Dizziness", "Fatigue/weakness", "Headache", "Loss of appetite"],
   },
   // aggravation — what makes it worse
@@ -43,6 +46,7 @@ export const CHIP_OPTIONS: Record<string, Record<string, string[]>> = {
     skin_rash:      ["Scratching", "Heat/sweating", "Certain fabrics", "Water/bathing", "Sunlight", "Stress", "Other"],
     dizziness:      ["Standing up quickly", "Head movement", "Lying down", "After eating", "Exercise", "Other"],
     mental_health:  ["Crowded places", "Work/study pressure", "Poor sleep", "Social situations", "Mornings", "Other"],
+    body_pain:      ["Movement/activity", "Bearing weight", "Touch/pressure", "Bending/stretching", "Cold weather", "In the morning", "At night", "Other"],
     generic:        ["Movement", "Stress", "After eating", "Heat", "Cold", "Lying down", "Physical activity", "Other"],
   },
   // amelioration — what gives relief
@@ -55,6 +59,7 @@ export const CHIP_OPTIONS: Record<string, Record<string, string[]>> = {
     skin_rash:      ["Cold compress", "Antihistamine", "Moisturizer", "Avoiding scratching", "Calamine lotion", "Other"],
     dizziness:      ["Lying still", "Drinking water", "Eating something", "Sitting down", "Fresh air", "Other"],
     mental_health:  ["Talking to someone", "Exercise", "Sleep", "Distraction/hobby", "Music/TV", "Nothing yet", "Other"],
+    body_pain:      ["Rest", "Ice compress", "Warm compress/bath", "Gentle stretching", "Massage", "Painkillers/ointment", "Elevating the limb", "Other"],
     generic:        ["Rest", "Heat/warm compress", "Cold compress", "Medication", "Sleep", "Drinking water", "Nothing yet", "Other"],
   },
 };

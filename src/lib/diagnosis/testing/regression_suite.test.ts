@@ -151,4 +151,16 @@ describe('Healio AI Quality Optimization v2.0 Regression Suite', () => {
         expect(decision.type).toBe('ask_optional');
         expect(decision.field?.key).toBe('abdominal_pain.food_stool');
     });
+
+    it('TC-11: Correctly identifies body_pain schema and checks required P1 fields', () => {
+        const messages = [{ role: 'user', content: 'I have sharp pain in my right thumb toe.' }];
+        const state = buildConversationIntakeState(messages);
+        
+        expect(state.activeSchemaId).toBe('body_pain');
+        expect(state.answeredFields.has('chief_complaint')).toBe(true);
+        expect(state.requiredPriorityOneFields).toContain('body_pain.duration');
+        expect(state.requiredPriorityOneFields).toContain('body_pain.severity');
+        expect(state.requiredPriorityOneFields).toContain('body_pain.red_flags');
+        expect(state.coverageScore).toBeLessThan(100);
+    });
 });

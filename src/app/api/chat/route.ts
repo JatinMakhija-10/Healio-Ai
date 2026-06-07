@@ -1112,10 +1112,14 @@ export async function POST(req: NextRequest) {
             refinementDecision.action === 'finalize_best_guess') && 
             conversationIntakeState.coverageScore === 100;
 
+        const totalUserTurns = messages.filter((m: { role: string }) => m.role === 'user').length;
+
         const isFinalTurn = 
             nextQuestionDecision.type === 'summarize' ||
             conversationIntakeState.phaseStatus === 'summary' ||
-            phase5Finalize;
+            phase5Finalize ||
+            (conversationIntakeState.coverageScore === 100 && totalUserTurns >= 4) ||
+            totalUserTurns >= 6;
 
         console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
 

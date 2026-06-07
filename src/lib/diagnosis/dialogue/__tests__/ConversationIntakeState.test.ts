@@ -48,7 +48,7 @@ describe('ConversationIntakeState', () => {
         expect(hasMinimumDiagnosticData(incomplete)).toBe(false);
 
         const complete = buildConversationIntakeState([
-            { role: 'user', content: 'I have lower back pain for 2 days and it is 4/10' },
+            { role: 'user', content: 'I have nausea for 2 days and it is 4/10' },
         ]);
         expect(hasMinimumDiagnosticData(complete)).toBe(true);
     });
