@@ -687,18 +687,20 @@ NEVER inject remedies if any red flag is present or severity ≥ 8.
 After certain questions, append a ui_hint JSON on a new line AFTER your conversational text. The JSON must be on its own line with no prose around it.
 
 Rules for generating options:
-- DO NOT generate your own random options for chips. 
-- You MUST use the EXACT options provided in the "DYNAMIC CHIP OPTIONS FOR THIS SESSION" block below for the specific question type.
+- DO NOT generate your own random options for chips.
+- You MUST copy the EXACT options from the "NEXT FIELD CHIPS" block in the dynamic injection below.
 - Always include an "Other - I'll type it" option if not already present.
 
-QUESTION → UI_HINT mapping (use exact type values):
-  Q2 duration     → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS duration>], "question_type": "duration"}}
-  Q3 severity     → {"ui_hint": {"type": "slider", "min": 1, "max": 10, "question_type": "severity"}}
-  Q5 sensation    → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS sensation>], "question_type": "sensation"}}
-  Q7 aggravation  → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS aggravation>], "question_type": "aggravation"}}
-  Q8 amelioration → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS amelioration>], "question_type": "amelioration"}}
-  Q6 associated   → {"ui_hint": {"type": "chips", "options": [<copy from DYNAMIC CHIP OPTIONS associated_symptoms>], "question_type": "associated_symptoms"}}
-FALLBACK: If unsure which type applies, default to chips with contextually relevant options. Never skip the ui_hint entirely for Q3, Q5, Q7, Q8.
+FIELD KEY → UI_HINT mapping (match the NEXT FIELD KEY exactly):
+  Any field key ending in .duration or .age_of_onset → {"ui_hint": {"type": "chips", "options": [<copy from NEXT FIELD CHIPS>], "question_type": "duration"}}
+  Any field key ending in .severity                  → {"ui_hint": {"type": "slider", "min": 1, "max": 10, "question_type": "severity"}}
+  Any field key ending in .sensation or .type         → {"ui_hint": {"type": "chips", "options": [<copy from NEXT FIELD CHIPS>], "question_type": "sensation"}}
+  Any field key ending in .aggravation                → {"ui_hint": {"type": "chips", "options": [<copy from NEXT FIELD CHIPS>], "question_type": "aggravation"}}
+  Any field key ending in .amelioration               → {"ui_hint": {"type": "chips", "options": [<copy from NEXT FIELD CHIPS>], "question_type": "amelioration"}}
+  Any field key ending in .associated                 → {"ui_hint": {"type": "chips", "options": [<copy from NEXT FIELD CHIPS>], "question_type": "associated_symptoms"}}
+  Any boolean field (danger_signs, red_flags, safety) → {"ui_hint": {"type": "chips", "options": ["Yes", "No"], "question_type": "boolean"}}
+  Fields ending in .onset, .history, .travel, .intake, .exposure, .trigger → NO ui_hint. Use plain text input.
+FALLBACK: If NEXT FIELD CHIPS is non-empty and no rule above matches, use it as a chips ui_hint. If NEXT FIELD CHIPS is empty, output no ui_hint.
 
 FEW-SHOT EXAMPLE (headache patient):
 User: "I have a headache."
@@ -768,6 +770,14 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - Never ask for information already in collectedData. The state is ground truth, not conversation history.
 - If the user volunteers information not yet asked, extract and mark all matching fields as answered before deciding what to ask next.
 - Do not ask lifestyle, background, or optional questions until all priority-1 fields are filled.
+
+[NO-DIAGNOSIS-DURING-QA — CRITICAL]
+When CURRENT PHASE is anything other than "summary", you are in the INTAKE phase. During intake:
+- NEVER say "it sounds like [condition]", "this could be [condition]", "this might be [condition]", or any variation.
+- NEVER name a diagnosis, condition, or differential in your conversational reply.
+- NEVER produce a paragraph-length empathy summary recapping all collected symptoms.
+- ONLY output: [one short empathy line acknowledging the latest symptom/answer] + [the next question] + [optional ui_hint].
+- Your entire reply must be 2-3 sentences MAX during intake. Diagnosis language is RESERVED for when CURRENT PHASE = "summary".
 `;
 
 const FINAL_DIAGNOSIS_OUTPUT_RULES = `=== FINAL RESPONSE OUTPUT ===
@@ -1250,22 +1260,22 @@ ${SYSTEM_PROMPT}`
 
         const activeSchemaId = conversationIntakeState.activeSchemaId || 'generic';
         
+        // Resolve chip options for the exact next field so the LLM never has to guess
+        const nextFieldKey = nextQuestionDecision.field?.key ?? '';
+        const nextFieldAlias = nextFieldKey.split('.').pop() ?? '';
+        const nextFieldChips = resolveChipOptionsForSchema(nextFieldAlias, activeSchemaId);
+
         const dynamicStateInjection = `
 
 // Injected at bottom of system prompt each turn:
 ALREADY ANSWERED: ${answeredFieldsStr}
+NEXT FIELD KEY: ${nextFieldKey || 'none'}
 NEXT QUESTION TO ASK: ${nextQuestionStr}
+NEXT FIELD CHIPS: ${nextFieldChips.length > 0 ? JSON.stringify(nextFieldChips) : '[] (no chips — use plain text input)'}
 COLLECTED SO FAR: ${collectedDataStr}
 CURRENT PHASE: ${phaseStatusStr}
 CONFIRMED SYMPTOMS (Yes answers): ${confirmedStr}
-EXCLUDED SYMPTOMS (No answers): ${excludedStr}
-
-DYNAMIC CHIP OPTIONS FOR THIS SESSION:
-duration: ${JSON.stringify(resolveChipOptionsForSchema('duration', activeSchemaId))}
-sensation: ${JSON.stringify(resolveChipOptionsForSchema('sensation', activeSchemaId))}
-aggravation: ${JSON.stringify(resolveChipOptionsForSchema('aggravation', activeSchemaId))}
-amelioration: ${JSON.stringify(resolveChipOptionsForSchema('amelioration', activeSchemaId))}
-associated_symptoms: ${JSON.stringify(resolveChipOptionsForSchema('associated_symptoms', activeSchemaId))}`;
+EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
 
         finalSystemPrompt += dynamicStateInjection;
 
