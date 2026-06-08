@@ -26,8 +26,9 @@ export const maxDuration = 60;
  */
 
 import { NextResponse } from "next/server";
-import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
 import OpenAI from 'openai';
+import { getJinaEmbedding, getParallelEmbeddings } from "@/lib/ai/jina";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 
@@ -122,8 +123,10 @@ async function fetchMultiQueryRAG(
     symptomText: string,
     primaryDiagnosis: PrimaryDiagnosis
 ): Promise<{ context: string; remediesFound: string[] }> {
-    if (getGeminiApiKeys().length === 0) {
-        return { context: "", remediesFound: [] };
+    // We still need Gemini for Ayurvedic queries (Gemini-ingested table).
+    // Jina handles Boericke + Home Remedies.
+    if (!process.env.JINA_API_KEY) {
+        console.warn('[diagnose] JINA_API_KEY not set — RAG will be degraded');
     }
 
     // ── RAG Cache check ───────────────────────────────────────────────────────
@@ -133,8 +136,6 @@ async function fetchMultiQueryRAG(
         console.log('[RAG] Cache hit — skipping embed + RPC cycle');
         return cached;
     }
-
-    const ai = getGeminiClient(); // singleton — no per-request constructor cost
 
     // Build query set: symptom text + condition-specific query
     const keywordHint = primaryDiagnosis.matchedKeywords?.slice(0, 3).join(" ") || "";
@@ -146,74 +147,37 @@ async function fetchMultiQueryRAG(
     try {
         const supabase = getSupabaseAdmin(); // singleton — no per-request constructor cost
 
-        // ── Fully parallel embedding fan-out ─────────────────────────────────
-        // Main embeddings (768-dim) + home-remedy embedding (3072-dim) all fire
-        // simultaneously — previously the home embed ran only AFTER main embeds
-        // finished, adding 1-2s of unnecessary sequential latency.
         const homeQuery = `${symptomText} ${primaryDiagnosis.condition}`.trim();
 
-        const [embeddingResults, ayurvedicEmbResults, homeEmbResp] = await Promise.allSettled([
-            // Batch: embed all queries in one Promise.allSettled (3072-dim for Boericke)
-            Promise.allSettled(
-                queries.map((q) =>
-                    ai.models.embedContent({
-                        model: AI_PHASE_CONFIG.models.embedding,
-                        contents: q,
-                    })
-                )
-            ),
-            // Ayurvedic: 768-dim (table was re-ingested with output_dimensionality=768)
-            Promise.allSettled(
-                queries.map((q) =>
-                    ai.models.embedContent({
-                        model: AI_PHASE_CONFIG.models.embedding,
-                        contents: q,
-                        config: { outputDimensionality: 768 },
-                    })
-                )
-            ),
-            // Home remedy embedding runs in parallel — not after
-            ai.models.embedContent({
-                model: 'gemini-embedding-001',
-                contents: homeQuery,
-            }),
+        // ── Fire BOTH providers in PARALLEL for all queries ───────────────────
+        // Jina  → boericke_embeddings, home_remedy_embeddings  (768-dim)
+        // Gemini → ayurvedic_knowledge_embeddings               (768-dim)
+        // All N queries embed simultaneously across both providers.
+        const [parallelResults, homeEmbResult] = await Promise.allSettled([
+            Promise.all(queries.map(q => getParallelEmbeddings(q))),
+            getJinaEmbedding(homeQuery),
         ]);
 
-        // Unwrap main embeddings (3072-dim for Boericke)
-        const mainEmbedResults = embeddingResults.status === 'fulfilled' ? embeddingResults.value : [];
-        const validEmbeddings = mainEmbedResults
-            .filter(
-                (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof ai.models.embedContent>>> =>
-                    r.status === "fulfilled"
-            )
-            .map((r) => r.value.embeddings?.[0]?.values)
-            .filter((e): e is number[] => !!e && e.length > 0);
+        const allParallel = parallelResults.status === 'fulfilled' ? parallelResults.value : [];
+        const validJinaEmbeddings    = allParallel.map(r => r.jina).filter((e): e is number[] => !!e && e.length > 0);
+        const validGeminiEmbeddings  = allParallel.map(r => r.gemini768).filter((e): e is number[] => !!e && e.length > 0);
 
-        // Unwrap Ayurvedic embeddings (768-dim)
-        const ayurvedicEmbedResults = ayurvedicEmbResults.status === 'fulfilled' ? ayurvedicEmbResults.value : [];
-        const validAyurvedicEmbeddings = ayurvedicEmbedResults
-            .filter(
-                (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof ai.models.embedContent>>> =>
-                    r.status === "fulfilled"
-            )
-            .map((r) => r.value.embeddings?.[0]?.values)
-            .filter((e): e is number[] => !!e && e.length > 0);
+        if (validJinaEmbeddings.length === 0 && validGeminiEmbeddings.length === 0) {
+            throw new Error('No valid embeddings from either provider');
+        }
 
-        if (validEmbeddings.length === 0) throw new Error("No valid embeddings");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = supabase as any;
 
-        // Unwrap home remedy embedding
-        const homeEmbedding = homeEmbResp.status === 'fulfilled'
-            ? homeEmbResp.value.embeddings?.[0]?.values
-            : null;
+        // Unwrap home remedy embedding (Jina)
+        const homeEmbedding = homeEmbResult.status === 'fulfilled' ? homeEmbResult.value : null;
 
         // ── Fan-out all Supabase RPCs simultaneously ──────────────────────────────────
         // Boericke + Ayurvedic per embedding + home remedies — all in parallel
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpcPromises: Promise<any>[] = [];
-        validEmbeddings.forEach(embedding => {
-            // 1. Fetch Boericke (3072-dim, threshold lowered to match actual similarity range)
+        // 1. Boericke — Jina embeddings
+        validJinaEmbeddings.forEach(embedding => {
             rpcPromises.push(
                 db.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
@@ -221,9 +185,16 @@ async function fetchMultiQueryRAG(
                     match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
                 }).then((res: { data: unknown }) => ({ type: 'boericke', data: res.data }))
             );
+            rpcPromises.push(
+                db.rpc("match_ayurvedic_pdfs", {
+                    query_embedding: embedding,
+                    match_threshold: 0.60,
+                    match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
+                }).then((res: { data: unknown }) => ({ type: 'ayurvedic_pdfs', data: res.data }))
+            );
         });
-        // 2. Fetch Ayurvedic with 768-dim embeddings + 5s timeout guard
-        validAyurvedicEmbeddings.forEach(ayurvedicEmb => {
+        // 2. Ayurvedic — Gemini 768-dim embeddings
+        validGeminiEmbeddings.forEach(ayurvedicEmb => {
             rpcPromises.push(
                 Promise.race([
                     db.rpc("search_ayurvedic_knowledge", {
@@ -289,6 +260,21 @@ async function fetchMultiQueryRAG(
                             allAyurvedicChunks.push(chunk);
                         }
                     }
+                } else if (result.value.type === 'ayurvedic_pdfs') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    for (const chunk of result.value.data as any[]) {
+                        const key = `PDF::${chunk.source_file}::${chunk.chunk_text?.slice(0, 120)}`;
+                        if (!seenAyurvedic.has(key)) {
+                            seenAyurvedic.add(key);
+                            allAyurvedicChunks.push({
+                                book: chunk.source_file,
+                                category: 'PDF Document',
+                                section: `Page ${chunk.page_number || 'Unknown'}`,
+                                text: chunk.chunk_text,
+                                similarity: chunk.similarity
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -331,47 +317,28 @@ async function fetchMultiQueryRAG(
         try {
             const supabase = getSupabaseAdmin();
 
-            // Fire main (768) + home (3072) embeddings concurrently even in fallback
-            const [mainEmbResp, homeEmbResp] = await Promise.all([
-                ai.models.embedContent({
-                    model: AI_PHASE_CONFIG.models.embedding,
-                    contents: symptomText,
-                }),
-                ai.models.embedContent({
-                    model: 'gemini-embedding-001',
-                    contents: symptomText,
-                }).catch(() => null),
-            ]);
+            // Fallback: single query using both providers in parallel
+            const { jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomText);
+            const homeEmb = jinaEmb; // Jina for home remedies too
 
-            const embedding = mainEmbResp.embeddings?.[0]?.values;
-            if (!embedding) return { context: "", remediesFound: [] };
+            if (!jinaEmb && !geminiEmb) return { context: '', remediesFound: [] };
 
-            const homeEmb = homeEmbResp?.embeddings?.[0]?.values ?? null;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fdb = supabase as any;
 
-            // Generate 768-dim for Ayurvedic fallback (separate from 3072-dim Boericke)
-            let ayurvedicEmb768: number[] | null = null;
-            try {
-                const ayurvResp = await ai.models.embedContent({
-                    model: AI_PHASE_CONFIG.models.embedding,
-                    contents: symptomText,
-                    config: { outputDimensionality: 768 },
-                });
-                ayurvedicEmb768 = ayurvResp.embeddings?.[0]?.values ?? null;
-            } catch { /* skip Ayurvedic if embed fails */ }
-
-            // Fan-out all RPCs in parallel with timeouts
-            const [boerickeRes, ayurvedicRes, homeRes] = await Promise.all([
-                fdb.rpc("match_boericke_embeddings", {
-                    query_embedding: embedding,
-                    match_threshold: 0.60,
-                    match_count: 3,
-                }),
-                ayurvedicEmb768
+            // Fan-out all RPCs with correct providers
+            const [boerickeRes, ayurvedicRes, homeRes, pdfRes] = await Promise.all([
+                jinaEmb
+                    ? fdb.rpc("match_boericke_embeddings", {
+                        query_embedding: jinaEmb,
+                        match_threshold: 0.60,
+                        match_count: 3,
+                    })
+                    : Promise.resolve({ data: null }),
+                geminiEmb
                     ? Promise.race([
                         fdb.rpc("search_ayurvedic_knowledge", {
-                            query_embedding: ayurvedicEmb768,
+                            query_embedding: geminiEmb,
                             match_threshold: 0.55,
                             match_count: 3,
                         }),
@@ -385,10 +352,30 @@ async function fetchMultiQueryRAG(
                         match_count: 4,
                     })
                     : Promise.resolve({ data: null }),
+                jinaEmb
+                    ? fdb.rpc("match_ayurvedic_pdfs", {
+                        query_embedding: jinaEmb,
+                        match_threshold: 0.60,
+                        match_count: 3,
+                    })
+                    : Promise.resolve({ data: null }),
             ]);
 
             const boerickeData = boerickeRes.data as BoerickeChunk[] | null;
-            const ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
+            let ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
+
+            if (pdfRes.data?.length) {
+                const mappedPdfs = (pdfRes.data as any[]).map(chunk => ({
+                    book: chunk.source_file,
+                    category: 'PDF Document',
+                    section: `Page ${chunk.page_number || 'Unknown'}`,
+                    text: chunk.chunk_text,
+                    similarity: chunk.similarity
+                }));
+                ayurvedicData = [...(ayurvedicData || []), ...mappedPdfs];
+                ayurvedicData.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
+                ayurvedicData = ayurvedicData.slice(0, 3);
+            }
 
             if (!boerickeData?.length && !ayurvedicData?.length) return { context: '', remediesFound: [] };
 

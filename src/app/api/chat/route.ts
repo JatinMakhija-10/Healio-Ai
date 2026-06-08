@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
-import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getSupabaseAdmin } from '@/lib/ai/config';
+import { getSupabaseAdmin } from '@/lib/ai/config';
+import { getJinaEmbedding, getGeminiEmbedding768, getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
 import {
@@ -72,70 +73,20 @@ function providerErrorStatus(error: unknown): number | null {
     return typeof rawStatus === 'number' ? rawStatus : null;
 }
 
-function isInvalidGeminiKeyError(error: unknown): boolean {
-    const text = providerErrorText(error);
-    return providerErrorStatus(error) === 400 ||
-        /api key not valid|api_key_invalid|invalid api key/i.test(text);
-}
-
-async function embedContentWithGeminiKeys(
-    model: string,
-    text: string,
-    timeoutMs: number,
-    config?: { outputDimensionality?: number }
-): Promise<number[] | null> {
-    const keys = getGeminiApiKeys();
-    if (!keys.length || !text) return null;
-
-    let lastError: unknown = null;
-    for (const apiKey of keys) {
-        const ai = getGeminiClient(apiKey);
-        try {
-            const request = config
-                ? { model, contents: text, config }
-                : { model, contents: text };
-            const embResp = await Promise.race([
-                ai.models.embedContent(request),
-                new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`${model}-timeout`)), timeoutMs)),
-            ]);
-            const values = (embResp as Awaited<ReturnType<typeof ai.models.embedContent>>)
-                .embeddings?.[0]?.values;
-            if (values?.length) return values;
-        } catch (error) {
-            lastError = error;
-            if (isInvalidGeminiKeyError(error)) {
-                disableGeminiApiKey(apiKey);
-            }
-        }
-    }
-
-    if (lastError) {
-        console.warn(`[Gemini] ${model} embedding failed for all configured keys: ${providerErrorText(lastError).slice(0, 180)}`);
-    }
-    return null;
-}
-
-// ── Generate embedding via Gemini (3072-dim) — used for Boericke ──
-// Model: gemini-embedding-2-preview outputs 3072-dim vectors
-// Hardened: internal 8 s abort so a Gemini API stall never hangs the whole request
+// ── Jina AI (768-dim) — for boericke_embeddings & home_remedy_embeddings ──
 async function generateEmbedding(text: string): Promise<number[] | null> {
-    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.embedding, text, 4_000);
+    try { return await getJinaEmbedding(text); }
+    catch (e) { console.error('[Jina] embed failed:', e); return null; }
 }
 
-// ── Generate 768-dim embedding — used for Ayurvedic (re-ingested with output_dimensionality=768) ─
+// ── Gemini (768-dim) — for ayurvedic_knowledge_embeddings ─────────────────
 async function generateEmbedding768(text: string): Promise<number[] | null> {
-    return embedContentWithGeminiKeys(
-        AI_PHASE_CONFIG.models.embedding,
-        text,
-        4_000,
-        { outputDimensionality: 768 }
-    );
+    return getGeminiEmbedding768(text);
 }
 
-// ── Generate embedding via Gemini (3072-dim) — used for home_remedy_embeddings ─
-// home_remedy_embeddings was ingested with gemini-embedding-001 which produces 3072-dim vectors
+// Alias kept for home remedies (same provider as Boericke — Jina)
 async function generateEmbedding3072(text: string): Promise<number[] | null> {
-    return embedContentWithGeminiKeys(AI_PHASE_CONFIG.models.homeRemedyEmbedding, text, 3_000);
+    return generateEmbedding(text);
 }
 
 // ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
@@ -215,6 +166,46 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) =>
                 `[${i + 1}] SOURCE: ${c.book} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`
+            ).join('\n\n');
+    } catch {
+        return '';
+    }
+}
+
+// ── RAG: Ayurvedic PDFs (Jina 768-dim) ───────────────────────────────────────
+async function fetchAyurvedicPdfContext(embedding768: number[] | null): Promise<string> {
+    if (!embedding768) return '';
+    try {
+        const supabase = getSupabaseAdmin();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rpcCall = (supabase as any).rpc('match_ayurvedic_pdfs', {
+            query_embedding: embedding768,
+            match_threshold: 0.60,
+            match_count: 5,
+        });
+        const { data } = await Promise.race([
+            rpcCall,
+            new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 5_000)),
+        ]);
+        if (!data?.length) return '';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const seen = new Map<string, any>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const row of data as any[]) {
+            const key = `PDF::${row.source_file}::${row.chunk_text?.slice(0, 100)}`;
+            if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
+                seen.set(key, row);
+            }
+        }
+
+        return [...seen.values()]
+            .filter(c => (c.similarity ?? 0) >= 0.60)
+            .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+            .slice(0, 3)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((c: any, i: number) =>
+                `[PDF${i + 1}] SOURCE: ${c.source_file} | PAGE: ${c.page_number} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.chunk_text}`
             ).join('\n\n');
     } catch {
         return '';
@@ -303,21 +294,32 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
 
     try {
         const t0Embed = Date.now();
-        const [embedding, embedding768, embedding3072] = await Promise.all([
-            generateEmbedding(symptomSummary),
-            generateEmbedding768(symptomSummary),
-            skipHomeRemedies ? Promise.resolve(null) : generateEmbedding3072(symptomSummary),
+
+        // ── Fire BOTH providers in PARALLEL ──────────────────────────────────
+        // Jina  → boericke_embeddings + home_remedy_embeddings (768-dim)
+        // Gemini → ayurvedic_knowledge_embeddings (768-dim, Gemini-ingested)
+        // Both start simultaneously; neither waits for the other.
+        const [{ jina: jinaEmb, gemini768: geminiEmb }, jinaHomeEmb] = await Promise.all([
+            getParallelEmbeddings(symptomSummary),
+            skipHomeRemedies ? Promise.resolve({ jina: null, gemini768: null }) : getParallelEmbeddings(symptomSummary),
         ]);
+
+        // Use shared Jina embedding for both Boericke and Home Remedies
+        const embedding     = jinaEmb;                    // Jina  → Boericke
+        const embedding768  = geminiEmb;                  // Gemini → Ayurvedic
+        const embedding3072 = jinaHomeEmb.jina ?? jinaEmb; // Jina  → Home Remedies
+
         const embedDone = Date.now();
-        spans?.record('embed768', embedDone - t0Embed);
-        if (!skipHomeRemedies) spans?.record('embed3072', embedDone - t0Embed);
+        spans?.record('embedJina', embedDone - t0Embed);
+        spans?.record('embedGemini768', embedDone - t0Embed);
         if (!embedding) return { context: '', homeRemediesAvailable: false };
 
         const t0Rpc = Date.now();
-        const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw] = await Promise.all([
+        const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw, ayurvedicPdfRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
             embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
             fetchHomeRemedyContext(embedding3072),
+            embedding ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
         ]);
         const rpcDone = Date.now();
         spans?.record('ragBoericke', rpcDone - t0Rpc);
@@ -333,12 +335,13 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
                 'Use entries below ONLY for homeopathic_remedies JSON array.',
                 homeopathicRaw,
             ].join('\n'),
-            ayurvedicRaw && [
-                '[SECTION B: AYURVEDIC CLASSICAL MEDICINE — Planet Ayurveda / CCRAS / Classical Texts]',
+            ayurvedicRaw || ayurvedicPdfRaw ? [
+                '[SECTION B: AYURVEDIC CLASSICAL MEDICINE — Planet Ayurveda / CCRAS / Classical Texts / PDF Manuals]',
                 'FORMAL Ayurvedic herbs & formulations (Ashwagandha, Triphala, Sitopaladi, etc.)',
                 'Require Ayurvedic pharmacy. Use ONLY for ayurvedic_remedies JSON array.',
                 ayurvedicRaw,
-            ].join('\n'),
+                ayurvedicPdfRaw ? `\n--- Additional PDF Manuals Context ---\n${ayurvedicPdfRaw}` : ''
+            ].filter(Boolean).join('\n') : null,
             homeRemedyRaw && [
                 '[SECTION C: DADI-NANI KE NUSKHE — Household Kitchen Remedies]',
                 'IMMEDIATE home remedies: haldi, adrak, tulsi, shahad, nimbu, ajwain, jeera, pudina.',

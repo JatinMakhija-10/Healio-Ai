@@ -17,15 +17,14 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const geminiKey   = process.env.GEMINI_API_KEY!;
+const jinaKey = process.env.JINA_API_KEY!;
 
-if (!supabaseUrl || !supabaseKey || !geminiKey) {
-    console.error('❌ Missing env vars. Check NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY in .env.local');
+if (!supabaseUrl || !supabaseKey || !jinaKey) {
+    console.error('❌ Missing env vars. Check NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JINA_API_KEY in .env.local');
     process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const ai = new GoogleGenAI({ apiKey: geminiKey });
 
 type Remedy = {
     name: string;
@@ -47,13 +46,43 @@ type NuskheEntry = {
     remedies: Remedy[];
 };
 
-async function generateEmbedding(text: string): Promise<number[]> {
-    const res = await ai.models.embedContent({
-        model: 'gemini-embedding-001',
-        contents: text,
-    });
-    if (!res.embeddings?.[0]?.values) throw new Error('Empty embedding response');
-    return res.embeddings[0].values;
+async function generateEmbedding(text: string, retries = 5, delay = 1000): Promise<number[]> {
+    for (let i = 0; i < retries; i++) {
+        const response = await fetch('https://api.jina.ai/v1/embeddings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jinaKey}`,
+            },
+            body: JSON.stringify({
+                model: 'jina-embeddings-v3',
+                input: [text],
+                dimensions: 768,
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.data[0].embedding;
+        }
+
+        if (response.status === 429) {
+            console.log(`    ⚠️ Rate limited by Jina. Retrying in ${delay}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+            continue;
+        }
+
+        if (response.status >= 500 || response.status === 422) {
+            console.log(`    ⚠️ Jina error ${response.status}. Retrying in ${delay}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+            continue;
+        }
+
+        throw new Error(`Jina API Error: ${response.status} ${response.statusText}`);
+    }
+    throw new Error('Jina API Error: Max retries reached');
 }
 
 function buildChunkText(ailment: string, ailment_hindi: string, remedy: Remedy): string {
@@ -135,8 +164,8 @@ async function ingest() {
             failed++;
         }
 
-        // Respect Gemini rate limits (60 requests/min free tier)
-        await new Promise(r => setTimeout(r, 1100));
+        // Respect Jina rate limits (or remove delay if Jina tier allows fast requests)
+        await new Promise(r => setTimeout(r, 200));
     }
 
     console.log(`\n✅ Ingestion complete — ${succeeded} succeeded, ${failed} failed`);

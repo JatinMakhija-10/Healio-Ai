@@ -34,6 +34,16 @@ export default function MedicalDisclaimer() {
               </p>
             </div>
 
+            {/* Beta Notice */}
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <h2 className="text-base font-bold text-amber-900 mt-0 mb-2 flex items-center gap-2">
+                🧪 Beta Product — Results May Vary
+              </h2>
+              <p className="text-sm text-amber-800 mt-0 mb-0">
+                Healio.AI is currently in <strong>Beta</strong>. All features — including AI-assisted symptom analysis, diagnosis suggestions, and homeopathic/Ayurvedic remedy recommendations — are <strong>experimental</strong>. Outputs may be inaccurate, incomplete, or inappropriate for your specific health situation. Do not rely solely on this application for any health decision. Results will vary from person to person.
+              </p>
+            </div>
+
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">1. Not Medical Advice (Telemedicine Practice Guidelines)</h2>
               <p>
@@ -58,14 +68,31 @@ export default function MedicalDisclaimer() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">3. No Doctor-Patient Relationship</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">3. Homeopathy &amp; Alternative Medicine Disclaimer</h2>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                <p className="text-sm font-semibold text-purple-800 mt-0 mb-1">⚠️ Important: Please read before using homeopathic suggestions.</p>
+                <p className="text-sm text-purple-700 mb-0">
+                  Homeopathic and Ayurvedic remedy suggestions displayed by Healio.AI are <strong>AI-generated, experimental, and for informational purposes only</strong>. They have <strong>not</strong> been evaluated by any drug regulatory authority (e.g., CDSCO, FDA).
+                </p>
+              </div>
+              <ul className="list-disc pl-5 space-y-2 text-sm">
+                <li><strong>Do not take any homeopathic or Ayurvedic medicine without first consulting a qualified and registered practitioner</strong> in that field.</li>
+                <li>Homeopathy is not universally accepted by mainstream medical science and its efficacy for many conditions has not been established through randomised controlled trials.</li>
+                <li>Some herbal or homeopathic preparations can interact with prescription medications. Always disclose all supplements and alternative medicines to your primary care physician.</li>
+                <li>Results displayed by the AI are generated based on pattern matching — they <strong>will vary significantly</strong> based on your specific constitution, medical history, and other factors only a practitioner can assess.</li>
+                <li>Healio.AI makes <strong>no promises or guarantees</strong> about the effectiveness of any remedy shown.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">4. No Doctor-Patient Relationship</h2>
               <p>
                 Chatting with the Healio.AI assistant does not create a doctor-patient, therapist-client, or any other professional healthcare relationship. Your interactions with the bot are strictly at your own risk.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">4. Assumption of Risk</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">5. Assumption of Risk</h2>
               <p>
                 Reliance on any information provided by Healio.AI, its employees, others appearing on the Service at the invitation of Healio.AI, or other visitors to the Service is solely at your own risk. We disclaim any liability for any decisions made based on the information provided by our AI systems.
               </p>

@@ -753,6 +753,18 @@ export function DiagnosisResultCard({
                                     headerClass="bg-teal-50 text-teal-800 hover:bg-teal-100"
                                     defaultOpen={true}
                                 >
+                                    {/* ── HOMEOPATHIC BETA DISCLAIMER ────────────────────────────── */}
+                                    <div className="flex items-start gap-2.5 bg-purple-50 border border-purple-200 rounded-lg p-3 mb-2">
+                                        <AlertTriangle className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-[11px] font-bold text-purple-800 mb-0.5 uppercase tracking-wide">
+                                                🧪 Beta Feature · Results May Vary
+                                            </p>
+                                            <p className="text-[11px] text-purple-700 leading-relaxed">
+                                                Homeopathic suggestions are AI-generated and experimental. Homeopathy is not universally recognised by mainstream medicine. <strong>Do not take any medicine without first consulting a qualified homeopathic or medical professional.</strong>
+                                            </p>
+                                        </div>
+                                    </div>
                                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     {(condition.homeopathic_remedies || condition.remedies || []).slice(0, 5).map((remedy: any, idx) => (
                                         <div
@@ -872,15 +884,22 @@ export function DiagnosisResultCard({
                     {/* ── 6. DISCLAIMER ─────────────────────────────────────────────────
                         WCAG fix: text-amber-800 (#92400e) = 7.2:1 on amber-50 ✓
                         Italic IS appropriate here — disclaimer is the sole italic role.   */}
-                    <div className="px-6 py-4 border-t border-amber-100 bg-amber-50/50">
+                    <div className="px-6 py-4 border-t border-amber-200 bg-amber-50 space-y-2">
+                        <div className="flex items-start gap-2">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0 mt-0.5" />
+                            <p className="text-xs text-amber-900 leading-[1.65] font-semibold">
+                                ⚠️ Beta · Not a Medical Diagnosis — Results May Vary
+                            </p>
+                        </div>
                         <p className="text-xs text-amber-800 leading-[1.65] italic">
-                            <AlertTriangle className="h-3 w-3 inline mr-1" />
-                            <strong>Disclaimer:</strong>{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(condition as any).disclaimer
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 ? (condition as any).disclaimer
-                                : "Healio is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment. These suggestions are for informational purposes only — please consult a qualified practitioner before taking any remedy."}
+                                : "Healio is an AI health assistant for informational and educational purposes only. This is not a medical diagnosis. AI analysis is experimental and may be inaccurate. Homeopathic, Ayurvedic, and home remedy suggestions are provided for awareness only — they have not been evaluated by a regulatory authority. Please consult a qualified healthcare professional before taking any medicine or altering any existing treatment."}
+                        </p>
+                        <p className="text-[11px] text-amber-700 font-medium">
+                            🩺 Always seek advice from a licensed doctor, especially before taking any medicine.
                         </p>
                     </div>
 

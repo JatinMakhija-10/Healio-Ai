@@ -8,11 +8,12 @@ import { AI_PHASE_CONFIG } from "@/lib/ai/config";
 import { CONDITIONS } from "./conditions";
 
 /**
- * Generates an embedding for the user's symptoms directly via the Gemini SDK.
- * This replaces the old `fetch('/api/embeddings')` call which added ~100–300 ms
- * of internal HTTP round-trip overhead on every diagnosis request.
+ * Generates a 1536-dim embedding for the conditions table via Gemini.
+ * The `conditions` table was ingested with OpenAI text-embedding-ada-002 (1536-dim).
+ * Gemini with outputDimensionality=1536 keeps it in the same space as a reasonable
+ * fallback when no OpenAI key is available, though ideally an OpenAI key should be set.
  */
-async function getEmbedding(text: string): Promise<number[]> {
+async function getConditionsEmbedding(text: string): Promise<number[]> {
     if (!text) return [];
     const keys = getGeminiApiKeys();
     let lastError: unknown = null;
@@ -35,9 +36,11 @@ async function getEmbedding(text: string): Promise<number[]> {
         }
     }
 
-    console.error("[retrieval] Embedding generation failed:", lastError);
+    console.error('[retrieval] Conditions embedding generation failed:', lastError);
     return [];
 }
+
+
 
 /**
  * Searches for conditions relevant to the symptoms.
@@ -52,7 +55,7 @@ async function getEmbedding(text: string): Promise<number[]> {
  */
 export async function searchConditions(symptoms: UserSymptomData): Promise<Condition[]> {
     const symptomText = `${symptoms.location.join(" ")} ${symptoms.painType || ""} ${symptoms.additionalNotes || ""}`;
-    const embedding = await getEmbedding(symptomText);
+    const embedding = await getConditionsEmbedding(symptomText);
 
     let candidates: DatabaseCondition[] = [];
 
@@ -156,7 +159,7 @@ export async function searchClinicalCases(
             // 1. Vector similarity via match_clinical_cases RPC
             (async () => {
                 if (!symptomText.trim()) return [];
-                const embedding = await getEmbedding(symptomText);
+                const embedding = await getConditionsEmbedding(symptomText);
                 if (!embedding.length) return [];
 
                 const { data, error } = await supabase.rpc('match_clinical_cases', {

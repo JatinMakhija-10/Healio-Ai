@@ -2,40 +2,17 @@
  * /api/rag/multi-query
  *
  * Multi-Query RAG endpoint for the Healio diagnosis pipeline.
- *
- * Instead of a single symptom-text embedding (which can miss remedy-specific
- * passages), this endpoint:
- *   1. Accepts N query strings (symptoms + per-condition queries)
- *   2. Embeds all queries in parallel using Gemini text-embedding-004
- *   3. Retrieves Boericke chunks for each query in parallel
- *   4. Deduplicates and re-ranks by similarity score
- *   5. Returns a merged context string + list of distinct remedy names found
- *
- * Example request body:
- * {
- *   "queries": [
- *     "headache nausea light sensitivity",
- *     "Migraine homeopathy remedy symptoms",
- *     "Cluster Headache homeopathy remedy"
- *   ],
- *   "matchCount": 3,
- *   "matchThreshold": 0.65
- * }
  */
 
 import { NextResponse } from "next/server";
-import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGeminiClient, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, getSupabaseAdmin } from "@/lib/ai/config";
+import { getJinaEmbedding } from "@/lib/ai/jina";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 
 interface BoerickeChunk {
     remedy_name: string;
     chunk_text: string;
     similarity: number;
-}
-
-function isInvalidGeminiKeyError(error: unknown): boolean {
-    const text = error instanceof Error ? error.message : String(error);
-    return /api key not valid|api_key_invalid|invalid api key/i.test(text);
 }
 
 export async function POST(req: Request) {
@@ -65,30 +42,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "queries array is required" }, { status: 400 });
         }
 
-        const geminiKeys = getGeminiApiKeys();
-        if (geminiKeys.length === 0) {
-            console.warn("[RAG Multi-Query] GEMINI_API_KEY not set — returning empty context");
-            return NextResponse.json({ combinedContext: "", remediesFound: [], chunkCount: 0 });
-        }
-
         // ── Step 1: Embed all queries in parallel ────────────────────────────────
         const embedQuery = async (query: string): Promise<number[]> => {
-            for (const geminiKey of geminiKeys) {
-                try {
-                    const ai = getGeminiClient(geminiKey);
-                    const response = await ai.models.embedContent({
-                        model: AI_PHASE_CONFIG.models.embedding,
-                        contents: query,
-                    });
-                    const values = response.embeddings?.[0]?.values ?? [];
-                    if (values.length > 0) return values;
-                } catch (error) {
-                    if (isInvalidGeminiKeyError(error)) {
-                        disableGeminiApiKey(geminiKey);
-                    }
-                }
+            try {
+                return await getJinaEmbedding(query);
+            } catch (error) {
+                console.error("[RAG Multi-Query] Jina embedding failed:", error);
+                return [];
             }
-            return [];
         };
 
         const embeddingResults = await Promise.allSettled(

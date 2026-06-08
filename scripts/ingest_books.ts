@@ -15,30 +15,20 @@ import path from 'path';
 import readline from 'readline';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-// Support multiple API keys separated by commas
-const geminiKeysRaw = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
+const jinaKey = process.env.JINA_API_KEY;
 
-if (!supabaseUrl || !supabaseKey || !geminiKeysRaw) {
-    console.error('❌ Missing env vars. Check .env.local for GEMINI_API_KEYS (comma separated) or GEMINI_API_KEY');
+if (!supabaseUrl || !supabaseKey || !jinaKey) {
+    console.error('❌ Missing env vars. Check .env.local for JINA_API_KEY');
     process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Parse the keys and create a pool of GenAI clients
-const geminiKeys = geminiKeysRaw.split(',').map(k => k.trim()).filter(Boolean);
-const aiClients = geminiKeys.map(key => new GoogleGenAI({ apiKey: key }));
-let currentClientIndex = 0;
-let ai = aiClients[currentClientIndex];
-
-console.log(`\n🔑 Initialized with ${aiClients.length} Gemini API Key(s)`);
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type BookChunk = {
@@ -55,12 +45,24 @@ type BookChunk = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 async function generateEmbedding(text: string): Promise<number[]> {
-    const res = await ai.models.embedContent({
-        model: 'gemini-embedding-2-preview',
-        contents: text,
+    const response = await fetch('https://api.jina.ai/v1/embeddings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jinaKey}`,
+        },
+        body: JSON.stringify({
+            model: 'jina-embeddings-v5',
+            input: [text],
+            dimensions: 768,
+        }),
     });
-    if (!res.embeddings?.[0]?.values) throw new Error('Empty embedding response');
-    return res.embeddings[0].values;
+    
+    if (!response.ok) {
+        throw new Error(`Jina API Error: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.data[0].embedding;
 }
 
 function buildChunkText(rec: BookChunk): string {
@@ -153,47 +155,12 @@ async function ingestFile(filename: string, existingTexts: Set<string>) {
             }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
-            const errString = String(e.message || e);
-            const isRateLimitOrBan = errString.includes('429') || errString.includes('quota') || 
-                                     errString.includes('limit') || errString.includes('403') || 
-                                     errString.includes('PERMISSION_DENIED');
-                                     
-            if (aiClients.length > 1 && isRateLimitOrBan) {
-                console.log(`  🔄 Key ${currentClientIndex + 1} hit a limit/ban (403/429). Swapping to the next key...`);
-                currentClientIndex = (currentClientIndex + 1) % aiClients.length;
-                ai = aiClients[currentClientIndex];
-                
-                // Retry the exact same chunk once immediately on the new key
-                try {
-                    const embedding = await generateEmbedding(chunk);
-                    const { error } = await supabase
-                        .from('ayurvedic_knowledge_embeddings')
-                        .insert({
-                            source:      rec.source,
-                            book:        rec.book,
-                            category:    rec.category,
-                            page:        rec.page,
-                            section:     rec.section,
-                            text:        rec.text,
-                            keywords:    rec.keywords,
-                            embedding,
-                        });
-                    
-                    if (error) throw error;
-                    succeeded++;
-                    console.log(`  ✅ Successfully retried on new key!`);
-                } catch (retryErr: any) {
-                    console.error(`  ❌ Retry failed on new key for line ${lineCount}:`, retryErr.message);
-                    failed++;
-                }
-            } else {
-                console.error(`  ❌ Error processing line ${lineCount}:`, errString);
-                failed++;
-            }
+            console.error(`  ❌ Error processing line ${lineCount}:`, String(e.message || e));
+            failed++;
         }
 
-        // Respect Gemini free-tier limits: ~1 req/sec
-        await new Promise(r => setTimeout(r, 1100));
+        // Respect Jina rate limits: ~100 req/min
+        await new Promise(r => setTimeout(r, 600));
 
         if (lineCount % 50 === 0) {
             console.log(`\n── Checkpoint: ${succeeded} ok, ${failed} failed so far ──\n`);
