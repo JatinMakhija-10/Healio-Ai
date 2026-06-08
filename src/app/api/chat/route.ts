@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
-import { getSupabaseAdmin, AI_PHASE_CONFIG } from '@/lib/ai/config';
+import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
 import { getJinaEmbedding, getGeminiEmbedding768, getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
@@ -71,6 +71,14 @@ function providerErrorStatus(error: unknown): number | null {
     const candidate = error as { status?: unknown; code?: unknown; error?: { code?: unknown } };
     const rawStatus = candidate.status ?? candidate.code ?? candidate.error?.code;
     return typeof rawStatus === 'number' ? rawStatus : null;
+}
+
+function isInvalidGeminiKeyError(error: unknown): boolean {
+    const text = providerErrorText(error).toLowerCase();
+    return text.includes('api key not valid') || 
+           text.includes('api_key_invalid') || 
+           text.includes('invalid api key') ||
+           text.includes('key is invalid');
 }
 
 // ── Jina AI (768-dim) — for boericke_embeddings & home_remedy_embeddings ──
