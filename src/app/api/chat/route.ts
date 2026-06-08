@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
-import { getSupabaseAdmin } from '@/lib/ai/config';
+import { getSupabaseAdmin, AI_PHASE_CONFIG } from '@/lib/ai/config';
 import { getJinaEmbedding, getGeminiEmbedding768, getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
