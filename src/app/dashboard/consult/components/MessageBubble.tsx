@@ -63,22 +63,46 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         }
     }
 
-    const jsonMatch = message.content.match(/```json\n([\s\S]*?)\n```/);
+    let extractedJsonText: string | null = null;
+    const jsonMatch = message.content.match(/```(?:json)?\s*([\s\S]*?)```/);
+    
     if (jsonMatch) {
-        // Fully formed JSON block
-        try {
-            parsedCondition = JSON.parse(jsonMatch[1]) as Condition;
-            // Remove the JSON block from the displayed text
-            displayText = message.content.replace(/```json\n[\s\S]*?\n```/, "").trim();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-            // Invalid JSON, just hide it while it streams
-            displayText = message.content.split("```json")[0].trim();
+        extractedJsonText = jsonMatch[1];
+    } else if (message.content.includes("```") && !usageLimitData) {
+        // We have an opening ``` but no closing. We are probably still streaming or it was truncated.
+        const parts = message.content.split(/```(?:json)?\s*/);
+        if (parts.length > 1) {
+            extractedJsonText = parts[1];
+            isParsingJson = true; // Still streaming
+            displayText = parts[0].trim();
         }
-    } else if (message.content.includes("```json") && !usageLimitData) {
-        // Currently streaming the JSON block, hide everything after the marker
-        isParsingJson = true;
-        displayText = message.content.split("```json")[0].trim();
+    }
+
+    if (extractedJsonText) {
+        // Find first { and last }
+        const firstBrace = extractedJsonText.indexOf('{');
+        const lastBrace = extractedJsonText.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+            try {
+                const possibleJson = extractedJsonText.substring(firstBrace, lastBrace + 1);
+                parsedCondition = JSON.parse(possibleJson) as Condition;
+                // If it parsed successfully, it's fully formed
+                isParsingJson = false;
+                
+                // Hide the json part from displayText
+                displayText = message.content.replace(/```(?:json)?\s*[\s\S]*?(?:```|$)/, "").trim();
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (e) {
+                // Failed to parse, probably incomplete
+                isParsingJson = true;
+                displayText = message.content.split(/```(?:json)?/)[0].trim();
+            }
+        } else {
+            // No valid JSON object found yet inside the block
+            isParsingJson = true;
+            displayText = message.content.split(/```(?:json)?/)[0].trim();
+        }
     }
 
     // Strip ui_hint JSON from displayText

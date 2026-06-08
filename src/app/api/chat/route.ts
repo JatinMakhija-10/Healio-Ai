@@ -1125,12 +1125,22 @@ export async function POST(req: NextRequest) {
 
         const totalUserTurns = messages.filter((m: { role: string }) => m.role === 'user').length;
 
-        const isFinalTurn = 
+        let isFinalTurn = 
             nextQuestionDecision.type === 'summarize' ||
             conversationIntakeState.phaseStatus === 'summary' ||
             phase5Finalize ||
             (conversationIntakeState.coverageScore === 100 && totalUserTurns >= 4) ||
             totalUserTurns >= 6;
+
+        // Ensure state aligns if we force final turn
+        if (isFinalTurn) {
+            nextQuestionDecision.type = 'summarize';
+            if (refinementDecision.action !== 'finalize' && refinementDecision.action !== 'finalize_best_guess') {
+                refinementDecision.action = 'finalize_best_guess';
+                refinementDecision.reason = `Forced finalization. Max turns or sufficient data reached.`;
+                refinementDecision.infoGainQuestion = null;
+            }
+        }
 
         console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
 
