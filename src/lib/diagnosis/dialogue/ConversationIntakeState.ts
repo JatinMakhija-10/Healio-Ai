@@ -85,7 +85,7 @@ const ASSOCIATED_SYMPTOM_PATTERN =
 // Matches durations with OR without leading preposition ("for", "since", "from")
 // Also handles bare relative times: "morning", "evening", "afternoon", "last night"
 const DURATION_PATTERN =
-    /\b(?:for|since|from)?\s*((?:today|yesterday|last night|this morning|this evening|this afternoon|few hours|a few hours|couple of hours|couple of days|several days|morning|evening|afternoon|[1-9]\d?\s*(?:minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)|one\s+(?:hour|day|week|month|year)|two\s+(?:hours|days|weeks|months|years)|three\s+(?:hours|days|weeks|months|years)))\b/i;
+    /\b(?:for|since|from|se)?\s*((?:today|yesterday|last night|this morning|this evening|this afternoon|few hours|a few hours|couple of hours|couple of days|several days|morning|evening|afternoon|[1-9]\d?(?:\s*(?:-|to)\s*[1-9]\d?)?\s*(?:minute|minutes|hour|hours|ghante|ghanta|day|days|din|dino|dino se|week|weeks|hafta|hafte|month|months|mahina|mahine|year|years|saal)|one\s+(?:hour|day|week|month|year)|two\s+(?:hours|days|weeks|months|years)|three\s+(?:hours|days|weeks|months|years)))\b/i;
 
 // IMPORTANT: Severity MUST be anchored with context ("X/10", "X out of 10", "severity is X", "X on a scale")
 // to avoid matching bare numbers like the "3" in "for 3 days"

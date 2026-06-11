@@ -55,7 +55,7 @@ export function PainLocationDropdown({ onSubmit }: PainLocationDropdownProps) {
             className="bg-white rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 p-4 max-w-md"
         >
             <p className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                📍 Select pain location <span className="text-gray-400 text-xs font-normal">— Dard ki jagah chunein</span>
+                📍 Select location / area <span className="text-gray-400 text-xs font-normal">— Jagah chunein</span>
             </p>
 
             <div className="grid grid-cols-2 gap-2 max-h-[280px] overflow-y-auto pr-1">

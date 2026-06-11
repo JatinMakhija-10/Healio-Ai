@@ -1125,11 +1125,15 @@ export async function POST(req: NextRequest) {
 
         const totalUserTurns = messages.filter((m: { role: string }) => m.role === 'user').length;
 
+        const asksForDiagnosis =
+            /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result|tell.*diagnosis|my diagnosis|show.*card|result.*card|diagnosis.*card/i
+                .test(lastUserMsg);
+
         let isFinalTurn = 
             nextQuestionDecision.type === 'summarize' ||
             conversationIntakeState.phaseStatus === 'summary' ||
             phase5Finalize ||
-            (conversationIntakeState.coverageScore === 100 && totalUserTurns >= 4) ||
+            (conversationIntakeState.coverageScore === 100 && (totalUserTurns >= 4 || asksForDiagnosis)) ||
             totalUserTurns >= 6;
 
         // Ensure state aligns if we force final turn
@@ -1422,7 +1426,7 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
                                     contents: geminiMessages,
                                     generationConfig: {
                                         temperature: AI_PHASE_CONFIG.generation.temperature,
-                                        maxOutputTokens: AI_PHASE_CONFIG.generation.maxTokens,
+                                        maxOutputTokens: maxTokensForTurn,
                                     },
                                 }),
                                 signal: geminiController.signal,

@@ -36,28 +36,37 @@ const FIELD_ALIAS_BY_SCHEMA_KEY: Record<string, IntakeFieldKey[]> = {
 function parseDurationDays(value: string | undefined): number | null {
     if (!value) return null;
     const normalized = value.toLowerCase();
-    const numberMatch = normalized.match(/\b([1-9]\d?)\b/);
-    const wordNumbers: Record<string, number> = {
-        one: 1,
-        two: 2,
-        three: 3,
-        four: 4,
-        five: 5,
-        six: 6,
-        seven: 7,
-    };
-    const wordMatch = normalized.match(/\b(one|two|three|four|five|six|seven)\b/);
-    const amount = numberMatch ? Number(numberMatch[1]) : wordMatch ? wordNumbers[wordMatch[1]] : null;
+    
+    // Check for range like "3-4" or "3 to 4" first
+    const rangeMatch = normalized.match(/\b([1-9]\d?)\s*(?:-|to)\s*([1-9]\d?)\b/);
+    let amount: number | null = null;
+    if (rangeMatch) {
+        amount = Number(rangeMatch[2]);
+    } else {
+        const numberMatch = normalized.match(/\b([1-9]\d?)\b/);
+        const wordNumbers: Record<string, number> = {
+            one: 1,
+            two: 2,
+            three: 3,
+            four: 4,
+            five: 5,
+            six: 6,
+            seven: 7,
+        };
+        const wordMatch = normalized.match(/\b(one|two|three|four|five|six|seven)\b/);
+        amount = numberMatch ? Number(numberMatch[1]) : wordMatch ? wordNumbers[wordMatch[1]] : null;
+    }
+
     if (amount == null) {
-        if (/\btoday|this morning|few hours|hour/.test(normalized)) return 0;
+        if (/\btoday|this morning|few hours|hour|ghante|ghanta/.test(normalized)) return 0;
         if (/\byesterday/.test(normalized)) return 1;
         return null;
     }
 
-    if (/\bweek/.test(normalized)) return amount * 7;
-    if (/\bmonth/.test(normalized)) return amount * 30;
-    if (/\byear/.test(normalized)) return amount * 365;
-    if (/\bhour|minute/.test(normalized)) return 0;
+    if (/\bweek|hafta|hafte|hafto\b/.test(normalized)) return amount * 7;
+    if (/\bmonth|mahina|mahine|mahino\b/.test(normalized)) return amount * 30;
+    if (/\byear|saal\b/.test(normalized)) return amount * 365;
+    if (/\bhour|minute|ghante|ghanta\b/.test(normalized)) return 0;
     return amount;
 }
 
