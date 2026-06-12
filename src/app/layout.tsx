@@ -20,8 +20,8 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Healio.AI - Pain Management Assistant",
-  description: "A clinical-grade assistant to help you understand your symptoms safely.",
+  title: "Healio - Your Family Health Guide",
+  description: "Simple, honest wellness guidance for Indian families in their language.",
 };
 
 export default function RootLayout({
@@ -54,4 +54,3 @@ export default function RootLayout({
     </html>
   );
 }
-
