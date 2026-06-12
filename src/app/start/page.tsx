@@ -101,12 +101,16 @@ export default function StartPage() {
                 {copy.question}
               </label>
               <textarea
+                aria-describedby="symptom-helper"
                 className="mt-3 min-h-32 w-full resize-none rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] p-4 text-base leading-7 outline-none transition focus:border-[#0F6E56] focus:ring-2 focus:ring-[#9FE1CB]"
                 id="symptom"
                 onChange={(event) => setSymptom(event.target.value)}
                 placeholder={copy.helper}
                 value={symptom}
               />
+              <p className="mt-2 text-sm leading-6 text-[#6B6B6B]" id="symptom-helper">
+                {copy.helper}
+              </p>
               <button
                 className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1A1A2E] px-6 text-base font-bold text-white transition hover:bg-[#0F6E56] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!symptom.trim()}
@@ -119,12 +123,16 @@ export default function StartPage() {
             </div>
 
             {hasResponse ? (
-              <section className="rounded-[8px] border border-[#B8DED0] bg-[#E1F5EE] p-4 shadow-sm" aria-live="polite">
+              <section
+                aria-labelledby="first-guidance-title"
+                aria-live="polite"
+                className="rounded-[8px] border border-[#B8DED0] bg-[#E1F5EE] p-4 shadow-sm"
+              >
                 <div className="flex items-center gap-2 text-sm font-bold uppercase text-[#0F6E56]">
                   <ShieldCheck className="size-4" aria-hidden="true" />
                   First guidance, no account needed
                 </div>
-                <h1 className="mt-3 text-2xl font-bold leading-tight text-[#1A1A2E]">
+                <h1 className="mt-3 text-2xl font-bold leading-tight text-[#1A1A2E]" id="first-guidance-title">
                   Start with safe home care, then watch the doctor signals.
                 </h1>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">

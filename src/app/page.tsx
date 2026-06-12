@@ -285,6 +285,8 @@ function LanguageSelectionOverlay({
 
   return (
     <div
+      aria-describedby="language-selection-description"
+      aria-labelledby="language-selection-title"
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-stretch bg-[#F7F6F2] text-[#1C1C1E]"
       role="dialog"
@@ -309,16 +311,20 @@ function LanguageSelectionOverlay({
           <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">
             Choose your language
           </p>
-          <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
+          <h2
+            className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl"
+            id="language-selection-title"
+          >
             Start in the language your family actually uses.
           </h2>
-          <p className="mt-4 text-base leading-7 text-[#555555]">
+          <p className="mt-4 text-base leading-7 text-[#555555]" id="language-selection-description">
             No account wall. Pick a language, describe what is happening, and get the first useful response before any save prompt.
           </p>
 
           <div className="mt-8 grid gap-3">
             {languageChoices.map((language) => (
               <button
+                autoFocus={language.code === "hi"}
                 className="flex min-h-[72px] items-center justify-between rounded-[8px] border border-[#DAD7CF] bg-white px-4 text-left shadow-sm transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
                 key={language.code}
                 onClick={() => onChoose(language.code)}
@@ -361,7 +367,11 @@ function CookieConsentBanner() {
   }
 
   return (
-    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-3xl rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-[#1C1C1E] shadow-[0_12px_40px_rgba(26,26,46,0.16)] md:bottom-4">
+    <div
+      aria-label="Cookie and privacy notice"
+      className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-3xl rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-[#1C1C1E] shadow-[0_12px_40px_rgba(26,26,46,0.16)] md:bottom-4"
+      role="region"
+    >
       <div className="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center">
         <div className="grid size-11 place-items-center rounded-[8px] bg-[#E1F5EE] text-[#0F6E56]">
           <ShieldCheck className="size-5" aria-hidden="true" />
@@ -378,6 +388,7 @@ function CookieConsentBanner() {
           </div>
         </div>
         <button
+          aria-label="Accept cookie and local storage notice"
           className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-sm font-bold text-white hover:bg-[#0F6E56]"
           onClick={acceptCookies}
           type="button"
@@ -421,6 +432,28 @@ export default function LandingPage() {
       footerObserver.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isLanguageOverlayOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsLanguageOverlayOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLanguageOverlayOpen]);
 
   const openLanguageOverlay = () => setIsLanguageOverlayOpen(true);
   const closeLanguageOverlay = () => setIsLanguageOverlayOpen(false);
