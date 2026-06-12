@@ -901,9 +901,9 @@ function streamTextResponse(text: string, customHeaders?: Record<string, string>
 export async function POST(req: NextRequest) {
     const requestStart = Date.now();
     const spans = new SpanCollector();
-    // Raised to 55 s — safely inside the 60 s maxDuration boundary
+    // Set to 9s — safely inside Vercel's Hobby-tier 10s serverless function timeout
     const timeoutPromise = new Promise<Response>((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 55_000)
+        setTimeout(() => reject(new Error('timeout')), 9000)
     );
 
     const processRequest = async (): Promise<Response> => {
@@ -1544,9 +1544,7 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
             });
         }
 
-        // Stream the Groq response back to the client — with chunk-level idle timeout
-        // (Bug 1 fix: prevents indefinite stream hangs that Vercel maxDuration cannot catch)
-        const CHUNK_IDLE_TIMEOUT_MS = 10_000; // 10s — covers TTFT and inter-chunk gaps
+        const CHUNK_IDLE_TIMEOUT_MS = 3000; // 3s — covers inter-chunk gaps, allows stall detection within Vercel's 10s limit
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             async start(controller) {

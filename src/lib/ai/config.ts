@@ -58,9 +58,9 @@ export const AI_PHASE_CONFIG = {
     generation: {
         temperature: 0.15,          // Low temp → deterministic, medically appropriate
         maxRetries: 1,             // Retry once before fallback
-        timeoutMs: 30_000,         // 30 s total timeout
+        timeoutMs: 3500,           // 3.5 s total timeout to fail fast on rate-limiting/stalls
         maxTokens: 1500,           // Max output tokens per response
-        retryDelayMs: 1_000,       // Wait 1s before retry
+        retryDelayMs: 500,         // Wait 500ms before retry (fast key rotation)
     },
 } as const;
 
@@ -164,4 +164,3 @@ export interface AIResponse {
 }
 
 export type AIProviderKey = typeof AI_PHASE_CONFIG.primary | typeof AI_PHASE_CONFIG.fallback;
-
