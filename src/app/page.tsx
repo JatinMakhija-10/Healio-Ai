@@ -18,9 +18,33 @@ import {
   ShieldCheck,
   Stethoscope,
   UserRoundCheck,
+  X,
 } from "lucide-react";
 
 const languages = ["हिन्दी", "தமிழ்", "বাংলা", "English"];
+
+const languageChoices = [
+  {
+    code: "hi",
+    script: "हिन्दी",
+    prompt: "Hindi mein shuru karein",
+  },
+  {
+    code: "ta",
+    script: "தமிழ்",
+    prompt: "Tamilil thodangungal",
+  },
+  {
+    code: "bn",
+    script: "বাংলা",
+    prompt: "Banglay shuru korun",
+  },
+  {
+    code: "en",
+    script: "English",
+    prompt: "Continue in English",
+  },
+];
 
 const trustSignals = [
   {
@@ -222,8 +246,10 @@ function ChatDemo() {
 }
 
 function StickyCta({
+  onStart,
   visible,
 }: {
+  onStart: () => void;
   visible: boolean;
 }) {
   return (
@@ -232,13 +258,86 @@ function StickyCta({
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
-      <Link
+      <button
         className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-base font-bold text-white"
-        href="/dashboard/consult"
+        onClick={onStart}
+        type="button"
       >
         Start my health check
         <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-      </Link>
+      </button>
+    </div>
+  );
+}
+
+function LanguageSelectionOverlay({
+  onChoose,
+  onClose,
+  open,
+}: {
+  onChoose: (code: string) => void;
+  onClose: () => void;
+  open: boolean;
+}) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-stretch bg-[#F7F6F2] text-[#1C1C1E]"
+      role="dialog"
+    >
+      <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-5 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <HealioMark className="size-11" />
+            <span className="text-base font-bold">Healio</span>
+          </div>
+          <button
+            aria-label="Close language selection"
+            className="grid min-h-12 min-w-12 place-items-center rounded-[8px] border border-[#DAD7CF] bg-white text-[#1C1C1E]"
+            onClick={onClose}
+            type="button"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center py-10">
+          <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">
+            Choose your language
+          </p>
+          <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
+            Start in the language your family actually uses.
+          </h2>
+          <p className="mt-4 text-base leading-7 text-[#555555]">
+            No account wall. Pick a language, describe what is happening, and get the first useful response before any save prompt.
+          </p>
+
+          <div className="mt-8 grid gap-3">
+            {languageChoices.map((language) => (
+              <button
+                className="flex min-h-[72px] items-center justify-between rounded-[8px] border border-[#DAD7CF] bg-white px-4 text-left shadow-sm transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
+                key={language.code}
+                onClick={() => onChoose(language.code)}
+                type="button"
+              >
+                <span>
+                  <span className="block text-xl font-bold text-[#1A1A2E]">{language.script}</span>
+                  <span className="mt-1 block text-sm font-semibold text-[#6B6B6B]">{language.prompt}</span>
+                </span>
+                <ArrowRight className="size-5 text-[#0F6E56]" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="pb-2 text-sm leading-6 text-[#6B6B6B]">
+          Healio will still show doctor-escalation signals when symptoms may need professional care.
+        </p>
+      </div>
     </div>
   );
 }
@@ -248,6 +347,7 @@ export default function LandingPage() {
   const footerRef = useRef<HTMLElement | null>(null);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const [isLanguageOverlayOpen, setIsLanguageOverlayOpen] = useState(false);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -275,6 +375,13 @@ export default function LandingPage() {
     };
   }, []);
 
+  const openLanguageOverlay = () => setIsLanguageOverlayOpen(true);
+  const closeLanguageOverlay = () => setIsLanguageOverlayOpen(false);
+  const startConsult = (languageCode: string) => {
+    window.localStorage.setItem("healio_preferred_language", languageCode);
+    window.location.href = `/start?lang=${languageCode}`;
+  };
+
   return (
     <main className="min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
       <section
@@ -292,10 +399,11 @@ export default function LandingPage() {
             aria-label="Choose language"
           >
             <Languages className="hidden size-4 shrink-0 sm:block" aria-hidden="true" />
-            {languages.map((language) => (
+            {languages.map((language, index) => (
               <button
                 className="min-h-12 shrink-0 rounded-[8px] px-2.5 hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
                 key={language}
+                onClick={() => startConsult(languageChoices[index]?.code ?? "en")}
                 type="button"
               >
                 {language}
@@ -326,13 +434,14 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-              <Link
+              <button
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-6 text-base font-bold text-white shadow-sm transition hover:bg-[#0F6E56] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                href="/dashboard/consult"
+                onClick={openLanguageOverlay}
+                type="button"
               >
                 Start my health check
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-              </Link>
+              </button>
               <Link
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-6 text-base font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
                 href="/login"
@@ -522,12 +631,13 @@ export default function LandingPage() {
                 Keep fluids ready, avoid unsafe street water, and ask early if symptoms feel unusual for your family.
               </p>
             </div>
-            <Link
+            <button
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#0F6E56] px-5 text-sm font-bold text-[#0F6E56] hover:bg-[#E1F5EE]"
-              href="/dashboard/consult"
+              onClick={openLanguageOverlay}
+              type="button"
             >
               Ask now
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -542,13 +652,14 @@ export default function LandingPage() {
             Choose your language, describe what is happening, and receive useful guidance before any save prompt.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Link
+            <button
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-base font-bold text-[#1A1A2E] hover:bg-[#E1F5EE]"
-              href="/dashboard/consult"
+              onClick={openLanguageOverlay}
+              type="button"
             >
               Start my health check
               <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-            </Link>
+            </button>
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/30 px-6 text-base font-bold text-white hover:bg-white/10"
               href="/login"
@@ -582,7 +693,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <StickyCta visible={!isHeroVisible && !isFooterVisible} />
+      <StickyCta onStart={openLanguageOverlay} visible={!isHeroVisible && !isFooterVisible} />
+      <LanguageSelectionOverlay
+        onChoose={startConsult}
+        onClose={closeLanguageOverlay}
+        open={isLanguageOverlayOpen}
+      />
     </main>
   );
 }
