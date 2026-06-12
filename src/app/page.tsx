@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Baby,
   CheckCircle2,
-  ChevronRight,
   CloudRain,
   HeartHandshake,
   Languages,
@@ -26,8 +25,8 @@ const languages = ["हिन्दी", "தமிழ்", "বাংলা", "
 const trustSignals = [
   {
     icon: ShieldCheck,
-    label: "Evidence labels",
-    detail: "Every suggestion shows how strong the evidence is.",
+    label: "Source-led evidence",
+    detail: "Guidance is scored against curated articles, books, and public health sources.",
   },
   {
     icon: Stethoscope,
@@ -36,8 +35,8 @@ const trustSignals = [
   },
   {
     icon: LockKeyhole,
-    label: "DPDP-aware privacy",
-    detail: "Built for Indian personal data expectations.",
+    label: "No guessing",
+    detail: "Structured math helps avoid random assumptions from symptom text.",
   },
 ];
 
@@ -45,17 +44,17 @@ const scenarioCards = [
   {
     icon: Baby,
     title: "Child has fever at night",
-    copy: "Understand home care steps, red flags, and when to call a doctor.",
+    copy: "Get safe home-care steps, Ayurvedic comfort routines, and red flags.",
   },
   {
     icon: Moon,
     title: "Parent feels uneasy after dinner",
-    copy: "Describe symptoms in simple words and get calm next steps.",
+    copy: "Compare symptoms with source-backed home remedies and doctor signals.",
   },
   {
     icon: HeartHandshake,
     title: "Family wellness doubts",
-    copy: "Ask about safe routines, traditional care, and everyday prevention.",
+    copy: "Ask about Ayurvedic remedies, homeopathic context, and prevention.",
   },
 ];
 
@@ -66,11 +65,11 @@ const chatMessages = [
   },
   {
     from: "healio",
-    text: "Check temperature, give fluids, and keep them lightly dressed. If fever is high, lasts over 3 days, or there is breathing trouble, speak to a doctor urgently.",
+    text: "Check temperature, give fluids, and keep them lightly dressed. I can suggest safe home remedies and traditional care, but breathing trouble or high fever needs a doctor urgently.",
   },
   {
     from: "healio",
-    text: "Tell me the age and current temperature. I will ask a few simple questions.",
+    text: "Tell me the age and current temperature. I use source-backed scoring, not assumptions, to ask the next question.",
   },
 ];
 
@@ -96,6 +95,12 @@ const privacyPoints = [
   "DPDP Act 2023 aligned consent language",
   "Clear medical-disclaimer links before commitment",
   "WhatsApp-friendly support path for Indian users",
+];
+
+const evidencePoints = [
+  "100+ curated articles, books, and medically reviewed source notes",
+  "Public government health data where available and relevant",
+  "Structured scoring instead of one-shot assumptions",
 ];
 
 function HealioMark({ className = "" }: { className?: string }) {
@@ -308,7 +313,7 @@ export default function LandingPage() {
           >
             <div className="mb-5 inline-flex min-h-12 items-center gap-2 rounded-full border border-[#B8DED0] bg-[#E1F5EE] px-4 text-sm font-semibold text-[#0F6E56]">
               <CheckCircle2 className="size-4" aria-hidden="true" />
-              AYUSH-reviewed wellness guidance
+              Ayurveda, home remedies, homeopathy, safety signals
             </div>
 
             <h1 className="text-[2.5rem] font-bold leading-[1.15] tracking-normal text-[#1A1A2E] sm:text-5xl lg:text-6xl">
@@ -317,7 +322,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#555555] sm:text-lg lg:mx-0">
-              Simple, honest wellness guidance for Indian families, in your language, at any hour. Useful for the 2am fever question and calm enough for everyday doubts.
+              Simple, honest wellness guidance for Indian families, in your language, at any hour. Explore Ayurvedic home remedies, homeopathic context, and safe next steps without panic.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -399,13 +404,6 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-xl font-bold leading-snug text-[#1A1A2E]">{item.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[#555555]">{item.copy}</p>
-                  <button
-                    className="mt-5 inline-flex min-h-12 items-center gap-1 rounded-[8px] text-sm font-bold text-[#0F6E56]"
-                    type="button"
-                  >
-                    See example
-                    <ChevronRight className="size-4" aria-hidden="true" />
-                  </button>
                 </article>
               );
             })}
@@ -420,19 +418,19 @@ export default function LandingPage() {
           <div className="mx-auto max-w-xl text-center lg:text-left">
             <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">See the product before tapping</p>
             <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
-              A calm chat that gives care steps and escalation signs together.
+              A calm chat for home remedies, traditional care, and escalation signs.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              The demo shows the value-first flow: ask in plain language, get simple home care, then know exactly when professional care matters.
+              The demo shows the value-first flow: ask in plain language, get practical Ayurvedic or homeopathic context where suitable, then know exactly when professional care matters.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
-                <p className="text-sm font-bold text-[#0F6E56]">Home care now</p>
-                <p className="mt-1 text-sm leading-6 text-[#555555]">Plain, practical steps that do not create panic.</p>
+                <p className="text-sm font-bold text-[#0F6E56]">Ayurvedic home care</p>
+                <p className="mt-1 text-sm leading-6 text-[#555555]">Plain remedies and routines with clear safety limits.</p>
               </div>
               <div className="rounded-[8px] border border-[#DAD7CF] bg-white p-4">
-                <p className="text-sm font-bold text-[#1A1A2E]">Doctor signal</p>
-                <p className="mt-1 text-sm leading-6 text-[#555555]">Escalation guidance is visible in every meaningful answer.</p>
+                <p className="text-sm font-bold text-[#1A1A2E]">Homeopathic context</p>
+                <p className="mt-1 text-sm leading-6 text-[#555555]">Traditional options are framed with evidence and caution.</p>
               </div>
             </div>
           </div>
@@ -442,23 +440,26 @@ export default function LandingPage() {
       <section className="bg-[#E1F5EE] py-16">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
           <div>
-            <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">Trust without overpromising</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">Trust without assumptions</p>
             <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
-              Guidance first. A doctor when it matters.
+              We use maths, sources, and safety rules before giving guidance.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#33594D]">
-              Healio supports everyday health decisions, but it does not diagnose, prescribe, or ask people to ignore serious symptoms. The safest next step is always made clear.
+              Healio does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, then keeps doctor escalation visible when risk is present.
             </p>
           </div>
           <div className="rounded-[8px] border border-[#B8DED0] bg-white p-5 shadow-sm">
             <div className="mb-4 grid size-14 place-items-center rounded-[8px] bg-[#1A1A2E] text-white">
               <UserRoundCheck className="size-7" aria-hidden="true" />
             </div>
-            <h3 className="text-xl font-bold text-[#1A1A2E]">What every answer must include</h3>
+            <h3 className="text-xl font-bold text-[#1A1A2E]">What the reasoning checks first</h3>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-[#555555]">
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#0F6E56]" />A practical home-care suggestion when appropriate.</li>
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#0F6E56]" />A clear doctor-escalation signal for risk.</li>
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#0F6E56]" />Plain language that works for busy caregivers and elders.</li>
+              {evidencePoints.map((point) => (
+                <li className="flex gap-3" key={point}>
+                  <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#0F6E56]" />
+                  {point}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
