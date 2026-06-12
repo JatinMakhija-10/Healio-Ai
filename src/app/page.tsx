@@ -276,17 +276,17 @@ export default function LandingPage() {
         className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8"
         ref={heroRef}
       >
-        <header className="flex items-center justify-between gap-3">
+        <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <Link href="/" className="flex items-center gap-3" aria-label="Healio home">
             <HealioMark />
             <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio</span>
           </Link>
 
           <nav
-            className="flex min-h-12 items-center gap-1 overflow-x-auto text-sm font-semibold text-[#0F6E56]"
+            className="flex min-h-12 w-full items-center justify-between gap-1 overflow-x-auto text-sm font-semibold text-[#0F6E56] sm:w-auto sm:justify-start"
             aria-label="Choose language"
           >
-            <Languages className="size-4 shrink-0" aria-hidden="true" />
+            <Languages className="hidden size-4 shrink-0 sm:block" aria-hidden="true" />
             {languages.map((language) => (
               <button
                 className="min-h-12 shrink-0 rounded-[8px] px-2.5 hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
