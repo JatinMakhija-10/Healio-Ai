@@ -92,9 +92,82 @@ const DURATION_PATTERN =
 const SEVERITY_PATTERN =
     /(?:(?:severity|intensity|pain level|pain|rate|rating|score)\s*(?:is|was|around|about|of|:)?\s*([1-9]|10)\b)|(?:\b([1-9]|10)\s*(?:\/\s*10|out of 10|on a scale))/i;
 
-// Matches temperature with or without space between number and unit: "100f", "100 F", "100.5F", "38.5C", "38.5 c"
-const TEMPERATURE_PATTERN =
-    /(?<![\d])((?:9[5-9]|10[0-9]|11[0-9])(?:\.\d+)?)[\s]*(degrees?[\s]*)?([fF]|fahrenheit)(?![a-zA-Z])|(?<![\d])([3-4]\d(?:\.\d+)?)[\s]*(degrees?[\s]*)?([cC]|celsius)(?![a-zA-Z])/;
+function extractTemperature(text: string): string | undefined {
+    const normalized = text.toLowerCase();
+    
+    // Pattern to look for numbers adjacent to f/c/fahrenheit/celsius/celcius/degree
+    // e.g. "99-101 degree", "38.5 c", "101.2F"
+    const pattern = /(?<![\d])(\d{2,3}(?:\.\d+)?)\s*(?:-|to)?\s*(\d{2,3}(?:\.\d+)?)?[\s]*(?:degrees?|°)?[\s]*(f|c|fahrenheit|celsius|celcius)?(?![a-zA-Z])/g;
+    
+    let match;
+    const candidates: Array<{ val: number; unit: 'F' | 'C' }> = [];
+    
+    while ((match = pattern.exec(normalized)) !== null) {
+        const val1 = parseFloat(match[1]);
+        const val2 = match[2] ? parseFloat(match[2]) : null;
+        const unitWord = match[3];
+
+        const processVal = (val: number) => {
+            let unit: 'F' | 'C' | null = null;
+            
+            // Explicit unit check with sanity magnitude correction
+            if (unitWord === 'f' || unitWord === 'fahrenheit') {
+                if (val >= 34 && val <= 45) {
+                    unit = 'C'; // correction
+                } else {
+                    unit = 'F';
+                }
+            } else if (unitWord === 'c' || unitWord === 'celsius' || unitWord === 'celcius') {
+                if (val >= 94 && val <= 115) {
+                    unit = 'F'; // correction (e.g. "101 celcius")
+                } else {
+                    unit = 'C';
+                }
+            } else {
+                // Inferred from magnitude
+                if (val >= 94 && val <= 115) {
+                    unit = 'F';
+                } else if (val >= 34 && val <= 45) {
+                    unit = 'C';
+                }
+            }
+
+            if (unit) {
+                candidates.push({ val, unit });
+            }
+        };
+
+        processVal(val1);
+        if (val2 !== null) {
+            processVal(val2);
+        }
+    }
+
+    if (candidates.length > 0) {
+        candidates.sort((a, b) => b.val - a.val);
+        return `${candidates[0].val}${candidates[0].unit}`;
+    }
+
+    // Fallback: search pure numbers in ranges
+    const numberMatches = normalized.match(/\b\d{2,3}(?:\.\d+)?\b/g);
+    if (numberMatches) {
+        const temps: Array<{ val: number; unit: 'F' | 'C' }> = [];
+        for (const m of numberMatches) {
+            const val = parseFloat(m);
+            if (val >= 94 && val <= 115) {
+                temps.push({ val, unit: 'F' });
+            } else if (val >= 34 && val <= 45) {
+                temps.push({ val, unit: 'C' });
+            }
+        }
+        if (temps.length > 0) {
+            temps.sort((a, b) => b.val - a.val);
+            return `${temps[0].val}${temps[0].unit}`;
+        }
+    }
+
+    return undefined;
+}
 
 function normalizeValue(value: string): string {
     return value.replace(/\s+/g, ' ').trim();
@@ -173,13 +246,7 @@ function extractFieldValues(
     setValue('duration', duration);
 
     if (activeSchema.id === 'fever') {
-        const temperatureMatch = normalized.match(TEMPERATURE_PATTERN);
-        // Group 1+3 = Fahrenheit, Group 4+6 = Celsius
-        const temperature = temperatureMatch?.[1]
-            ? `${temperatureMatch[1]}F`
-            : temperatureMatch?.[4]
-                ? `${temperatureMatch[4]}C`
-                : undefined;
+        const temperature = extractTemperature(normalized);
         setValue('fever.temp_value', temperature);
     }
 

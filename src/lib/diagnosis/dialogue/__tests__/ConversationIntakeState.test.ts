@@ -99,4 +99,16 @@ describe('ConversationIntakeState', () => {
         expect(state.collectedData.get('fever.rigors')).toBe('no');
         expect(state.pendingQueue.some((field) => field.key === 'fever.rigors')).toBe(false);
     });
+
+    it('extracts temperature from ranges and handles Celsius/Fahrenheit mismatches', () => {
+        const state = buildConversationIntakeState([
+            { role: 'user', content: 'I have fever since yesterday' },
+            { role: 'assistant', content: 'What is your temperature?' },
+            { role: 'user', content: 'Between 99-101 degree celcius' }
+        ]);
+
+        expect(state.activeSchemaId).toBe('fever');
+        expect(state.answeredFields.has('fever.temp_value')).toBe(true);
+        expect(state.collectedData.get('fever.temp_value')).toBe('101F');
+    });
 });

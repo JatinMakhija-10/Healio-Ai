@@ -694,6 +694,16 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
                             try {
                                 const parsed = JSON.parse(data);
+                                if (parsed.error === "STREAM_STALL") {
+                                    setMessages((prev) =>
+                                        prev.map((m) =>
+                                            m.id === assistantId
+                                                ? { ...m, content: m.content + "\n\n*(Response paused due to connection issue. Please send a quick message like 'continue' or try again.)*" }
+                                                : m
+                                        )
+                                    );
+                                    continue;
+                                }
                                 if (parsed.content) {
                                     fullContent += parsed.content;
                                     setMessages((prev) =>
