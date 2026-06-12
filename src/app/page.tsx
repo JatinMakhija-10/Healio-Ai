@@ -342,6 +342,53 @@ function LanguageSelectionOverlay({
   );
 }
 
+function CookieConsentBanner() {
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem("healio_cookie_consent") !== "accepted";
+  });
+
+  const acceptCookies = () => {
+    window.localStorage.setItem("healio_cookie_consent", "accepted");
+    setIsVisible(false);
+  };
+
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-3xl rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-[#1C1C1E] shadow-[0_12px_40px_rgba(26,26,46,0.16)] md:bottom-4">
+      <div className="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center">
+        <div className="grid size-11 place-items-center rounded-[8px] bg-[#E1F5EE] text-[#0F6E56]">
+          <ShieldCheck className="size-5" aria-hidden="true" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-[#1A1A2E]">Privacy-first cookies</p>
+          <p className="mt-1 text-sm leading-6 text-[#555555]">
+            Healio uses essential cookies and local storage to remember language, privacy choices, and session preferences. We do not sell health data.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#0F6E56]">
+            <Link className="underline underline-offset-2" href="/privacy">Privacy Policy</Link>
+            <Link className="underline underline-offset-2" href="/terms">Terms</Link>
+            <Link className="underline underline-offset-2" href="/medical-disclaimer">Medical Disclaimer</Link>
+          </div>
+        </div>
+        <button
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-sm font-bold text-white hover:bg-[#0F6E56]"
+          onClick={acceptCookies}
+          type="button"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const heroRef = useRef<HTMLElement | null>(null);
   const footerRef = useRef<HTMLElement | null>(null);
@@ -689,6 +736,17 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
+            <div className="mt-6 grid gap-3 border-t border-white/15 pt-5 text-xs leading-5 md:grid-cols-3">
+              <p>
+                <span className="font-bold text-white">DPDP notice:</span> health context is used only for safety, personalization, and service delivery.
+              </p>
+              <p>
+                <span className="font-bold text-white">Cookie choice:</span> language and consent preferences are stored locally on this device.
+              </p>
+              <p>
+                <span className="font-bold text-white">Medical safety:</span> serious, persistent, or worsening symptoms should be reviewed by a qualified doctor.
+              </p>
+            </div>
           </footer>
         </div>
       </section>
@@ -699,6 +757,7 @@ export default function LandingPage() {
         onClose={closeLanguageOverlay}
         open={isLanguageOverlayOpen}
       />
+      <CookieConsentBanner />
     </main>
   );
 }
