@@ -14,7 +14,6 @@ import {
   LockKeyhole,
   Mic,
   Moon,
-  Phone,
   ShieldCheck,
   Stethoscope,
   UserRoundCheck,
@@ -118,7 +117,7 @@ const testimonials = [
 const privacyPoints = [
   "DPDP Act 2023 aligned consent language",
   "Clear medical-disclaimer links before commitment",
-  "WhatsApp-friendly support path for Indian users",
+  "Data request and cookie-policy paths before commitment",
 ];
 
 const evidencePoints = [
@@ -383,6 +382,8 @@ function CookieConsentBanner() {
           </p>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#0F6E56]">
             <Link className="underline underline-offset-2" href="/privacy">Privacy Policy</Link>
+            <Link className="underline underline-offset-2" href="/cookie-policy">Cookie Policy</Link>
+            <Link className="underline underline-offset-2" href="/data-request">Data Request</Link>
             <Link className="underline underline-offset-2" href="/terms">Terms</Link>
             <Link className="underline underline-offset-2" href="/medical-disclaimer">Medical Disclaimer</Link>
           </div>
@@ -463,7 +464,7 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
+    <main className="healio-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
       <section
         className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8"
         ref={heroRef}
@@ -761,12 +762,10 @@ export default function LandingPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
+                <Link href="/cookie-policy" className="hover:text-white">Cookie Policy</Link>
+                <Link href="/data-request" className="hover:text-white">Data Request Form</Link>
                 <Link href="/terms" className="hover:text-white">Terms of Service</Link>
                 <Link href="/medical-disclaimer" className="hover:text-white">Medical Disclaimer</Link>
-                <Link href="https://wa.me/919876543210" className="inline-flex items-center gap-2 hover:text-white">
-                  <Phone className="size-4" aria-hidden="true" />
-                  WhatsApp support
-                </Link>
               </div>
             </div>
             <div className="mt-6 grid gap-3 border-t border-white/15 pt-5 text-xs leading-5 md:grid-cols-3">

@@ -222,3 +222,65 @@
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
+
+@media (prefers-color-scheme: dark) {
+  .healio-public-page {
+    background-color: #1c1c1e !important;
+    color: #f7f6f2 !important;
+  }
+
+  .healio-public-page header,
+  .healio-public-page section,
+  .healio-public-page article,
+  .healio-public-page figure,
+  .healio-public-page footer,
+  .healio-public-page form,
+  .healio-public-page div {
+    border-color: #3a3a3c !important;
+  }
+
+  .healio-public-page .bg-white,
+  .healio-public-page .bg-\[\#FFFFFF\],
+  .healio-public-page .bg-\[\#FDFBF7\],
+  .healio-public-page .bg-\[\#F7F6F2\] {
+    background-color: #2c2c2e !important;
+  }
+
+  .healio-public-page .bg-\[\#E1F5EE\] {
+    background-color: #17382f !important;
+  }
+
+  .healio-public-page .bg-\[\#1A1A2E\] {
+    background-color: #111114 !important;
+  }
+
+  .healio-public-page .text-\[\#1C1C1E\],
+  .healio-public-page .text-\[\#1A1A2E\],
+  .healio-public-page .text-\[\#555555\],
+  .healio-public-page .text-\[\#6B6B6B\],
+  .healio-public-page .text-\[\#33594D\] {
+    color: #f7f6f2 !important;
+  }
+
+  .healio-public-page .text-\[\#0F6E56\] {
+    color: #9fe1cb !important;
+  }
+
+  .healio-public-page .text-white,
+  .healio-public-page .text-white\/70,
+  .healio-public-page .text-white\/75 {
+    color: #ffffff !important;
+  }
+
+  .healio-public-page input,
+  .healio-public-page select,
+  .healio-public-page textarea {
+    background-color: #2c2c2e !important;
+    border-color: #4a4a4d !important;
+    color: #f7f6f2 !important;
+  }
+
+  .healio-public-page ::placeholder {
+    color: #b8b8bc !important;
+  }
+}

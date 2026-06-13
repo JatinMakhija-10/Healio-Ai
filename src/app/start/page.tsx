@@ -9,7 +9,7 @@ import {
   Leaf,
   LockKeyhole,
   MessageCircle,
-  Phone,
+  RotateCcw,
   ShieldCheck,
 } from "lucide-react";
 
@@ -74,7 +74,7 @@ export default function StartPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
+    <main className="healio-public-page min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-40px)] max-w-3xl flex-col">
         <header className="flex items-center justify-between gap-4">
           <Link className="flex items-center gap-3" href="/" aria-label="Back to Healio home">
@@ -163,9 +163,9 @@ export default function StartPage() {
                   <div className="flex items-start gap-3">
                     <LockKeyhole className="mt-1 size-5 shrink-0 text-[#0F6E56]" aria-hidden="true" />
                     <div>
-                      <p className="font-bold">Want to save this conversation?</p>
+                      <p className="font-bold">Ready for the full consult?</p>
                       <p className="mt-1 text-sm leading-6 text-[#555555]">
-                        Saving is optional. You can continue without saving, or sign in when you want history and personalization.
+                        Sign in to continue the guided chat, save history, and get more personalized follow-up questions. You can also start a fresh concern without saving.
                       </p>
                     </div>
                   </div>
@@ -175,21 +175,25 @@ export default function StartPage() {
                       href="/login?redirectTo=/dashboard/consult"
                     >
                       <MessageCircle className="mr-2 size-4" aria-hidden="true" />
-                      Save history
+                      Continue full consult
                     </Link>
                     <Link
                       className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#0F6E56] px-4 text-sm font-bold text-[#0F6E56]"
-                      href="https://wa.me/919876543210"
+                      href="/data-request"
                     >
-                      <Phone className="mr-2 size-4" aria-hidden="true" />
-                      WhatsApp
+                      <ShieldCheck className="mr-2 size-4" aria-hidden="true" />
+                      Privacy options
                     </Link>
                     <button
                       className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#DAD7CF] bg-white px-4 text-sm font-bold text-[#1C1C1E]"
-                      onClick={() => setHasResponse(false)}
+                      onClick={() => {
+                        setSymptom("");
+                        setHasResponse(false);
+                      }}
                       type="button"
                     >
-                      Continue without saving
+                      <RotateCcw className="mr-2 size-4" aria-hidden="true" />
+                      Ask another concern
                     </button>
                   </div>
                 </div>
