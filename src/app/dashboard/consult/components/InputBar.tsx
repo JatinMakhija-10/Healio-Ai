@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Send, Mic, MicOff, Loader2 } from "lucide-react";
+import { Send, Mic, MicOff, Loader2, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface InputBarProps {
@@ -94,10 +94,10 @@ export function InputBar({
         ? "Select an option above or type here..."
         : followUpMode
             ? "Share an update or ask a follow-up..."
-        : "Describe your symptoms here...";
+        : "Tell Healio what you are feeling...";
 
     return (
-        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 py-3 md:px-6 md:py-4 z-10">
+        <div className="sticky bottom-0 left-0 right-0 z-10 border-t border-[#E5E3DC] bg-white/95 px-3 py-3 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
             {/* Listening indicator */}
             <AnimatePresence>
                 {isRecording && (
@@ -105,16 +105,17 @@ export function InputBar({
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 4 }}
-                        className="text-center text-xs text-red-500 font-medium mb-2"
+                        className="mx-auto mb-2 flex w-fit items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-600"
                     >
-                        🎤 Listening...
+                        <Mic className="h-3.5 w-3.5" aria-hidden="true" />
+                        Listening
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="flex items-end gap-2 max-w-3xl mx-auto">
+            <div className="mx-auto flex max-w-3xl items-end gap-2">
                 {/* Text area */}
-                <div className={`flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 transition-all focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-100`}>
+                <div className="relative flex-1 rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] shadow-sm transition-all focus-within:border-[#0F6E56] focus-within:ring-2 focus-within:ring-[#9FE1CB]">
                     <textarea
                         ref={textareaRef}
                         value={value}
@@ -123,7 +124,7 @@ export function InputBar({
                         placeholder={placeholderText}
                         disabled={isInputDisabled}
                         rows={1}
-                        className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-[15px] text-gray-800 placeholder:text-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full resize-none bg-transparent px-4 py-3 pr-24 text-[15px] leading-6 text-[#1C1C1E] placeholder:text-[#8C8C8C] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         style={{ maxHeight: "160px" }}
                     />
 
@@ -135,9 +136,9 @@ export function InputBar({
                                 type="button"
                                 onClick={handleMicToggle}
                                 disabled={isInputDisabled}
-                                className={`p-2 rounded-full transition-all ${isRecording
-                                    ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-200"
-                                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                                className={`rounded-full p-2 transition-all ${isRecording
+                                    ? "animate-pulse bg-red-500 text-white shadow-sm"
+                                    : "text-[#6B6B6B] hover:bg-white hover:text-[#1A1A2E]"
                                     } ${isInputDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
                                 aria-label={isRecording ? "Stop recording" : "Start voice input"}
                             >
@@ -150,23 +151,26 @@ export function InputBar({
                             type="button"
                             onClick={handleSend}
                             disabled={isInputDisabled || !hasText}
-                            className={`p-2 rounded-full transition-all ${hasText && !isInputDisabled
-                                ? "bg-teal-600 text-white hover:bg-teal-700 hover:scale-105 shadow-sm"
-                                : "text-gray-300 cursor-not-allowed"
+                            className={`rounded-full p-2 transition-all ${hasText && !isInputDisabled
+                                ? "bg-[#1A1A2E] text-white shadow-sm hover:bg-[#0F6E56]"
+                                : "cursor-not-allowed text-[#B8B8B8]"
                                 }`}
                             aria-label="Send message"
                         >
-                            {isInputDisabled ? <Loader2 size={18} className="animate-spin text-teal-600" /> : <Send size={18} />}
+                            {isInputDisabled ? <Loader2 size={18} className="animate-spin text-[#0F6E56]" /> : <Send size={18} />}
                         </button>
                     </div>
                 </div>
             </div>
-            <p className="text-xs text-slate-400 text-center mt-2">
-                {widgetActive
-                    ? "Use the selection above or type your answer"
-                    : followUpMode
-                        ? "Continuing with your previous diagnosis context"
-                        : "Type in Hindi, English, or Hinglish"}
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-[#8C8C8C]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#0F6E56]" aria-hidden="true" />
+                <span>
+                    {widgetActive
+                        ? "Use the selection above or type your answer"
+                        : followUpMode
+                            ? "Continuing with your previous diagnosis context"
+                            : "For emergencies, call local emergency services."}
+                </span>
             </p>
         </div>
     );

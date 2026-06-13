@@ -21,20 +21,20 @@ export function QuickReplyChips({ options, onSelect }: QuickReplyChipsProps) {
     };
 
     if (selected) {
-        return null; // Hide after selection — the message bubble will show the selection
+        return null; // Hide after selection; the message bubble will show the selection
     }
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pl-14 px-4 py-2 flex flex-wrap gap-2"
+            className="flex flex-wrap gap-2 px-4 py-2 pl-14"
         >
             {options.map((option) => (
                 <button
                     key={option}
                     onClick={() => handleSelect(option)}
-                    className="px-3.5 py-1.5 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 text-[14px] text-slate-700 hover:text-teal-900 rounded-full transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
+                    className="min-h-10 cursor-pointer rounded-full border border-[#DAD7CF] bg-white px-4 py-2 text-[14px] font-semibold text-[#1C1C1E] shadow-sm transition-all duration-200 hover:border-[#9FE1CB] hover:bg-[#E1F5EE] hover:text-[#0F6E56] active:scale-[0.98]"
                 >
                     {option}
                 </button>

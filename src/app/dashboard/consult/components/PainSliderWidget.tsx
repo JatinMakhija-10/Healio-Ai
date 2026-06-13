@@ -34,8 +34,8 @@ export function PainSliderWidget({ onSubmit }: PainSliderWidgetProps) {
 
     if (submitted) {
         return (
-            <div className="bg-[#E8F5F0] rounded-2xl rounded-br-sm px-4 py-3 text-[15px] text-gray-800 inline-block">
-                {value}/10 — {getPainLabel(value)}
+            <div className="inline-block rounded-[8px] rounded-br-[3px] bg-[#1A1A2E] px-4 py-3 text-[15px] text-white">
+                {value}/10 - {getPainLabel(value)}
             </div>
         );
     }
@@ -44,11 +44,11 @@ export function PainSliderWidget({ onSubmit }: PainSliderWidgetProps) {
         <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 p-5 max-w-md"
+            className="max-w-md rounded-[8px] rounded-tl-[3px] border border-[#DAD7CF] bg-white p-5 shadow-sm"
         >
             {/* Header row */}
             <div className="flex justify-between items-start mb-1">
-                <h4 className="text-sm font-semibold text-gray-800">
+                <h4 className="text-sm font-bold text-[#1A1A2E]">
                     Current Pain Intensity
                 </h4>
                 <div className="text-right">
@@ -62,7 +62,7 @@ export function PainSliderWidget({ onSubmit }: PainSliderWidgetProps) {
             </div>
 
             {/* Description */}
-            <p className="text-xs text-teal-600 mb-4 leading-relaxed">
+            <p className="mb-4 text-xs leading-relaxed text-[#0F6E56]">
                 How would you rate the intensity of your pain from 0 to 10, where 0 is no pain and 10 is the worst pain you can imagine?
             </p>
 
@@ -80,7 +80,7 @@ export function PainSliderWidget({ onSubmit }: PainSliderWidgetProps) {
                         background: `linear-gradient(to right, #2A9D8F ${value * 10}%, #E5E7EB ${value * 10}%)`,
                     }}
                 />
-                <div className="flex justify-between text-[11px] text-gray-400 mt-1.5 px-0.5">
+                <div className="mt-1.5 flex justify-between px-0.5 text-[11px] text-[#8C8C8C]">
                     <span>0 - No pain</span>
                     <span>5 - Moderate</span>
                     <span>10 - Worst Possible</span>
@@ -90,9 +90,9 @@ export function PainSliderWidget({ onSubmit }: PainSliderWidgetProps) {
             {/* Submit */}
             <button
                 onClick={handleSubmit}
-                className="mt-4 w-full py-2.5 bg-teal-600 text-white text-sm font-medium rounded-xl hover:bg-teal-700 transition-all active:scale-[0.98] shadow-sm"
+                className="mt-4 w-full rounded-full bg-[#1A1A2E] py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0F6E56] active:scale-[0.98]"
             >
-                Confirm — {value}/10
+                Confirm - {value}/10
             </button>
         </motion.div>
     );

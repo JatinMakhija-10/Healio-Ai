@@ -9,6 +9,7 @@ import { AskHealioResponseRenderer } from "@/components/wellness/AskHealioRespon
 import type { AskHealioResponse } from "@/lib/wellness/askHealioResponse";
 import { EscalationAlert } from "@/components/wellness/EscalationAlert";
 import type { EscalationLevel } from "@/components/wellness/EscalationAlert";
+import { Leaf } from "lucide-react";
 
 interface MessageBubbleProps {
     message: ChatMessage;
@@ -144,8 +145,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         >
             {/* Avatar */}
             {!isUser && (
-                <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0 shadow-sm mb-auto mt-2">
-                    <span className="text-white text-xs font-bold">H</span>
+                <div className="mb-auto mt-2 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm">
+                    <Leaf className="h-5 w-5" strokeWidth={2.3} aria-hidden="true" />
                 </div>
             )}
 
@@ -177,9 +178,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 {/* Text Bubble */}
                 {displayText && (
                     <div
-                        className={`px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap break-words ${isUser
-                            ? "bg-[#E8F5F0] text-gray-800 rounded-2xl rounded-br-sm"
-                            : "bg-white text-gray-800 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100"
+                        className={`whitespace-pre-wrap break-words px-4 py-3 text-[15px] leading-relaxed shadow-sm ${isUser
+                            ? "rounded-[8px] rounded-br-[3px] bg-[#1A1A2E] text-white"
+                            : "rounded-[8px] rounded-tl-[3px] border border-[#DAD7CF] bg-white text-[#1C1C1E]"
                             }`}
                     >
                         {renderContent(displayText)}
@@ -193,7 +194,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     </div>
                 )}
 
-                {/* Escalation ladder alert — rendered ABOVE the diagnosis card */}
+                {/* Escalation ladder alert, rendered above the diagnosis card */}
                 {parsedCondition?.escalation_level && (() => {
                     const lvl = parsedCondition.escalation_level as EscalationLevel;
                     const validLevels: EscalationLevel[] = ["L1", "L2", "L3", "L4", "L5"];
@@ -223,13 +224,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
                 {/* Loading State for JSON */}
                 {isParsingJson && !parsedCondition && (
-                    <div className="mt-2 text-xs text-teal-600 font-medium animate-pulse flex items-center gap-2">
+                    <div className="mt-2 flex animate-pulse items-center gap-2 text-xs font-medium text-[#0F6E56]">
                         <div className="w-4 h-4 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" />
                         Generating diagnosis card...
                     </div>
                 )}
 
-                <span className="text-[11px] text-gray-400 mt-1 px-1">
+                <span className="mt-1 px-1 text-[11px] text-[#9A9A9A]">
                     {formatTime(message.timestamp)}
                 </span>
             </div>
