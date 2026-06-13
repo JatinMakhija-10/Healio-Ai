@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft, Cookie, Database, Languages, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Cookie, Database, LockKeyhole, ShieldCheck } from "lucide-react";
 
 const cookieGroups = [
-  {
-    icon: Languages,
-    title: "Language preference",
-    items: ["healio_preferred_language"],
-    copy: "Remembers the language selected on the landing page so the first guidance flow can open in the same language.",
-  },
   {
     icon: ShieldCheck,
     title: "Consent notice",
@@ -48,7 +42,7 @@ export default function CookiePolicyPage() {
                 What Healio stores on your device
               </h1>
               <p className="mt-4 text-base leading-7 text-[#555555]">
-                Healio uses essential cookies and local storage for language choice, consent state, account sessions, and service improvement. These tools help the app work reliably; they are not used to sell health information.
+                Healio uses essential cookies and local storage for consent state, account sessions, and service improvement. These tools help the app work reliably; they are not used to sell health information.
               </p>
               <p className="mt-4 text-sm leading-6 text-[#6B6B6B]">
                 Last updated: June 14, 2026
@@ -89,7 +83,7 @@ export default function CookiePolicyPage() {
               <div>
                 <p className="font-bold text-[#1A1A2E]">Clear local choices</p>
                 <p className="mt-1 text-sm leading-6 text-[#555555]">
-                  You can clear site data in your browser to reset language and cookie consent preferences.
+                  You can clear site data in your browser to reset cookie consent preferences.
                 </p>
               </div>
               <div>

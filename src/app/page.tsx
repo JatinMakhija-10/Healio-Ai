@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   CloudRain,
   HeartHandshake,
-  Languages,
   Leaf,
   LockKeyhole,
   Mic,
@@ -17,33 +16,7 @@ import {
   ShieldCheck,
   Stethoscope,
   UserRoundCheck,
-  X,
 } from "lucide-react";
-
-const languages = ["हिन्दी", "தமிழ்", "বাংলা", "English"];
-
-const languageChoices = [
-  {
-    code: "hi",
-    script: "हिन्दी",
-    prompt: "Hindi mein shuru karein",
-  },
-  {
-    code: "ta",
-    script: "தமிழ்",
-    prompt: "Tamilil thodangungal",
-  },
-  {
-    code: "bn",
-    script: "বাংলা",
-    prompt: "Banglay shuru korun",
-  },
-  {
-    code: "en",
-    script: "English",
-    prompt: "Continue in English",
-  },
-];
 
 const trustSignals = [
   {
@@ -245,10 +218,8 @@ function ChatDemo() {
 }
 
 function StickyCta({
-  onStart,
   visible,
 }: {
-  onStart: () => void;
   visible: boolean;
 }) {
   return (
@@ -257,92 +228,13 @@ function StickyCta({
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
-      <button
+      <Link
         className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-base font-bold text-white"
-        onClick={onStart}
-        type="button"
+        href="#how-it-works"
       >
-        Start my health check
+        Explore Healio
         <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-      </button>
-    </div>
-  );
-}
-
-function LanguageSelectionOverlay({
-  onChoose,
-  onClose,
-  open,
-}: {
-  onChoose: (code: string) => void;
-  onClose: () => void;
-  open: boolean;
-}) {
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-describedby="language-selection-description"
-      aria-labelledby="language-selection-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-stretch bg-[#F7F6F2] text-[#1C1C1E]"
-      role="dialog"
-    >
-      <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-5 sm:px-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <HealioMark className="size-11" />
-            <span className="text-base font-bold">Healio</span>
-          </div>
-          <button
-            aria-label="Close language selection"
-            className="grid min-h-12 min-w-12 place-items-center rounded-[8px] border border-[#DAD7CF] bg-white text-[#1C1C1E]"
-            onClick={onClose}
-            type="button"
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col justify-center py-10">
-          <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">
-            Choose your language
-          </p>
-          <h2
-            className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl"
-            id="language-selection-title"
-          >
-            Start in the language your family actually uses.
-          </h2>
-          <p className="mt-4 text-base leading-7 text-[#555555]" id="language-selection-description">
-            No account wall. Pick a language, describe what is happening, and get the first useful response before any save prompt.
-          </p>
-
-          <div className="mt-8 grid gap-3">
-            {languageChoices.map((language) => (
-              <button
-                autoFocus={language.code === "hi"}
-                className="flex min-h-[72px] items-center justify-between rounded-[8px] border border-[#DAD7CF] bg-white px-4 text-left shadow-sm transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                key={language.code}
-                onClick={() => onChoose(language.code)}
-                type="button"
-              >
-                <span>
-                  <span className="block text-xl font-bold text-[#1A1A2E]">{language.script}</span>
-                  <span className="mt-1 block text-sm font-semibold text-[#6B6B6B]">{language.prompt}</span>
-                </span>
-                <ArrowRight className="size-5 text-[#0F6E56]" aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <p className="pb-2 text-sm leading-6 text-[#6B6B6B]">
-          Healio will still show doctor-escalation signals when symptoms may need professional care.
-        </p>
-      </div>
+      </Link>
     </div>
   );
 }
@@ -378,7 +270,7 @@ function CookieConsentBanner() {
         <div>
           <p className="text-sm font-bold text-[#1A1A2E]">Privacy-first cookies</p>
           <p className="mt-1 text-sm leading-6 text-[#555555]">
-            Healio uses essential cookies and local storage to remember language, privacy choices, and session preferences. We do not sell health data.
+            Healio uses essential cookies and local storage to remember privacy choices and session preferences. We do not sell health data.
           </p>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#0F6E56]">
             <Link className="underline underline-offset-2" href="/privacy">Privacy Policy</Link>
@@ -406,7 +298,6 @@ export default function LandingPage() {
   const footerRef = useRef<HTMLElement | null>(null);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
-  const [isLanguageOverlayOpen, setIsLanguageOverlayOpen] = useState(false);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -434,35 +325,6 @@ export default function LandingPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isLanguageOverlayOpen) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsLanguageOverlayOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isLanguageOverlayOpen]);
-
-  const openLanguageOverlay = () => setIsLanguageOverlayOpen(true);
-  const closeLanguageOverlay = () => setIsLanguageOverlayOpen(false);
-  const startConsult = (languageCode: string) => {
-    window.localStorage.setItem("healio_preferred_language", languageCode);
-    window.location.href = `/start?lang=${languageCode}`;
-  };
-
   return (
     <main className="healio-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
       <section
@@ -475,22 +337,12 @@ export default function LandingPage() {
             <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio</span>
           </Link>
 
-          <nav
-            className="flex min-h-12 w-full items-center justify-between gap-1 overflow-x-auto text-sm font-semibold text-[#0F6E56] sm:w-auto sm:justify-start"
-            aria-label="Choose language"
+          <Link
+            className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-5 text-sm font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE]"
+            href="/login"
           >
-            <Languages className="hidden size-4 shrink-0 sm:block" aria-hidden="true" />
-            {languages.map((language, index) => (
-              <button
-                className="min-h-12 shrink-0 rounded-[8px] px-2.5 hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                key={language}
-                onClick={() => startConsult(languageChoices[index]?.code ?? "en")}
-                type="button"
-              >
-                {language}
-              </button>
-            ))}
-          </nav>
+            Login
+          </Link>
         </header>
 
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-12">
@@ -511,18 +363,17 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#555555] sm:text-lg lg:mx-0">
-              Simple, honest wellness guidance for Indian families, in your language, at any hour. Explore Ayurvedic home remedies, homeopathic context, and safe next steps without panic.
+              Simple, honest wellness guidance for Indian families, explained in plain language. Explore Ayurvedic home remedies, homeopathic context, and safe next steps without panic.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-              <button
+              <Link
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-6 text-base font-bold text-white shadow-sm transition hover:bg-[#0F6E56] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                onClick={openLanguageOverlay}
-                type="button"
+                href="#how-it-works"
               >
-                Start my health check
+                Explore Healio
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-              </button>
+              </Link>
               <Link
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-6 text-base font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
                 href="/login"
@@ -572,7 +423,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-[#E5E3DC] bg-white py-16">
+      <section className="border-y border-[#E5E3DC] bg-white py-16" id="how-it-works">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             copy="The landing page now answers real household moments first, because trust starts with recognition."
@@ -712,13 +563,12 @@ export default function LandingPage() {
                 Keep fluids ready, avoid unsafe street water, and ask early if symptoms feel unusual for your family.
               </p>
             </div>
-            <button
+            <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#0F6E56] px-5 text-sm font-bold text-[#0F6E56] hover:bg-[#E1F5EE]"
-              onClick={openLanguageOverlay}
-              type="button"
+              href="#how-it-works"
             >
-              Ask now
-            </button>
+              Learn the approach
+            </Link>
           </div>
         </div>
       </section>
@@ -727,20 +577,19 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <HealioMark className="mx-auto mb-5" />
           <h2 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-normal sm:text-4xl">
-            Start with one health question. No form, no password, no pressure.
+            A calmer way to understand family wellness questions.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/75">
-            Choose your language, describe what is happening, and receive useful guidance before any save prompt.
+            Review how Healio balances home remedies, source-backed reasoning, privacy, and doctor-escalation signals.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <button
+            <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-base font-bold text-[#1A1A2E] hover:bg-[#E1F5EE]"
-              onClick={openLanguageOverlay}
-              type="button"
+              href="#how-it-works"
             >
-              Start my health check
+              Explore Healio
               <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-            </button>
+            </Link>
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/30 px-6 text-base font-bold text-white hover:bg-white/10"
               href="/login"
@@ -773,7 +622,7 @@ export default function LandingPage() {
                 <span className="font-bold text-white">DPDP notice:</span> health context is used only for safety, personalization, and service delivery.
               </p>
               <p>
-                <span className="font-bold text-white">Cookie choice:</span> language and consent preferences are stored locally on this device.
+                <span className="font-bold text-white">Cookie choice:</span> consent preferences are stored locally on this device.
               </p>
               <p>
                 <span className="font-bold text-white">Medical safety:</span> serious, persistent, or worsening symptoms should be reviewed by a qualified doctor.
@@ -783,12 +632,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <StickyCta onStart={openLanguageOverlay} visible={!isHeroVisible && !isFooterVisible} />
-      <LanguageSelectionOverlay
-        onChoose={startConsult}
-        onClose={closeLanguageOverlay}
-        open={isLanguageOverlayOpen}
-      />
+      <StickyCta visible={!isHeroVisible && !isFooterVisible} />
       <CookieConsentBanner />
     </main>
   );
