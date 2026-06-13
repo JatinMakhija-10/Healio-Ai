@@ -22,17 +22,17 @@ const trustSignals = [
   {
     icon: ShieldCheck,
     label: "Source-led evidence",
-    detail: "Guidance is scored against curated articles, books, and public health sources.",
+    detail: "Built around curated articles, books, and public health sources.",
   },
   {
     icon: Stethoscope,
     label: "Doctor escalation",
-    detail: "Clear signs for when a real doctor should step in.",
+    detail: "Clear safety signals for symptoms that need professional care.",
   },
   {
     icon: LockKeyhole,
     label: "No guessing",
-    detail: "Structured math helps avoid random assumptions from symptom text.",
+    detail: "Structured reasoning keeps advice grounded instead of random.",
   },
 ];
 
@@ -40,17 +40,17 @@ const scenarioCards = [
   {
     icon: Baby,
     title: "Child has fever at night",
-    copy: "Get safe home-care steps, Ayurvedic comfort routines, and red flags.",
+    copy: "Understand fluids, rest, cooling comfort, and when fever should not wait.",
   },
   {
     icon: Moon,
     title: "Parent feels uneasy after dinner",
-    copy: "Compare symptoms with source-backed home remedies and doctor signals.",
+    copy: "Separate simple stomach discomfort from symptoms that need attention.",
   },
   {
     icon: HeartHandshake,
     title: "Family wellness doubts",
-    copy: "Ask about Ayurvedic remedies, homeopathic context, and prevention.",
+    copy: "Bring traditional care, prevention, and safety boundaries into one view.",
   },
 ];
 
@@ -89,8 +89,8 @@ const testimonials = [
 
 const privacyPoints = [
   "DPDP Act 2023 aligned consent language",
-  "Clear medical-disclaimer links before commitment",
-  "Data request and cookie-policy paths before commitment",
+  "Medical disclaimer, terms, and privacy links kept visible",
+  "Data request and cookie-policy paths for user control",
 ];
 
 const evidencePoints = [
@@ -426,8 +426,7 @@ export default function LandingPage() {
       <section className="border-y border-[#E5E3DC] bg-white py-16" id="how-it-works">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            copy="The landing page now answers real household moments first, because trust starts with recognition."
-            kicker="Made for familiar moments"
+            kicker="Built around real home worries"
             title="For the questions families actually ask."
           />
 
@@ -457,12 +456,11 @@ export default function LandingPage() {
           <ChatDemo />
 
           <div className="mx-auto max-w-xl text-center lg:text-left">
-            <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">See the product before tapping</p>
             <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
-              A calm chat for home remedies, traditional care, and escalation signs.
+              Home remedies feel safer when the limits are clear.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              The demo shows the value-first flow: ask in plain language, get practical Ayurvedic or homeopathic context where suitable, then know exactly when professional care matters.
+              Healio brings Ayurvedic care, homeopathic context, and practical household steps into the same calm explanation, while keeping doctor signals visible when symptoms may need professional care.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
@@ -534,9 +532,9 @@ export default function LandingPage() {
             <div className="grid size-14 place-items-center rounded-[8px] bg-[#E1F5EE] text-[#0F6E56]">
               <LockKeyhole className="size-7" aria-hidden="true" />
             </div>
-            <h2 className="mt-5 text-3xl font-bold leading-tight text-[#1A1A2E]">Your symptoms stay with you.</h2>
+            <h2 className="mt-5 text-3xl font-bold leading-tight text-[#1A1A2E]">Privacy should be easy to understand.</h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Privacy is stated in plain terms before the user starts. Legal seriousness should feel reassuring, not intimidating.
+              Consent, data requests, cookies, and medical-disclaimer links are kept close to the experience so families can see what is handled and why.
             </p>
           </div>
           <div className="grid gap-3">
