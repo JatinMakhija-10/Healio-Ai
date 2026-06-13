@@ -311,3 +311,57 @@
 .healio-theme-dark .healio-public-page ::placeholder {
   color: #b8b8bc !important;
 }
+
+:root[data-healio-theme="dark"] .healio-consult-page,
+.healio-theme-dark .healio-consult-page {
+  background-color: #1c1c1e !important;
+  color: #f7f6f2 !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page header,
+:root[data-healio-theme="dark"] .healio-consult-page div,
+:root[data-healio-theme="dark"] .healio-consult-page button,
+:root[data-healio-theme="dark"] .healio-consult-page textarea,
+.healio-theme-dark .healio-consult-page header,
+.healio-theme-dark .healio-consult-page div,
+.healio-theme-dark .healio-consult-page button,
+.healio-theme-dark .healio-consult-page textarea {
+  border-color: #3a3a3c !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page .bg-white,
+:root[data-healio-theme="dark"] .healio-consult-page .bg-white\/90,
+:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#FDFBF7\],
+:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#F7F6F2\],
+.healio-theme-dark .healio-consult-page .bg-white,
+.healio-theme-dark .healio-consult-page .bg-white\/90,
+.healio-theme-dark .healio-consult-page .bg-\[\#FDFBF7\],
+.healio-theme-dark .healio-consult-page .bg-\[\#F7F6F2\] {
+  background-color: #2c2c2e !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#E1F5EE\],
+.healio-theme-dark .healio-consult-page .bg-\[\#E1F5EE\] {
+  background-color: #17382f !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#1C1C1E\],
+:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#1A1A2E\],
+:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#555555\],
+:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#6B6B6B\],
+.healio-theme-dark .healio-consult-page .text-\[\#1C1C1E\],
+.healio-theme-dark .healio-consult-page .text-\[\#1A1A2E\],
+.healio-theme-dark .healio-consult-page .text-\[\#555555\],
+.healio-theme-dark .healio-consult-page .text-\[\#6B6B6B\] {
+  color: #f7f6f2 !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#0F6E56\],
+.healio-theme-dark .healio-consult-page .text-\[\#0F6E56\] {
+  color: #9fe1cb !important;
+}
+
+:root[data-healio-theme="dark"] .healio-consult-page textarea,
+.healio-theme-dark .healio-consult-page textarea {
+  color: #f7f6f2 !important;
+}

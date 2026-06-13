@@ -89,23 +89,23 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
         const starterPrompts = [
             {
                 icon: HeartPulse,
-                label: "Fever or cough",
-                prompt: "I have a mild fever and cough. What can I do at home?",
+                label: "Monsoon fever",
+                prompt: "Mujhe mild fever aur cough hai. Ghar par kya safe hai?",
             },
             {
                 icon: Leaf,
-                label: "Digestion",
-                prompt: "I feel bloated and heavy after meals.",
+                label: "Acidity after dinner",
+                prompt: "Spicy dinner ke baad acidity aur heaviness ho rahi hai.",
             },
             {
                 icon: Sparkles,
                 label: "Sleep and stress",
-                prompt: "I have been stressed and sleeping badly this week.",
+                prompt: "Kaafi stress hai aur neend theek nahi aa rahi.",
             },
             {
                 icon: Stethoscope,
-                label: "Body pain",
-                prompt: "I have body pain and weakness. What should I watch for?",
+                label: "Dadi's remedy check",
+                prompt: "Ghar ka kadha ya home remedy try karne se pehle kya dhyan rakhu?",
             },
         ];
 
@@ -129,13 +129,13 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
                     </h1>
 
                     <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-[#555555]">
-                        Tell Healio the concern in Hindi, English, or Hinglish. You will get calm home-care context, safety limits, and doctor signals when needed.
+                        Tell Healio the concern in Hindi, English, or Hinglish. You will get calm home-care context, Ayurvedic/homeopathic boundaries, safety limits, and doctor signals when needed.
                     </p>
 
                     <div className="mx-auto mt-5 grid max-w-2xl gap-2 sm:grid-cols-3">
                         {[
-                            { icon: Leaf, label: "Home remedies" },
-                            { icon: BookOpenCheck, label: "Source-backed" },
+                            { icon: Leaf, label: "Ayurveda context" },
+                            { icon: BookOpenCheck, label: "100+ sources" },
                             { icon: ShieldCheck, label: "Doctor signals" },
                         ].map((item) => (
                             <div

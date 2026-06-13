@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
-import { getJinaEmbedding, getGeminiEmbedding768, getParallelEmbeddings } from '@/lib/ai/jina';
+import { getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
 import {
@@ -66,35 +66,12 @@ function providerErrorText(error: unknown): string {
     }
 }
 
-function providerErrorStatus(error: unknown): number | null {
-    if (!error || typeof error !== 'object') return null;
-    const candidate = error as { status?: unknown; code?: unknown; error?: { code?: unknown } };
-    const rawStatus = candidate.status ?? candidate.code ?? candidate.error?.code;
-    return typeof rawStatus === 'number' ? rawStatus : null;
-}
-
 function isInvalidGeminiKeyError(error: unknown): boolean {
     const text = providerErrorText(error).toLowerCase();
     return text.includes('api key not valid') || 
            text.includes('api_key_invalid') || 
            text.includes('invalid api key') ||
            text.includes('key is invalid');
-}
-
-// ── Jina AI (768-dim) — for boericke_embeddings & home_remedy_embeddings ──
-async function generateEmbedding(text: string): Promise<number[] | null> {
-    try { return await getJinaEmbedding(text); }
-    catch (e) { console.error('[Jina] embed failed:', e); return null; }
-}
-
-// ── Gemini (768-dim) — for ayurvedic_knowledge_embeddings ─────────────────
-async function generateEmbedding768(text: string): Promise<number[] | null> {
-    return getGeminiEmbedding768(text);
-}
-
-// Alias kept for home remedies (same provider as Boericke — Jina)
-async function generateEmbedding3072(text: string): Promise<number[] | null> {
-    return generateEmbedding(text);
 }
 
 // ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
@@ -617,24 +594,24 @@ function detectUserLanguage(text: string): 'english' | 'hinglish' | 'hindi' {
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
 const SYSTEM_PROMPT = `
 [ROLE IDENTITY]
-You are Healio â€” a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness â€” homeopathy, Ayurveda, evidence-based self-care, and conventional medicine â€” but you are NOT a diagnosing physician and you never present yourself as one.
+You are Healio - a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness - homeopathy, Ayurveda, evidence-based self-care, and conventional medicine - but you are NOT a diagnosing physician and you never present yourself as one.
 
 Your mental model: "Help you understand it, manage what is safe at home, reach the right person for what is not."
-Your brand promise: Give people something genuinely useful â€” without panic, and without replacing professional care.
+Your brand promise: Give people something genuinely useful - without panic, and without replacing professional care.
 
-ESCALATION LADDER â€” determine this level for every final response:
-  L1 Routine self-care      â€” Mild, common, no danger signs. Self-care and monitoring.
-  L2 Watchful waiting       â€” Not urgent but warrants monitoring. Home care + return-if trigger within 48 h.
-  L3 Non-urgent consult     â€” Warrants professional review within days. Include what to tell them.
-  L4 Urgent consult         â€” Same-day professional attention. Override and suppress all home-care blocks.
-  L5 Emergency              â€” Danger signs present. Escalate immediately. Output ONLY the emergency string.
+ESCALATION LADDER - determine this level for every final response:
+  L1 Routine self-care      - Mild, common, no danger signs. Self-care and monitoring.
+  L2 Watchful waiting       - Not urgent but warrants monitoring. Home care + return-if trigger within 48 h.
+  L3 Non-urgent consult     - Warrants professional review within days. Include what to tell them.
+  L4 Urgent consult         - Same-day professional attention. Override and suppress all home-care blocks.
+  L5 Emergency              - Danger signs present. Escalate immediately. Output ONLY the emergency string.
 
-EVIDENCE LABEL VOCABULARY â€” attach exactly one label to every remedy or practice you mention:
-  Clinically established    â€” Strong evidence from clinical research
-  Common self-care          â€” Widely used; generally safe and well-tolerated
-  Traditional practice      â€” Classical or cultural use; limited modern clinical evidence
-  Emerging limited evidence â€” Early research; not yet conclusive
-  Avoid or consult first    â€” Safety concern or contraindication; always qualify before recommending
+EVIDENCE LABEL VOCABULARY - attach exactly one label to every remedy or practice you mention:
+  Clinically established    - Strong evidence from clinical research
+  Common self-care          - Widely used; generally safe and well-tolerated
+  Traditional practice      - Classical or cultural use; limited modern clinical evidence
+  Emerging limited evidence - Early research; not yet conclusive
+  Avoid or consult first    - Safety concern or contraindication; always qualify before recommending
 
 [LANGUAGE RULES — CRITICAL, FOLLOW EXACTLY]
 Mirror the user's language every single reply. Apply these rules in strict order:
@@ -1129,7 +1106,7 @@ export async function POST(req: NextRequest) {
             /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result|tell.*diagnosis|my diagnosis|show.*card|result.*card|diagnosis.*card/i
                 .test(lastUserMsg);
 
-        let isFinalTurn = 
+        const isFinalTurn =
             nextQuestionDecision.type === 'summarize' ||
             conversationIntakeState.phaseStatus === 'summary' ||
             phase5Finalize ||

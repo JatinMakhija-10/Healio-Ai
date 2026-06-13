@@ -97,7 +97,7 @@ export function AskHealioResponseRenderer({
 
       {/* ── Block 2: Understanding ───────────────────────────────────────── */}
       {understand && (
-        <div className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+        <div className="rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] px-4 py-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Info className="size-3.5 text-gray-400" />
             <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
@@ -139,7 +139,7 @@ export function AskHealioResponseRenderer({
             {homeCare.items.map((item, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-gray-100 bg-white px-4 py-3"
+                className="rounded-[8px] border border-[#DAD7CF] bg-white px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-medium text-gray-800">{item.title}</span>
@@ -168,7 +168,7 @@ export function AskHealioResponseRenderer({
 
       {/* ── Block 5: Watch for ───────────────────────────────────────────── */}
       {watchFor && (watchFor.redFlags.length > 0 || watchFor.yellowFlags?.length) && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 space-y-2">
+        <div className="space-y-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3">
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="size-3.5 text-amber-600 shrink-0" />
             <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">
@@ -242,7 +242,7 @@ export function AskHealioResponseRenderer({
                 onClick={() => onViewContent(followUp.relatedContentId!)}
                 className="text-xs text-[#3D405B] underline underline-offset-2 hover:text-[#2D6A4F] transition-colors"
               >
-                Read: full care guide →
+                Read: full care guide
               </button>
             )}
             {followUp.relatedRoutineId && onStartRoutine && (
@@ -250,7 +250,7 @@ export function AskHealioResponseRenderer({
                 onClick={() => onStartRoutine(followUp.relatedRoutineId!)}
                 className="text-xs text-[#3D405B] underline underline-offset-2 hover:text-[#2D6A4F] transition-colors"
               >
-                Try: suggested routine →
+                Try: suggested routine
               </button>
             )}
           </div>
@@ -258,7 +258,7 @@ export function AskHealioResponseRenderer({
       ) : null}
 
       {/* ── Block 6: Safety note (always last, never suppressible) ────────── */}
-      <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+      <div className="rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] px-4 py-3">
         <div className="flex items-center gap-1.5 mb-1.5">
           <ShieldCheck className="size-3.5 text-gray-400" />
           <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
@@ -287,13 +287,13 @@ export function AskHealioResponseSkeleton({ className }: { className?: string })
     <div className={cn("space-y-4 animate-pulse", className)}>
       <div className="h-4 bg-gray-100 rounded w-3/4" />
       <div className="h-4 bg-gray-100 rounded w-full" />
-      <div className="h-20 bg-gray-100 rounded-xl" />
+      <div className="h-20 bg-gray-100 rounded-[8px]" />
       <div className="space-y-2">
-        <div className="h-16 bg-gray-100 rounded-xl" />
-        <div className="h-16 bg-gray-100 rounded-xl" />
+        <div className="h-16 bg-gray-100 rounded-[8px]" />
+        <div className="h-16 bg-gray-100 rounded-[8px]" />
       </div>
-      <div className="h-12 bg-gray-100 rounded-xl" />
-      <div className="h-10 bg-gray-50 rounded-xl" />
+      <div className="h-12 bg-gray-100 rounded-[8px]" />
+      <div className="h-10 bg-gray-50 rounded-[8px]" />
     </div>
   );
 }

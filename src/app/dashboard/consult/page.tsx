@@ -229,7 +229,7 @@ function ConsultPageInner() {
 
     return (
         <div 
-            className="flex h-[calc(100dvh-64px)] flex-col bg-[#F7F6F2]"
+            className="healio-consult-page flex h-[calc(100dvh-64px)] flex-col bg-[#F7F6F2]"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
             <header className="border-b border-[#E5E3DC] bg-white/90 px-4 py-3 backdrop-blur">
@@ -241,13 +241,13 @@ function ConsultPageInner() {
                         <div className="min-w-0">
                             <h1 className="truncate text-base font-bold text-[#1A1A2E]">Ask Healio</h1>
                             <p className="truncate text-xs font-medium text-[#6B6B6B]">
-                                Home care, evidence checks, and doctor signals
+                                Hinglish-friendly home care and doctor signals
                             </p>
                         </div>
                     </div>
                     <div className="hidden items-center gap-2 rounded-full border border-[#B8DED0] bg-[#E1F5EE] px-3 py-1.5 text-xs font-bold text-[#0F6E56] sm:flex">
                         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                        Safety guided
+                        India-aware
                     </div>
                 </div>
             </header>

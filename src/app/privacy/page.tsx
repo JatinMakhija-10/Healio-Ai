@@ -90,9 +90,9 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Grievance Officer & Contact Us</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4">7. Contact Us</h2>
               <p>
-                In accordance with the Information Technology Act, 2000 and the rules made thereunder, if you have questions, comments, or grievances about this notice or the processing of your Sensitive Personal Data, you may email our Grievance Officer at grievance@healio.ai or contact us at privacy@healio.ai.
+                If you have questions, comments, or privacy requests about this notice or the processing of your Sensitive Personal Data, contact us at privacy@healio.ai.
               </p>
             </section>
           </div>

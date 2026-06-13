@@ -21,8 +21,8 @@ import {
 const trustSignals = [
   {
     icon: ShieldCheck,
-    label: "Source-led evidence",
-    detail: "Built around curated articles, books, and public health sources.",
+    label: "India-aware care",
+    detail: "Built for Hindi, English, Hinglish, and familiar family health worries.",
   },
   {
     icon: Stethoscope,
@@ -39,17 +39,17 @@ const trustSignals = [
 const scenarioCards = [
   {
     icon: Baby,
-    title: "Child has fever at night",
-    copy: "Understand fluids, rest, cooling comfort, and when fever should not wait.",
+    title: "Monsoon fever at night",
+    copy: "Understand fluids, rest, temperature checks, and when fever should not wait.",
   },
   {
     icon: Moon,
-    title: "Parent feels uneasy after dinner",
-    copy: "Separate simple stomach discomfort from symptoms that need attention.",
+    title: "Acidity after spicy dinner",
+    copy: "Separate common heaviness from stomach symptoms that need attention.",
   },
   {
     icon: HeartHandshake,
-    title: "Family wellness doubts",
+    title: "Dadi's remedy or doctor?",
     copy: "Bring traditional care, prevention, and safety boundaries into one view.",
   },
 ];
@@ -57,15 +57,15 @@ const scenarioCards = [
 const chatMessages = [
   {
     from: "user",
-    text: "My child has fever since evening. What should I do now?",
+    text: "Bacche ko shaam se fever hai. Ghar par abhi kya safe hai?",
   },
   {
     from: "healio",
-    text: "Check temperature, give fluids, and keep them lightly dressed. I can suggest safe home remedies and traditional care, but breathing trouble or high fever needs a doctor urgently.",
+    text: "Temperature note karein, fluids/ORS dete rahein, aur light clothing rakhein. I can explain home remedies and traditional care, but breathing trouble, severe weakness, or very high fever needs a doctor urgently.",
   },
   {
     from: "healio",
-    text: "Tell me the age and current temperature. I use source-backed scoring, not assumptions, to ask the next question.",
+    text: "Age, current temperature, aur fever kitne ghante se hai batayein. I use source-backed scoring, not assumptions, to ask the next question.",
   },
 ];
 
@@ -230,9 +230,9 @@ function StickyCta({
     >
       <Link
         className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-base font-bold text-white"
-        href="#how-it-works"
+        href="/signup"
       >
-        Explore Healio
+        Sign up now
         <ArrowRight className="ml-2 size-4" aria-hidden="true" />
       </Link>
     </div>
@@ -354,7 +354,7 @@ export default function LandingPage() {
           >
             <div className="mb-5 inline-flex min-h-12 items-center gap-2 rounded-full border border-[#B8DED0] bg-[#E1F5EE] px-4 text-sm font-semibold text-[#0F6E56]">
               <CheckCircle2 className="size-4" aria-hidden="true" />
-              Ayurveda, home remedies, homeopathy, safety signals
+              Ayurveda, home remedies, homeopathy, doctor signals
             </div>
 
             <h1 className="text-[2.5rem] font-bold leading-[1.15] tracking-normal text-[#1A1A2E] sm:text-5xl lg:text-6xl">
@@ -369,9 +369,9 @@ export default function LandingPage() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-6 text-base font-bold text-white shadow-sm transition hover:bg-[#0F6E56] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                href="#how-it-works"
+                href="/signup"
               >
-                Explore Healio
+                Sign up now
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
               <Link
@@ -460,7 +460,7 @@ export default function LandingPage() {
               Home remedies feel safer when the limits are clear.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Healio brings Ayurvedic care, homeopathic context, and practical household steps into the same calm explanation, while keeping doctor signals visible when symptoms may need professional care.
+              Healio brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
@@ -484,7 +484,7 @@ export default function LandingPage() {
               We use maths, sources, and safety rules before giving guidance.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#33594D]">
-              Healio does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, then keeps doctor escalation visible when risk is present.
+              Healio does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, including public government health data where relevant, then keeps doctor escalation visible when risk is present.
             </p>
           </div>
           <div className="rounded-[8px] border border-[#B8DED0] bg-white p-5 shadow-sm">
@@ -558,7 +558,7 @@ export default function LandingPage() {
               <p className="text-sm font-bold uppercase tracking-normal text-[#0F6E56]">Seasonal nudge</p>
               <h2 className="mt-2 text-2xl font-bold leading-tight text-[#1A1A2E]">Monsoon coughs, fever, and stomach upsets are rising.</h2>
               <p className="mt-2 text-base leading-7 text-[#555555]">
-                Keep fluids ready, avoid unsafe street water, and ask early if symptoms feel unusual for your family.
+                Keep ORS and clean fluids ready, avoid unsafe street water, and ask early if symptoms feel unusual for your family.
               </p>
             </div>
             <Link
@@ -583,9 +583,9 @@ export default function LandingPage() {
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-base font-bold text-[#1A1A2E] hover:bg-[#E1F5EE]"
-              href="#how-it-works"
+              href="/signup"
             >
-              Explore Healio
+              Sign up now
               <ArrowRight className="ml-2 size-4" aria-hidden="true" />
             </Link>
             <Link
@@ -597,16 +597,10 @@ export default function LandingPage() {
           </div>
 
           <footer className="mt-12 border-t border-white/15 pt-6 text-left text-sm leading-6 text-white/70">
-            <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            <div className="grid gap-6 md:grid-cols-[1.4fr_0.6fr]">
               <p>
                 Healio.AI is an informational wellness tool and does not provide medical diagnosis, prescriptions, or emergency care. In an emergency in India, call 112 or visit the nearest emergency room.
               </p>
-              <div>
-                <p className="font-bold text-white">Grievance Officer</p>
-                <p>Compliance Lead, Healio</p>
-                <p>grievance@healio.health</p>
-                <p>+91 98765 43210</p>
-              </div>
               <div className="flex flex-col gap-2">
                 <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
                 <Link href="/cookie-policy" className="hover:text-white">Cookie Policy</Link>
