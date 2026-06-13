@@ -18,7 +18,7 @@ function PersonaRequiredBanner() {
     const router = useRouter();
 
     return (
-        <div className="flex h-[calc(100dvh-64px)] flex-col items-center justify-center bg-[#F7F6F2] p-6">
+        <div className="flex h-full flex-col items-center justify-center bg-[#F7F6F2] p-6">
             <div className="w-full max-w-md text-center space-y-6">
                 <div className="relative mx-auto w-24 h-24">
                     <div className="absolute inset-0 rounded-full bg-[#C8E7DA] opacity-60" />
@@ -207,7 +207,7 @@ function ConsultPageInner() {
     // Show nothing while auth resolves
     if (loading) {
         return (
-            <div className="flex h-[calc(100dvh-64px)] items-center justify-center bg-[#F7F6F2]">
+            <div className="flex h-full items-center justify-center bg-[#F7F6F2]">
                 <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
             </div>
         );
@@ -228,8 +228,8 @@ function ConsultPageInner() {
     }
 
     return (
-        <div 
-            className="healio-consult-page flex h-[calc(100dvh-64px)] flex-col bg-[#F7F6F2]"
+        <div
+            className="healio-consult-page flex h-full min-h-0 flex-col bg-[#F7F6F2]"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
             <header className="border-b border-[#E5E3DC] bg-white/90 px-4 py-3 backdrop-blur">
@@ -241,13 +241,13 @@ function ConsultPageInner() {
                         <div className="min-w-0">
                             <h1 className="truncate text-base font-bold text-[#1A1A2E]">Ask Healio</h1>
                             <p className="truncate text-xs font-medium text-[#6B6B6B]">
-                                Hinglish-friendly home care and doctor signals
+                                Home care, evidence checks, and doctor signals
                             </p>
                         </div>
                     </div>
                     <div className="hidden items-center gap-2 rounded-full border border-[#B8DED0] bg-[#E1F5EE] px-3 py-1.5 text-xs font-bold text-[#0F6E56] sm:flex">
                         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                        India-aware
+                        Safety guided
                     </div>
                 </div>
             </header>
@@ -299,7 +299,7 @@ function ConsultPageInner() {
 
             {/* Input Bar */}
             <InputBar
-                onSend={sendMessage}
+                onSend={handleSendMessage}
                 disabled={isLoading}
                 widgetActive={widgetActive}
                 followUpMode={isResumeMode || hasCompletedDiagnosis}
@@ -326,7 +326,7 @@ export default function ConsultPage() {
     return (
         <Suspense
             fallback={
-                <div className="flex h-[calc(100dvh-64px)] items-center justify-center bg-[#F7F6F2]">
+                <div className="flex h-full items-center justify-center bg-[#F7F6F2]">
                     <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
                 </div>
             }

@@ -33,6 +33,8 @@ export interface RequestTrace {
     spans: Record<string, number>;
     turn: number;
     model: string;
+    intent?: string;
+    creditAction?: string;
     ragCacheHit: boolean;
     isFinal: boolean;
     timestamp: string;
@@ -42,6 +44,8 @@ export class SpanCollector {
     private spans: Record<string, number> = {};
     private turn = 0;
     private model = '';
+    private intent = '';
+    private creditAction = '';
     private ragCacheHit = false;
     private isFinal = false;
 
@@ -51,9 +55,11 @@ export class SpanCollector {
     }
 
     /** Set request metadata for the trace output. */
-    setMeta(meta: { turn?: number; model?: string; ragCacheHit?: boolean; isFinal?: boolean }): void {
+    setMeta(meta: { turn?: number; model?: string; intent?: string; creditAction?: string; ragCacheHit?: boolean; isFinal?: boolean }): void {
         if (meta.turn !== undefined) this.turn = meta.turn;
         if (meta.model !== undefined) this.model = meta.model;
+        if (meta.intent !== undefined) this.intent = meta.intent;
+        if (meta.creditAction !== undefined) this.creditAction = meta.creditAction;
         if (meta.ragCacheHit !== undefined) this.ragCacheHit = meta.ragCacheHit;
         if (meta.isFinal !== undefined) this.isFinal = meta.isFinal;
     }
@@ -64,6 +70,8 @@ export class SpanCollector {
             spans: { ...this.spans },
             turn: this.turn,
             model: this.model,
+            intent: this.intent || undefined,
+            creditAction: this.creditAction || undefined,
             ragCacheHit: this.ragCacheHit,
             isFinal: this.isFinal,
             timestamp: new Date().toISOString(),

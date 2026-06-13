@@ -637,6 +637,27 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 });
 
                 if (!response.ok) {
+                    if (response.status === 402) {
+                        const errorData = await response.json().catch(() => ({}));
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.id === assistantId
+                                    ? {
+                                        ...m,
+                                        content: `___JSON_USAGE_LIMIT___\n${JSON.stringify({
+                                            code: 'INSUFFICIENT_CREDITS',
+                                            limit: errorData.required,
+                                            current_count: errorData.balance,
+                                            credits_balance: errorData.balance ?? 0,
+                                            plan: errorData.plan,
+                                        })}`,
+                                    }
+                                    : m
+                            )
+                        );
+                        setIsLoading(false);
+                        return;
+                    }
                     // Handle usage limit (429) — covers COOLDOWN, DAILY_LIMIT, MONTHLY_LIMIT
                     if (response.status === 429) {
                         const errorData = await response.json().catch(() => ({}));

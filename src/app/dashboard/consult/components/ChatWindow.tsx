@@ -8,8 +8,7 @@ import { PainSliderWidget } from "./PainSliderWidget";
 import { PainLocationDropdown } from "./PainLocationDropdown";
 import { QuickReplyChips } from "./QuickReplyChips";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpenCheck, HeartPulse, Leaf, ShieldCheck, Sparkles, Stethoscope } from "lucide-react";
-import { detectWidget } from "@/lib/chat/widgetDetection";
+import { Sparkles } from "lucide-react";
 
 interface ChatWindowProps {
     messages: ChatMessage[];
@@ -72,8 +71,6 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
             } else if (explicitHint.type === "slider") {
                 widgetHint = { type: "pain_slider" };
             }
-        } else {
-            widgetHint = detectWidget(lastMessage.content);
         }
     }
 
@@ -87,94 +84,61 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
     // Empty state: show a welcoming hero with starter prompts
     if (messages.length === 0 && !isLoading) {
         const starterPrompts = [
-            {
-                icon: HeartPulse,
-                label: "Monsoon fever",
-                prompt: "Mujhe mild fever aur cough hai. Ghar par kya safe hai?",
-            },
-            {
-                icon: Leaf,
-                label: "Acidity after dinner",
-                prompt: "Spicy dinner ke baad acidity aur heaviness ho rahi hai.",
-            },
-            {
-                icon: Sparkles,
-                label: "Sleep and stress",
-                prompt: "Kaafi stress hai aur neend theek nahi aa rahi.",
-            },
-            {
-                icon: Stethoscope,
-                label: "Dadi's remedy check",
-                prompt: "Ghar ka kadha ya home remedy try karne se pehle kya dhyan rakhu?",
-            },
+            "I have had a persistent headache for 3 days",
+            "I have been running a fever since yesterday",
+            "I am experiencing stomach pain and nausea",
+            "I have a skin rash on my arms",
         ];
 
         return (
-            <div className="w-full flex-1 overflow-y-auto">
+            <div className="min-h-0 w-full flex-1 overflow-y-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="mx-auto w-full max-w-3xl px-4 pb-36 pt-8 text-center"
+                    className="mx-auto w-full max-w-2xl px-4 pb-28 pt-8 text-center"
                 >
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm">
-                        <Leaf size={30} strokeWidth={2.3} aria-hidden="true" />
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[18px] bg-teal-700 text-white shadow-xl shadow-teal-900/10">
+                        <Sparkles className="fill-white/10" size={28} strokeWidth={1.5} aria-hidden="true" />
                     </div>
 
                     <h1
                         style={{ fontFamily: "var(--font-dm-serif), serif" }}
-                        className="mb-3 text-[clamp(28px,7vw,40px)] font-semibold leading-tight text-[#1A1A2E]"
+                        className="mb-3 text-[clamp(24px,7vw,32px)] font-normal leading-tight tracking-normal text-slate-900"
                     >
-                        What is happening at home today?
+                        How can I help you today?
                     </h1>
 
-                    <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-[#555555]">
-                        Tell Healio the concern in Hindi, English, or Hinglish. You will get calm home-care context, Ayurvedic/homeopathic boundaries, safety limits, and doctor signals when needed.
+                    <p className="text-[15px] leading-relaxed text-slate-500">
+                        I am Healio, your homeopathic health assistant.
+                    </p>
+                    <p className="mb-7 mt-1.5 text-[14px] text-slate-400">
+                        Respond in Hindi, English, or Hinglish - your choice.
                     </p>
 
-                    <div className="mx-auto mt-5 grid max-w-2xl gap-2 sm:grid-cols-3">
-                        {[
-                            { icon: Leaf, label: "Ayurveda context" },
-                            { icon: BookOpenCheck, label: "100+ sources" },
-                            { icon: ShieldCheck, label: "Doctor signals" },
-                        ].map((item) => (
-                            <div
-                                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#DAD7CF] bg-white px-3 text-xs font-bold text-[#0F6E56] shadow-sm"
-                                key={item.label}
-                            >
-                                <item.icon className="h-3.5 w-3.5" aria-hidden="true" />
-                                {item.label}
-                            </div>
-                        ))}
-                    </div>
-
                     {/* Starter Prompt Chips */}
-                    <div className="mx-auto mb-7 mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-                        {starterPrompts.map((item, i) => (
+                    <div className="mx-auto mb-7 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+                        {starterPrompts.map((prompt, i) => (
                             <motion.button
                                 key={i}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.2 + i * 0.08 }}
-                                onClick={() => onSendMessage?.(item.prompt)}
-                                className="flex min-h-[92px] cursor-pointer items-start gap-3 rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-left shadow-sm transition duration-200 hover:border-[#9FE1CB] hover:bg-[#E1F5EE]"
+                                onClick={() => onSendMessage?.(prompt)}
+                                className="flex min-h-[60px] cursor-pointer items-center rounded-xl border border-slate-200 bg-white p-3.5 text-left text-[14px] leading-snug text-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:border-teal-400 hover:bg-teal-50 hover:text-teal-900 hover:shadow-md"
                             >
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#E1F5EE] text-[#0F6E56]">
-                                    <item.icon className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                                <span>
-                                    <span className="block text-sm font-bold text-[#1A1A2E]">{item.label}</span>
-                                    <span className="mt-1 block text-sm leading-5 text-[#555555]">{item.prompt}</span>
-                                </span>
+                                {prompt}
                             </motion.button>
                         ))}
                     </div>
 
                     {/* Trust signal */}
-                    <div className="inline-flex items-center gap-2.5 rounded-full border border-[#DAD7CF] bg-white px-4 py-2">
-                        <ShieldCheck className="h-3.5 w-3.5 text-[#0F6E56]" aria-hidden="true" />
-                        <span className="text-[12px] font-medium tracking-wide text-[#6B6B6B]">
-                            Informational wellness guidance, not emergency care.
+                    <div className="inline-flex items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                        <span className="grid h-3.5 w-3.5 place-items-center rounded-full border border-slate-400 text-[9px] text-slate-500">
+                            i
+                        </span>
+                        <span className="text-[12px] font-medium tracking-wide text-slate-500">
+                            Your conversation is private and encrypted
                         </span>
                     </div>
                 </motion.div>
@@ -183,8 +147,8 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
     }
 
     return (
-        <div className="flex-1 overflow-y-auto py-6">
-            <div className="mx-auto max-w-3xl space-y-5">
+        <div className="min-h-0 flex-1 overflow-y-auto py-6">
+            <div className="mx-auto max-w-3xl space-y-5 px-4">
                 {messages.map((msg, index) => {
                     const isLast = index === messages.length - 1;
                     return (

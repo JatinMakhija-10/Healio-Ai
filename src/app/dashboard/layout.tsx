@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { DisclaimerBanner } from "@/components/layout/DisclaimerBanner";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import { DashboardContent } from "@/components/layout/DashboardContent";
 
 export default function DashboardLayout({
     children,
@@ -18,13 +18,7 @@ export default function DashboardLayout({
                 <Header />
                 <DisclaimerBanner />
 
-                <main className="flex-1 overflow-y-auto p-6 md:p-8">
-                    <div className="max-w-6xl mx-auto">
-                        <ErrorBoundary>
-                            {children}
-                        </ErrorBoundary>
-                    </div>
-                </main>
+                <DashboardContent>{children}</DashboardContent>
             </div>
         </div>
     );

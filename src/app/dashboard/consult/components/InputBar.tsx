@@ -38,7 +38,6 @@ export function InputBar({
     // Append transcript into the text box
     useEffect(() => {
         if (transcript) {
-             
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setValue((prev) => {
                 const space = prev && !prev.endsWith(" ") ? " " : "";
@@ -97,7 +96,7 @@ export function InputBar({
         : "Tell Healio what you are feeling...";
 
     return (
-        <div className="sticky bottom-0 left-0 right-0 z-10 border-t border-[#E5E3DC] bg-white/95 px-3 py-3 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
+        <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 py-3 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
             {/* Listening indicator */}
             <AnimatePresence>
                 {isRecording && (

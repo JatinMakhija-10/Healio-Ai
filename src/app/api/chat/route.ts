@@ -284,15 +284,12 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
         // Jina  → boericke_embeddings + home_remedy_embeddings (768-dim)
         // Gemini → ayurvedic_knowledge_embeddings (768-dim, Gemini-ingested)
         // Both start simultaneously; neither waits for the other.
-        const [{ jina: jinaEmb, gemini768: geminiEmb }, jinaHomeEmb] = await Promise.all([
-            getParallelEmbeddings(symptomSummary),
-            skipHomeRemedies ? Promise.resolve({ jina: null, gemini768: null }) : getParallelEmbeddings(symptomSummary),
-        ]);
+        const { jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomSummary);
 
         // Use shared Jina embedding for both Boericke and Home Remedies
         const embedding     = jinaEmb;                    // Jina  → Boericke
         const embedding768  = geminiEmb;                  // Gemini → Ayurvedic
-        const embedding3072 = jinaHomeEmb.jina ?? jinaEmb; // Jina  → Home Remedies
+        const embedding3072 = jinaEmb; // Jina -> Home Remedies
 
         const embedDone = Date.now();
         spans?.record('embedJina', embedDone - t0Embed);
@@ -303,7 +300,7 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw, ayurvedicPdfRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
             embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
-            fetchHomeRemedyContext(embedding3072),
+            skipHomeRemedies ? Promise.resolve('') : fetchHomeRemedyContext(embedding3072),
             embedding ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
         ]);
         const rpcDone = Date.now();
@@ -589,6 +586,159 @@ function detectUserLanguage(text: string): 'english' | 'hinglish' | 'hindi' {
     
     // Default: if it's mostly Latin script, treat as English
     return 'english';
+}
+
+type HealioIntent =
+    | 'symptom_query'
+    | 'medication_query'
+    | 'lab_result_query'
+    | 'appointment_action'
+    | 'general_health_question'
+    | 'out_of_scope';
+
+interface HealioIntentResult {
+    intent: HealioIntent;
+    confidence: number;
+    evidence: string[];
+}
+
+function classifyHealioIntent(text: string): HealioIntentResult {
+    const input = text.toLowerCase().trim();
+    const matches = (patterns: RegExp[]) => patterns.filter((pattern) => pattern.test(input)).length;
+
+    const scores: Record<HealioIntent, number> = {
+        symptom_query: matches([
+            /\b(fever|cough|cold|headache|pain|ache|rash|vomit|nausea|diarrhea|loose motion|dizziness|fatigue|weakness|swelling|itching|burning|acidity|gas|bukhar|khansi|dard|ulti|dast|chakkar|thakan|jalan|khujli)\b/i,
+            /\b(i have|i am feeling|feeling|suffering|symptom|since|for \d+|my child|my mother|my father)\b/i,
+        ]),
+        medication_query: matches([
+            /\b(medicine|medication|tablet|capsule|dose|dosage|side effect|interaction|antibiotic|paracetamol|ibuprofen|metformin|insulin|bp medicine|drug)\b/i,
+            /\b(can i take|should i take|safe to take|kitni dose|dawai|goli)\b/i,
+        ]),
+        lab_result_query: matches([
+            /\b(report|lab|blood test|cbc|lft|kft|hba1c|thyroid|tsh|creatinine|cholesterol|platelet|hemoglobin|urine test|xray|mri|ct scan)\b/i,
+        ]),
+        appointment_action: matches([
+            /\b(book|schedule|appointment|doctor near|consult doctor|reschedule|cancel appointment|slot|availability)\b/i,
+        ]),
+        general_health_question: matches([
+            /\b(what is|why does|how to prevent|healthy|diet|exercise|sleep|hydration|wellness|immunity|explain)\b/i,
+        ]),
+        out_of_scope: matches([
+            /\b(stock|crypto|code|homework|essay|movie|travel|loan|politics|weather|game|joke)\b/i,
+        ]),
+    };
+
+    const ranked = Object.entries(scores)
+        .sort((a, b) => b[1] - a[1]) as Array<[HealioIntent, number]>;
+    const [intent, score] = ranked[0];
+
+    if (!input) return { intent: 'out_of_scope', confidence: 0.2, evidence: ['empty message'] };
+    if (score === 0) return { intent: 'general_health_question', confidence: input.length > 20 ? 0.62 : 0.35, evidence: ['no strong clinical keyword'] };
+
+    const secondScore = ranked[1]?.[1] ?? 0;
+    const confidence = Math.min(0.95, 0.62 + score * 0.16 + Math.max(0, score - secondScore) * 0.08);
+    return {
+        intent,
+        confidence,
+        evidence: Object.entries(scores)
+            .filter(([, value]) => value > 0)
+            .map(([key, value]) => `${key}:${value}`),
+    };
+}
+
+function formatIntentForPrompt(intent: HealioIntentResult): string {
+    return [
+        '\n\n=== INTENT ROUTING ===',
+        `intent: ${intent.intent}`,
+        `confidence: ${intent.confidence.toFixed(2)}`,
+        `evidence: ${intent.evidence.join(', ') || 'none'}`,
+        'Rules:',
+        '- If intent is symptom_query, run the symptom intake naturally and ask at most one clinically useful next question.',
+        '- If intent is medication_query, focus on medication safety, dose uncertainty, and interactions; ask for the exact drug + dose only if missing.',
+        '- If intent is lab_result_query, ask for the exact value/unit/range if not provided; do not guess lab interpretation.',
+        '- If intent is appointment_action, help with next-step guidance and route to booking language; do not run symptom intake unless symptoms are also present.',
+        '- If intent is general_health_question, answer directly with safe educational guidance and doctor signals.',
+        '- If intent is out_of_scope, briefly say Healio can help with health and wellness questions only.',
+        '=== END INTENT ROUTING ===',
+    ].join('\n');
+}
+
+function creditActionForTurn(intent: HealioIntentResult, userTurns: number, isFinalTurn: boolean): string {
+    if (intent.intent === 'lab_result_query') return 'lab_report_analysis';
+    if (isFinalTurn || userTurns >= 2 || intent.intent === 'medication_query') return 'rag_query';
+    return 'standard_chat';
+}
+
+async function consumeCreditsBeforeAi(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    serviceClient: any,
+    userId: string,
+    action: string
+): Promise<Response | null> {
+    const { data, error } = await serviceClient.rpc('consume_healio_credits', {
+        p_user_id: userId,
+        p_action: action,
+    });
+
+    if (error) {
+        const message = String(error.message || '');
+        if (/consume_healio_credits|function .* does not exist|schema cache/i.test(message)) {
+            console.warn('[credits] consume_healio_credits is not available yet; falling back to legacy usage gate.');
+            return null;
+        }
+
+        console.error('[credits] consume_healio_credits failed:', message);
+        return new Response(JSON.stringify({ error: 'credits_check_failed' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const result = typeof data === 'string' ? JSON.parse(data) : data;
+    if (result?.success === false || result?.error === 'insufficient_credits') {
+        return new Response(JSON.stringify({
+            error: 'insufficient_credits',
+            balance: result?.balance ?? result?.available ?? 0,
+            required: result?.required ?? 1,
+            plan: result?.plan ?? 'free',
+        }), {
+            status: 402,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    return null;
+}
+
+async function logLlmRequest(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    serviceClient: any,
+    payload: {
+        userId: string;
+        provider: string;
+        model: string;
+        intent: string;
+        creditAction: string;
+        latencyMs: number;
+        success?: boolean;
+        error?: string;
+    }
+) {
+    try {
+        await serviceClient.from('llm_requests').insert({
+            user_id: payload.userId,
+            provider: payload.provider,
+            model: payload.model,
+            intent: payload.intent,
+            credit_action: payload.creditAction,
+            latency_ms: payload.latencyMs,
+            success: payload.success ?? true,
+            error: payload.error ?? null,
+        });
+    } catch (error) {
+        console.warn('[llm_requests] audit insert skipped:', providerErrorText(error).slice(0, 120));
+    }
 }
 
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
@@ -880,7 +1030,7 @@ export async function POST(req: NextRequest) {
     const spans = new SpanCollector();
     // Set to 9s — safely inside Vercel's Hobby-tier 10s serverless function timeout
     const timeoutPromise = new Promise<Response>((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 9000)
+        setTimeout(() => reject(new Error('timeout')), 25_000)
     );
 
     const processRequest = async (): Promise<Response> => {
@@ -1024,13 +1174,11 @@ export async function POST(req: NextRequest) {
             console.warn('[chat/route] User profile fetch failed:', userProfileResult.reason);
         }
 
-        // Token overflow protection: sliding window (last 15 messages)
-        // Token overflow protection & dynamic history limit for TTFT
-        // Early turns only need the last few messages. Final diagnosis needs more history.
-        let dynamicMaxMessages = 15;
+        // Token overflow protection with a minimum rolling context window of 8 turns.
+        let dynamicMaxMessages = 16;
         const userTurnsEarly = messages.filter(m => m.role === 'user').length;
-        if (userTurnsEarly <= 2) dynamicMaxMessages = 4;        // ~2 turns of history
-        else if (userTurnsEarly <= 5) dynamicMaxMessages = 8;   // ~4 turns of history
+        if (userTurnsEarly > 8) dynamicMaxMessages = 18;
+        if (userTurnsEarly > 12) dynamicMaxMessages = 24;
 
         // Build role-safe sliding window — preserves language anchors AND enforces
         // strict User↔Assistant alternation to prevent API 400 rejections (Bug 2 fix)
@@ -1062,6 +1210,17 @@ export async function POST(req: NextRequest) {
         const lastUserMsg = (processedMessages as { role: string; content: string }[])
             .filter(m => m.role === 'user')
             .pop()?.content ?? '';
+        const intentResult = classifyHealioIntent(lastUserMsg);
+
+        if (userTurns === 1 && intentResult.confidence < 0.75) {
+            return streamTextResponse(
+                "I want to understand correctly. Is this about a symptom you are feeling, a medicine, a lab report, or booking a doctor?",
+                {
+                    'X-Intent': intentResult.intent,
+                    'X-Intent-Confidence': intentResult.confidence.toFixed(2),
+                }
+            );
+        }
 
         const conversationIntakeState = buildConversationIntakeState(processedMessages);
         const _hasMinimumIntakeData = hasMinimumDiagnosticData(conversationIntakeState);
@@ -1125,8 +1284,18 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
 
+        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn);
+        const creditGateResponse = await consumeCreditsBeforeAi(serviceClient, userId, creditAction);
+        if (creditGateResponse) return creditGateResponse;
+
         // Model + token budget per phase
-        const groqModel = isFinalTurn
+        const needsBalancedModel =
+            isFinalTurn ||
+            intentResult.intent === 'medication_query' ||
+            intentResult.intent === 'lab_result_query' ||
+            (intentResult.intent === 'symptom_query' && userTurns >= 3);
+
+        const groqModel = needsBalancedModel
             ? AI_PHASE_CONFIG.models.groq        // llama-3.3-70b-versatile — rich diagnosis
             : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
 
@@ -1139,9 +1308,11 @@ export async function POST(req: NextRequest) {
         let ragContext = '';
         let homeRemediesAvailable = true; // assume available unless proven otherwise
 
-        if (userTurns >= 2) {
+        if (userTurns >= 2 || intentResult.intent === 'medication_query' || intentResult.intent === 'lab_result_query') {
             const isSubstantive =
                 isFinalTurn ||              // always fetch on diagnosis turn
+                intentResult.intent === 'medication_query' ||
+                intentResult.intent === 'lab_result_query' ||
                 (isFollowUpMode && asksForAdviceOnly) ||
                 userTurns === 2 ||          // first time we have symptom context
                 lastUserMsg.length >= 60 || // substantial new info
@@ -1220,6 +1391,7 @@ ${SYSTEM_PROMPT}`
             finalSystemPrompt += medicalHistoryContext;
         }
 
+        finalSystemPrompt += formatIntentForPrompt(intentResult);
         finalSystemPrompt += formatConversationIntakeStateForPrompt(conversationIntakeState);
         finalSystemPrompt += formatNextQuestionDecisionForPrompt(nextQuestionDecision);
         // Phase 5: Inject iterative refinement decision
@@ -1286,7 +1458,7 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
         finalSystemPrompt += dynamicStateInjection;
 
         spans.record('promptBuild', Date.now() - t0Prompt);
-        spans.setMeta({ turn: userTurns, model: groqModel, isFinal: isFinalTurn, ragCacheHit: false });
+        spans.setMeta({ turn: userTurns, model: groqModel, isFinal: isFinalTurn, ragCacheHit: false, intent: intentResult.intent, creditAction });
 
         // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
@@ -1511,6 +1683,15 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
                 `data: [DONE]\n\n`,
             ].join('');
 
+            await logLlmRequest(serviceClient, {
+                userId,
+                provider: 'gemini',
+                model: geminiModelUsed,
+                intent: intentResult.intent,
+                creditAction,
+                latencyMs: Date.now() - requestStart,
+            });
+
             return new Response(geminiSSE, {
                 headers: {
                     'Content-Type': 'text/event-stream',
@@ -1521,7 +1702,7 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
             });
         }
 
-        const CHUNK_IDLE_TIMEOUT_MS = 3000; // 3s — covers inter-chunk gaps, allows stall detection within Vercel's 10s limit
+        const CHUNK_IDLE_TIMEOUT_MS = 15_000;
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             async start(controller) {
@@ -1593,6 +1774,7 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
                     if (msg === 'CHUNK_IDLE_TIMEOUT') {
                         console.warn('[stream] Emitting stall error to client');
                         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'STREAM_STALL', fallback: true })}\n\n`));
+                        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
                     } else {
                         console.error('[stream] Unexpected error:', err);
                     }
@@ -1608,6 +1790,14 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
         alertIfSlow(totalMs);
         spans.record('total', totalMs);
         spans.flush();
+        await logLlmRequest(serviceClient, {
+            userId,
+            provider: 'groq',
+            model: groqModel,
+            intent: intentResult.intent,
+            creditAction,
+            latencyMs: totalMs,
+        });
 
         return new Response(stream, {
             headers: {

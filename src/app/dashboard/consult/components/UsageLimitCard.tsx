@@ -11,17 +11,20 @@ interface UsageLimitCardProps {
 }
 
 export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, creditsBalance, onUpgradeClick }: UsageLimitCardProps) {
-    const formattedDate = new Date(resetsAt).toLocaleDateString("en-US", {
+    const formattedDate = resetsAt ? new Date(resetsAt).toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
-    });
+    }) : "";
 
     const isCooldown = code === "COOLDOWN";
     const isDaily = code === "DAILY_LIMIT";
-    const badgeText = isCooldown ? "Cooldown" : isDaily ? "Daily limit" : "Limit reached";
+    const isCreditShort = code === "INSUFFICIENT_CREDITS";
+    const badgeText = isCreditShort ? "Credits needed" : isCooldown ? "Cooldown" : isDaily ? "Daily limit" : "Limit reached";
     const headingText = isCooldown
         ? `Wait ${cooldownRemaining ?? 30}s`
+        : isCreditShort
+        ? "Not enough credits"
         : isDaily
         ? "Daily limit reached"
         : "Monthly limit reached";
@@ -49,9 +52,13 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
             {/* Usage Stats */}
             <div className="mb-6">
                 <div className="text-[11px] font-bold tracking-wider text-gray-400 mb-1 uppercase">
-                    {isCooldown ? "Please Wait" : "Consultations Used"}
+                    {isCreditShort ? "Healio credits" : isCooldown ? "Please Wait" : "Consultations Used"}
                 </div>
-                {isCooldown ? (
+                {isCreditShort ? (
+                    <p className="text-lg text-gray-300 leading-relaxed">
+                        This AI action needs <span className="font-semibold text-white">{limit || 1}</span> credit{(limit || 1) !== 1 ? "s" : ""}. Your current balance is <span className="font-semibold text-white">{creditsBalance ?? 0}</span>.
+                    </p>
+                ) : isCooldown ? (
                     <p className="text-lg text-gray-300 leading-relaxed">
                         Free plan has a <span className="text-white font-semibold">30-second cooldown</span> between consultations.
                     </p>
@@ -127,9 +134,11 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
             </div>
 
             {/* Footer */}
-            <div className="text-center text-xs text-gray-400 font-medium mt-3">
-                Free plan resets <span className="text-white relative top-[0.5px] ml-1">{formattedDate}</span>
-            </div>
+            {formattedDate && (
+                <div className="text-center text-xs text-gray-400 font-medium mt-3">
+                    Free plan resets <span className="text-white relative top-[0.5px] ml-1">{formattedDate}</span>
+                </div>
+            )}
         </div>
     );
 }
