@@ -9,12 +9,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex h-dvh bg-slate-50">
+        <div className="fixed inset-0 flex overflow-hidden bg-slate-50">
             {/* Sidebar - Hidden on mobile, controlled via Sheet later if needed */}
             <Sidebar />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex min-h-0 flex-col h-full overflow-hidden">
+            <div className="flex-1 flex min-h-0 flex-col overflow-hidden">
                 <Header />
                 <DisclaimerBanner />
 
