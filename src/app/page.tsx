@@ -337,12 +337,6 @@ export default function LandingPage() {
             <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio</span>
           </Link>
 
-          <Link
-            className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-5 text-sm font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE]"
-            href="/login"
-          >
-            Login
-          </Link>
         </header>
 
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-12">
