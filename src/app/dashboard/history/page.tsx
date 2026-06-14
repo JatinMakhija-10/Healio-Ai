@@ -157,6 +157,50 @@ function buildSymptomDisplay(consultation: Consultation): SymptomDisplay {
     };
 }
 
+function normalizeDedupeText(value: unknown): string {
+    if (Array.isArray(value)) return value.map(normalizeDedupeText).filter(Boolean).join(",");
+    if (value == null) return "";
+    return String(value).trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function getConsultationDedupeKey(consultation: Consultation): string {
+    const createdAt = new Date(consultation.created_at);
+    const timestampBucket = Number.isNaN(createdAt.getTime())
+        ? consultation.created_at
+        : createdAt.toISOString().slice(0, 16);
+    const symptoms = (consultation.symptoms || {}) as SymptomRecord;
+    const symptomSignature = normalizeDedupeText([
+        symptoms.raw_conversation,
+        symptoms.additionalNotes,
+        symptoms.location,
+        symptoms.sensation,
+        symptoms.painType,
+        symptoms.duration,
+        symptoms.intensity,
+    ]);
+
+    return [
+        timestampBucket,
+        normalizeDedupeText(consultation.diagnosis?.condition),
+        Math.round(consultation.confidence || 0),
+        symptomSignature,
+    ].join("|");
+}
+
+function dedupeConsultations(consultations: Consultation[]): Consultation[] {
+    const seen = new Set<string>();
+    const unique: Consultation[] = [];
+
+    for (const consultation of consultations) {
+        const key = getConsultationDedupeKey(consultation);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(consultation);
+    }
+
+    return unique;
+}
+
 export default function HistoryPage() {
     const { user } = useAuth();
     const router = useRouter();
@@ -254,10 +298,7 @@ export default function HistoryPage() {
                 try {
                     const storageKey = `healio_consultation_history_${user.id}`;
                     const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                    // Merge and deduplicate by id
-                    const existingIds = new Set(consultations.map(c => c.id));
-                    const uniqueLocalHistory = localHistory.filter((c: Consultation) => !existingIds.has(c.id));
-                    consultations = [...consultations, ...uniqueLocalHistory];
+                    consultations = [...consultations, ...localHistory];
                     // Sort by date
                     consultations.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
                 } catch (e) {
@@ -265,7 +306,7 @@ export default function HistoryPage() {
                 }
             }
 
-            setHistory(consultations);
+            setHistory(dedupeConsultations(consultations));
             setLoading(false);
         };
 
