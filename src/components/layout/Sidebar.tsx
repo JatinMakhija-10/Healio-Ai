@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -22,10 +22,18 @@ import {
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/context/AuthContext";
 import { PHASE_CONFIG } from "@/lib/phaseConfig";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+
+const NEW_CONSULTATION_SHORTCUT = "Ctrl+Shift+O";
 
 const allSidebarItems = [
     {
@@ -117,6 +125,7 @@ const sidebarItems = allSidebarItems.filter(item => item.visible);
 
 export function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { logout, profile } = useAuth();
     const plan = profile?.subscription_plan || 'free';
     const creditsBalance = Number(profile?.credits_balance ?? 0);
@@ -130,6 +139,26 @@ export function Sidebar() {
             setIsLoggingOut(false); // Might unmount before hitting this, which is fine
         }
     };
+
+    useEffect(() => {
+        const handleShortcut = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            const isTyping =
+                target?.tagName === "INPUT" ||
+                target?.tagName === "TEXTAREA" ||
+                target?.isContentEditable;
+
+            if (isTyping) return;
+
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "o") {
+                event.preventDefault();
+                router.push("/dashboard/consult");
+            }
+        };
+
+        window.addEventListener("keydown", handleShortcut);
+        return () => window.removeEventListener("keydown", handleShortcut);
+    }, [router]);
 
     return (
         <div className="flex h-full flex-col border-r border-slate-200 bg-white w-64 hidden md:flex">
@@ -150,12 +179,16 @@ export function Sidebar() {
 
             {/* Navigation */}
             <div className="flex-1 overflow-y-auto pt-4 pb-6 px-4">
-                <div className="space-y-0.5">
-                    {sidebarItems.map((item) => {
-                        const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                        return (
-                            <Link key={item.href} href={item.href}>
-                                <button
+                <TooltipProvider delayDuration={150}>
+                    <div className="space-y-0.5">
+                        {sidebarItems.map((item) => {
+                            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                            const showShortcutTooltip = item.href === "/dashboard/consult";
+                            const navLink = (
+                                <Link
+                                    href={item.href}
+                                    aria-keyshortcuts={showShortcutTooltip ? "Control+Shift+O" : undefined}
+                                    aria-label={showShortcutTooltip ? `New consultation (${NEW_CONSULTATION_SHORTCUT})` : undefined}
                                     className={cn(
                                         "w-full flex items-center gap-3 rounded-lg text-left transition-all duration-150",
                                         isActive
@@ -173,11 +206,31 @@ export function Sidebar() {
                                 >
                                     <item.icon size={18} />
                                     {item.title}
-                                </button>
-                            </Link>
-                        );
-                    })}
-                </div>
+                                </Link>
+                            );
+
+                            if (!showShortcutTooltip) {
+                                return <div key={item.href}>{navLink}</div>;
+                            }
+
+                            return (
+                                <Tooltip key={item.href}>
+                                    <TooltipTrigger asChild>{navLink}</TooltipTrigger>
+                                    <TooltipContent
+                                        side="right"
+                                        sideOffset={12}
+                                        className="flex items-center gap-2 whitespace-nowrap rounded-[8px] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10"
+                                    >
+                                        <span>New consultation</span>
+                                        <kbd className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-500">
+                                            {NEW_CONSULTATION_SHORTCUT}
+                                        </kbd>
+                                    </TooltipContent>
+                                </Tooltip>
+                            );
+                        })}
+                    </div>
+                </TooltipProvider>
             </div>
 
             {/* Footer */}
