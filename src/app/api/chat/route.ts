@@ -1689,7 +1689,7 @@ export async function POST(req: NextRequest) {
             .pop()?.content ?? '';
         const intentResult = classifyHealioIntent(lastUserMsg);
 
-        if (userTurns === 1 && intentResult.confidence < 0.75) {
+        if (userTurns === 1 && !isFollowUpMode && intentResult.confidence < 0.75) {
             return streamTextResponse(
                 "I want to understand correctly. Is this about a symptom you are feeling, a medicine, a lab report, or booking a doctor?",
                 {
