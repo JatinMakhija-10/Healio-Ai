@@ -97,7 +97,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive,
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="mx-auto w-full max-w-2xl px-4 pb-28 pt-8 text-center"
+                    className="mx-auto w-full max-w-2xl px-4 pb-8 pt-8 text-center"
                 >
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[18px] bg-teal-700 text-white shadow-xl shadow-teal-900/10">
                         <Sparkles className="fill-white/10" size={28} strokeWidth={1.5} aria-hidden="true" />
@@ -198,7 +198,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive,
                 })}
 
                 {isLoading && <TypingIndicator />}
-                <div ref={bottomRef} className="h-4" />
+                <div ref={bottomRef} className="h-1" />
             </div>
         </div>
     );

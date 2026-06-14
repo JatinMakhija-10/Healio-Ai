@@ -68,6 +68,13 @@ function uniqueValues(values: string[]): string[] {
     return Array.from(new Set(values.filter(Boolean)));
 }
 
+function getConfidenceLabel(score: number): string {
+    if (score < 60) return "Preliminary";
+    if (score < 75) return "Moderate confidence";
+    if (score < 88) return "Good match";
+    return "High confidence";
+}
+
 function extractLocations(text: string): string[] {
     const locations = [
         "head", "forehead", "eyes", "ear", "ears", "nose", "throat", "neck",
@@ -452,9 +459,9 @@ export default function HistoryPage() {
                                                 <div className="flex flex-col items-end">
                                                     <div className="flex items-center gap-1.5 text-sm font-semibold text-teal-700">
                                                         <Activity className="h-3.5 w-3.5" />
-                                                        <span>{consultation.uncertainty.pointEstimate.toFixed(0)}%</span>
+                                                        <span>{getConfidenceLabel(consultation.uncertainty.pointEstimate)}</span>
                                                     </div>
-                                                    <span className="text-[10px] text-teal-600 font-medium">
+                                                    <span className="sr-only">
                                                         Range: {consultation.uncertainty.confidenceInterval.lower.toFixed(0)}-{consultation.uncertainty.confidenceInterval.upper.toFixed(0)}%
                                                     </span>
                                                 </div>
@@ -462,7 +469,7 @@ export default function HistoryPage() {
                                                 <div className="flex items-center gap-1 text-sm">
                                                     <TrendingUp className="h-4 w-4 text-teal-600" />
                                                     <span className="font-medium text-teal-700">
-                                                        {consultation.confidence?.toFixed(0) || 0}% match
+                                                        {getConfidenceLabel(consultation.confidence || 0)}
                                                     </span>
                                                 </div>
                                             )}

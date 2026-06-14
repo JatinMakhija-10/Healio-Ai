@@ -1008,6 +1008,11 @@ PERSONALISATION RULES:
   - Cross-check every remedy against the patient's allergy list before including it.
   - Note any medication interactions in the remedy description field.
 
+ASSESSMENT SPECIFICITY RULES:
+  - The "name" field MUST be a specific primary assessment label such as "Gastritis / indigestion pattern" or "Acid reflux pattern"; do not use generic labels like "gastrointestinal issue pattern" unless the symptom data is truly too sparse.
+  - Include at least 2 differentialDiagnoses when enough data exists. Each alternate must be specific, medically plausible, and explain why it was considered.
+  - If confidence is below 80, explicitly state what extra detail would improve confidence in bayesianFactors or practitioner_prep.
+
 \`\`\`json
 {
   "concern_summary": "2-3 sentence plain-language summary of what is likely going on — population-level, never 'you have X'. Reference the patient's profile where relevant.",
@@ -1313,13 +1318,23 @@ export async function POST(req: NextRequest) {
         const asksForDiagnosis =
             /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result|tell.*diagnosis|my diagnosis|show.*card|result.*card|diagnosis.*card/i
                 .test(lastUserMsg);
+        const asksForEarlyAssessment =
+            /early assessment|best guess|based on this|with this info|whatever you know|tell me now|abhi bata|abhi bta/i
+                .test(lastUserMsg);
+        const answeredDiagnosticFields = conversationIntakeState.answeredFields.size;
+        const hasMinimumFinalIntake =
+            conversationIntakeState.coverageScore === 100 ||
+            answeredDiagnosticFields >= 5;
 
         const isFinalTurn =
-            nextQuestionDecision.type === 'summarize' ||
-            conversationIntakeState.phaseStatus === 'summary' ||
-            phase5Finalize ||
-            (conversationIntakeState.coverageScore === 100 && (totalUserTurns >= 4 || asksForDiagnosis)) ||
-            totalUserTurns >= 6;
+            (hasMinimumFinalIntake && (
+                nextQuestionDecision.type === 'summarize' ||
+                conversationIntakeState.phaseStatus === 'summary' ||
+                phase5Finalize ||
+                (totalUserTurns >= 4 || asksForDiagnosis) ||
+                totalUserTurns >= 7
+            )) ||
+            (asksForDiagnosis && asksForEarlyAssessment && totalUserTurns >= 3 && answeredDiagnosticFields >= 3);
 
         // Ensure state aligns if we force final turn
         if (isFinalTurn) {

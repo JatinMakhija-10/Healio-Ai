@@ -14,6 +14,8 @@ export interface Profile {
     full_name: string | null;
     phone: string | null;
     subscription_plan?: 'free' | 'plus' | 'pro' | null;
+    credits_balance?: number | null;
+    credits_plan?: 'free' | 'plus' | 'pro' | null;
     monthly_chat_count?: number | null;
     chat_count_reset_at?: string | null;
     stripe_customer_id?: string | null;
@@ -284,7 +286,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const signInWithGoogle = async (signupRole: UserRole = 'patient') => {
+    const signInWithGoogle = async (_signupRole: UserRole = 'patient') => {
         // Add a 30 second timeout to prevent indefinite hanging (allows time for Supabase cold starts)
         const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Connection timed out. If Supabase is waking up from sleep, this can take up to 60 seconds.')), 30000)

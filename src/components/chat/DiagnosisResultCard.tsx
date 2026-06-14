@@ -56,12 +56,28 @@ function getConfidenceBand(score: number) {
     return "Low";
 }
 
+function getUserFacingConfidenceLabel(score: number) {
+    if (score < 60) return "Preliminary - more detail needed";
+    if (score < 75) return "Moderate confidence";
+    if (score < 88) return "Good match";
+    return "High confidence";
+}
+
 function getImpactLabel(impact: number) {
     const absImpact = Math.abs(impact);
     if (absImpact > 3) return "Very strong";
     if (absImpact > 2) return "Strong";
     if (absImpact > 1) return "Moderate";
     return "Light";
+}
+
+function getSourceHref(source: unknown) {
+    const normalized = String(source ?? "").toLowerCase();
+    if (!normalized) return null;
+    if (normalized.includes("boericke")) return "https://www.homeoint.org/books/boericmm/";
+    if (normalized.includes("ccras")) return "https://www.ccras.nic.in/";
+    if (normalized.includes("planet ayurveda")) return "https://www.planetayurveda.com/";
+    return null;
 }
 
 interface DiagnosisResultCardProps {
@@ -196,6 +212,7 @@ export function DiagnosisResultCard({
     const explainableCondition = condition as ExplainableCondition;
     const roundedConfidence = Math.round(uncertainty?.pointEstimate ?? confidence);
     const confidenceBand = getConfidenceBand(roundedConfidence);
+    const confidenceLabel = getUserFacingConfidenceLabel(roundedConfidence);
     const confidenceRange = uncertainty
         ? `${uncertainty.confidenceInterval.lower.toFixed(0)}% - ${uncertainty.confidenceInterval.upper.toFixed(0)}%`
         : null;
@@ -238,6 +255,10 @@ export function DiagnosisResultCard({
     };
 
     // ── PDF download handler ──────────────────────────────────────────────────
+    const handleAddMoreDetails = () => {
+        window.dispatchEvent(new Event("focus-chat-input"));
+    };
+
     const handleDownloadReport = async () => {
         // Build a unique report ID for this session
         const reportId = `HA-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.random().toString(36).substring(2,6).toUpperCase()}`;
@@ -511,6 +532,25 @@ export function DiagnosisResultCard({
                             <p className="text-sm text-teal-700 mt-2 leading-[1.65]">
                                 {condition.description}
                             </p>
+                            {differentialDiagnoses.length > 0 && (
+                                <div className="mt-3 rounded-lg border border-teal-100 bg-white/70 p-3">
+                                    <p className="text-[11px] font-bold uppercase tracking-wide text-teal-700">
+                                        Also possible
+                                    </p>
+                                    <div className="mt-2 space-y-1.5">
+                                        {differentialDiagnoses.slice(0, 3).map((item, idx) => (
+                                            <div key={`${item.name}-${idx}`} className="flex items-center justify-between gap-3 text-xs">
+                                                <span className="min-w-0 truncate font-medium text-slate-700">{item.name}</span>
+                                                {item.likelihood && (
+                                                    <Badge variant="outline" className="shrink-0 border-teal-200 bg-teal-50 text-[11px] capitalize text-teal-700">
+                                                        {item.likelihood}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Action buttons */}
@@ -584,15 +624,27 @@ export function DiagnosisResultCard({
                         {uncertainty ? (
                             <div>
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-2xl font-bold text-teal-900">
-                                        {uncertainty.pointEstimate.toFixed(0)}%
+                                    <span className="text-lg font-bold text-teal-900">
+                                        {confidenceLabel}
                                     </span>
-                                    <span className="text-xs text-slate-500 font-medium mb-1">
+                                    <span className="sr-only">
                                         CI: {uncertainty.confidenceInterval.lower.toFixed(0)}%
                                         {" – "}
                                         {uncertainty.confidenceInterval.upper.toFixed(0)}%
                                     </span>
                                 </div>
+
+                                {roundedConfidence < 80 && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAddMoreDetails}
+                                        className="mb-3 h-8 border-teal-200 bg-white text-xs text-teal-700 hover:bg-teal-50"
+                                    >
+                                        Add more details
+                                    </Button>
+                                )}
 
                                 {/* Redesigned CI bar (FiveThirtyEight / Our World in Data pattern) */}
                                 <div className="w-full bg-gray-200 rounded-full h-3 mb-3 relative overflow-hidden">
@@ -631,13 +683,28 @@ export function DiagnosisResultCard({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-2">
                                 <Badge className="bg-teal-600 text-[11px]">
-                                    {confidence > 90 ? "High" : confidence > 60 ? "Moderate" : "Low"} Match
+                                    {confidenceLabel}
                                 </Badge>
                                 <span className="text-sm text-slate-600">
-                                    ({confidence}% match score)
+                                    {roundedConfidence < 80
+                                        ? "More information needed for a confident assessment"
+                                        : "Open calculations for score details"}
                                 </span>
+                                </div>
+                                {roundedConfidence < 80 && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAddMoreDetails}
+                                        className="h-8 w-fit border-teal-200 bg-white text-xs text-teal-700 hover:bg-teal-50"
+                                    >
+                                        Add more details
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -946,11 +1013,25 @@ export function DiagnosisResultCard({
                                                     {remedy.method || remedy.dosage}
                                                 </p>
                                             )}
-                                            {remedy.source && (
-                                                <span className="inline-block mt-1.5 text-[11px] bg-teal-100/60 text-teal-600 px-2 py-0.5 rounded-full">
-                                                    Source: {remedy.source}
-                                                </span>
-                                            )}
+                                            {remedy.source && (() => {
+                                                const sourceHref = getSourceHref(remedy.source);
+                                                const sourceLabel = (
+                                                    <span className="inline-block mt-1.5 text-[11px] bg-teal-100/60 text-teal-600 px-2 py-0.5 rounded-full">
+                                                        Source: {remedy.source}
+                                                    </span>
+                                                );
+
+                                                return sourceHref ? (
+                                                    <a
+                                                        href={sourceHref}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-block hover:underline"
+                                                    >
+                                                        {sourceLabel}
+                                                    </a>
+                                                ) : sourceLabel;
+                                            })()}
                                         </div>
                                     ))}
                                 </RemedyAccordion>

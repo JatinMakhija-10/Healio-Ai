@@ -253,29 +253,31 @@ function ConsultPageInner() {
 
             {/* Post-diagnosis actions */}
             {hasCompletedDiagnosis && !isLoading && (
-                <div className="flex flex-col sm:flex-row justify-center gap-2 px-4 py-3">
-                    <button
-                        onClick={startFollowUpFromDiagnosis}
-                        className="flex items-center justify-center gap-2 rounded-full bg-[#1A1A2E] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0F6E56] active:scale-[0.99]"
-                    >
-                        <MessageSquareHeart className="h-4 w-4" />
-                        Ask Follow-up
-                    </button>
-                    <button
-                        onClick={() => {
-                            if (window.confirm("Are you sure? Your current chat will be saved.")) {
-                                resetChat();
-                                // Also clear the resumeId from the URL cleanly
-                                if (resumeId) {
-                                    window.history.replaceState(null, "", "/dashboard/consult");
+                <div className="shrink-0 border-t border-[#E5E3DC] bg-white/90 px-4 py-3 backdrop-blur">
+                    <div className="mx-auto flex max-w-3xl flex-col justify-center gap-3 sm:flex-row sm:gap-4">
+                        <button
+                            onClick={startFollowUpFromDiagnosis}
+                            className="flex items-center justify-center gap-2 rounded-full bg-[#1A1A2E] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0F6E56] active:scale-[0.99]"
+                        >
+                            <MessageSquareHeart className="h-4 w-4" />
+                            Ask Follow-up
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (window.confirm("Are you sure? Your current chat will be saved.")) {
+                                    resetChat();
+                                    // Also clear the resumeId from the URL cleanly
+                                    if (resumeId) {
+                                        window.history.replaceState(null, "", "/dashboard/consult");
+                                    }
                                 }
-                            }
-                        }}
-                        className="flex items-center justify-center gap-2 rounded-full border border-[#DAD7CF] bg-white px-5 py-2.5 text-sm font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#B8DED0] hover:bg-[#E1F5EE] active:scale-[0.99]"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Start New Consultation
-                    </button>
+                            }}
+                            className="flex items-center justify-center gap-2 rounded-full border border-[#DAD7CF] bg-white px-5 py-2.5 text-sm font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#B8DED0] hover:bg-[#E1F5EE] active:scale-[0.99]"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Start New Consultation
+                        </button>
+                    </div>
                 </div>
             )}
 

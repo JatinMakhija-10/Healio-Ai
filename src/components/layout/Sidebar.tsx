@@ -119,6 +119,7 @@ export function Sidebar() {
     const pathname = usePathname();
     const { logout, profile } = useAuth();
     const plan = profile?.subscription_plan || 'free';
+    const creditsBalance = Number(profile?.credits_balance ?? 0);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleLogout = async () => {
@@ -184,9 +185,9 @@ export function Sidebar() {
 
             {/* Footer */}
             <div className="px-4 py-4 border-t border-slate-100 flex flex-col gap-2">
-                {/* Plan Badge */}
+                {/* Plan + credits badge */}
                 <Link href="/dashboard/billing">
-                    <div className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 mb-1 transition-all duration-150 cursor-pointer ${
+                    <div className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 cursor-pointer ${
                         plan === 'plus' || plan === 'pro'
                             ? 'bg-teal-50 border border-teal-200 hover:bg-teal-100'
                             : 'bg-slate-50 border border-slate-200 hover:bg-slate-100'
@@ -196,14 +197,15 @@ export function Sidebar() {
                         ) : (
                             <CreditCard size={14} className="text-slate-400" />
                         )}
-                        <div className="flex flex-col">
-                            <span className={`text-[11px] font-bold uppercase tracking-wider ${
+                        <div className="min-w-0 text-[11px] leading-tight">
+                            <span className={`font-bold ${
                                 plan === 'plus' || plan === 'pro' ? 'text-teal-700' : 'text-slate-500'
                             }`}>
-                                {plan === 'pro' ? 'Healio Pro' : plan === 'plus' ? 'Healio Plus' : 'Free Plan'}
+                                {plan === 'pro' ? 'Pro Active' : plan === 'plus' ? 'Plus Active' : 'Free Plan'}
                             </span>
-                            <span className="text-[10px] text-slate-400">
-                                {plan === 'free' ? 'Upgrade for more' : 'Active subscription'}
+                            <span className="mx-1.5 text-slate-300">·</span>
+                            <span className="text-slate-500">
+                                {creditsBalance} credits
                             </span>
                         </div>
                     </div>
