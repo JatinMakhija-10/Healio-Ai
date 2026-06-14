@@ -108,11 +108,11 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
     {
         id: 'cough_cold',
         label: 'Cough/cold',
-        match: /\b(cough|cold|khansi|runny nose|blocked nose|sore throat|congestion)\b/i,
+        match: /\b(cough|cold|khansi|runny nose|blocked nose|sore throat|throat pain|pain in (?:my )?throat|gala dard|tonsil|tonsillitis|painful swallowing|swallowing pain|congestion)\b/i,
         fields: [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
-            { key: 'cough_cold.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How many days have you had the cough or cold symptoms?' },
-            { key: 'cough_cold.breathing_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any difficulty breathing, chest pain, blue lips, or coughing blood?', redFlagFn: (v) => v === 'yes' },
+            { key: 'cough_cold.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How many days have you had the throat, cough, or cold symptoms?' },
+            { key: 'cough_cold.breathing_red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any difficulty breathing, chest pain, blue lips, coughing blood, throat swelling, drooling, or inability to swallow?', redFlagFn: (v) => v === 'yes' },
             { key: 'cough_cold.fever', priority: 2, required: false, responseType: 'boolean', question: 'Do you also have fever or chills?' },
             { key: 'cough_cold.sputum', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'Is the cough dry, or are you bringing up mucus?' },
             { key: 'cough_cold.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any sore throat, runny nose, wheezing, body ache, or headache?' },
@@ -192,7 +192,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'body_pain.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the pain been present?' },
             { key: 'body_pain.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'body_pain.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any numbness, tingling, weakness, inability to bear weight, visible deformity, fever, or sudden loss of bowel or bladder control?', redFlagFn: (v) => v === 'yes' },
+            { key: 'body_pain.red_flags', priority: 1, required: true, responseType: 'boolean', question: 'Any numbness, tingling, weakness, visible deformity, inability to bear weight, fever with swelling, or loss of bowel/bladder control with back or neck pain?', redFlagFn: (v) => v === 'yes' },
             { key: 'body_pain.location', aliases: ['location'], priority: 2, required: false, responseType: 'text', question: 'Where is the pain located?' },
             { key: 'body_pain.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'What does the pain feel like (e.g. sharp, dull, aching, throbbing)?' },
             { key: 'body_pain.onset', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'How did this start, or what were you doing before the pain began?' },

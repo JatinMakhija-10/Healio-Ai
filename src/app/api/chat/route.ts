@@ -1139,14 +1139,269 @@ function inferFallbackSeverity(state: ConversationIntakeState): 'mild' | 'modera
     return 'mild';
 }
 
+type FallbackHomeopathicRemedy = {
+    name: string;
+    description: string;
+    potency: string;
+    method: string;
+    source: string;
+    evidence_label: 'Traditional practice' | 'Avoid or consult first';
+};
+
+const COLLECTED_FIELD_LABELS: Record<string, string> = {
+    chief_complaint: 'Main concern',
+    duration: 'Duration',
+    severity: 'Severity',
+    location: 'Location',
+    sensation: 'Sensation',
+    associated: 'Associated symptoms',
+    aggravation: 'Worse with',
+    amelioration: 'Relief with',
+    history: 'Started after',
+    'fever.temp_value': 'Temperature',
+    'fever.duration': 'Fever duration',
+    'fever.rigors': 'Chills or shaking',
+    'fever.danger_signs': 'Fever danger signs',
+    'fever.associated': 'Associated symptoms',
+    'cough_cold.duration': 'Throat/cough duration',
+    'cough_cold.breathing_red_flags': 'Breathing or swallowing danger signs',
+    'cough_cold.fever': 'Fever or chills',
+    'cough_cold.sputum': 'Cough or throat sensation',
+    'cough_cold.associated': 'Associated symptoms',
+    'abdominal_pain.location': 'Abdominal pain location',
+    'abdominal_pain.duration': 'Duration',
+    'abdominal_pain.severity': 'Severity',
+    'vomiting_diarrhea.duration': 'Duration',
+    'vomiting_diarrhea.frequency': 'Frequency',
+    'body_pain.duration': 'Pain duration',
+    'body_pain.severity': 'Pain severity',
+    'body_pain.location': 'Pain location',
+    'body_pain.sensation': 'Pain type',
+    'body_pain.onset': 'How it started',
+};
+
+function labelCollectedField(key: string): string {
+    const cleaned = key.replace(/_red_flag_trigger$/, '');
+    const mapped = COLLECTED_FIELD_LABELS[cleaned];
+    if (mapped) return mapped;
+    const tail = cleaned.split('.').pop() || cleaned;
+    return tail
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatCollectedSummary(state: ConversationIntakeState): string {
+    const entries = [...state.collectedData.entries()]
+        .filter(([key, value]) => !key.endsWith('_red_flag_trigger') && value.trim().length > 0)
+        .slice(0, 8)
+        .map(([key, value]) => `${labelCollectedField(key)}: ${value}`);
+
+    return entries.join('; ');
+}
+
+function practitionerCheckForSchema(schemaId: ConversationIntakeState['activeSchemaId']): string {
+    switch (schemaId) {
+        case 'fever':
+            return 'They may check temperature, pulse, hydration, throat/chest findings, and infection warning signs.';
+        case 'cough_cold':
+            return 'They may check throat, tonsils, breathing, oxygen level, fever pattern, and chest findings.';
+        case 'abdominal_pain':
+        case 'vomiting_diarrhea':
+            return 'They may check hydration, abdominal tenderness, fever, urine/stool clues, and need for tests.';
+        case 'headache':
+            return 'They may check blood pressure, vision, neck stiffness, neurological signs, and sinus or migraine clues.';
+        case 'body_pain':
+            return 'They may examine the painful area, range of motion, swelling, nerve signs, and injury history.';
+        case 'skin_rash':
+            return 'They may check rash pattern, spread, allergy exposure, infection signs, and fever.';
+        default:
+            return 'They may check vital signs, examine the affected area, and decide if tests or medicines are needed.';
+    }
+}
+
+function getFallbackHomeopathicRemedies(schemaId: ConversationIntakeState['activeSchemaId']): FallbackHomeopathicRemedy[] {
+    const source = 'Boericke Materia Medica; traditional homeopathic practice';
+    const commonMethod = 'Use only with guidance from a qualified homeopathic or medical practitioner; do not repeat doses if symptoms worsen or danger signs appear.';
+
+    switch (schemaId) {
+        case 'fever':
+            return [
+                {
+                    name: 'Aconitum napellus',
+                    description: 'Traditionally matched with sudden early fever after chill, restlessness, and dry heat.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Belladonna',
+                    description: 'Traditionally considered when fever is sudden, hot, flushed, throbbing, and sensitive to light or noise.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Gelsemium',
+                    description: 'Traditionally matched with feverish weakness, heaviness, chills, and drowsy tiredness.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        case 'cough_cold':
+            return [
+                {
+                    name: 'Aconitum napellus',
+                    description: 'Traditionally matched with sudden throat pain or cold symptoms after cold wind or exposure.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Belladonna',
+                    description: 'Traditionally considered for sudden red, hot, painful throat with throbbing or feverish heat.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Hepar sulphuris',
+                    description: 'Traditionally matched with splinter-like throat pain, marked cold sensitivity, or painful swallowing.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        case 'abdominal_pain':
+        case 'vomiting_diarrhea':
+            return [
+                {
+                    name: 'Nux vomica',
+                    description: 'Traditionally considered for indigestion, acidity, nausea, or cramps after heavy food, stress, or irregular routine.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Arsenicum album',
+                    description: 'Traditionally matched with stomach upset with restlessness, burning sensation, frequent small sips, or food-related concern.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Pulsatilla',
+                    description: 'Traditionally considered when symptoms follow rich or oily food and feel better with open air or gentle support.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        case 'headache':
+            return [
+                {
+                    name: 'Belladonna',
+                    description: 'Traditionally matched with sudden throbbing headache, heat, flushing, or sensitivity to light and noise.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Nux vomica',
+                    description: 'Traditionally considered for headache linked with stress, sleep loss, screen strain, stimulants, or digestive upset.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Gelsemium',
+                    description: 'Traditionally matched with heavy, dull headache with tiredness, weakness, or flu-like feeling.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        case 'body_pain':
+            return [
+                {
+                    name: 'Arnica montana',
+                    description: 'Traditionally matched with bruised soreness, injury-like pain, or tenderness after strain or impact.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Ruta graveolens',
+                    description: 'Traditionally considered for tendon, ligament, wrist, finger, or overuse strain patterns.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Rhus toxicodendron',
+                    description: 'Traditionally matched with stiffness and aching that feels worse at first movement and eases after gentle motion.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        case 'skin_rash':
+            return [
+                {
+                    name: 'Apis mellifica',
+                    description: 'Traditionally considered for puffy, stinging, itchy swelling that may feel better with cool applications.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+                {
+                    name: 'Rhus toxicodendron',
+                    description: 'Traditionally matched with itchy blister-like rash or irritation that feels worse with scratching or dampness.',
+                    potency: 'Practitioner-guided 30C',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Traditional practice',
+                },
+            ];
+        default:
+            return [
+                {
+                    name: 'Constitutional homeopathic review',
+                    description: 'A practitioner can match the remedy to exact sensation, triggers, thirst, temperature preference, timing, and mental state.',
+                    potency: 'Practitioner-selected potency',
+                    method: commonMethod,
+                    source,
+                    evidence_label: 'Avoid or consult first',
+                },
+            ];
+    }
+}
+
 function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
-    const collected = Object.fromEntries(state.collectedData);
     const symptomText = [
         state.chiefComplaint,
         getCollectedValue(state, ['associated']),
         getCollectedValue(state, ['sensation']),
     ].filter(Boolean).join(', ');
     const concern = symptomText || state.activeSchemaLabel || 'the symptoms you described';
+    const collectedSummary = formatCollectedSummary(state);
+    const summaryForUser = collectedSummary || `Main concern: ${concern}`;
     const hasRedFlags = state.redFlagsFound.length > 0;
     const severity = hasRedFlags ? 'severe' : inferFallbackSeverity(state);
     const confidence = Math.max(55, Math.min(78, 45 + state.answeredFields.size * 5));
@@ -1155,17 +1410,17 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
 
     return {
         id: `fallback-${state.activeSchemaId}`,
-        concern_summary: `Based on the available details, this looks like a ${schemaLabel.toLowerCase()} pattern that needs careful monitoring. The card is conservative because the AI response did not return a complete structured result.`,
+        concern_summary: `Based on what you shared, this fits a ${schemaLabel.toLowerCase()} pattern that should be monitored carefully. This is cautious guidance, not a confirmed diagnosis.`,
         escalation_level: hasRedFlags || severity === 'severe' ? 'L4' : 'L2',
         escalation_action: hasRedFlags || severity === 'severe'
             ? 'Please seek same-day medical care, especially if symptoms worsen or any danger sign appears.'
             : '',
         name: `Likely ${schemaLabel.toLowerCase()} pattern`,
-        description: `Your shared details include ${concern}. This is a cautious assessment based only on the information collected in this chat, not a confirmed medical diagnosis.`,
+        description: `Key details considered: ${summaryForUser}. This assessment uses only the information collected in this chat and should be confirmed by a qualified practitioner if symptoms persist or worsen.`,
         severity,
         confidence,
         emergency: false,
-        bayesianFactors: `Collected data used: ${JSON.stringify(collected)}. Confidence is limited because the model's structured final card was incomplete.`,
+        bayesianFactors: `Healio matched the ${schemaLabel.toLowerCase()} intake pathway using: ${summaryForUser}. Confidence stays conservative because a physical exam, vitals, and any missing symptom details could change the assessment.`,
         differentialDiagnoses: [
             {
                 name: `Alternate ${schemaLabel.toLowerCase()} cause`,
@@ -1174,16 +1429,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
             },
         ],
         matchCriteria: { locations: [] },
-        homeopathic_remedies: safeSelfCare ? [
-            {
-                name: 'Individualized homeopathic support',
-                description: 'Homeopathic selection depends on the exact symptom pattern, temperature, thirst, modalities, and overall state.',
-                potency: 'Consult a qualified homeopathic practitioner for potency selection',
-                method: 'Do not self-dose repeatedly if fever, vomiting, dehydration, or worsening symptoms are present.',
-                source: 'Traditional homeopathic practice',
-                evidence_label: 'Traditional practice',
-            },
-        ] : [],
+        homeopathic_remedies: safeSelfCare ? getFallbackHomeopathicRemedies(state.activeSchemaId) : [],
         ayurvedic_remedies: safeSelfCare ? [
             {
                 name: 'Gentle diet and rest support',
@@ -1208,7 +1454,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
         when_to_consult: hasRedFlags || severity === 'severe'
             ? 'Seek medical care today.'
             : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
-        practitioner_prep: `Tell the practitioner these collected details: ${JSON.stringify(collected)}.`,
+        practitioner_prep: `Share this clearly: ${summaryForUser}. ${practitionerCheckForSchema(state.activeSchemaId)}`,
         red_flags: [
             ...state.redFlagsFound,
             'confusion',
@@ -1219,7 +1465,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
             'signs of dehydration',
         ],
         warnings: [
-            'This fallback card was generated because the AI structured response was incomplete.',
+            'This is a conservative safety card based on the details available in this chat.',
             'Seek professional medical care for persistent, worsening, or concerning symptoms.',
         ],
         seekHelp: hasRedFlags || severity === 'severe'
@@ -1599,6 +1845,7 @@ ${SYSTEM_PROMPT}`
         
         if (isFinalTurn && typeof FINAL_DIAGNOSIS_OUTPUT_RULES !== 'undefined') {
             finalSystemPrompt += '\n\n' + FINAL_DIAGNOSIS_OUTPUT_RULES;
+            finalSystemPrompt += '\nHOMEOPATHY COMPLETENESS: Unless escalation_level is L4 or L5, include at least 2 symptom-matched homeopathic_remedies. Do not make "Individualized homeopathic support" the only homeopathic entry. Match remedy choice to the active symptom pattern and include practitioner-consult cautions.';
         }
 
         finalSystemPrompt += formatDiagnosticPreferencesForPrompt(diagnosticPreferences);

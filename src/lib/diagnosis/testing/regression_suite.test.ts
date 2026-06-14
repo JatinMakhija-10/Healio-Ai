@@ -164,6 +164,25 @@ describe('Healio AI Quality Optimization v2.0 Regression Suite', () => {
         expect(state.coverageScore).toBeLessThan(100);
     });
 
+    it('TC-11b: Routes throat pain to respiratory/throat intake instead of body pain', () => {
+        const messages = [{ role: 'user', content: 'I have throat pain since today and painful swallowing.' }];
+        const state = buildConversationIntakeState(messages);
+
+        expect(state.activeSchemaId).toBe('cough_cold');
+        expect(state.requiredPriorityOneFields).toContain('cough_cold.breathing_red_flags');
+        expect(state.requiredPriorityOneFields).not.toContain('body_pain.red_flags');
+        expect(state.pendingQueue.some(field => field.key === 'body_pain.red_flags')).toBe(false);
+    });
+
+    it('TC-11c: Handles "pain in my throat" without orthopedic red-flag questions', () => {
+        const messages = [{ role: 'user', content: 'There is pain in my throat, severity is 4/10.' }];
+        const state = buildConversationIntakeState(messages);
+
+        expect(state.activeSchemaId).toBe('cough_cold');
+        expect(state.collectedData.get('cough_cold.severity')).toBeUndefined();
+        expect(state.pendingQueue.map(field => field.key)).not.toContain('body_pain.red_flags');
+    });
+
     it('TC-12: Does not trigger escalation when red flags are explicitly negated', () => {
         const messages1 = [{ role: 'user', content: 'I have a cough but absolutely no chest pain and no breathing difficulty' }];
         const state1 = buildConversationIntakeState(messages1);
