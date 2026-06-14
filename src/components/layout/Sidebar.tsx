@@ -186,7 +186,7 @@ export function Sidebar() {
             {/* Footer */}
             <div className="px-4 py-4 border-t border-slate-100 flex flex-col gap-2">
                 {/* Plan + credits badge */}
-                <Link href="/dashboard/billing">
+                <Link href="/dashboard/billing" className="hidden">
                     <div className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 cursor-pointer ${
                         plan === 'plus' || plan === 'pro'
                             ? 'bg-teal-50 border border-teal-200 hover:bg-teal-100'

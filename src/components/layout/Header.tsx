@@ -91,6 +91,9 @@ export function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const notificationRef = useRef<HTMLDivElement>(null);
+    const plan = profile?.subscription_plan || "free";
+    const creditsBalance = Number(profile?.credits_balance ?? 0);
+    const planLabel = plan === "pro" ? "Pro" : plan === "plus" ? "Plus" : "Free";
 
     // ── Fetch real notifications from Supabase ──
     const { data: notifications = [], isLoading } = useNotifications(user?.id);
@@ -313,16 +316,10 @@ export function Header() {
                                 onClick={() => router.push('/dashboard/billing')}
                                 className="mt-1 inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
                             >
-                                {(profile?.subscription_plan === 'plus' || profile?.subscription_plan === 'pro') ? (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded-full">
-                                        <Crown size={9} className="text-teal-600" />
-                                        {profile.subscription_plan === 'pro' ? 'PRO' : 'PLUS'}
-                                    </span>
-                                ) : (
-                                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" as const, color: "#94A3B8" }}>
-                                        FREE PLAN
-                                    </span>
-                                )}
+                                <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                                    <Crown size={9} className="text-teal-600" />
+                                    {planLabel} - {creditsBalance} cr
+                                </span>
                             </button>
                         </div>
                         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 cursor-pointer">

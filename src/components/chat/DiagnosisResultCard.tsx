@@ -39,6 +39,8 @@ type DifferentialDiagnosis = {
     name?: string;
     likelihood?: string;
     rationale?: string;
+    probability?: number;
+    confidence?: number;
 };
 
 type ExplainableCondition = Condition & {
@@ -49,6 +51,22 @@ type ExplainableCondition = Condition & {
     rationale?: string;
 };
 
+type FlexibleRemedy = {
+    name?: string;
+    remedy?: string;
+    description?: string;
+    indication?: string;
+    method?: string;
+    preparation?: string;
+    dosage?: string;
+    potency?: string;
+    source?: string;
+    ingredients?: string[];
+    videoUrl?: string;
+};
+
+type CareTabId = "home" | "ayurveda" | "homeopathy" | "doctor";
+
 function getConfidenceBand(score: number) {
     if (score >= 90) return "High";
     if (score >= 70) return "Moderate-high";
@@ -57,10 +75,33 @@ function getConfidenceBand(score: number) {
 }
 
 function getUserFacingConfidenceLabel(score: number) {
-    if (score < 60) return "Preliminary - more detail needed";
-    if (score < 75) return "Moderate confidence";
-    if (score < 88) return "Good match";
+    if (score < 50) return "Preliminary";
+    if (score < 70) return "Moderate";
+    if (score < 85) return "Good match";
     return "High confidence";
+}
+
+function getConfidenceTone(score: number) {
+    if (score < 50) return {
+        badge: "border-slate-200 bg-slate-100 text-slate-700",
+        fill: "bg-slate-400",
+        text: "text-slate-700",
+    };
+    if (score < 70) return {
+        badge: "border-amber-200 bg-amber-50 text-amber-800",
+        fill: "bg-amber-500",
+        text: "text-amber-800",
+    };
+    if (score < 85) return {
+        badge: "border-teal-200 bg-teal-50 text-teal-700",
+        fill: "bg-teal-600",
+        text: "text-teal-800",
+    };
+    return {
+        badge: "border-green-200 bg-green-50 text-green-700",
+        fill: "bg-green-600",
+        text: "text-green-800",
+    };
 }
 
 function getImpactLabel(impact: number) {
@@ -78,6 +119,147 @@ function getSourceHref(source: unknown) {
     if (normalized.includes("ccras")) return "https://www.ccras.nic.in/";
     if (normalized.includes("planet ayurveda")) return "https://www.planetayurveda.com/";
     return null;
+}
+
+function getLikelihoodLabel(score: number, primary = false) {
+    if (primary) return "Primary";
+    if (score >= 60) return "High";
+    if (score >= 35) return "Medium";
+    return "Low";
+}
+
+function inferDifferentialProbability(item: DifferentialDiagnosis, index: number) {
+    const directScore = item.probability ?? item.confidence;
+    if (typeof directScore === "number" && Number.isFinite(directScore)) {
+        return Math.max(5, Math.min(95, Math.round(directScore)));
+    }
+
+    const likelihood = String(item.likelihood ?? "").toLowerCase();
+    if (likelihood.includes("high")) return Math.max(50, 62 - index * 6);
+    if (likelihood.includes("moderate") || likelihood.includes("medium")) return Math.max(32, 44 - index * 5);
+    if (likelihood.includes("low")) return Math.max(14, 28 - index * 4);
+    return Math.max(12, 36 - index * 6);
+}
+
+function DifferentialRow({
+    name,
+    probability,
+    label,
+    primary = false,
+}: {
+    name: string;
+    probability: number;
+    label: string;
+    primary?: boolean;
+}) {
+    const barColor = probability >= 60
+        ? "bg-teal-600"
+        : probability >= 35
+            ? "bg-amber-500"
+            : "bg-amber-300";
+
+    return (
+        <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(72px,1fr)_auto] items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2 text-xs sm:grid-cols-[minmax(0,1.4fr)_minmax(120px,1fr)_42px_72px]">
+            <span className="min-w-0 truncate font-medium text-slate-800">{name}</span>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                    className={`h-full rounded-full ${barColor}`}
+                    style={{ width: `${Math.max(5, Math.min(100, probability))}%` }}
+                />
+            </div>
+            <span className="text-right font-semibold text-slate-700">
+                {primary || probability >= 50 ? `${probability}%` : "<50%"}
+            </span>
+            <Badge
+                variant="outline"
+                className={`hidden justify-center text-[10px] sm:inline-flex ${primary
+                    ? "border-teal-200 bg-teal-50 text-teal-700"
+                    : "border-slate-200 bg-slate-50 text-slate-600"
+                    }`}
+            >
+                {label}
+            </Badge>
+        </div>
+    );
+}
+
+function RemedyCard({
+    remedy,
+    tone,
+}: {
+    remedy: FlexibleRemedy;
+    tone: "amber" | "green" | "teal" | "red";
+}) {
+    const toneClass = {
+        amber: "border-amber-100 bg-amber-50 text-amber-900",
+        green: "border-green-100 bg-green-50 text-green-900",
+        teal: "border-teal-100 bg-teal-50 text-teal-900",
+        red: "border-red-100 bg-red-50 text-red-900",
+    }[tone];
+    const subtleText = {
+        amber: "text-amber-800",
+        green: "text-green-800",
+        teal: "text-teal-800",
+        red: "text-red-800",
+    }[tone];
+
+    return (
+        <div className={`rounded-lg border p-3 ${toneClass}`}>
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-snug">
+                        {remedy.name || remedy.remedy || "Care step"}
+                        {remedy.potency && (
+                            <span className="ml-2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-medium">
+                                {remedy.potency}
+                            </span>
+                        )}
+                    </p>
+                    {(remedy.description || remedy.indication) && (
+                        <p className={`mt-1 text-xs leading-[1.6] ${subtleText}`}>
+                            {remedy.description || remedy.indication}
+                        </p>
+                    )}
+                    {(remedy.method || remedy.preparation || remedy.dosage) && (
+                        <p className={`mt-1 text-xs leading-[1.6] ${subtleText}`}>
+                            <strong>How to use:</strong>{" "}
+                            {remedy.method || remedy.preparation || remedy.dosage}
+                        </p>
+                    )}
+                    {remedy.ingredients?.length ? (
+                        <p className={`mt-1 text-[11px] leading-[1.5] ${subtleText}`}>
+                            Ingredients: {remedy.ingredients.join(", ")}
+                        </p>
+                    ) : null}
+                    {remedy.source && (() => {
+                        const sourceHref = getSourceHref(remedy.source);
+                        const sourceLabel = (
+                            <span className="mt-2 inline-block rounded-full bg-white/70 px-2 py-0.5 text-[11px]">
+                                Source: {remedy.source}
+                            </span>
+                        );
+
+                        return sourceHref ? (
+                            <a href={sourceHref} target="_blank" rel="noreferrer" className="inline-block hover:underline">
+                                {sourceLabel}
+                            </a>
+                        ) : sourceLabel;
+                    })()}
+                </div>
+                {remedy.videoUrl && (
+                    <a
+                        href={remedy.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="shrink-0 text-teal-700 hover:text-teal-800"
+                        aria-label="Open remedy video"
+                    >
+                        <Video size={16} />
+                    </a>
+                )}
+            </div>
+        </div>
+    );
 }
 
 interface DiagnosisResultCardProps {
@@ -199,6 +381,7 @@ export function DiagnosisResultCard({
     const [isPremium, setIsPremium] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [showCalculationPanel, setShowCalculationPanel] = useState(false);
+    const [selectedCareTab, setSelectedCareTab] = useState<CareTabId>("home");
     const { user } = useAuth();
 
     useEffect(() => {
@@ -213,6 +396,8 @@ export function DiagnosisResultCard({
     const roundedConfidence = Math.round(uncertainty?.pointEstimate ?? confidence);
     const confidenceBand = getConfidenceBand(roundedConfidence);
     const confidenceLabel = getUserFacingConfidenceLabel(roundedConfidence);
+    const confidenceTone = getConfidenceTone(roundedConfidence);
+    const showRawConfidence = roundedConfidence >= 50;
     const confidenceRange = uncertainty
         ? `${uncertainty.confidenceInterval.lower.toFixed(0)}% - ${uncertainty.confidenceInterval.upper.toFixed(0)}%`
         : null;
@@ -369,6 +554,41 @@ export function DiagnosisResultCard({
     const hasExerciseWarning =
         (condition.warnings?.length ?? 0) > 0 ||
         (condition.exercises?.length ?? 0) > 0;
+    const homeRemedies = [
+        ...((condition.home_remedies || []) as FlexibleRemedy[]),
+        ...((condition.indianHomeRemedies || []) as FlexibleRemedy[]),
+    ].slice(0, 5);
+    const ayurvedicRemedies = ((condition.ayurvedic_remedies || []) as FlexibleRemedy[]).slice(0, 5);
+    const homeopathicRemedies = [
+        ...((condition.homeopathic_remedies || []) as FlexibleRemedy[]),
+        ...((condition.remedies || []) as FlexibleRemedy[]),
+    ].slice(0, 5);
+    const careTabs = [
+        hasHomeRemedies ? { id: "home" as const, label: "Home Remedies", meta: `${homeRemedies.length} safe steps` } : null,
+        hasAyurvedic ? { id: "ayurveda" as const, label: "Ayurveda", meta: `${ayurvedicRemedies.length} source-backed` } : null,
+        hasHomeopathic ? { id: "homeopathy" as const, label: "Homeopathy", meta: "Experimental, ask a practitioner" } : null,
+        hasExerciseWarning ? { id: "doctor" as const, label: "Warnings", meta: "Limits and next steps" } : null,
+    ].filter(Boolean) as Array<{ id: CareTabId; label: string; meta: string }>;
+    const activeCareTab = careTabs.some((tab) => tab.id === selectedCareTab)
+        ? selectedCareTab
+        : careTabs[0]?.id;
+    const differentialRows = [
+        {
+            name: condition.name,
+            probability: Math.max(5, Math.min(95, roundedConfidence)),
+            label: "Primary",
+            primary: true,
+        },
+        ...differentialDiagnoses.slice(0, 3).map((item, idx) => {
+            const probability = inferDifferentialProbability(item, idx);
+            return {
+                name: item.name ?? "Other possibility",
+                probability,
+                label: getLikelihoodLabel(probability),
+                primary: false,
+            };
+        }),
+    ];
 
     return (
         <>
@@ -518,51 +738,17 @@ export function DiagnosisResultCard({
 
                 {/* ── 2. DIAGNOSIS HEADER ───────────────────────────────────────────────
                     Tier 1 padding (px-6 py-6 = 24px) — primary zone                    */}
-                <div className="bg-teal-50 px-4 py-5 border-b border-teal-100 sm:px-6 sm:py-6">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="order-2 min-w-0 flex-1 sm:order-1">
-                            <h3 className="w-full max-w-none whitespace-normal break-words text-[22px] font-bold leading-[1.22] text-teal-900 sm:text-xl">
-                                {condition.name}
-                            </h3>
-                            {condition.severity && (
-                                <div className="mt-2">
-                                    <SeverityBadge severity={condition.severity} />
-                                </div>
-                            )}
-                            <p className="mt-3 text-[15px] leading-[1.65] text-teal-800 sm:text-sm sm:text-teal-700">
-                                {condition.description}
-                            </p>
-                            {differentialDiagnoses.length > 0 && (
-                                <div className="mt-3 rounded-lg border border-teal-100 bg-white/70 p-3">
-                                    <p className="text-[11px] font-bold uppercase tracking-wide text-teal-700">
-                                        Also possible
-                                    </p>
-                                    <div className="mt-2 space-y-1.5">
-                                        {differentialDiagnoses.slice(0, 3).map((item, idx) => (
-                                            <div key={`${item.name}-${idx}`} className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                                                <span className="min-w-0 font-medium leading-snug text-slate-800">{item.name}</span>
-                                                {item.likelihood && (
-                                                    <Badge variant="outline" className="w-fit shrink-0 border-teal-200 bg-teal-50 text-[11px] capitalize text-teal-700">
-                                                        {item.likelihood}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="order-1 flex w-full items-center gap-2 sm:order-2 sm:w-auto sm:shrink-0">
+                <div className="bg-white px-4 py-5 border-b border-slate-100 sm:px-6 sm:py-6">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex w-full flex-wrap items-center gap-2">
                             {/* Copy button with 2s success state */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={handleCopy}
-                                className={`h-9 flex-1 gap-2 transition-all duration-200 active:scale-[0.97] sm:min-w-[80px] sm:flex-none ${copied
+                                className={`h-8 gap-2 rounded-full px-3 text-xs transition-all duration-200 active:scale-[0.97] ${copied
                                     ? "bg-green-50 text-green-700 border-green-300"
-                                    : "bg-white text-teal-700 hover:bg-teal-50 border-teal-200"
+                                    : "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border-slate-200"
                                     }`}
                                 aria-label="Copy diagnosis to clipboard"
                             >
@@ -582,8 +768,8 @@ export function DiagnosisResultCard({
                                 size="sm"
                                 onClick={handleDownloadReport}
                                 disabled={isGenerating}
-                                className={`h-9 flex-1 gap-2 active:scale-[0.97] sm:min-w-[120px] sm:flex-none ${isPremium
-                                    ? "bg-white text-teal-700 hover:bg-teal-50 border-teal-200"
+                                className={`h-8 gap-2 rounded-full px-3 text-xs active:scale-[0.97] ${isPremium
+                                    ? "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border-slate-200"
                                     : "bg-teal-700 text-white border-teal-700 hover:bg-teal-800"
                                     }`}
                             >
@@ -607,6 +793,20 @@ export function DiagnosisResultCard({
                                 )}
                             </Button>
                         </div>
+
+                        <div className="min-w-0">
+                            <h3 className="w-full max-w-none whitespace-normal break-words text-[22px] font-semibold leading-[1.25] text-slate-950 sm:text-[24px]">
+                                {condition.name}
+                            </h3>
+                            {condition.severity && (
+                                <div className="mt-2">
+                                    <SeverityBadge severity={condition.severity} />
+                                </div>
+                            )}
+                            <p className="mt-3 max-w-3xl text-[14px] leading-[1.65] text-slate-600">
+                                {condition.description}
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -625,8 +825,11 @@ export function DiagnosisResultCard({
                         {uncertainty ? (
                             <div>
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-lg font-bold text-teal-900">
+                                    <span className={`text-lg font-bold ${confidenceTone.text}`}>
                                         {confidenceLabel}
+                                    </span>
+                                    <span className={`text-sm font-semibold ${confidenceTone.text}`}>
+                                        {showRawConfidence ? `${roundedConfidence}%` : "<50%"}
                                     </span>
                                     <span className="sr-only">
                                         CI: {uncertainty.confidenceInterval.lower.toFixed(0)}%
@@ -659,7 +862,7 @@ export function DiagnosisResultCard({
                                     />
                                     {/* Point estimate fill */}
                                     <div
-                                        className="bg-teal-600 h-full rounded-l-full absolute"
+                                        className={`${confidenceTone.fill} h-full rounded-l-full absolute`}
                                         style={{ width: `${uncertainty.pointEstimate}%` }}
                                     />
                                     {/* Lower bound dashed line */}
@@ -686,7 +889,7 @@ export function DiagnosisResultCard({
                         ) : (
                             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                                    <Badge className="w-fit bg-teal-600 text-[11px]">
+                                    <Badge variant="outline" className={`w-fit text-[11px] ${confidenceTone.badge}`}>
                                         {confidenceLabel}
                                     </Badge>
                                     <span className="text-sm leading-relaxed text-slate-600">
@@ -708,6 +911,30 @@ export function DiagnosisResultCard({
                                 )}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {differentialRows.length > 1 && (
+                    <div className="border-b border-slate-100 bg-slate-50/70 px-4 py-4 sm:px-6">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                Also Possible
+                            </span>
+                            <span className="hidden text-[11px] text-slate-400 sm:inline">
+                                Pattern match comparison
+                            </span>
+                        </div>
+                        <div className="space-y-2">
+                            {differentialRows.map((row) => (
+                                <DifferentialRow
+                                    key={`${row.name}-${row.label}`}
+                                    name={row.name}
+                                    probability={row.probability}
+                                    label={row.label}
+                                    primary={row.primary}
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -875,10 +1102,104 @@ export function DiagnosisResultCard({
                 )}
 
                 <CardContent className="p-0">
+                    {careTabs.length > 0 && (
+                        <div className="border-b border-slate-100 bg-white px-4 py-4 sm:px-6">
+                            <h4 className="mb-3 text-sm font-semibold text-slate-950">
+                                Recommended Care
+                            </h4>
+
+                            <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+                                {careTabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        type="button"
+                                        onClick={() => setSelectedCareTab(tab.id)}
+                                        className={`min-w-fit rounded-full border px-3 py-2 text-left transition-colors ${activeCareTab === tab.id
+                                            ? "border-teal-200 bg-teal-50 text-teal-800"
+                                            : "border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50/50"
+                                            }`}
+                                    >
+                                        <span className="block text-xs font-semibold">{tab.label}</span>
+                                        <span className="mt-0.5 block text-[10px] leading-tight opacity-80">{tab.meta}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {activeCareTab === "home" && (
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {homeRemedies.map((remedy, idx) => (
+                                        <RemedyCard key={`home-${idx}`} remedy={remedy} tone="amber" />
+                                    ))}
+                                </div>
+                            )}
+
+                            {activeCareTab === "ayurveda" && (
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {ayurvedicRemedies.map((remedy, idx) => (
+                                        <RemedyCard key={`ayurveda-${idx}`} remedy={remedy} tone="green" />
+                                    ))}
+                                </div>
+                            )}
+
+                            {activeCareTab === "homeopathy" && (
+                                <div className="space-y-3">
+                                    <div className="rounded-lg border border-teal-100 bg-teal-50 px-3 py-2 text-xs leading-relaxed text-teal-800">
+                                        Experimental suggestions. Consult a qualified homeopathic or medical practitioner before use.
+                                    </div>
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        {homeopathicRemedies.map((remedy, idx) => (
+                                            <RemedyCard key={`homeopathy-${idx}`} remedy={remedy} tone="teal" />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeCareTab === "doctor" && (
+                                <div className="space-y-3">
+                                    {(condition.warnings || []).length > 0 && (
+                                        <div className="rounded-lg border border-red-100 bg-red-50 p-3">
+                                            <h5 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-red-700">
+                                                <AlertTriangle className="h-3.5 w-3.5" />
+                                                Precautions
+                                            </h5>
+                                            <ul className="space-y-1.5">
+                                                {(condition.warnings || []).map((warning, idx) => (
+                                                    <li key={idx} className="flex items-start gap-2 text-xs leading-[1.65] text-red-700">
+                                                        <span className="mt-0.5 text-red-400">-</span>
+                                                        <span>{warning}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {(condition.exercises || []).length > 0 && (
+                                        <div className="rounded-lg border border-orange-100 bg-orange-50 p-3">
+                                            <h5 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-orange-700">
+                                                <Dumbbell className="h-3.5 w-3.5" />
+                                                Movement guidance
+                                            </h5>
+                                            <div className="space-y-2">
+                                                {(condition.exercises || []).slice(0, 4).map((exercise, idx) => (
+                                                    <div key={idx} className="flex flex-col gap-1 text-xs text-orange-800 sm:flex-row sm:items-center sm:justify-between">
+                                                        <span className="font-medium">{exercise.name}</span>
+                                                        {exercise.duration && (
+                                                            <span className="w-fit rounded-full bg-orange-100 px-2 py-0.5 text-[11px] text-orange-700">
+                                                                {exercise.duration}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                     {/* ── 5. RECOMMENDED CARE — Progressive Disclosure Accordions ────────
                         Replaces hidden-tab pill system (Baymard: 74% users miss non-default tabs).
                         All sections default-open; Exercise/Warnings closed by default.           */}
-                    {(hasHomeRemedies || hasAyurvedic || hasHomeopathic || hasExerciseWarning) && (
+                    {false && (hasHomeRemedies || hasAyurvedic || hasHomeopathic || hasExerciseWarning) && (
                         <div className="px-4 py-4 space-y-2">
                             <h4 className="font-semibold text-slate-900 mb-3 text-sm">
                                 Recommended Care
@@ -1108,7 +1429,7 @@ export function DiagnosisResultCard({
                     {/* ── 6. DISCLAIMER ─────────────────────────────────────────────────
                         WCAG fix: text-amber-800 (#92400e) = 7.2:1 on amber-50 ✓
                         Italic IS appropriate here — disclaimer is the sole italic role.   */}
-                    <div className="px-6 py-4 border-t border-amber-200 bg-amber-50 space-y-2">
+                    <div className="hidden">
                         <div className="flex items-start gap-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-900 leading-[1.65] font-semibold">

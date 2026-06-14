@@ -199,7 +199,12 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
 
             {/* Bubble + Timestamp */}
             <div
-                className={`flex w-full flex-col ${isUser ? "max-w-[90%] items-end md:max-w-[75%]" : "max-w-none items-start md:max-w-[75%]"}`}
+                className={`flex w-full flex-col ${isUser
+                    ? "max-w-[90%] items-end md:max-w-[75%]"
+                    : parsedCondition
+                        ? "max-w-none items-start"
+                        : "max-w-none items-start md:max-w-[75%]"
+                    }`}
             >
                 {/* Usage Limit Card */}
                 {usageLimitData && (
