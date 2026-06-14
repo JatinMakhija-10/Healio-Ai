@@ -8,7 +8,6 @@ import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonito
 import {
     buildConversationIntakeState,
     formatConversationIntakeStateForPrompt,
-    hasMinimumDiagnosticData,
     formatNextQuestionDecisionForPrompt,
     selectNextQuestionDecision,
     computeRefinementDecision,
@@ -20,14 +19,65 @@ import {
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
 
+const EMERGENCY_RESPONSE =
+    'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Healio cannot assist with potential emergencies.';
+
+const EMERGENCY_PATTERNS: RegExp[] = [
+    /\bchest\s*(?:pain|pressure|tightness)\b/i,
+    /\bshort(?:ness)?\s+of\s+breath\b/i,
+    /\bdifficulty\s+breathing\b/i,
+    /\bsudden\s+(?:severe\s+)?headache\b/i,
+    /\bloss\s+of\s+consciousness\b/i,
+    /\bfaint(?:ed|ing)?\b/i,
+    /\bcough(?:ing)?\s+blood\b/i,
+    /\bslurred?\s+speech\b/i,
+    /\bfacial?\s+droop(?:ing)?\b/i,
+    /\bsevere\s+abdominal\s+pain\b/i,
+    /\b(?:baby|infant|newborn).{0,40}\b(?:high\s+)?fever\b/i,
+    /\b(?:suicidal|suicide|kill myself|end my life)\b/i,
+    /\bseizure\b/i,
+    /\bstroke\b/i,
+    /\b(?:112|911)\b/i,
+    /\b(?:this|it)\s+(?:is|'s)\s+(?:an?\s+)?emergency\b/i,
+    /\bmedical\s+emergency\b/i,
+];
+
+const NEGATED_RED_FLAG_WINDOW = /\b(?:no|not|without|denies|denied|negative\s+for|do\s+not\s+have|don't\s+have|does\s+not\s+have|doesn't\s+have|nahi|nahin)\b/i;
+
+function hasEmergencyRedFlag(text: string): boolean {
+    for (const pattern of EMERGENCY_PATTERNS) {
+        const match = pattern.exec(text);
+        if (!match) continue;
+
+        const beforeMatch = text.slice(Math.max(0, match.index - 32), match.index);
+        const afterMatch = text.slice(match.index + match[0].length, match.index + match[0].length + 16);
+        if (!NEGATED_RED_FLAG_WINDOW.test(beforeMatch) && !/^\s*(?:nahi|nahin|not)\b/i.test(afterMatch)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+interface AuthCacheEntry {
+    userId: string;
+    exp: number;
+    lastAccessed: number;
+}
+
+const AUTH_CACHE_TTL_MS = 30_000;
+
 // ── JWT→UserId short-lived auth cache (30 s) ─────────────────────────────────
 // Eliminates the per-turn Supabase Auth round-trip (~100 ms) while keeping
 // the security window tiny (30 s). Expired entries are lazy-evicted.
-const AUTH_CACHE = new Map<string, { userId: string; exp: number }>();
+const AUTH_CACHE = new Map<string, AuthCacheEntry>();
 
 async function verifyToken(token: string): Promise<string | null> {
+    const now = Date.now();
     const hit = AUTH_CACHE.get(token);
-    if (hit && Date.now() < hit.exp) return hit.userId;
+    if (hit && now < hit.exp) {
+        hit.lastAccessed = now;
+        return hit.userId;
+    }
 
     const authClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -38,20 +88,18 @@ async function verifyToken(token: string): Promise<string | null> {
     const { data: { user }, error } = await authClient.auth.getUser();
     if (error || !user) return null;
 
-    AUTH_CACHE.set(token, { userId: user.id, exp: Date.now() + 120_000 });
+    AUTH_CACHE.set(token, { userId: user.id, exp: now + AUTH_CACHE_TTL_MS, lastAccessed: now });
     if (AUTH_CACHE.size > 500) {
-        const now = Date.now();
+        const evictionTime = Date.now();
         for (const [k, v] of AUTH_CACHE.entries()) {
-            if (now >= v.exp) AUTH_CACHE.delete(k);
+            if (evictionTime >= v.exp) AUTH_CACHE.delete(k);
         }
         if (AUTH_CACHE.size > 500) {
             const toDelete = Math.ceil(AUTH_CACHE.size * 0.1);
-            let deleted = 0;
-            for (const k of AUTH_CACHE.keys()) {
-                if (deleted >= toDelete) break;
-                AUTH_CACHE.delete(k);
-                deleted++;
-            }
+            [...AUTH_CACHE.entries()]
+                .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed)
+                .slice(0, toDelete)
+                .forEach(([k]) => AUTH_CACHE.delete(k));
         }
     }
     return user.id;
@@ -261,9 +309,29 @@ interface ChatRagCacheEntry {
 const CHAT_RAG_CACHE = new Map<string, ChatRagCacheEntry>();
 const CHAT_RAG_TTL   = 5 * 60 * 1_000; // 5 min
 const CHAT_RAG_MAX   = 150;
+let groqKeyIndex = 0;
 
-function chatRagKey(symptomSummary: string, skipHome: boolean, includeIndianCare: boolean): string {
-    return `${symptomSummary.slice(0, 150).toLowerCase().trim()}::${skipHome}::${includeIndianCare}`;
+function chatRagKey(symptomSummary: string, skipHome: boolean, includeIndianCare: boolean, personaId?: string): string {
+    return `${symptomSummary.slice(0, 150).toLowerCase().trim()}::${skipHome}::${includeIndianCare}::${personaId ?? 'self'}`;
+}
+
+function getFromRagCache(key: string): ChatRagCacheEntry | undefined {
+    const entry = CHAT_RAG_CACHE.get(key);
+    if (!entry) return undefined;
+
+    CHAT_RAG_CACHE.delete(key);
+    CHAT_RAG_CACHE.set(key, entry);
+    return entry;
+}
+
+function setToRagCache(key: string, value: ChatRagCacheEntry): void {
+    if (CHAT_RAG_CACHE.has(key)) CHAT_RAG_CACHE.delete(key);
+    while (CHAT_RAG_CACHE.size >= CHAT_RAG_MAX) {
+        const oldestKey = CHAT_RAG_CACHE.keys().next().value;
+        if (!oldestKey) break;
+        CHAT_RAG_CACHE.delete(oldestKey);
+    }
+    CHAT_RAG_CACHE.set(key, value);
 }
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
@@ -271,17 +339,19 @@ async function fetchAllContext(
     symptomSummary: string,
     skipHomeRemedies = false,
     spans?: SpanCollector,
-    includeIndianCare = true
+    includeIndianCare = true,
+    personaId?: string
 ): Promise<{ context: string; homeRemediesAvailable: boolean }> {
     // ── Cache check ──────────────────────────────────────────────────────────
-    const cacheKey = chatRagKey(symptomSummary, skipHomeRemedies, includeIndianCare);
-    const cached = CHAT_RAG_CACHE.get(cacheKey);
+    const cacheKey = chatRagKey(symptomSummary, skipHomeRemedies, includeIndianCare, personaId);
+    const cached = getFromRagCache(cacheKey);
     if (cached && Date.now() - cached.ts < CHAT_RAG_TTL) {
         console.log('[RAG] Cache HIT — skipping embed + RPC cycle');
         spans?.record('ragCacheHit', 0);
         spans?.setMeta({ ragCacheHit: true });
         return { context: cached.context, homeRemediesAvailable: cached.homeRemediesAvailable };
     }
+    if (cached) CHAT_RAG_CACHE.delete(cacheKey);
 
     try {
         const t0Embed = Date.now();
@@ -343,11 +413,7 @@ async function fetchAllContext(
 
         // ── Store in cache ───────────────────────────────────────────────────
         if (context) {
-            if (CHAT_RAG_CACHE.size >= CHAT_RAG_MAX) {
-                const firstKey = CHAT_RAG_CACHE.keys().next().value;
-                if (firstKey) CHAT_RAG_CACHE.delete(firstKey);
-            }
-            CHAT_RAG_CACHE.set(cacheKey, { context, homeRemediesAvailable, ts: Date.now() });
+            setToRagCache(cacheKey, { context, homeRemediesAvailable, ts: Date.now() });
         }
 
         return { context, homeRemediesAvailable };
@@ -497,10 +563,6 @@ function extractSymptomSummary(messages: { role: string; content: string }[]): s
 }
 
 // ── Count how many turns have happened ─────────────────────────────────────────
-function countUserTurns(messages: { role: string }[]): number {
-    return messages.filter(m => m.role === 'user').length;
-}
-
 // ── Message Role Alternation Validator ─────────────────────────────────────────
 // Groq/OpenAI APIs enforce strict alternation: [user] → [assistant] → [user] → ...
 // If the sliding window creates consecutive same-role messages, this merges them
@@ -515,7 +577,10 @@ function enforceRoleAlternation(
         const prev = result[result.length - 1];
 
         if (!prev) {
-            if (msg.role === 'assistant') continue; // drop leading assistant
+            if (msg.role === 'assistant') {
+                console.warn('[enforceRoleAlternation] Dropped leading assistant anchor; persona drift possible');
+                continue;
+            }
             result.push(msg);
             continue;
         }
@@ -592,6 +657,16 @@ function detectUserLanguage(text: string): 'english' | 'hinglish' | 'hindi' {
     
     // Default: if it's mostly Latin script, treat as English
     return 'english';
+}
+
+function languageDirectiveForPrompt(detectedLang: 'english' | 'hinglish' | 'hindi'): string {
+    if (detectedLang === 'english') {
+        return '[LANGUAGE DIRECTIVE - MANDATORY] The user is writing in ENGLISH. You MUST respond in 100% pure English. Every single word must be English. Do NOT use Hindi, Hinglish, or Hindi remedy words like aap, haldi, or adrak. Use "you" not "aap", "turmeric" not "haldi", and "ginger" not "adrak".';
+    }
+    if (detectedLang === 'hindi') {
+        return '[LANGUAGE DIRECTIVE - MANDATORY] The user is writing in Devanagari Hindi. You MUST respond in pure Devanagari Hindi script.';
+    }
+    return '';
 }
 
 type HealioIntent =
@@ -713,9 +788,9 @@ function formatIntentForPrompt(intent: HealioIntentResult): string {
     ].join('\n');
 }
 
-function creditActionForTurn(intent: HealioIntentResult, userTurns: number, isFinalTurn: boolean): string {
+function creditActionForTurn(intent: HealioIntentResult, userTurns: number, isFinalTurn: boolean, ragWillBeFetched: boolean): string {
     if (intent.intent === 'lab_result_query') return 'lab_report_analysis';
-    if (isFinalTurn || userTurns >= 2 || intent.intent === 'medication_query') return 'rag_query';
+    if (isFinalTurn || (ragWillBeFetched && userTurns >= 2) || (ragWillBeFetched && intent.intent === 'medication_query')) return 'rag_query';
     return 'standard_chat';
 }
 
@@ -1099,21 +1174,29 @@ function repairDanglingUiHintPrompt(text: string): string {
 
 function parseFirstFencedJson(text: string): unknown | null {
     const fencedBlocks = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)];
-    for (let i = fencedBlocks.length - 1; i >= 0; i--) {
-        const raw = fencedBlocks[i]?.[1];
+    let bestResult: unknown = null;
+    let bestSize = 0;
+
+    for (const block of fencedBlocks) {
+        const raw = block[1];
         if (!raw) continue;
         const firstBrace = raw.indexOf('{');
         const lastBrace = raw.lastIndexOf('}');
         if (firstBrace === -1 || lastBrace < firstBrace) continue;
 
         try {
-            return JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+            const parsed = JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+            const size = lastBrace - firstBrace;
+            if (size > bestSize) {
+                bestResult = parsed;
+                bestSize = size;
+            }
         } catch {
-            // Try older blocks before giving up.
+            // Try the next fenced block before falling back.
         }
     }
 
-    return null;
+    return bestResult;
 }
 
 function getCollectedValue(state: ConversationIntakeState, aliases: string[]): string | undefined {
@@ -1539,6 +1622,18 @@ export async function POST(req: NextRequest) {
         // ── Parse body early so we know personaId before parallel fetches ────
         const { messages, personaId, resumeContext, diagnosticPreferences: rawDiagnosticPreferences } = await req.json() || {};
         const diagnosticPreferences = normalizeDiagnosticPreferences(rawDiagnosticPreferences);
+        const totalUserTurns = Array.isArray(messages)
+            ? messages.filter((m: { role?: string }) => m.role === 'user').length
+            : 0;
+        const rawLastUserMsg = Array.isArray(messages)
+            ? messages
+                .filter((m: { role?: string; content?: string }) => m.role === 'user')
+                .pop()?.content ?? ''
+            : '';
+
+        if (hasEmergencyRedFlag(rawLastUserMsg)) {
+            return streamTextResponse(EMERGENCY_RESPONSE, { 'X-Intake-Decision': 'emergency-keyword' });
+        }
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
@@ -1571,8 +1666,8 @@ export async function POST(req: NextRequest) {
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(10),
-            // 4. Full user profile (medical_profile from auth metadata)
-            Promise.resolve({ data: { user: { user_metadata: (()=>{try{return JSON.parse(Buffer.from((token.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'),'base64').toString())?.user_metadata??null}catch{return null}})() } } }),
+            // 4. Full user profile (medical_profile from verified Auth user record)
+            serviceClient.auth.admin.getUserById(userId),
         ]);
 
         const dbMs = Date.now() - t0Db;
@@ -1639,7 +1734,10 @@ export async function POST(req: NextRequest) {
         let patientProfileContext = '';
         if (userProfileResult.status === 'fulfilled' && userProfileResult.value) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const profileResponse = userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } } };
+            const profileResponse = userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } }; error?: { message?: string } | null };
+            if (profileResponse.error) {
+                console.warn('[chat/route] User profile fetch failed:', profileResponse.error.message);
+            }
             const userMeta = profileResponse.data?.user?.user_metadata;
             if (userMeta) {
                 patientProfileContext = buildPatientProfileContext(userMeta);
@@ -1653,7 +1751,7 @@ export async function POST(req: NextRequest) {
 
         // Token overflow protection with a minimum rolling context window of 8 turns.
         let dynamicMaxMessages = 16;
-        const userTurnsEarly = messages.filter(m => m.role === 'user').length;
+        const userTurnsEarly = totalUserTurns;
         if (userTurnsEarly > 8) dynamicMaxMessages = 18;
         if (userTurnsEarly > 12) dynamicMaxMessages = 24;
 
@@ -1682,7 +1780,7 @@ export async function POST(req: NextRequest) {
         // PHASE B (turns 3-5): Q&A + Boericke/Ayurvedic RAG, 8B model, 350 tokens → ~500-800ms
         // PHASE C (turn 6+ or explicit diagnosis request): Full RAG + home
         //         remedies + 70B model + 2000 tokens → rich, detailed final answer
-        const userTurns = countUserTurns(processedMessages);
+        const userTurns = totalUserTurns;
         const isFollowUpMode = Boolean(resumeContext && typeof resumeContext === 'object');
         const lastUserMsg = (processedMessages as { role: string; content: string }[])
             .filter(m => m.role === 'user')
@@ -1700,23 +1798,20 @@ export async function POST(req: NextRequest) {
         }
 
         const conversationIntakeState = buildConversationIntakeState(processedMessages);
-        const _hasMinimumIntakeData = hasMinimumDiagnosticData(conversationIntakeState);
         const nextQuestionDecision = selectNextQuestionDecision(conversationIntakeState);
 
         if (nextQuestionDecision.type === 'escalate') {
             return streamTextResponse(
-                'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Healio cannot assist with potential emergencies.',
+                EMERGENCY_RESPONSE,
                 { 'X-Intake-Decision': 'escalate' }
             );
         }
 
         // Detect user language programmatically — prompt-level rules are too weak for 8B models
         const detectedLang = detectUserLanguage(lastUserMsg);
+        const refinementLanguage = detectedLang === 'hindi' ? 'hi' : detectedLang === 'english' ? 'en' : 'hinglish';
         console.log(`[LANG] Detected: ${detectedLang} for input: "${lastUserMsg.slice(0, 60)}"`);
 
-        const _asksForFreshDiagnosis =
-            /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result/i
-                .test(lastUserMsg);
         const asksForAdviceOnly =
             /remedy|remedies|prescription|treatment|suggest|can i|should i|how (do|can) i|what should i do/i
                 .test(lastUserMsg);
@@ -1728,15 +1823,13 @@ export async function POST(req: NextRequest) {
         const refinementDecision = computeRefinementDecision(
             conversationIntakeState,
             processedMessages,
-            detectedLang as 'en' | 'hi' | 'hinglish'
+            refinementLanguage
         );
 
         // Phase 5 override: finalize or finalize_best_guess ONLY allowed if P1 coverage is 100%
         const phase5Finalize = (refinementDecision.action === 'finalize' ||
             refinementDecision.action === 'finalize_best_guess') && 
             conversationIntakeState.coverageScore === 100;
-
-        const totalUserTurns = messages.filter((m: { role: string }) => m.role === 'user').length;
 
         const asksForDiagnosis =
             /re-?diagnos|fresh diagnosis|new diagnosis|diagnos.*again|what.*wrong|what.*condition|what.*problem|give.*result|tell.*diagnosis|my diagnosis|show.*card|result.*card|diagnosis.*card/i
@@ -1749,19 +1842,28 @@ export async function POST(req: NextRequest) {
             conversationIntakeState.coverageScore === 100 ||
             answeredDiagnosticFields >= 5;
 
+        const turnLimitReached = totalUserTurns >= 7;
+        const naturalCompletion =
+            nextQuestionDecision.type === 'summarize' ||
+            conversationIntakeState.phaseStatus === 'summary' ||
+            phase5Finalize;
+        const userRequestedEarly = asksForDiagnosis && totalUserTurns >= 4;
+        const explicitEarlyWithData =
+            asksForDiagnosis &&
+            asksForEarlyAssessment &&
+            totalUserTurns >= 3 &&
+            answeredDiagnosticFields >= 3;
+
         const isFinalTurn =
-            (hasMinimumFinalIntake && (
-                nextQuestionDecision.type === 'summarize' ||
-                conversationIntakeState.phaseStatus === 'summary' ||
-                phase5Finalize ||
-                (totalUserTurns >= 4 || asksForDiagnosis) ||
-                totalUserTurns >= 7
-            )) ||
-            (asksForDiagnosis && asksForEarlyAssessment && totalUserTurns >= 3 && answeredDiagnosticFields >= 3);
+            (hasMinimumFinalIntake && (turnLimitReached || naturalCompletion || userRequestedEarly)) ||
+            explicitEarlyWithData;
 
         // Ensure state aligns if we force final turn
         if (isFinalTurn) {
             nextQuestionDecision.type = 'summarize';
+            nextQuestionDecision.field = null;
+            nextQuestionDecision.reason = 'Final diagnosis turn selected after sufficient intake or explicit early-assessment criteria.';
+            nextQuestionDecision.stopQuestioning = true;
             if (refinementDecision.action !== 'finalize' && refinementDecision.action !== 'finalize_best_guess') {
                 refinementDecision.action = 'finalize_best_guess';
                 refinementDecision.reason = `Forced finalization. Max turns or sufficient data reached.`;
@@ -1770,10 +1872,6 @@ export async function POST(req: NextRequest) {
         }
 
         console.log(`[Phase5] action=${refinementDecision.action} conf=${refinementDecision.topConfidence.toFixed(1)}% plateau=${refinementDecision.plateauDetected} isFinal=${isFinalTurn}`);
-
-        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn);
-        const creditGateResponse = await consumeCreditsBeforeAi(serviceClient, userId, creditAction);
-        if (creditGateResponse) return creditGateResponse;
 
         // Model + token budget per phase
         const needsBalancedModel =
@@ -1791,26 +1889,35 @@ export async function POST(req: NextRequest) {
             userTurns >= 3 ? 650  :
                              450;
 
+        const ragGateOpen =
+            userTurns >= 2 ||
+            intentResult.intent === 'medication_query' ||
+            intentResult.intent === 'lab_result_query';
+        const ragWillBeFetched = ragGateOpen && (
+            isFinalTurn ||
+            intentResult.intent === 'medication_query' ||
+            intentResult.intent === 'lab_result_query' ||
+            (isFollowUpMode && asksForAdviceOnly) ||
+            userTurns === 2 ||
+            lastUserMsg.length >= 60 ||
+            /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
+                .test(lastUserMsg)
+        );
+        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched);
+        const creditGateResponse = await consumeCreditsBeforeAi(serviceClient, userId, creditAction);
+        if (creditGateResponse) return creditGateResponse;
+
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
-        let homeRemediesAvailable = true; // assume available unless proven otherwise
+        let homeRemediesAvailable = false;
 
-        if (userTurns >= 2 || intentResult.intent === 'medication_query' || intentResult.intent === 'lab_result_query') {
-            const isSubstantive =
-                isFinalTurn ||              // always fetch on diagnosis turn
-                intentResult.intent === 'medication_query' ||
-                intentResult.intent === 'lab_result_query' ||
-                (isFollowUpMode && asksForAdviceOnly) ||
-                userTurns === 2 ||          // first time we have symptom context
-                lastUserMsg.length >= 60 || // substantial new info
-                /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
-                    .test(lastUserMsg);
-
-            if (isSubstantive) {
+        if (ragGateOpen) {
+            if (ragWillBeFetched) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
+                const personaCacheKey = typeof personaId === 'string' && personaId.trim() ? personaId.trim() : undefined;
                 // Skip slow 3072-dim home remedy embedding on non-final turns
                 const t0Rag = Date.now();
-                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans, diagnosticPreferences.ayurvedicMode);
+                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans, diagnosticPreferences.ayurvedicMode, personaCacheKey);
                 const ragMs = Date.now() - t0Rag;
                 logLatency('rag', ragMs);
                 spans.record('rag', ragMs);
@@ -1849,6 +1956,10 @@ ${SYSTEM_PROMPT}`
         }
 
         finalSystemPrompt += formatDiagnosticPreferencesForPrompt(diagnosticPreferences);
+        const languageDirective = languageDirectiveForPrompt(detectedLang);
+        if (languageDirective) {
+            finalSystemPrompt += `\n\n${languageDirective}`;
+        }
 
         // Failure Mode 4 fix: If home remedy embedding timed out, inject fallback instruction
         // so the model uses authoritative knowledge instead of hallucinating or leaving empty
@@ -1917,10 +2028,10 @@ ${SYSTEM_PROMPT}`
         }
 
         const answeredFieldsStr = Array.from(conversationIntakeState.answeredFields).join(', ');
-        const nextQuestionStr = nextQuestionDecision.field?.question ?? (conversationIntakeState.pendingQueue[0]?.question ?? 'none');
+        const nextQuestionStr = nextQuestionDecision.field?.question ?? (isFinalTurn ? 'none' : (conversationIntakeState.pendingQueue[0]?.question ?? 'none'));
         const collectedDataObj = Object.fromEntries(conversationIntakeState.collectedData);
         const collectedDataStr = JSON.stringify(collectedDataObj);
-        const phaseStatusStr = conversationIntakeState.phaseStatus;
+        const phaseStatusStr = isFinalTurn ? 'summary' : conversationIntakeState.phaseStatus;
         const excludedStr = conversationIntakeState.excludedSymptoms.length
             ? conversationIntakeState.excludedSymptoms.join(', ')
             : 'none';
@@ -1964,10 +2075,18 @@ UI HINT OUTPUT SAFETY:
         const retryDelay = AI_PHASE_CONFIG.generation.retryDelayMs;
         const timeoutMs = AI_PHASE_CONFIG.generation.timeoutMs;
         const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
-        const groqStartIndex = Date.now() % groqKeyPool.length;
+        const groqStartIndex = groqKeyIndex % groqKeyPool.length;
+        groqKeyIndex = (groqKeyIndex + 1) % groqKeyPool.length;
+        const maxGroqRetryBudgetMs = 12_000;
+        const maxGroqRetryDelayMs = 3_000;
+        const groqRetryStartedAt = Date.now();
 
         let t0Groq = 0;
         for (let attempt = 0; attempt < maxGroqAttempts; attempt++) {
+            if (Date.now() - groqRetryStartedAt > maxGroqRetryBudgetMs) {
+                console.warn('[Groq] Retry budget exhausted; falling back to Gemini');
+                break;
+            }
             // Rotate key on each attempt so a rate-limited key is not retried
             const groqKey = groqKeyPool[(groqStartIndex + attempt) % groqKeyPool.length];
             try {
@@ -2016,15 +2135,23 @@ UI HINT OUTPUT SAFETY:
 
                 // If response is not ok but another attempt remains, retry with next key
                 if (attempt < maxGroqAttempts - 1) {
-                    const delay = groqResponse.status === 429 ? retryDelay * Math.pow(2, attempt) : retryDelay;
+                    const elapsed = Date.now() - groqRetryStartedAt;
+                    const remainingBudget = Math.max(0, maxGroqRetryBudgetMs - elapsed);
+                    const uncappedDelay = groqResponse.status === 429 ? retryDelay * Math.pow(2, attempt) : retryDelay;
+                    const delay = Math.min(uncappedDelay, maxGroqRetryDelayMs, remainingBudget);
                     groqResponse = null;
+                    if (delay <= 0) break;
                     await new Promise(r => setTimeout(r, delay));
                 }
             } catch (groqError) {
                 console.error(`Groq attempt ${attempt + 1} error:`, groqError);
                 groqResponse = null;
                 if (attempt < maxGroqAttempts - 1) {
-                    await new Promise(r => setTimeout(r, retryDelay));
+                    const elapsed = Date.now() - groqRetryStartedAt;
+                    const remainingBudget = Math.max(0, maxGroqRetryBudgetMs - elapsed);
+                    const delay = Math.min(retryDelay, remainingBudget);
+                    if (delay <= 0) break;
+                    await new Promise(r => setTimeout(r, delay));
                 }
                 // Will fall through to Gemini fallback after all retries
             }
@@ -2124,7 +2251,7 @@ UI HINT OUTPUT SAFETY:
                             body: JSON.stringify({
                                 model: AI_PHASE_CONFIG.models.groqFast,
                                 messages: [
-                                    { role: 'system', content: SYSTEM_PROMPT },
+                                    { role: 'system', content: languageDirective ? `${SYSTEM_PROMPT}\n\n${languageDirective}` : SYSTEM_PROMPT },
                                     ...processedMessages.slice(-6),
                                 ],
                                 temperature: AI_PHASE_CONFIG.generation.temperature,
