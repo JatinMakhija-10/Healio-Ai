@@ -31,6 +31,33 @@ function formatTime(date: Date) {
     });
 }
 
+function repairDanglingPrompt(text: string): string {
+    const trimmed = text.trim();
+    if (!trimmed) return trimmed;
+
+    const hasSeverityContext = /\b(severe|severity|intensity|pain|bad|rate|rating|scale)\b/i.test(trimmed);
+    if (!hasSeverityContext) return trimmed;
+
+    const repairs: Array<[RegExp, string]> = [
+        [/\b(on\s+a\s+scale\s+of)\s*$/i, "$1 1 to 10?"],
+        [/\b(scale\s+of)\s*$/i, "$1 1 to 10?"],
+        [/\b(on\s+a\s+scale\s+from)\s*$/i, "$1 1 to 10?"],
+        [/\b(scale\s+from)\s*$/i, "$1 1 to 10?"],
+    ];
+
+    for (const [pattern, replacement] of repairs) {
+        if (pattern.test(trimmed)) {
+            return trimmed.replace(pattern, replacement);
+        }
+    }
+
+    if (/\b(?:1\s*(?:to|-)\s*10|out\s+of\s+10)\s*$/i.test(trimmed) && !/[?.!]$/.test(trimmed)) {
+        return `${trimmed}?`;
+    }
+
+    return trimmed;
+}
+
 export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleProps) {
     const isUser = message.role === "user";
 
@@ -138,6 +165,8 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
             displayText = displayText.substring(0, startIndex).trim();
         }
     }
+
+    displayText = repairDanglingPrompt(displayText);
 
     // Hide bubble completely if it's just an empty string after stripping JSON
     // but show it if it's generating the card, usage limit card, or wellness response

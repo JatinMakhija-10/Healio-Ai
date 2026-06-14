@@ -1065,9 +1065,41 @@ ASSESSMENT SPECIFICITY RULES:
 `;
 
 
+function repairDanglingUiHintPrompt(text: string): string {
+    const hintMatch = text.match(/\{"ui_hint"\s*:/);
+    if (!hintMatch || hintMatch.index === undefined) return text;
+
+    const prefix = text.slice(0, hintMatch.index).replace(/\s+$/, '');
+    const suffix = text.slice(hintMatch.index);
+    const hasSeverityContext = /\b(severe|severity|intensity|pain|bad|rate|rating|scale)\b/i.test(prefix);
+    if (!hasSeverityContext) return text;
+
+    let repairedPrefix = prefix;
+    const repairs: Array<[RegExp, string]> = [
+        [/\b(on\s+a\s+scale\s+of)\s*$/i, '$1 1 to 10'],
+        [/\b(scale\s+of)\s*$/i, '$1 1 to 10'],
+        [/\b(on\s+a\s+scale\s+from)\s*$/i, '$1 1 to 10'],
+        [/\b(scale\s+from)\s*$/i, '$1 1 to 10'],
+    ];
+
+    for (const [pattern, replacement] of repairs) {
+        if (pattern.test(repairedPrefix)) {
+            repairedPrefix = repairedPrefix.replace(pattern, replacement);
+            break;
+        }
+    }
+
+    if (/\b(?:1\s*(?:to|-)\s*10|out\s+of\s+10)\s*$/i.test(repairedPrefix) && !/[?.!]$/.test(repairedPrefix)) {
+        repairedPrefix += '?';
+    }
+
+    return repairedPrefix === prefix ? text : `${repairedPrefix}\n${suffix}`;
+}
+
 function streamTextResponse(text: string, customHeaders?: Record<string, string>): Response {
+    const safeText = repairDanglingUiHintPrompt(text);
     const sse = [
-        `data: ${JSON.stringify({ content: text })}\n\n`,
+        `data: ${JSON.stringify({ content: safeText })}\n\n`,
         `data: [DONE]\n\n`
     ].join('');
     return new Response(sse, {
@@ -1523,7 +1555,14 @@ CURRENT PHASE: ${phaseStatusStr}
 CONFIRMED SYMPTOMS (Yes answers): ${confirmedStr}
 EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
 
-        finalSystemPrompt += dynamicStateInjection;
+        const uiHintOutputSafetyRules = `
+
+UI HINT OUTPUT SAFETY:
+- If you include a {"ui_hint": ...} object, first write the complete user-facing question, then place the JSON on its own new line.
+- For severity, intensity, or pain-level questions, the visible question MUST include "1 to 10" before the JSON. Use: "How severe is it on a scale of 1 to 10?"
+- Never end the visible question at "scale of", "scale from", "between", or another dangling phrase before the ui_hint JSON.`;
+
+        finalSystemPrompt += dynamicStateInjection + uiHintOutputSafetyRules;
 
         spans.record('promptBuild', Date.now() - t0Prompt);
         spans.setMeta({ turn: userTurns, model: groqModel, isFinal: isFinalTurn, ragCacheHit: false, intent: intentResult.intent, creditAction });
@@ -1745,8 +1784,9 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
 
             // Normalize Gemini response into SSE format to match Groq stream shape
             // so the frontend useChat hook can parse it identically (Failure Mode 3 fix)
+            const safeGeminiText = repairDanglingUiHintPrompt(geminiText);
             const geminiSSE = [
-                `data: ${JSON.stringify({ content: geminiText })}\n\n`,
+                `data: ${JSON.stringify({ content: safeGeminiText })}\n\n`,
                 `data: [DONE]\n\n`,
             ].join('');
 

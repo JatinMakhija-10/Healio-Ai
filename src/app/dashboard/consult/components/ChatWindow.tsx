@@ -47,6 +47,19 @@ function parseUiHint(content: string): any {
     return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function inferWidgetHintFromText(content: string): any {
+    const visiblePrompt = content.split(/\{"ui_hint"\s*:/)[0] ?? content;
+    const asksSeverity = /\b(severe|severity|intensity|pain|bad|rate|rating)\b/i.test(visiblePrompt);
+    const mentionsScale = /\b(scale\s+(?:of|from)|1\s*(?:to|-)\s*10|out\s+of\s+10)\b/i.test(visiblePrompt);
+
+    if (asksSeverity && mentionsScale) {
+        return { type: "pain_slider" };
+    }
+
+    return null;
+}
+
 export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive, diagnosticPreferences }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +85,8 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive,
             } else if (explicitHint.type === "slider") {
                 widgetHint = { type: "pain_slider" };
             }
+        } else {
+            widgetHint = inferWidgetHintFromText(lastMessage.content) || widgetHint;
         }
     }
 
