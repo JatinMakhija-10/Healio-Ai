@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { ChatMessage, DiagnosticPreferences } from "../hooks/useChat";
 import { DiagnosisResultCard } from "@/components/chat/DiagnosisResultCard";
-import { Condition } from "@/lib/diagnosis/types";
+import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
+import type { RuleResult, UncertaintyEstimate } from "@/lib/diagnosis/advanced";
 import { UsageLimitCard } from "./UsageLimitCard";
 import { AskHealioResponseRenderer } from "@/components/wellness/AskHealioResponseRenderer";
 import type { AskHealioResponse } from "@/lib/wellness/askHealioResponse";
@@ -15,6 +16,13 @@ interface MessageBubbleProps {
     message: ChatMessage;
     diagnosticPreferences: DiagnosticPreferences;
 }
+
+type ParsedConditionPayload = Condition & {
+    confidence?: number;
+    uncertainty?: UncertaintyEstimate;
+    clinicalRules?: RuleResult[];
+    reasoningTrace?: ReasoningTraceEntry[];
+};
 
 function formatTime(date: Date) {
     return new Date(date).toLocaleTimeString([], {
@@ -28,7 +36,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
 
     // Extract JSON block if present
     let displayText = message.content;
-    let parsedCondition: Condition | null = null;
+    let parsedCondition: ParsedConditionPayload | null = null;
     let isParsingJson = false;
 
     // Wellness 7-block response detection
@@ -88,7 +96,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
         if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
             try {
                 const possibleJson = extractedJsonText.substring(firstBrace, lastBrace + 1);
-                parsedCondition = JSON.parse(possibleJson) as Condition;
+                parsedCondition = JSON.parse(possibleJson) as ParsedConditionPayload;
                 // If it parsed successfully, it's fully formed
                 isParsingJson = false;
                 
@@ -138,8 +146,8 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
     }
 
     const parsedConfidence =
-        typeof (parsedCondition as (Condition & { confidence?: unknown }) | null)?.confidence === "number"
-            ? ((parsedCondition as Condition & { confidence: number }).confidence)
+        typeof parsedCondition?.confidence === "number"
+            ? parsedCondition.confidence
             : 85;
 
     return (
@@ -223,6 +231,9 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
                         <DiagnosisResultCard
                             condition={parsedCondition}
                             confidence={parsedConfidence}
+                            uncertainty={parsedCondition.uncertainty}
+                            clinicalRules={parsedCondition.clinicalRules}
+                            reasoningTrace={parsedCondition.reasoningTrace}
                             showIndianRemedies={diagnosticPreferences.ayurvedicMode}
                             showUncertaintyDetails={diagnosticPreferences.showUncertainty}
                             showDetailedExplanations={diagnosticPreferences.detailedExplanations}

@@ -537,14 +537,14 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <Label className="text-base cursor-pointer" onClick={toggleUncertainty}>Clinical Uncertainty</Label>
-                            <p className="text-sm text-slate-500">Show confidence intervals and evidence quality.</p>
+                            <p className="text-sm text-slate-500">Show match score, confidence range, and evidence quality in the result.</p>
                         </div>
                         <Switch checked={showUncertainty} onToggle={toggleUncertainty} />
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <Label className="text-base cursor-pointer" onClick={toggleDetailed}>Detailed Explanations</Label>
-                            <p className="text-sm text-slate-500">Show reasoning behind the diagnosis.</p>
+                            <p className="text-sm text-slate-500">Add an expandable explanation panel with rules, factors, and alternatives considered.</p>
                         </div>
                         <Switch checked={detailedExplanations} onToggle={toggleDetailed} />
                     </div>

@@ -11,7 +11,6 @@ import {
     Shield,
     Activity,
     AlertTriangle,
-    Info,
     Share2,
     FileText,
     Loader2,
@@ -23,6 +22,7 @@ import {
     ChevronDown,
     ChevronUp,
     Circle,
+    Calculator,
 } from "lucide-react";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,35 @@ import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { useAuth } from "@/context/AuthContext";
 import { hasFeature } from "@/lib/subscription/plans";
+
+type DifferentialDiagnosis = {
+    name?: string;
+    likelihood?: string;
+    rationale?: string;
+};
+
+type ExplainableCondition = Condition & {
+    confidence?: number;
+    bayesianFactors?: string;
+    differentialDiagnoses?: DifferentialDiagnosis[];
+    care_plan?: string;
+    rationale?: string;
+};
+
+function getConfidenceBand(score: number) {
+    if (score >= 90) return "High";
+    if (score >= 70) return "Moderate-high";
+    if (score >= 55) return "Moderate";
+    return "Low";
+}
+
+function getImpactLabel(impact: number) {
+    const absImpact = Math.abs(impact);
+    if (absImpact > 3) return "Very strong";
+    if (absImpact > 2) return "Strong";
+    if (absImpact > 1) return "Moderate";
+    return "Light";
+}
 
 interface DiagnosisResultCardProps {
     condition: Condition;
@@ -153,6 +182,7 @@ export function DiagnosisResultCard({
     const [copied, setCopied] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [showCalculationPanel, setShowCalculationPanel] = useState(false);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -162,6 +192,21 @@ export function DiagnosisResultCard({
     }, []);
 
     if (!condition) return null;
+
+    const explainableCondition = condition as ExplainableCondition;
+    const roundedConfidence = Math.round(uncertainty?.pointEstimate ?? confidence);
+    const confidenceBand = getConfidenceBand(roundedConfidence);
+    const confidenceRange = uncertainty
+        ? `${uncertainty.confidenceInterval.lower.toFixed(0)}% - ${uncertainty.confidenceInterval.upper.toFixed(0)}%`
+        : null;
+    const significantReasoning = reasoningTrace
+        .filter((trace) => Math.abs(trace.impact) > 0.5)
+        .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
+        .slice(0, 5);
+    const differentialDiagnoses = Array.isArray(explainableCondition.differentialDiagnoses)
+        ? explainableCondition.differentialDiagnoses.filter((item) => item?.name)
+        : [];
+    const hasCalculationPanel = showUncertaintyDetails || showDetailedExplanations;
 
     // Gather all critical warnings
     const allWarnings = [
@@ -598,73 +643,170 @@ export function DiagnosisResultCard({
                     </div>
                 )}
 
-                <CardContent className="p-0">
-                    {/* ── 4. CLINICAL RULES ─────────────────────────────────────────────
-                        Credibility anchor: 3px teal left border + teal Info icon.
-                        Border-left signals data provenance (Apple Health / EPIC pattern). */}
-                    {showUncertaintyDetails && clinicalRules.length > 0 && (
-                        <div className="bg-slate-50 px-4 py-4 border-b border-slate-100">
-                            <h4 className="text-xs font-bold text-teal-700 uppercase tracking-wide mb-3 flex items-center gap-2">
-                                <Info className="h-3.5 w-3.5 text-teal-600" />
-                                Clinical Rules Applied
-                            </h4>
-                            <div className="border-l-[3px] border-teal-600 pl-3 space-y-2">
-                                {clinicalRules.map((rule, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="text-xs bg-white p-2 rounded border border-slate-200 text-slate-700"
-                                    >
-                                        <span className="font-semibold text-slate-900">
-                                            {rule.rule}:
-                                        </span>{" "}
-                                        {rule.interpretation}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                {hasCalculationPanel && (
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                        <button
+                            type="button"
+                            onClick={() => setShowCalculationPanel((open) => !open)}
+                            className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-teal-200 hover:bg-teal-50/40"
+                            aria-expanded={showCalculationPanel}
+                        >
+                            <span className="flex min-w-0 items-start gap-3">
+                                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+                                    <Calculator className="h-4 w-4" />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-semibold text-slate-950">
+                                        View calculation and explanation
+                                    </span>
+                                    <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                                        See match score, confidence range, evidence quality, rules, and reasoning factors.
+                                    </span>
+                                </span>
+                            </span>
+                            {showCalculationPanel
+                                ? <ChevronUp className="h-4 w-4 shrink-0 text-slate-500" />
+                                : <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
+                            }
+                        </button>
 
-                    {/* ── 4b. DIAGNOSTIC REASONING ───────────────────────────────────── */}
-                    {showDetailedExplanations &&
-                        reasoningTrace &&
-                        reasoningTrace.length > 0 && (
-                            <div className="bg-white px-4 py-4 border-b border-slate-100">
-                                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                                    <FileText className="h-3 w-3" /> Diagnostic Reasoning
-                                </h4>
-                                <div className="space-y-2">
-                                    {reasoningTrace
-                                        .filter((trace) => Math.abs(trace.impact) > 0.5)
-                                        .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
-                                        .slice(0, 5)
-                                        .map((trace, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="flex justify-between items-center text-xs"
-                                            >
-                                                <span className="text-slate-700 font-medium">
-                                                    {trace.factor}
-                                                </span>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`ml-2 text-[11px] h-5 ${trace.impact > 0
-                                                        ? "text-teal-700 bg-teal-50 border-teal-200"
-                                                        : "text-red-700 bg-red-50 border-red-200"
-                                                        }`}
-                                                >
-                                                    {trace.impact > 0 ? "+" : ""}
-                                                    {trace.impact > 2 ? "High Impact" : "Contributing"}
-                                                </Badge>
+                        {showCalculationPanel && (
+                            <div className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+                                {showUncertaintyDetails && (
+                                    <div>
+                                        <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-teal-700">
+                                            <Activity className="h-3.5 w-3.5" />
+                                            Calculation Snapshot
+                                        </h4>
+                                        <div className="grid gap-2 sm:grid-cols-3">
+                                            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                    Match score
+                                                </p>
+                                                <p className="mt-1 text-lg font-bold text-slate-950">
+                                                    {roundedConfidence}%
+                                                </p>
+                                                <p className="text-xs text-slate-500">{confidenceBand} fit</p>
                                             </div>
-                                        ))}
-                                </div>
-                                {/* italic ONLY for disclaimer-type footnote text */}
-                                <p className="text-[11px] text-slate-400 mt-3 italic">
-                                    *Analysis based on reported symptoms and medical knowledge base.
-                                </p>
+                                            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                    Confidence range
+                                                </p>
+                                                <p className="mt-1 text-lg font-bold text-slate-950">
+                                                    {confidenceRange ?? "Not enough data"}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {confidenceRange ? "Lower to upper estimate" : "Shown when the engine can estimate a range"}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                    Evidence quality
+                                                </p>
+                                                <p className="mt-1 text-lg font-bold capitalize text-slate-950">
+                                                    {uncertainty?.evidenceQuality ?? "Screening"}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {uncertainty?.calibrationQuality
+                                                        ? `${uncertainty.calibrationQuality} calibration`
+                                                        : "Based on available symptom detail"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                                            Healio combines reported symptoms, duration, severity, safety flags, profile context, and available source-backed guidance. This score is a triage aid, not a confirmed medical diagnosis.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {showDetailedExplanations && (
+                                    <div className="space-y-3 border-t border-slate-100 pt-3">
+                                        <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+                                            <FileText className="h-3.5 w-3.5" />
+                                            Explanation
+                                        </h4>
+
+                                        {(explainableCondition.bayesianFactors || explainableCondition.rationale || condition.description) && (
+                                            <div className="rounded-lg border border-teal-100 bg-teal-50/50 p-3">
+                                                <p className="text-xs font-semibold text-teal-900">Why this pattern was shown</p>
+                                                <p className="mt-1 text-sm leading-relaxed text-slate-700">
+                                                    {explainableCondition.bayesianFactors || explainableCondition.rationale || condition.description}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {clinicalRules.length > 0 && (
+                                            <div>
+                                                <p className="mb-2 text-xs font-semibold text-slate-700">Clinical rules applied</p>
+                                                <div className="space-y-2">
+                                                    {clinicalRules.map((rule, idx) => (
+                                                        <div key={idx} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">
+                                                            <span className="font-semibold text-slate-950">{rule.rule}:</span>{" "}
+                                                            {rule.interpretation}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {significantReasoning.length > 0 && (
+                                            <div>
+                                                <p className="mb-2 text-xs font-semibold text-slate-700">Top reasoning factors</p>
+                                                <div className="space-y-2">
+                                                    {significantReasoning.map((trace, idx) => (
+                                                        <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
+                                                            <span className="min-w-0 font-medium text-slate-700">{trace.factor}</span>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={`shrink-0 text-[11px] ${trace.impact > 0
+                                                                    ? "border-teal-200 bg-teal-50 text-teal-700"
+                                                                    : "border-red-200 bg-red-50 text-red-700"
+                                                                    }`}
+                                                            >
+                                                                {trace.impact > 0 ? "+" : "-"} {getImpactLabel(trace.impact)}
+                                                            </Badge>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {differentialDiagnoses.length > 0 && (
+                                            <div>
+                                                <p className="mb-2 text-xs font-semibold text-slate-700">Other possibilities considered</p>
+                                                <div className="space-y-2">
+                                                    {differentialDiagnoses.slice(0, 3).map((item, idx) => (
+                                                        <div key={`${item.name}-${idx}`} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <p className="text-xs font-semibold text-slate-950">{item.name}</p>
+                                                                {item.likelihood && (
+                                                                    <Badge variant="outline" className="text-[11px] capitalize">
+                                                                        {item.likelihood}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            {item.rationale && (
+                                                                <p className="mt-1 text-xs leading-relaxed text-slate-600">{item.rationale}</p>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && (
+                                            <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                                                Detailed calculation data was not returned for this answer. Healio is still showing the available match score and safety guidance from this chat turn.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
+                    </div>
+                )}
 
+                <CardContent className="p-0">
                     {/* ── 5. RECOMMENDED CARE — Progressive Disclosure Accordions ────────
                         Replaces hidden-tab pill system (Baymard: 74% users miss non-default tabs).
                         All sections default-open; Exercise/Warnings closed by default.           */}
