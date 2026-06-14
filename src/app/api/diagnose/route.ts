@@ -89,6 +89,13 @@ interface AyurvedicChunk {
     similarity: number;
 }
 
+interface PdfChunk {
+    source_file: string;
+    page_number?: number | null;
+    chunk_text: string;
+    similarity: number;
+}
+
 interface HomeRemedyChunk {
     ailment: string;
     ailment_hindi: string;
@@ -365,7 +372,7 @@ async function fetchMultiQueryRAG(
             let ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
 
             if (pdfRes.data?.length) {
-                const mappedPdfs = (pdfRes.data as any[]).map(chunk => ({
+                const mappedPdfs = (pdfRes.data as PdfChunk[]).map(chunk => ({
                     book: chunk.source_file,
                     category: 'PDF Document',
                     section: `Page ${chunk.page_number || 'Unknown'}`,

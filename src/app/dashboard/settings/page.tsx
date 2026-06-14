@@ -26,6 +26,82 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 
+function getLocalHealioKeys(userId: string) {
+    const suffix = `_${userId}`;
+    const explicitKeys = [
+        `healio_history${suffix}`,
+        `healio_consultation_history${suffix}`,
+        `healio_user_profile${suffix}`,
+        `healio_pending_profile${suffix}`,
+        `healio_pref_ayurvedic${suffix}`,
+        `healio_pref_uncertainty${suffix}`,
+        `healio_pref_detailed${suffix}`,
+        `healio_emergency_contact${suffix}`,
+        `settings_email_notif${suffix}`,
+        `settings_push_notif${suffix}`,
+        `healio_speech_lang${suffix}`,
+    ];
+
+    const discoveredKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (
+            key.includes(userId) ||
+            key.startsWith("healio_consultation_history") ||
+            key.startsWith("healio_chat_session") ||
+            key.startsWith("healio_history")
+        ) {
+            discoveredKeys.push(key);
+        }
+    }
+
+    return Array.from(new Set([...explicitKeys, ...discoveredKeys]));
+}
+
+function collectLocalData(userId: string) {
+    const data: Record<string, unknown> = {};
+    for (const key of getLocalHealioKeys(userId)) {
+        const value = localStorage.getItem(key);
+        if (value === null) continue;
+        try {
+            data[key] = JSON.parse(value);
+        } catch {
+            data[key] = value;
+        }
+    }
+
+    const sessionData: Record<string, unknown> = {};
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (!key) continue;
+        if (!key.includes(userId) && !key.startsWith("healio_chat_session")) continue;
+        const value = sessionStorage.getItem(key);
+        if (value === null) continue;
+        try {
+            sessionData[key] = JSON.parse(value);
+        } catch {
+            sessionData[key] = value;
+        }
+    }
+
+    return { localStorage: data, sessionStorage: sessionData };
+}
+
+function clearLocalHealioData(userId: string) {
+    getLocalHealioKeys(userId).forEach((key) => localStorage.removeItem(key));
+
+    const sessionKeys: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (!key) continue;
+        if (key.includes(userId) || key.startsWith("healio_chat_session")) {
+            sessionKeys.push(key);
+        }
+    }
+    sessionKeys.forEach((key) => sessionStorage.removeItem(key));
+}
+
 // Helper for Switch UI (Moved outside component to prevent re-creation on render)
 const Switch = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
     <div
@@ -67,36 +143,8 @@ export default function SettingsPage() {
     // DPDP Account Deletion State
     const [deletionConfirm, setDeletionConfirm] = useState("");
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-
-    const handleDeleteAccount = async () => {
-        if (deletionConfirm !== "DELETE" || !user) return;
-        setIsDeletingAccount(true);
-        try {
-            const { data, error } = await supabase.rpc("request_data_deletion", { p_user_id: user.id });
-            if (error) throw error;
-
-            const suffix = `_${user.id}`;
-            [
-                `healio_history${suffix}`, `healio_consultation_history${suffix}`,
-                `healio_user_profile${suffix}`, `healio_pending_profile${suffix}`,
-                `healio_pref_detailed${suffix}`,
-            ].forEach(k => localStorage.removeItem(k));
-
-            alert(
-                `Your account data has been queued for deletion.\n\n` +
-                `Deleted immediately:\n• All family profiles\n• Local consultation history\n\n` +
-                `Your account will be fully removed within 30 days (DPDP §11 SLA).\n\n` +
-                (data?.personas_deleted ? `${data.personas_deleted} family profile(s) deleted.` : "")
-            );
-            await logout();
-        } catch (err) {
-            console.error("Deletion error:", err);
-            alert("Failed to request deletion. Please try again or contact support@healio.ai.");
-        } finally {
-            setIsDeletingAccount(false);
-            setDeletionConfirm("");
-        }
-    };
+    const [isExportingData, setIsExportingData] = useState(false);
+    const [isClearingLocalData, setIsClearingLocalData] = useState(false);
 
     useEffect(() => {
         // Skip if no user
@@ -200,231 +248,116 @@ export default function SettingsPage() {
         localStorage.setItem(`healio_pref_detailed_${user.id}`, String(newVal));
     };
 
-    const handleClearData = () => {
+    const handleClearLocalHistory = () => {
         if (!user) return;
-        if (confirm("⚠️ Are you sure you want to clear all local history?\n\nThis will permanently delete:\n• All consultation records\n• Diagnosis history\n• Profile data\n\nThis action CANNOT be undone!")) {
-            try {
-                // Clear all user-specific Healio.AI data from localStorage
-                const keySuffix = `_${user.id}`;
-                const keysToRemove = [
-                    `healio_history${keySuffix}`,
-                    `healio_user_profile${keySuffix}`,
-                    `healio_pending_profile${keySuffix}`,
-                    `healio_pref_ayurvedic${keySuffix}`,
-                    `healio_pref_uncertainty${keySuffix}`,
-                    `healio_pref_detailed${keySuffix}`,
-                    `healio_emergency_contact${keySuffix}`,
-                    `healio_consultation_history${keySuffix}`,
-                    `settings_email_notif${keySuffix}`,
-                    `settings_push_notif${keySuffix}`,
-                    `healio_speech_lang${keySuffix}`
-                ];
+        const confirmed = confirm(
+            "Clear all Healio consultation history, chat sessions, preferences, and saved profile data from this device?\n\nYour cloud account is not deleted."
+        );
+        if (!confirmed) return;
 
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-
-                alert("✅ All local history and data have been cleared successfully.\n\nYour health data has been permanently removed from this device.");
-
-                // Optionally reload the page to reflect changes
-                if (confirm("Would you like to reload the page to see the changes?")) {
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error('Error clearing data:', error);
-                alert("❌ Failed to clear data. Please try again.");
-            }
+        setIsClearingLocalData(true);
+        try {
+            clearLocalHealioData(user.id);
+            window.dispatchEvent(new Event("storage"));
+            alert("Local Healio history has been cleared from this device.");
+        } catch (error) {
+            console.error("Error clearing data:", error);
+            alert("Failed to clear local data. Please try again.");
+        } finally {
+            setIsClearingLocalData(false);
         }
     };
 
-    const handleExportData = async () => {
+    const handleExportJsonData = async () => {
         if (!user) return;
+        setIsExportingData(true);
         try {
-            const keySuffix = `_${user.id}`;
-            const historyData = localStorage.getItem(`healio_consultation_history${keySuffix}`);
-            const profileData = localStorage.getItem(`healio_user_profile${keySuffix}`);
-            const pendingProfile = localStorage.getItem(`healio_pending_profile${keySuffix}`);
-
-            if (!historyData && !profileData && !pendingProfile) {
-                alert("No health data found to export.\n\nPlease complete a consultation first.");
-                return;
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+            if (sessionError || !token) {
+                throw new Error("Please sign in again before exporting your data.");
             }
 
-            // Dynamically import jsPDF
-            const jsPDF = (await import('jspdf')).default;
-            const doc = new jsPDF();
+            const response = await fetch("/api/account/export", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const serverData = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(serverData.error || "Failed to export server data.");
+            }
 
-            // Parse data
-            const profile = profileData ? JSON.parse(profileData) : null;
-            const parsedPendingProfile = pendingProfile ? JSON.parse(pendingProfile) : null;
-            const consultations = historyData ? JSON.parse(historyData) : [];
-
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 20;
-            let y = margin;
-
-            // Helper to add new  page if needed
-            const checkPageBreak = (neededHeight: number) => {
-                if (y + neededHeight > pageHeight - margin) {
-                    doc.addPage();
-                    y = margin;
-                    return true;
-                }
-                return false;
+            const payload = {
+                ...serverData,
+                account: {
+                    id: user.id,
+                    email: user.email ?? null,
+                },
+                device_data: collectLocalData(user.id),
+                export_note: "This JSON includes cloud records plus Healio data stored on this device.",
             };
+            const filename = `healio-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+            const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                type: "application/json;charset=utf-8",
+            });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(url);
 
-            // Title Page
-            doc.setFontSize(24);
-            doc.setTextColor(13, 148, 136); // Teal color
-            doc.text('Healio.AI', pageWidth / 2, y, { align: 'center' });
-            y += 10;
-
-            doc.setFontSize(16);
-            doc.setTextColor(71, 85, 105); // Slate color
-            doc.text('Personal Health Data Export', pageWidth / 2, y, { align: 'center' });
-            y += 15;
-
-            doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139);
-            doc.text(`Exported: ${new Date().toLocaleString()}`, pageWidth / 2, y, { align: 'center' });
-            y += 20;
-
-            // Profile Section
-            if (profile || parsedPendingProfile) {
-                checkPageBreak(40);
-                doc.setFontSize(14);
-                doc.setTextColor(13, 148, 136);
-                doc.text('Personal Profile', margin, y);
-                y += 8;
-
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85);
-
-                if (profile?.name) {
-                    doc.text(`Name: ${profile.name}`, margin, y);
-                    y += 6;
-                }
-                if (profile?.age) {
-                    doc.text(`Age: ${profile.age} years`, margin, y);
-                    y += 6;
-                }
-                if (parsedPendingProfile?.ayurvedic_profile?.prakriti) {
-                    doc.text(`Ayurvedic Constitution (Prakriti): ${parsedPendingProfile.ayurvedic_profile.prakriti}`, margin, y);
-                    y += 6;
-                }
-                y += 5;
-            }
-
-            // Consultation History
-            if (consultations && consultations.length > 0) {
-                checkPageBreak(30);
-                doc.setFontSize(14);
-                doc.setTextColor(13, 148, 136);
-                doc.text('Consultation History', margin, y);
-                y += 10;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                consultations.slice(0, 10).forEach((consultation: any, index: number) => {
-                    checkPageBreak(50);
-
-                    doc.setFontSize(11);
-                    doc.setTextColor(51, 65, 85);
-                    doc.text(`Consultation #${index + 1}`, margin, y);
-                    y += 6;
-
-                    doc.setFontSize(9);
-                    doc.setTextColor(100, 116, 139);
-
-                    if (consultation.timestamp) {
-                        doc.text(`Date: ${new Date(consultation.timestamp).toLocaleDateString()}`, margin + 5, y);
-                        y += 5;
-                    }
-
-                    if (consultation.symptoms) {
-                        doc.text(`Symptoms: ${consultation.symptoms}`, margin + 5, y);
-                        y += 5;
-                    }
-
-                    if (consultation.topCondition) {
-                        doc.setTextColor(51, 65, 85);
-                        doc.text(`Diagnosis: ${consultation.topCondition}`, margin + 5, y);
-                        y += 5;
-                    }
-
-                    if (consultation.confidence) {
-                        doc.setTextColor(100, 116, 139);
-                        doc.text(`Confidence: ${consultation.confidence}%`, margin + 5, y);
-                        y += 5;
-                    }
-
-                    y += 3;
-                });
-
-                if (consultations.length > 10) {
-                    doc.setFontSize(9);
-                    doc.setTextColor(139, 162, 189);
-                    doc.text(`... and ${consultations.length - 10} more consultations`, margin, y);
-                    y += 8;
-                }
-            }
-
-            // Ayurvedic Profile
-            if (parsedPendingProfile?.ayurvedic_profile) {
-                checkPageBreak(40);
-                const ayurvedic = parsedPendingProfile.ayurvedic_profile;
-
-                doc.setFontSize(14);
-                doc.setTextColor(13, 148, 136);
-                doc.text('Ayurvedic Analysis', margin, y);
-                y += 10;
-
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85);
-
-                if (ayurvedic.prakriti) {
-                    doc.text(`Constitution (Prakriti): ${ayurvedic.prakriti}`, margin, y);
-                    y += 6;
-                }
-
-                if (ayurvedic.characteristics && ayurvedic.characteristics.length > 0) {
-                    doc.text('Key Characteristics:', margin, y);
-                    y += 6;
-                    ayurvedic.characteristics.slice(0, 5).forEach((char: string) => {
-                        doc.text(`• ${char}`, margin + 5, y);
-                        y += 5;
-                    });
-                    y += 3;
-                }
-            }
-
-            // Footer on each page
-            const totalPages = doc.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(139, 162, 189);
-                doc.text(
-                    `Page ${i} of ${totalPages} | Healio.AI - Personal Health Assistant`,
-                    pageWidth / 2,
-                    pageHeight - 10,
-                    { align: 'center' }
-                );
-                doc.text(
-                    'CONFIDENTIAL - For personal use only',
-                    pageWidth / 2,
-                    pageHeight - 6,
-                    { align: 'center' }
-                );
-            }
-
-            // Save PDF
-            const filename = `Healio_Health_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(filename);
-
-            alert(`✅ Your health data has been exported successfully!\n\nFile: ${filename}`);
-
+            alert(`Your Healio data export is ready.\n\nFile: ${filename}`);
         } catch (error) {
-            console.error('Export error:', error);
-            alert(`❌ Failed to export data.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.`);
+            console.error("Export error:", error);
+            alert(`Failed to export data.\n\n${error instanceof Error ? error.message : "Please try again."}`);
+        } finally {
+            setIsExportingData(false);
+        }
+    };
+
+    const handlePermanentAccountDelete = async () => {
+        if (deletionConfirm !== "DELETE" || !user) return;
+        const confirmed = confirm(
+            "This will permanently delete your Healio account, health history, family profiles, and local device history. This cannot be undone.\n\nContinue?"
+        );
+        if (!confirmed) return;
+
+        setIsDeletingAccount(true);
+        try {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+            if (sessionError || !token) {
+                throw new Error("Please sign in again before deleting your account.");
+            }
+
+            const response = await fetch("/api/account/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ confirmation: "DELETE" }),
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(result.error || result.message || "Failed to delete account data.");
+            }
+
+            clearLocalHealioData(user.id);
+            alert(
+                result.auth_deleted
+                    ? "Your Healio account and health data have been deleted."
+                    : `Your health data was deleted, but login deletion needs support follow-up. ${result.warning || ""}`.trim()
+            );
+            await logout();
+        } catch (err) {
+            console.error("Deletion error:", err);
+            alert(err instanceof Error ? err.message : "Failed to delete account. Please try again.");
+        } finally {
+            setIsDeletingAccount(false);
+            setDeletionConfirm("");
         }
     };
 
@@ -635,8 +568,10 @@ export default function SettingsPage() {
                             <Label className="text-base">Export Data</Label>
                             <p className="text-sm text-slate-500">Download a copy of your health data (JSON).</p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={handleExportData}>
-                            <Download className="mr-2 h-4 w-4" /> Export
+                        <Button variant="outline" size="sm" onClick={handleExportJsonData} disabled={isExportingData}>
+                            {isExportingData
+                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Exporting</>
+                                : <><Download className="mr-2 h-4 w-4" />Export</>}
                         </Button>
                     </div>
                     <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
@@ -644,8 +579,16 @@ export default function SettingsPage() {
                             <Label className="text-base text-red-600">Clear Local History</Label>
                             <p className="text-sm text-slate-500">Remove all consultation history from this device.</p>
                         </div>
-                        <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700" onClick={handleClearData}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Clear
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                            onClick={handleClearLocalHistory}
+                            disabled={isClearingLocalData}
+                        >
+                            {isClearingLocalData
+                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Clearing</>
+                                : <><Trash2 className="mr-2 h-4 w-4" />Clear</>}
                         </Button>
                     </div>
 
@@ -678,7 +621,7 @@ export default function SettingsPage() {
                                 size="sm"
                                 className="text-red-700 border-red-300 hover:bg-red-100 whitespace-nowrap"
                                 disabled={deletionConfirm !== "DELETE" || isDeletingAccount}
-                                onClick={handleDeleteAccount}
+                                onClick={handlePermanentAccountDelete}
                             >
                                 {isDeletingAccount
                                     ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Deleting&hellip;</>
