@@ -145,6 +145,7 @@ function ConsultPageInner() {
         resumeContext,
         isResumeMode,
         hasCompletedDiagnosis,
+        diagnosticPreferences,
     } = useChat({
         resumeId,
     });
@@ -247,6 +248,7 @@ function ConsultPageInner() {
                 isLoading={isLoading}
                 onSendMessage={handleSendMessage}
                 onWidgetActive={handleWidgetActive}
+                diagnosticPreferences={diagnosticPreferences}
             />
 
             {/* Post-diagnosis actions */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { ChatMessage } from "../hooks/useChat";
+import { ChatMessage, DiagnosticPreferences } from "../hooks/useChat";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { PainSliderWidget } from "./PainSliderWidget";
@@ -15,6 +15,7 @@ interface ChatWindowProps {
     isLoading: boolean;
     onSendMessage?: (text: string) => void;
     onWidgetActive?: (active: boolean) => void;
+    diagnosticPreferences: DiagnosticPreferences;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,7 +47,7 @@ function parseUiHint(content: string): any {
     return null;
 }
 
-export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive }: ChatWindowProps) {
+export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive, diagnosticPreferences }: ChatWindowProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -153,7 +154,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive 
                     const isLast = index === messages.length - 1;
                     return (
                         <div key={msg.id} className="space-y-4">
-                            <MessageBubble message={msg} />
+                            <MessageBubble message={msg} diagnosticPreferences={diagnosticPreferences} />
 
                             <AnimatePresence>
                                 {isLast && isLastAssistant && widgetHint.type === "pain_slider" && onSendMessage && (

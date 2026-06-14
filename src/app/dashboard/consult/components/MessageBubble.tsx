@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChatMessage } from "../hooks/useChat";
+import { ChatMessage, DiagnosticPreferences } from "../hooks/useChat";
 import { DiagnosisResultCard } from "@/components/chat/DiagnosisResultCard";
 import { Condition } from "@/lib/diagnosis/types";
 import { UsageLimitCard } from "./UsageLimitCard";
@@ -13,6 +13,7 @@ import { Leaf } from "lucide-react";
 
 interface MessageBubbleProps {
     message: ChatMessage;
+    diagnosticPreferences: DiagnosticPreferences;
 }
 
 function formatTime(date: Date) {
@@ -22,7 +23,7 @@ function formatTime(date: Date) {
     });
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleProps) {
     const isUser = message.role === "user";
 
     // Extract JSON block if present
@@ -136,6 +137,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         return null;
     }
 
+    const parsedConfidence =
+        typeof (parsedCondition as (Condition & { confidence?: unknown }) | null)?.confidence === "number"
+            ? ((parsedCondition as Condition & { confidence: number }).confidence)
+            : 85;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -216,7 +222,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     <div className="mt-3 w-full">
                         <DiagnosisResultCard
                             condition={parsedCondition}
-                            confidence={85} // Mock confidence as it's LLM generated pure text
+                            confidence={parsedConfidence}
+                            showIndianRemedies={diagnosticPreferences.ayurvedicMode}
+                            showUncertaintyDetails={diagnosticPreferences.showUncertainty}
+                            showDetailedExplanations={diagnosticPreferences.detailedExplanations}
                             showBookDoctor={false}
                         />
                     </div>

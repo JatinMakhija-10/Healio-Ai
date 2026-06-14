@@ -133,7 +133,6 @@ export function DiagnosisResultCard({
     uncertainty,
     alerts = [],
     clinicalRules = [],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     showIndianRemedies = true,
     showUncertaintyDetails = true,
     showDetailedExplanations = true,
@@ -293,10 +292,11 @@ export function DiagnosisResultCard({
     // const handleBookingComplete = (appointmentId: string) => { ... };
 
     // Remedy section visibility flags
-    const hasHomeRemedies =
+    const hasHomeRemedies = showIndianRemedies && (
         (condition.indianHomeRemedies?.length ?? 0) > 0 ||
-        (condition.home_remedies?.length ?? 0) > 0;
-    const hasAyurvedic = (condition.ayurvedic_remedies?.length ?? 0) > 0;
+        (condition.home_remedies?.length ?? 0) > 0
+    );
+    const hasAyurvedic = showIndianRemedies && (condition.ayurvedic_remedies?.length ?? 0) > 0;
     const hasHomeopathic =
         (condition.remedies?.length ?? 0) > 0 ||
         (condition.homeopathic_remedies?.length ?? 0) > 0;
@@ -602,7 +602,7 @@ export function DiagnosisResultCard({
                     {/* ── 4. CLINICAL RULES ─────────────────────────────────────────────
                         Credibility anchor: 3px teal left border + teal Info icon.
                         Border-left signals data provenance (Apple Health / EPIC pattern). */}
-                    {clinicalRules.length > 0 && (
+                    {showUncertaintyDetails && clinicalRules.length > 0 && (
                         <div className="bg-slate-50 px-4 py-4 border-b border-slate-100">
                             <h4 className="text-xs font-bold text-teal-700 uppercase tracking-wide mb-3 flex items-center gap-2">
                                 <Info className="h-3.5 w-3.5 text-teal-600" />

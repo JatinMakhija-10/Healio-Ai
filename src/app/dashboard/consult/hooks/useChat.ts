@@ -12,6 +12,12 @@ export interface ChatMessage {
     isRecap?: boolean;
 }
 
+export interface DiagnosticPreferences {
+    ayurvedicMode: boolean;
+    showUncertainty: boolean;
+    detailedExplanations: boolean;
+}
+
 interface UseChatOptions {
     resumeId?: string | null;
 }
@@ -38,12 +44,19 @@ interface UseChatReturn {
     resumeContext: ResumeContext | null;
     isResumeMode: boolean;
     hasCompletedDiagnosis: boolean;
+    diagnosticPreferences: DiagnosticPreferences;
 }
 
 const generateId = () =>
     Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+const DEFAULT_DIAGNOSTIC_PREFERENCES: DiagnosticPreferences = {
+    ayurvedicMode: true,
+    showUncertainty: true,
+    detailedExplanations: true,
+};
 
 type ParsedDiagnosis = Record<string, unknown>;
 
@@ -274,6 +287,17 @@ function interruptedResponseMessage(existingContent: string): string {
     return trimmed ? `${trimmed}\n\n*${notice}*` : notice;
 }
 
+function loadDiagnosticPreferences(userId?: string): DiagnosticPreferences {
+    if (typeof window === "undefined" || !userId) return DEFAULT_DIAGNOSTIC_PREFERENCES;
+
+    const suffix = `_${userId}`;
+    return {
+        ayurvedicMode: localStorage.getItem(`healio_pref_ayurvedic${suffix}`) !== "false",
+        showUncertainty: localStorage.getItem(`healio_pref_uncertainty${suffix}`) !== "false",
+        detailedExplanations: localStorage.getItem(`healio_pref_detailed${suffix}`) !== "false",
+    };
+}
+
 /**
  * Build a human-readable recap message from a prior consultation.
  */
@@ -369,6 +393,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
     const [isLoading, setIsLoading] = useState(false);
     const [resumeContext, setResumeContext] = useState<ResumeContext | null>(null);
     const [isResumeMode, setIsResumeMode] = useState(false);
+    const [diagnosticPreferences, setDiagnosticPreferences] = useState<DiagnosticPreferences>(DEFAULT_DIAGNOSTIC_PREFERENCES);
     const abortRef = useRef<AbortController | null>(null);
     const resumeProcessedRef = useRef<string | null>(null);
     const savedConsultationIds = useRef<Set<string>>(new Set());
@@ -376,6 +401,10 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
     const resumeId = options?.resumeId || null;
     const hasCompletedDiagnosis = Boolean(extractLatestDiagnosis(messages));
+
+    useEffect(() => {
+        setDiagnosticPreferences(loadDiagnosticPreferences(user?.id));
+    }, [user?.id]);
 
     // Get user-specific storage key
     const getStorageKey = useCallback(() => {
@@ -615,6 +644,9 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     throw new Error("Not authenticated");
                 }
 
+                const activeDiagnosticPreferences = loadDiagnosticPreferences(user?.id);
+                setDiagnosticPreferences(activeDiagnosticPreferences);
+
                 const latestDiagnosis = extractLatestDiagnosis(updatedMessages);
                 const activeResumeContext =
                     resumeContext ||
@@ -626,7 +658,10 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                         : null);
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const body: any = { messages: apiMessages };
+                const body: any = {
+                    messages: apiMessages,
+                    diagnosticPreferences: activeDiagnosticPreferences,
+                };
 
                 // Attach resume context if in follow-up mode
                 if (activeResumeContext) {
@@ -808,7 +843,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                 abortRef.current = null;
             }
         },
-        [messages, isLoading, saveConsultation, resumeContext]
+        [messages, isLoading, saveConsultation, resumeContext, user?.id]
     );
 
     const resetChat = useCallback(() => {
@@ -864,5 +899,6 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
         resumeContext,
         isResumeMode,
         hasCompletedDiagnosis,
+        diagnosticPreferences,
     };
 }

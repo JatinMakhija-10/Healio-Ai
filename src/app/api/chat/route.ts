@@ -261,14 +261,19 @@ const CHAT_RAG_CACHE = new Map<string, ChatRagCacheEntry>();
 const CHAT_RAG_TTL   = 5 * 60 * 1_000; // 5 min
 const CHAT_RAG_MAX   = 150;
 
-function chatRagKey(symptomSummary: string, skipHome: boolean): string {
-    return `${symptomSummary.slice(0, 150).toLowerCase().trim()}::${skipHome}`;
+function chatRagKey(symptomSummary: string, skipHome: boolean, includeIndianCare: boolean): string {
+    return `${symptomSummary.slice(0, 150).toLowerCase().trim()}::${skipHome}::${includeIndianCare}`;
 }
 
 // ── Parallelised multi-source RAG ─────────────────────────────────────────────
-async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false, spans?: SpanCollector): Promise<{ context: string; homeRemediesAvailable: boolean }> {
+async function fetchAllContext(
+    symptomSummary: string,
+    skipHomeRemedies = false,
+    spans?: SpanCollector,
+    includeIndianCare = true
+): Promise<{ context: string; homeRemediesAvailable: boolean }> {
     // ── Cache check ──────────────────────────────────────────────────────────
-    const cacheKey = chatRagKey(symptomSummary, skipHomeRemedies);
+    const cacheKey = chatRagKey(symptomSummary, skipHomeRemedies, includeIndianCare);
     const cached = CHAT_RAG_CACHE.get(cacheKey);
     if (cached && Date.now() - cached.ts < CHAT_RAG_TTL) {
         console.log('[RAG] Cache HIT — skipping embed + RPC cycle');
@@ -299,17 +304,17 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
         const t0Rpc = Date.now();
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw, ayurvedicPdfRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
-            embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
-            skipHomeRemedies ? Promise.resolve('') : fetchHomeRemedyContext(embedding3072),
-            embedding ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
+            includeIndianCare && embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
+            includeIndianCare && !skipHomeRemedies ? fetchHomeRemedyContext(embedding3072) : Promise.resolve(''),
+            includeIndianCare && embedding ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
         ]);
         const rpcDone = Date.now();
         spans?.record('ragBoericke', rpcDone - t0Rpc);
         spans?.record('ragAyurvedic', rpcDone - t0Rpc);
-        if (!skipHomeRemedies) spans?.record('ragHomeRemedy', rpcDone - t0Rpc);
+        if (includeIndianCare && !skipHomeRemedies) spans?.record('ragHomeRemedy', rpcDone - t0Rpc);
 
         // Track whether home remedies RAG data was actually retrieved
-        const homeRemediesAvailable = !skipHomeRemedies && !!homeRemedyRaw;
+        const homeRemediesAvailable = includeIndianCare && !skipHomeRemedies && !!homeRemedyRaw;
 
         const sections = [
             homeopathicRaw && [
@@ -333,7 +338,7 @@ async function fetchAllContext(symptomSummary: string, skipHomeRemedies = false,
         ].filter(Boolean);
 
         const context = sections.length ? sections.join('\n\n') : '';
-        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies})`);
+        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies}, includeIndianCare=${includeIndianCare})`);
 
         // ── Store in cache ───────────────────────────────────────────────────
         if (context) {
@@ -600,6 +605,49 @@ interface HealioIntentResult {
     intent: HealioIntent;
     confidence: number;
     evidence: string[];
+}
+
+interface DiagnosticPreferences {
+    ayurvedicMode: boolean;
+    showUncertainty: boolean;
+    detailedExplanations: boolean;
+}
+
+const DEFAULT_DIAGNOSTIC_PREFERENCES: DiagnosticPreferences = {
+    ayurvedicMode: true,
+    showUncertainty: true,
+    detailedExplanations: true,
+};
+
+function normalizeDiagnosticPreferences(value: unknown): DiagnosticPreferences {
+    if (!value || typeof value !== 'object') return DEFAULT_DIAGNOSTIC_PREFERENCES;
+    const record = value as Partial<Record<keyof DiagnosticPreferences, unknown>>;
+    return {
+        ayurvedicMode: typeof record.ayurvedicMode === 'boolean' ? record.ayurvedicMode : true,
+        showUncertainty: typeof record.showUncertainty === 'boolean' ? record.showUncertainty : true,
+        detailedExplanations: typeof record.detailedExplanations === 'boolean' ? record.detailedExplanations : true,
+    };
+}
+
+function formatDiagnosticPreferencesForPrompt(preferences: DiagnosticPreferences): string {
+    return [
+        '\n\n=== USER DIAGNOSTIC DISPLAY PREFERENCES ===',
+        `Ayurvedic Mode: ${preferences.ayurvedicMode ? 'ON' : 'OFF'}`,
+        `Clinical Uncertainty: ${preferences.showUncertainty ? 'ON' : 'OFF'}`,
+        `Detailed Explanations: ${preferences.detailedExplanations ? 'ON' : 'OFF'}`,
+        'Rules:',
+        preferences.ayurvedicMode
+            ? '- User wants Indian household remedies, Ayurvedic context, and dosha-aware guidance when safe and relevant.'
+            : '- User does NOT want Ayurvedic/dosha/Indian household remedy sections. Set ayurvedic_remedies and home_remedies to empty arrays. Do not mention dosha analysis or kitchen-remedy suggestions.',
+        preferences.showUncertainty
+            ? '- User wants confidence/evidence quality surfaced clearly in the final response.'
+            : '- User does NOT want confidence intervals or evidence-quality commentary shown in prose. Keep required internal confidence fields, but do not emphasize uncertainty details.',
+        preferences.detailedExplanations
+            ? '- User wants the reasoning behind the final assessment when a final JSON result is produced.'
+            : '- User prefers a concise result. Keep bayesianFactors short and set differentialDiagnoses to [] unless a safety-critical alternate must be mentioned.',
+        'These user preferences override generic final-output remedy population rules unless emergency escalation requires otherwise.',
+        '=== END USER DIAGNOSTIC DISPLAY PREFERENCES ===',
+    ].join('\n');
 }
 
 function classifyHealioIntent(text: string): HealioIntentResult {
@@ -1061,7 +1109,8 @@ export async function POST(req: NextRequest) {
         }
 
         // ── Parse body early so we know personaId before parallel fetches ────
-        const { messages, personaId, resumeContext } = await req.json() || {};
+        const { messages, personaId, resumeContext, diagnosticPreferences: rawDiagnosticPreferences } = await req.json() || {};
+        const diagnosticPreferences = normalizeDiagnosticPreferences(rawDiagnosticPreferences);
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
@@ -1323,7 +1372,7 @@ export async function POST(req: NextRequest) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
                 // Skip slow 3072-dim home remedy embedding on non-final turns
                 const t0Rag = Date.now();
-                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans);
+                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans, diagnosticPreferences.ayurvedicMode);
                 const ragMs = Date.now() - t0Rag;
                 logLatency('rag', ragMs);
                 spans.record('rag', ragMs);
@@ -1344,7 +1393,9 @@ export async function POST(req: NextRequest) {
         let finalSystemPrompt = ragContext
             ? `=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
-the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.
+${diagnosticPreferences.ayurvedicMode
+    ? 'the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.'
+    : 'the homeopathic_remedies section in your final JSON output only. Leave ayurvedic_remedies and home_remedies empty because Ayurvedic Mode is OFF.'}
 Do NOT ignore this data. Do NOT hallucinate remedies that contradict this data.
 
 ${ragContext}
@@ -1358,9 +1409,11 @@ ${SYSTEM_PROMPT}`
             finalSystemPrompt += '\n\n' + FINAL_DIAGNOSIS_OUTPUT_RULES;
         }
 
+        finalSystemPrompt += formatDiagnosticPreferencesForPrompt(diagnosticPreferences);
+
         // Failure Mode 4 fix: If home remedy embedding timed out, inject fallback instruction
         // so the model uses authoritative knowledge instead of hallucinating or leaving empty
-        if (!homeRemediesAvailable && isFinalTurn) {
+        if (diagnosticPreferences.ayurvedicMode && !homeRemediesAvailable && isFinalTurn) {
             finalSystemPrompt += '\n[NOTE: SECTION C RAG data was unavailable this turn due to embedding timeout. Use your authoritative traditional Indian household remedy knowledge for the home_remedies array. You MUST still include at least 2 home remedies. Do NOT leave it empty.]';
         }
 
