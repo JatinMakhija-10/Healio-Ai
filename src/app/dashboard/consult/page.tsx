@@ -253,11 +253,11 @@ function ConsultPageInner() {
 
             {/* Post-diagnosis actions */}
             {hasCompletedDiagnosis && !isLoading && (
-                <div className="shrink-0 border-t border-[#E5E3DC] bg-white/90 px-4 py-3 backdrop-blur">
-                    <div className="mx-auto flex max-w-3xl flex-col justify-center gap-3 sm:flex-row sm:gap-4">
+                <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 pb-2 pt-3 backdrop-blur md:px-4 md:py-3">
+                    <div className="mx-auto flex max-w-3xl items-stretch justify-center gap-2 sm:items-center sm:gap-4">
                         <button
                             onClick={startFollowUpFromDiagnosis}
-                            className="flex items-center justify-center gap-2 rounded-full bg-[#1A1A2E] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0F6E56] active:scale-[0.99]"
+                            className="flex min-w-0 flex-[1.6] items-center justify-center gap-2 rounded-[14px] bg-[#1A1A2E] px-3 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0F6E56] active:scale-[0.99] sm:flex-none sm:rounded-full sm:px-5 sm:py-2.5 sm:font-medium"
                         >
                             <MessageSquareHeart className="h-4 w-4" />
                             Ask Follow-up
@@ -272,10 +272,11 @@ function ConsultPageInner() {
                                     }
                                 }
                             }}
-                            className="flex items-center justify-center gap-2 rounded-full border border-[#DAD7CF] bg-white px-5 py-2.5 text-sm font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#B8DED0] hover:bg-[#E1F5EE] active:scale-[0.99]"
+                            className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-[#DAD7CF] bg-white px-3 py-3 text-sm font-semibold text-[#1C1C1E] shadow-sm transition hover:border-[#B8DED0] hover:bg-[#E1F5EE] active:scale-[0.99] sm:flex-none sm:gap-2 sm:rounded-full sm:px-5 sm:py-2.5 sm:font-medium"
                         >
                             <Plus className="h-4 w-4" />
-                            Start New Consultation
+                            <span className="sm:hidden">New</span>
+                            <span className="hidden sm:inline">Start New Consultation</span>
                         </button>
                     </div>
                 </div>

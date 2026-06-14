@@ -184,7 +184,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`flex items-end gap-3 px-4 ${isUser ? "flex-row-reverse" : ""}`}
+            className={`flex items-end gap-2 px-2 sm:gap-3 sm:px-4 ${isUser ? "flex-row-reverse" : ""}`}
         >
             {/* Avatar */}
             {!isUser && (
@@ -195,7 +195,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
 
             {/* Bubble + Timestamp */}
             <div
-                className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full max-w-[90%] md:max-w-[75%]`}
+                className={`flex w-full flex-col ${isUser ? "max-w-[90%] items-end md:max-w-[75%]" : "max-w-none items-start md:max-w-[75%]"}`}
             >
                 {/* Usage Limit Card */}
                 {usageLimitData && (

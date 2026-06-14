@@ -96,7 +96,7 @@ export function InputBar({
         : "Tell Healio what you are feeling...";
 
     return (
-        <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 py-3 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
+        <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
             {/* Listening indicator */}
             <AnimatePresence>
                 {isRecording && (
@@ -114,7 +114,7 @@ export function InputBar({
 
             <div className="mx-auto flex max-w-3xl items-end gap-2">
                 {/* Text area */}
-                <div className="relative flex-1 rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] shadow-sm transition-all focus-within:border-[#0F6E56] focus-within:ring-2 focus-within:ring-[#9FE1CB]">
+                <div className="relative flex-1 rounded-[14px] border border-[#DAD7CF] bg-[#FDFBF7] shadow-sm transition-all focus-within:border-[#0F6E56] focus-within:ring-2 focus-within:ring-[#9FE1CB] md:rounded-[8px]">
                     <textarea
                         ref={textareaRef}
                         value={value}
@@ -123,7 +123,7 @@ export function InputBar({
                         placeholder={placeholderText}
                         disabled={isInputDisabled}
                         rows={1}
-                        className="w-full resize-none bg-transparent px-4 py-3 pr-24 text-[15px] leading-6 text-[#1C1C1E] placeholder:text-[#8C8C8C] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full resize-none bg-transparent px-3 py-3 pr-24 text-[15px] leading-6 text-[#1C1C1E] placeholder:text-[#8C8C8C] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
                         style={{ maxHeight: "160px" }}
                     />
 

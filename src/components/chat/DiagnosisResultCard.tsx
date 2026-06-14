@@ -372,7 +372,7 @@ export function DiagnosisResultCard({
 
     return (
         <>
-            <Card className="w-full bg-white border-teal-200 shadow-md overflow-hidden relative">
+            <Card className="w-full overflow-hidden rounded-[14px] border-slate-200 bg-white shadow-md sm:border-teal-200">
 
                 {/* ── 1. URGENCY BANNER ─────────────────────────────────────────────────
                     DOM position [0] — always first visible node (Nielsen Heuristic #1)
@@ -382,7 +382,7 @@ export function DiagnosisResultCard({
                         className={`${isEmergency
                             ? "bg-red-50 border-b border-red-200"
                             : "bg-amber-50 border-b border-amber-100"
-                            } px-6 py-4`}
+                            } px-4 py-3 sm:px-6 sm:py-4`}
                     >
                         <div className="flex items-start gap-3">
                             <AlertTriangle
@@ -432,7 +432,7 @@ export function DiagnosisResultCard({
 
                             {/* Timing interactions — distinct ⏱ panel */}
                             {timingAlerts.length > 0 && (
-                                <div className="bg-amber-50 px-6 py-3 border-b border-amber-100">
+                                <div className="bg-amber-50 px-4 py-3 border-b border-amber-100 sm:px-6">
                                     <div className="flex items-start gap-3">
                                         <Clock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                                         <div>
@@ -451,7 +451,7 @@ export function DiagnosisResultCard({
 
                             {/* Major/contraindicated interaction banner */}
                             {(majorAlerts.length > 0 || ddiBlockedRemedies.length > 0 || piperineAlert) && (
-                                <div className="bg-orange-50 px-6 py-4">
+                                <div className="bg-orange-50 px-4 py-3 sm:px-6 sm:py-4">
                                     <div className="flex items-start gap-3">
                                         <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
                                         <div className="flex-1 min-w-0">
@@ -507,7 +507,7 @@ export function DiagnosisResultCard({
 
                             {/* Unverified medication notice */}
                             {unverifiedAlert && (
-                                <div className="bg-slate-50 px-6 py-2 border-t border-slate-100">
+                                <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 sm:px-6">
                                     <p className="text-xs text-slate-600 italic">{unverifiedAlert}</p>
                                 </div>
                             )}
@@ -518,10 +518,10 @@ export function DiagnosisResultCard({
 
                 {/* ── 2. DIAGNOSIS HEADER ───────────────────────────────────────────────
                     Tier 1 padding (px-6 py-6 = 24px) — primary zone                    */}
-                <div className="bg-teal-50 px-6 py-6 border-b border-teal-100">
-                    <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold text-teal-900 leading-tight">
+                <div className="bg-teal-50 px-4 py-5 border-b border-teal-100 sm:px-6 sm:py-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="order-2 min-w-0 flex-1 sm:order-1">
+                            <h3 className="w-full max-w-none whitespace-normal break-words text-[22px] font-bold leading-[1.22] text-teal-900 sm:text-xl">
                                 {condition.name}
                             </h3>
                             {condition.severity && (
@@ -529,7 +529,7 @@ export function DiagnosisResultCard({
                                     <SeverityBadge severity={condition.severity} />
                                 </div>
                             )}
-                            <p className="text-sm text-teal-700 mt-2 leading-[1.65]">
+                            <p className="mt-3 text-[15px] leading-[1.65] text-teal-800 sm:text-sm sm:text-teal-700">
                                 {condition.description}
                             </p>
                             {differentialDiagnoses.length > 0 && (
@@ -539,10 +539,10 @@ export function DiagnosisResultCard({
                                     </p>
                                     <div className="mt-2 space-y-1.5">
                                         {differentialDiagnoses.slice(0, 3).map((item, idx) => (
-                                            <div key={`${item.name}-${idx}`} className="flex items-center justify-between gap-3 text-xs">
-                                                <span className="min-w-0 truncate font-medium text-slate-700">{item.name}</span>
+                                            <div key={`${item.name}-${idx}`} className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                                                <span className="min-w-0 font-medium leading-snug text-slate-800">{item.name}</span>
                                                 {item.likelihood && (
-                                                    <Badge variant="outline" className="shrink-0 border-teal-200 bg-teal-50 text-[11px] capitalize text-teal-700">
+                                                    <Badge variant="outline" className="w-fit shrink-0 border-teal-200 bg-teal-50 text-[11px] capitalize text-teal-700">
                                                         {item.likelihood}
                                                     </Badge>
                                                 )}
@@ -554,13 +554,13 @@ export function DiagnosisResultCard({
                         </div>
 
                         {/* Action buttons */}
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="order-1 flex w-full items-center gap-2 sm:order-2 sm:w-auto sm:shrink-0">
                             {/* Copy button with 2s success state */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={handleCopy}
-                                className={`gap-2 h-9 min-w-[80px] transition-all duration-200 active:scale-[0.97] ${copied
+                                className={`h-9 flex-1 gap-2 transition-all duration-200 active:scale-[0.97] sm:min-w-[80px] sm:flex-none ${copied
                                     ? "bg-green-50 text-green-700 border-green-300"
                                     : "bg-white text-teal-700 hover:bg-teal-50 border-teal-200"
                                     }`}
@@ -570,7 +570,7 @@ export function DiagnosisResultCard({
                                     ? <Check className="h-4 w-4" />
                                     : <Copy className="h-4 w-4" />
                                 }
-                                <span className="hidden sm:inline">
+                                <span>
                                     {copied ? "Copied!" : "Copy"}
                                 </span>
                             </Button>
@@ -582,7 +582,7 @@ export function DiagnosisResultCard({
                                 size="sm"
                                 onClick={handleDownloadReport}
                                 disabled={isGenerating}
-                                className={`gap-2 h-9 min-w-[120px] active:scale-[0.97] ${isPremium
+                                className={`h-9 flex-1 gap-2 active:scale-[0.97] sm:min-w-[120px] sm:flex-none ${isPremium
                                     ? "bg-white text-teal-700 hover:bg-teal-50 border-teal-200"
                                     : "bg-teal-700 text-white border-teal-700 hover:bg-teal-800"
                                     }`}
@@ -596,7 +596,8 @@ export function DiagnosisResultCard({
                                 ) : !isPremium ? (
                                     <>
                                         <Lock className="h-3.5 w-3.5" />
-                                        <span>Get Report</span>
+                                        <span className="sm:hidden">Report</span>
+                                        <span className="hidden sm:inline">Get Report</span>
                                     </>
                                 ) : (
                                     <>
@@ -613,7 +614,7 @@ export function DiagnosisResultCard({
                     Moved OUT of teal header zone (Gestalt proximity fix).
                     CI bar redesigned: gray track + teal fill + dashed bound lines.      */}
                 {showUncertaintyDetails && (
-                    <div className="bg-white px-6 py-4 border-b border-slate-100">
+                    <div className="bg-white px-4 py-4 border-b border-slate-100 sm:px-6">
                         <div className="flex items-center gap-2 mb-3">
                             <Activity className="h-4 w-4 text-teal-600" />
                             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -673,7 +674,7 @@ export function DiagnosisResultCard({
                                     />
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     <Badge variant="outline" className="text-[11px] bg-white border-teal-200 text-teal-700">
                                         Evidence: {uncertainty.evidenceQuality}
                                     </Badge>
@@ -683,16 +684,16 @@ export function DiagnosisResultCard({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex items-center gap-2">
-                                <Badge className="bg-teal-600 text-[11px]">
-                                    {confidenceLabel}
-                                </Badge>
-                                <span className="text-sm text-slate-600">
-                                    {roundedConfidence < 80
-                                        ? "More information needed for a confident assessment"
-                                        : "Open calculations for score details"}
-                                </span>
+                            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+                                    <Badge className="w-fit bg-teal-600 text-[11px]">
+                                        {confidenceLabel}
+                                    </Badge>
+                                    <span className="text-sm leading-relaxed text-slate-600">
+                                        {roundedConfidence < 80
+                                            ? "More information needed for a confident assessment"
+                                            : "Open calculations for score details"}
+                                    </span>
                                 </div>
                                 {roundedConfidence < 80 && (
                                     <Button
@@ -711,11 +712,11 @@ export function DiagnosisResultCard({
                 )}
 
                 {hasCalculationPanel && (
-                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <div className="bg-slate-50 px-4 py-4 border-b border-slate-100 sm:px-6">
                         <button
                             type="button"
                             onClick={() => setShowCalculationPanel((open) => !open)}
-                            className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-teal-200 hover:bg-teal-50/40"
+                            className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3 text-left shadow-sm transition-colors hover:border-teal-200 hover:bg-teal-50/40 sm:px-4"
                             aria-expanded={showCalculationPanel}
                         >
                             <span className="flex min-w-0 items-start gap-3">
@@ -738,7 +739,7 @@ export function DiagnosisResultCard({
                         </button>
 
                         {showCalculationPanel && (
-                            <div className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+                            <div className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-white p-3 sm:p-4">
                                 {showUncertaintyDetails && (
                                     <div>
                                         <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-teal-700">
