@@ -14,6 +14,7 @@ import {
     computeRefinementDecision,
     formatRefinementDecisionForPrompt,
     resolveChipOptionsForSchema,
+    type ConversationIntakeState,
 } from '@/lib/diagnosis/dialogue';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
@@ -1096,6 +1097,150 @@ function repairDanglingUiHintPrompt(text: string): string {
     return repairedPrefix === prefix ? text : `${repairedPrefix}\n${suffix}`;
 }
 
+function parseFirstFencedJson(text: string): unknown | null {
+    const fencedBlocks = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)];
+    for (let i = fencedBlocks.length - 1; i >= 0; i--) {
+        const raw = fencedBlocks[i]?.[1];
+        if (!raw) continue;
+        const firstBrace = raw.indexOf('{');
+        const lastBrace = raw.lastIndexOf('}');
+        if (firstBrace === -1 || lastBrace < firstBrace) continue;
+
+        try {
+            return JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+        } catch {
+            // Try older blocks before giving up.
+        }
+    }
+
+    return null;
+}
+
+function getCollectedValue(state: ConversationIntakeState, aliases: string[]): string | undefined {
+    for (const [key, value] of state.collectedData.entries()) {
+        if (aliases.some((alias) => key === alias || key.endsWith(`.${alias}`))) {
+            return value;
+        }
+    }
+    return undefined;
+}
+
+function inferFallbackSeverity(state: ConversationIntakeState): 'mild' | 'moderate' | 'severe' {
+    const value = (getCollectedValue(state, ['severity']) || '').toLowerCase();
+    const numeric = value.match(/\b([1-9]|10)\b/)?.[1];
+    if (numeric) {
+        const score = Number(numeric);
+        if (score >= 8) return 'severe';
+        if (score >= 4) return 'moderate';
+        return 'mild';
+    }
+    if (/severe|unbearable|extreme|very bad/.test(value)) return 'severe';
+    if (/moderate|medium|bad/.test(value)) return 'moderate';
+    return 'mild';
+}
+
+function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
+    const collected = Object.fromEntries(state.collectedData);
+    const symptomText = [
+        state.chiefComplaint,
+        getCollectedValue(state, ['associated']),
+        getCollectedValue(state, ['sensation']),
+    ].filter(Boolean).join(', ');
+    const concern = symptomText || state.activeSchemaLabel || 'the symptoms you described';
+    const hasRedFlags = state.redFlagsFound.length > 0;
+    const severity = hasRedFlags ? 'severe' : inferFallbackSeverity(state);
+    const confidence = Math.max(55, Math.min(78, 45 + state.answeredFields.size * 5));
+    const schemaLabel = state.activeSchemaLabel || 'symptom';
+    const safeSelfCare = !hasRedFlags && severity !== 'severe';
+
+    return {
+        id: `fallback-${state.activeSchemaId}`,
+        concern_summary: `Based on the available details, this looks like a ${schemaLabel.toLowerCase()} pattern that needs careful monitoring. The card is conservative because the AI response did not return a complete structured result.`,
+        escalation_level: hasRedFlags || severity === 'severe' ? 'L4' : 'L2',
+        escalation_action: hasRedFlags || severity === 'severe'
+            ? 'Please seek same-day medical care, especially if symptoms worsen or any danger sign appears.'
+            : '',
+        name: `Likely ${schemaLabel.toLowerCase()} pattern`,
+        description: `Your shared details include ${concern}. This is a cautious assessment based only on the information collected in this chat, not a confirmed medical diagnosis.`,
+        severity,
+        confidence,
+        emergency: false,
+        bayesianFactors: `Collected data used: ${JSON.stringify(collected)}. Confidence is limited because the model's structured final card was incomplete.`,
+        differentialDiagnoses: [
+            {
+                name: `Alternate ${schemaLabel.toLowerCase()} cause`,
+                likelihood: 'low',
+                rationale: 'More detail, physical examination, and vital signs may change the assessment.',
+            },
+        ],
+        matchCriteria: { locations: [] },
+        homeopathic_remedies: safeSelfCare ? [
+            {
+                name: 'Individualized homeopathic support',
+                description: 'Homeopathic selection depends on the exact symptom pattern, temperature, thirst, modalities, and overall state.',
+                potency: 'Consult a qualified homeopathic practitioner for potency selection',
+                method: 'Do not self-dose repeatedly if fever, vomiting, dehydration, or worsening symptoms are present.',
+                source: 'Traditional homeopathic practice',
+                evidence_label: 'Traditional practice',
+            },
+        ] : [],
+        ayurvedic_remedies: safeSelfCare ? [
+            {
+                name: 'Gentle diet and rest support',
+                indication: 'Supports recovery while symptoms are monitored.',
+                preparation: 'Prefer warm, light, freshly prepared food and adequate rest; avoid heavy, oily, or very spicy meals until settled.',
+                source: 'Traditional Ayurvedic self-care principles',
+                evidence_label: 'Traditional practice',
+            },
+        ] : [],
+        home_remedies: safeSelfCare ? [
+            {
+                name: 'Small frequent sips of fluid',
+                indication: 'Helps reduce dehydration risk when fever, vomiting, or stomach upset is present.',
+                preparation: 'Take small sips of water or oral rehydration solution frequently. Seek care if vomiting persists or urine becomes very low.',
+                evidence_label: 'Common self-care',
+            },
+        ] : [],
+        care_plan: hasRedFlags || severity === 'severe'
+            ? 'Do not rely on home care alone. Arrange same-day medical review and monitor breathing, alertness, hydration, and fever pattern.'
+            : 'Rest, hydrate, monitor temperature and symptoms, and avoid heavy meals. If symptoms worsen, persist, or new danger signs appear, seek medical care.',
+        lifestyle_advice: ['Keep notes on temperature, vomiting frequency, hydration, and any worsening symptoms.'],
+        when_to_consult: hasRedFlags || severity === 'severe'
+            ? 'Seek medical care today.'
+            : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
+        practitioner_prep: `Tell the practitioner these collected details: ${JSON.stringify(collected)}.`,
+        red_flags: [
+            ...state.redFlagsFound,
+            'confusion',
+            'difficulty breathing',
+            'stiff neck',
+            'persistent high fever',
+            'blood in vomit or stool',
+            'signs of dehydration',
+        ],
+        warnings: [
+            'This fallback card was generated because the AI structured response was incomplete.',
+            'Seek professional medical care for persistent, worsening, or concerning symptoms.',
+        ],
+        seekHelp: hasRedFlags || severity === 'severe'
+            ? 'Seek same-day medical care.'
+            : 'Seek care if symptoms worsen or do not improve within 24-48 hours.',
+        disclaimer: 'Healio provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms.',
+    };
+}
+
+function ensureFinalDiagnosisPayload(text: string, isFinalTurn: boolean, state: ConversationIntakeState): string {
+    const safeText = repairDanglingUiHintPrompt(text).trim();
+    if (!isFinalTurn) return safeText;
+
+    if (parseFirstFencedJson(safeText)) return safeText;
+
+    const prefix = (safeText.split(/```(?:json)?/)[0] || '').trim() ||
+        "Based on everything you've shared, here's what I've found.";
+    const fallbackCard = buildFallbackDiagnosisCard(state);
+    return `${prefix}\n\n\`\`\`json\n${JSON.stringify(fallbackCard, null, 2)}\n\`\`\``;
+}
+
 function streamTextResponse(text: string, customHeaders?: Record<string, string>): Response {
     const safeText = repairDanglingUiHintPrompt(text);
     const sse = [
@@ -1746,8 +1891,13 @@ UI HINT OUTPUT SAFETY:
                             const rescueData = await rescueResponse.json();
                             const rescueText = rescueData.choices?.[0]?.message?.content || '';
                             if (rescueText) {
+                                const safeRescueText = ensureFinalDiagnosisPayload(
+                                    rescueText,
+                                    isFinalTurn,
+                                    conversationIntakeState
+                                );
                                 const rescueSSE = [
-                                    `data: ${JSON.stringify({ content: rescueText })}\n\n`,
+                                    `data: ${JSON.stringify({ content: safeRescueText })}\n\n`,
                                     `data: [DONE]\n\n`,
                                 ].join('');
                                 return new Response(rescueSSE, {
@@ -1784,7 +1934,11 @@ UI HINT OUTPUT SAFETY:
 
             // Normalize Gemini response into SSE format to match Groq stream shape
             // so the frontend useChat hook can parse it identically (Failure Mode 3 fix)
-            const safeGeminiText = repairDanglingUiHintPrompt(geminiText);
+            const safeGeminiText = ensureFinalDiagnosisPayload(
+                geminiText,
+                isFinalTurn,
+                conversationIntakeState
+            );
             const geminiSSE = [
                 `data: ${JSON.stringify({ content: safeGeminiText })}\n\n`,
                 `data: [DONE]\n\n`,
@@ -1824,6 +1978,16 @@ UI HINT OUTPUT SAFETY:
 
         if (groqFinishReason === 'length') {
             console.warn('[Groq] Completion hit token limit; returning retry-safe message.');
+            if (isFinalTurn) {
+                return streamTextResponse(
+                    ensureFinalDiagnosisPayload('', true, conversationIntakeState),
+                    {
+                        'X-Provider': 'groq',
+                        'X-Model': groqModel,
+                        'X-Finish-Reason': 'length-fallback-card',
+                    }
+                );
+            }
             return streamTextResponse("I started a reply but it became too long to complete safely. Please send one short message like 'continue' and I will finish the guidance from here.", {
                 'X-Provider': 'groq',
                 'X-Model': groqModel,
@@ -1845,7 +2009,13 @@ UI HINT OUTPUT SAFETY:
             latencyMs: totalMs,
         });
 
-        return streamTextResponse(groqText, {
+        const safeGroqText = ensureFinalDiagnosisPayload(
+            groqText,
+            isFinalTurn,
+            conversationIntakeState
+        );
+
+        return streamTextResponse(safeGroqText, {
             'Connection': 'keep-alive',
             'X-Provider': 'groq',
             'X-Model': groqModel,

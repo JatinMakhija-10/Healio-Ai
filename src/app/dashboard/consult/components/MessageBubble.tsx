@@ -65,6 +65,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
     let displayText = message.content;
     let parsedCondition: ParsedConditionPayload | null = null;
     let isParsingJson = false;
+    let jsonParseFailed = false;
 
     // Wellness 7-block response detection
     let wellnessResponse: AskHealioResponse | null = null;
@@ -101,7 +102,8 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
     }
 
     let extractedJsonText: string | null = null;
-    const jsonMatch = message.content.match(/```(?:json)?\s*([\s\S]*?)```/);
+    const jsonMatches = [...message.content.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)];
+    const jsonMatch = jsonMatches.length > 0 ? jsonMatches[jsonMatches.length - 1] : null;
     
     if (jsonMatch) {
         extractedJsonText = jsonMatch[1];
@@ -132,12 +134,14 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
                 // Failed to parse, probably incomplete
-                isParsingJson = true;
+                isParsingJson = false;
+                jsonParseFailed = true;
                 displayText = message.content.split(/```(?:json)?/)[0].trim();
             }
         } else {
             // No valid JSON object found yet inside the block
-            isParsingJson = true;
+            isParsingJson = false;
+            jsonParseFailed = true;
             displayText = message.content.split(/```(?:json)?/)[0].trim();
         }
     }
@@ -276,6 +280,12 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
                     <div className="mt-2 flex animate-pulse items-center gap-2 text-xs font-medium text-[#0F6E56]">
                         <div className="w-4 h-4 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" />
                         Generating diagnosis card...
+                    </div>
+                )}
+
+                {jsonParseFailed && !parsedCondition && (
+                    <div className="mt-2 rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                        The diagnosis card did not finish rendering. Please send <span className="font-semibold">show diagnosis card</span> and Healio will rebuild it from this chat.
                     </div>
                 )}
 
