@@ -1,7 +1,6 @@
 "use client";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AlertTriangle, Phone, ExternalLink } from "lucide-react";
+import { AlertTriangle, Phone } from "lucide-react";
 
 interface EmergencyRedirectProps {
     /** Optional detected red-flag symptoms to display */
@@ -10,7 +9,7 @@ interface EmergencyRedirectProps {
 
 export function EmergencyRedirect({ detectedSymptoms }: EmergencyRedirectProps) {
     return (
-        <div className="w-full max-w-2xl mx-auto my-4 rounded-xl border-2 border-red-300 bg-gradient-to-br from-red-50 to-orange-50 p-6 shadow-lg shadow-red-100/50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="w-full max-w-2xl mx-auto my-4 rounded-[8px] border-2 border-red-300 bg-gradient-to-br from-red-50 to-orange-50 p-6 shadow-lg shadow-red-100/50 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Alert Header */}
             <div className="flex items-start gap-3 mb-4">
                 <div className="p-2.5 bg-red-100 rounded-full shrink-0">
@@ -68,7 +67,7 @@ export function EmergencyRedirect({ detectedSymptoms }: EmergencyRedirectProps) 
             {/* Warning text */}
             <div className="text-center">
                 <p className="text-xs text-red-700 font-medium">
-                    ⚠️ Healio.AI cannot assist with potential emergencies. Please do not delay seeking care.
+                    Healio.AI cannot assist with potential emergencies. Please do not delay seeking care.
                 </p>
             </div>
         </div>

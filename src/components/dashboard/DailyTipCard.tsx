@@ -453,23 +453,28 @@ const TIPS: Tip[] = [
 
 ];
 
+export function getDailyTip(date = new Date(), offset = 0): Tip {
+    const startOfYear = new Date(date.getFullYear(), 0, 0).getTime();
+    const dayOfYear = Math.floor((date.getTime() - startOfYear) / 86400000);
+    return TIPS[Math.abs(dayOfYear + offset) % TIPS.length];
+}
+
 export function DailyTipCard() {
     const [tip, setTip] = useState<Tip | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [refreshOffset, setRefreshOffset] = useState(0);
 
     useEffect(() => {
-        // Randomize on mount
-        const randomTip = TIPS[Math.floor(Math.random() * TIPS.length)];
+        const dailyTip = getDailyTip(new Date(), refreshOffset);
          
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTip(randomTip);
-    }, []);
+        setTip(dailyTip);
+    }, [refreshOffset]);
 
     const refreshTip = () => {
         setIsRefreshing(true);
         setTimeout(() => {
-            const randomTip = TIPS[Math.floor(Math.random() * TIPS.length)];
-            setTip(randomTip);
+            setRefreshOffset((offset) => offset + 1);
             setIsRefreshing(false);
         }, 300);
     };
@@ -483,7 +488,7 @@ export function DailyTipCard() {
                     <div className="relative z-10">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2 text-teal-700">
-                                <Lightbulb size={18} className="text-amber-500" fill="currentColor" />
+                                <Lightbulb size={18} className="text-amber-500" />
                                 <h3 className="font-semibold">Daily Tip</h3>
                             </div>
                             <Button
@@ -512,9 +517,9 @@ export function DailyTipCard() {
                         </AnimatePresence>
                     </div>
 
-                    {tip.action && (
+                    {tip.action && tip.actionLink && !tip.actionLink.startsWith("/dashboard/tips") && (
                         <Button variant="link" className="text-teal-700 p-0 h-auto justify-start font-semibold group w-fit">
-                            {tip.action} <span className="group-hover:translate-x-1 transition-transform">→</span>
+                            {tip.action} <span className="group-hover:translate-x-1 transition-transform">-&gt;</span>
                         </Button>
                     )}
                 </div>

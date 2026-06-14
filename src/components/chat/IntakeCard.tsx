@@ -23,7 +23,7 @@ interface IntakeCardProps {
 
 export function IntakeCard({ onSubmit }: IntakeCardProps) {
     const [location, setLocation] = useState("");
-    const [intensity, setIntensity] = useState([0]);
+    const [intensity, setIntensity] = useState([5]);
     const [painType, setPainType] = useState("");
     const [duration, setDuration] = useState("");
     const [whenStarted, setWhenStarted] = useState("");
@@ -300,7 +300,7 @@ export function IntakeCard({ onSubmit }: IntakeCardProps) {
                 )}
 
                 <Button
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-teal-700 hover:bg-teal-800 text-white h-12 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleSubmit}
                     disabled={!location || !painType || !duration || isSubmitting}
                 >

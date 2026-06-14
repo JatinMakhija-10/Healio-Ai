@@ -10,7 +10,6 @@ import {
     UserCircle,
     Settings,
     LogOut,
-    Stethoscope,
     BookOpen,
     GraduationCap,
     Video,
@@ -18,7 +17,8 @@ import {
     Crown,
     Leaf,
     Sun,
-    Users
+    Users,
+    UserRoundSearch
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,7 @@ const allSidebarItems = [
     {
         title: "Find Specialist",
         href: "/dashboard/search",
-        icon: UserCircle,
+        icon: UserRoundSearch,
         visible: PHASE_CONFIG.showDoctorMarketplace,
     },
     {
@@ -136,7 +136,7 @@ export function Sidebar() {
             {/* Logo */}
             <div className="px-6 py-5 flex items-center gap-2.5">
                 <div className="bg-teal-600 text-white p-1.5 rounded-lg">
-                    <Stethoscope size={20} strokeWidth={2.5} />
+                    <Leaf size={20} strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
                     <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
@@ -150,9 +150,6 @@ export function Sidebar() {
 
             {/* Navigation */}
             <div className="flex-1 overflow-y-auto pt-4 pb-6 px-4">
-                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#9CA3AF", marginBottom: 12, paddingLeft: 8 }}>
-                    Navigation
-                </p>
                 <div className="space-y-0.5">
                     {sidebarItems.map((item) => {
                         const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -186,7 +183,7 @@ export function Sidebar() {
             {/* Footer */}
             <div className="px-4 py-4 border-t border-slate-100 flex flex-col gap-2">
                 {/* Plan + credits badge */}
-                <Link href="/dashboard/billing" className="hidden">
+                <Link href="/dashboard/billing">
                     <div className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 cursor-pointer ${
                         plan === 'plus' || plan === 'pro'
                             ? 'bg-teal-50 border border-teal-200 hover:bg-teal-100'

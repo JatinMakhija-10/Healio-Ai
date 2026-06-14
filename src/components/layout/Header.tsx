@@ -180,7 +180,7 @@ export function Header() {
                     </Button>
 
                     {/* Title / Breadcrumb */}
-                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1E293B", letterSpacing: "-0.01em" }}>{pageTitle}</h2>
+                    <h2 className="text-base font-bold text-slate-900 tracking-normal">{pageTitle}</h2>
                 </div>
 
                 {/* Actions */}
@@ -199,7 +199,10 @@ export function Header() {
                         >
                             <Bell size={20} />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white font-bold flex items-center justify-center animate-pulse">
+                                <span
+                                    key={unreadCount}
+                                    className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[10px] text-white font-bold flex items-center justify-center animate-[pulse_1.2s_ease-in-out_1]"
+                                >
                                     {unreadCount > 9 ? '9+' : unreadCount}
                                 </span>
                             )}
@@ -309,7 +312,7 @@ export function Header() {
 
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden sm:block">
-                            <p style={{ fontSize: 13, fontWeight: 600, color: "#1E293B", lineHeight: 1 }}>
+                            <p className="text-[13px] font-semibold leading-none text-slate-900">
                                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"}
                             </p>
                             <button
@@ -322,12 +325,19 @@ export function Header() {
                                 </span>
                             </button>
                         </div>
-                        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 cursor-pointer">
-                            <AvatarImage src={user?.user_metadata?.avatar_url || ""} alt={user?.email || "User"} />
-                            <AvatarFallback className="bg-teal-50 text-teal-700">
-                                {user?.email?.charAt(0).toUpperCase() || "U"}
-                            </AvatarFallback>
-                        </Avatar>
+                        <button
+                            type="button"
+                            onClick={() => router.push("/dashboard/profile")}
+                            className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                            aria-label="Open profile"
+                        >
+                            <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 cursor-pointer">
+                                <AvatarImage src={user?.user_metadata?.avatar_url || ""} alt={user?.email || "User"} />
+                                <AvatarFallback className="bg-teal-50 text-teal-700">
+                                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                        </button>
                     </div>
                 </div>
             </header>

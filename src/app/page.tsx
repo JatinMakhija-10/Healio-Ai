@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Baby,
+  ChevronDown,
   CheckCircle2,
   CloudRain,
   HeartHandshake,
@@ -74,16 +75,19 @@ const testimonials = [
     quote: "It felt like asking someone sensible at home before deciding our next step.",
     name: "Priya S.",
     city: "Lucknow",
+    detail: "Monsoon fever care",
   },
   {
     quote: "The privacy wording was clear. I knew what was being used and why.",
     name: "Arjun R.",
     city: "Bengaluru",
+    detail: "Family profile setup",
   },
   {
     quote: "Large buttons and simple language made it easy for my father to use.",
     name: "Meera P.",
     city: "Ahmedabad",
+    detail: "Elder-friendly guidance",
   },
 ];
 
@@ -240,13 +244,15 @@ function StickyCta({
 }
 
 function CookieConsentBanner() {
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
+  const [isVisible, setIsVisible] = useState(false);
 
-    return window.localStorage.getItem("healio_cookie_consent") !== "accepted";
-  });
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setIsVisible(window.localStorage.getItem("healio_cookie_consent") !== "accepted");
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   const acceptCookies = () => {
     window.localStorage.setItem("healio_cookie_consent", "accepted");
@@ -337,6 +343,11 @@ export default function LandingPage() {
             <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio</span>
           </Link>
 
+          <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-[#1C1C1E]" aria-label="Primary navigation">
+            <Link className="hover:text-[#0F6E56]" href="#how-it-works">How it works</Link>
+            <Link className="hover:text-[#0F6E56]" href="/privacy">Privacy</Link>
+            <Link className="hover:text-[#0F6E56]" href="/login">Login</Link>
+          </nav>
         </header>
 
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-12">
@@ -370,9 +381,9 @@ export default function LandingPage() {
               </Link>
               <Link
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-6 text-base font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
-                href="/login"
+                href="#how-it-works"
               >
-                Welcome back, login
+                See a sample diagnosis
               </Link>
             </div>
 
@@ -385,7 +396,7 @@ export default function LandingPage() {
                     className="rounded-[8px] border border-[#E5E3DC] bg-white p-3 text-left shadow-sm"
                     key={item.label}
                   >
-                    <Icon className="mb-2 size-6 text-[#0F6E56]" aria-hidden="true" />
+                    <Icon className="mb-2 size-6 text-[#0B5F4A]" aria-hidden="true" />
                     <p className="text-sm font-bold text-[#1C1C1E]">{item.label}</p>
                     <p className="mt-1 text-sm leading-5 text-[#6B6B6B]">{item.detail}</p>
                   </div>
@@ -413,7 +424,10 @@ export default function LandingPage() {
         </div>
 
         <div className="flex justify-center pt-2 text-sm font-semibold text-[#6B6B6B]">
-          <span aria-hidden="true">Scroll for how it works</span>
+          <a href="#how-it-works" className="inline-flex items-center gap-2 rounded-full px-3 py-2 hover:text-[#0F6E56]">
+            <span>Scroll for how it works</span>
+            <ChevronDown className="size-4 animate-bounce" aria-hidden="true" />
+          </a>
         </div>
       </section>
 
@@ -511,8 +525,14 @@ export default function LandingPage() {
                 <blockquote className="text-base leading-7 text-[#1C1C1E]">
                   “{testimonial.quote}”
                 </blockquote>
-                <figcaption className="mt-5 border-t border-[#E5E3DC] pt-4 text-sm font-bold text-[#0F6E56]">
-                  {testimonial.name}, {testimonial.city}
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-[#E5E3DC] pt-4 text-sm">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#E1F5EE] text-sm font-bold text-[#0B5F4A]">
+                    {testimonial.name.charAt(0)}
+                  </span>
+                  <span>
+                    <span className="block font-bold text-[#0F6E56]">{testimonial.name}, {testimonial.city}</span>
+                    <span className="block text-xs font-semibold text-[#6B6B6B]">Verified family use - {testimonial.detail}</span>
+                  </span>
                 </figcaption>
               </figure>
             ))}

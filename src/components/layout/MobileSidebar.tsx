@@ -10,11 +10,12 @@ import {
     UserCircle,
     Settings,
     LogOut,
-    Stethoscope,
+    Leaf,
     X,
     BookOpen,
     Loader2,
-    CreditCard
+    CreditCard,
+    Crown
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -77,8 +78,10 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { logout, profile } = useAuth();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const plan = profile?.subscription_plan || "free";
+    const creditsBalance = Number(profile?.credits_balance ?? 0);
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -115,7 +118,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                         <div className="p-6 flex items-center justify-between border-b border-slate-100">
                             <div className="flex items-center gap-2">
                                 <div className="bg-teal-600 text-white p-1.5 rounded-lg">
-                                    <Stethoscope size={20} strokeWidth={2.5} />
+                                    <Leaf size={20} strokeWidth={2.5} />
                                 </div>
                                 <span className="font-bold text-lg text-slate-900 tracking-tight">
                                     Healio.AI
@@ -149,6 +152,29 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
                         {/* Footer */}
                         <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
+                            <Link href="/dashboard/billing" onClick={onClose}>
+                                <div className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 ${
+                                    plan === "plus" || plan === "pro"
+                                        ? "bg-teal-50 border border-teal-200"
+                                        : "bg-slate-50 border border-slate-200"
+                                }`}>
+                                    {plan === "plus" || plan === "pro" ? (
+                                        <Crown size={14} className="text-teal-600" />
+                                    ) : (
+                                        <CreditCard size={14} className="text-slate-400" />
+                                    )}
+                                    <div className="min-w-0 text-[11px] leading-tight">
+                                        <span className={`font-bold ${
+                                            plan === "plus" || plan === "pro" ? "text-teal-700" : "text-slate-500"
+                                        }`}>
+                                            {plan === "pro" ? "Pro Active" : plan === "plus" ? "Plus Active" : "Free Plan"}
+                                        </span>
+                                        <span className="mx-1.5 text-slate-300">-</span>
+                                        <span className="text-slate-500">{creditsBalance} credits</span>
+                                    </div>
+                                </div>
+                            </Link>
+
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"

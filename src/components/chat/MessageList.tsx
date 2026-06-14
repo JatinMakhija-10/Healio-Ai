@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { DiagnosisResultCard } from "./DiagnosisResultCard";
-import { Bot, User } from "lucide-react";
+import { Leaf, User } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DiagnosisMessage, UiHint } from "./useDiagnosisChat";
 import type { UserSymptomData } from "@/lib/diagnosis/types";
@@ -62,11 +62,15 @@ function ChipSelector({
             {options.map((opt) => (
                 <button
                     key={opt}
+                    type="button"
+                    disabled={selected !== null}
+                    aria-pressed={selected === opt}
                     onClick={() => {
+                        if (selected !== null) return;
                         setSelected(opt);
                         onSelect(opt);
                     }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 disabled:cursor-default
                         ${selected === opt
                             ? "bg-teal-600 text-white border-teal-600 shadow-sm"
                             : "bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 hover:text-teal-700"
@@ -90,6 +94,7 @@ function SeveritySlider({
     onSelect: (val: string) => void;
 }) {
     const [value, setValue] = useState([5]);
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const submitted = useRef(false);
 
     const SEVERITY_LABELS: Record<number, string> = {
@@ -130,12 +135,14 @@ function SeveritySlider({
                     onClick={() => {
                         if (!submitted.current) {
                             submitted.current = true;
+                            setIsSubmitted(true);
                             onSelect(`${value[0]}/10 — ${SEVERITY_LABELS[value[0]] || ""}`);
                         }
                     }}
-                    className="px-5 py-2 bg-teal-600 text-white text-xs font-semibold rounded-full hover:bg-teal-700 transition-colors"
+                    disabled={isSubmitted}
+                    className="px-5 py-2 bg-teal-600 text-white text-xs font-semibold rounded-full hover:bg-teal-700 transition-colors disabled:cursor-default disabled:opacity-70"
                 >
-                    Confirm Severity
+                    {isSubmitted ? "Severity confirmed" : "Confirm Severity"}
                 </button>
             </div>
         </div>
@@ -204,7 +211,7 @@ export function MessageList({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto space-y-6 pr-4 pb-4">
+        <div className="flex-1 overflow-y-auto space-y-6 px-4 pb-4">
             {messages.map((msg) => {
                 // Parse any ui_hint from the message content
                 const { cleanText, hint } = msg.role === "assistant"
@@ -237,7 +244,7 @@ export function MessageList({
                                 }
                             >
                                 {msg.role === "assistant" ? (
-                                    <Bot size={16} />
+                                    <Leaf size={17} aria-hidden="true" />
                                 ) : (
                                     <User size={16} />
                                 )}
@@ -249,7 +256,7 @@ export function MessageList({
                                 className={`p-3 rounded-lg text-sm ${
                                     msg.role === "assistant"
                                         ? "bg-white border border-slate-200 text-slate-800 shadow-sm"
-                                        : "bg-slate-900 text-white"
+                                        : "bg-[#1A1A2E] text-white"
                                 }`}
                             >
                                 {/* Show cleaned text (without the raw JSON hint) */}
@@ -307,7 +314,7 @@ export function MessageList({
                 <div className="flex gap-3">
                     <Avatar className="w-8 h-8 border border-slate-200">
                         <AvatarFallback className="bg-teal-600 text-white">
-                            <Bot size={16} />
+                            <Leaf size={17} aria-hidden="true" />
                         </AvatarFallback>
                     </Avatar>
                     <div className="bg-white border border-slate-200 p-3 rounded-lg flex gap-1 items-center h-10 w-16">

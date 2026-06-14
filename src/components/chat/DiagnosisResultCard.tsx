@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Condition, ReasoningTraceEntry, UserSymptomData } from "@/lib/diagnosis/types";
@@ -23,7 +23,15 @@ import {
     ChevronUp,
     Circle,
     Calculator,
+    Pill,
+    FlaskConical,
+    Info,
+    House,
+    Leaf,
+    ExternalLink,
+    AlertCircle,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { Button } from "@/components/ui/button";
 import { pdf } from '@react-pdf/renderer';
@@ -34,6 +42,7 @@ import { getSubscriptionStatus } from "@/lib/stripe/mockClient";
 import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal";
 import { useAuth } from "@/context/AuthContext";
 import { hasFeature } from "@/lib/subscription/plans";
+import { EmergencyRedirect } from "./EmergencyRedirect";
 
 type DifferentialDiagnosis = {
     name?: string;
@@ -65,7 +74,7 @@ type FlexibleRemedy = {
     videoUrl?: string;
 };
 
-type CareTabId = "home" | "ayurveda" | "homeopathy" | "doctor";
+type CareTabId = "home" | "ayurveda" | "homeopathy" | "safety";
 
 function getConfidenceBand(score: number) {
     if (score >= 90) return "High";
@@ -109,7 +118,7 @@ function getImpactLabel(impact: number) {
     if (absImpact > 3) return "Very strong";
     if (absImpact > 2) return "Strong";
     if (absImpact > 1) return "Moderate";
-    return "Light";
+    return "Minor";
 }
 
 function getSourceHref(source: unknown) {
@@ -153,15 +162,19 @@ function DifferentialRow({
     primary?: boolean;
 }) {
     const barColor = probability >= 60
-        ? "bg-teal-600"
+        ? "bg-blue-500"
         : probability >= 35
             ? "bg-amber-500"
             : "bg-amber-300";
 
     return (
-        <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(72px,1fr)_auto] items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2 text-xs sm:grid-cols-[minmax(0,1.4fr)_minmax(120px,1fr)_42px_72px]">
-            <span className="min-w-0 truncate font-medium text-slate-800">{name}</span>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(64px,0.9fr)_38px_58px] items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2 text-xs sm:grid-cols-[minmax(0,1.4fr)_minmax(120px,1fr)_42px_72px]">
+            <span className="min-w-0 truncate font-medium text-slate-800" title={name}>{name}</span>
+            <div
+                className="h-2 overflow-hidden rounded-full bg-slate-100"
+                role="img"
+                aria-label={`${name} likelihood ${probability}%`}
+            >
                 <div
                     className={`h-full rounded-full ${barColor}`}
                     style={{ width: `${Math.max(5, Math.min(100, probability))}%` }}
@@ -172,7 +185,7 @@ function DifferentialRow({
             </span>
             <Badge
                 variant="outline"
-                className={`hidden justify-center text-[10px] sm:inline-flex ${primary
+                className={`justify-center text-[10px] ${primary
                     ? "border-teal-200 bg-teal-50 text-teal-700"
                     : "border-slate-200 bg-slate-50 text-slate-600"
                     }`}
@@ -185,76 +198,105 @@ function DifferentialRow({
 
 function RemedyCard({
     remedy,
+    kind,
     tone,
 }: {
     remedy: FlexibleRemedy;
-    tone: "amber" | "green" | "teal" | "red";
+    kind?: "home" | "ayurveda" | "homeopathy";
+    tone?: "amber" | "green" | "teal" | "red";
 }) {
-    const toneClass = {
-        amber: "border-amber-100 bg-amber-50 text-amber-900",
-        green: "border-green-100 bg-green-50 text-green-900",
-        teal: "border-teal-100 bg-teal-50 text-teal-900",
-        red: "border-red-100 bg-red-50 text-red-900",
-    }[tone];
-    const subtleText = {
-        amber: "text-amber-800",
-        green: "text-green-800",
-        teal: "text-teal-800",
-        red: "text-red-800",
-    }[tone];
+    const resolvedKind = kind ?? (tone === "green" ? "ayurveda" : tone === "teal" ? "homeopathy" : "home");
+    const tradition = {
+        home: {
+            Icon: House,
+            label: "Simple home care",
+            className: "border-[#B8DED0] bg-[#F1FBF6] text-[var(--healio-wellness-charcoal)]",
+            accent: "text-[var(--healio-wellness-primary)]",
+            source: "border-[#B8DED0] bg-white text-[var(--healio-wellness-primary)]",
+            howTo: "How to use",
+        },
+        ayurveda: {
+            Icon: Leaf,
+            label: "Traditional Ayurvedic",
+            className: "border-[var(--healio-evidence-established)] bg-[var(--healio-evidence-established-bg)] text-[var(--healio-wellness-charcoal)]",
+            accent: "text-[var(--healio-wellness-primary-dark)]",
+            source: "border-[var(--healio-evidence-established)] bg-white text-[var(--healio-wellness-primary-dark)]",
+            howTo: "Preparation",
+        },
+        homeopathy: {
+            Icon: FlaskConical,
+            label: "Homeopathic - consult first",
+            className: "border-[var(--healio-evidence-traditional)] bg-[var(--healio-evidence-traditional-bg)] text-[var(--healio-wellness-charcoal)]",
+            accent: "text-[var(--healio-wellness-accent)]",
+            source: "border-[var(--healio-evidence-traditional)] bg-white text-[var(--healio-wellness-accent)]",
+            howTo: "How to take",
+        },
+    }[resolvedKind];
+    const Icon = tradition.Icon;
 
     return (
-        <div className={`rounded-lg border p-3 ${toneClass}`}>
+        <div className={`rounded-lg border p-3 shadow-sm transition-colors hover:border-opacity-80 ${tradition.className}`}>
+            <div className="mb-3 flex items-center justify-between gap-3 border-b border-black/5 pb-2">
+                <div className={`flex min-w-0 items-center gap-2 text-[11px] font-bold uppercase tracking-wide ${tradition.accent}`}>
+                    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{tradition.label}</span>
+                </div>
+                {remedy.source && (() => {
+                    const sourceHref = getSourceHref(remedy.source);
+                    const sourceLabel = (
+                        <span className={`inline-flex max-w-[160px] items-center gap-1 truncate rounded-md border px-2 py-1 text-[10px] font-bold ${tradition.source}`}>
+                            Source: {remedy.source}
+                            {sourceHref ? <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" /> : null}
+                        </span>
+                    );
+
+                    return sourceHref ? (
+                        <a href={sourceHref} target="_blank" rel="noreferrer" className="shrink-0 hover:opacity-80">
+                            {sourceLabel}
+                        </a>
+                    ) : sourceLabel;
+                })()}
+            </div>
+
             <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-snug">
+                <div className="min-w-0 space-y-2">
+                    <p className="text-[15px] font-bold leading-snug text-slate-950">
                         {remedy.name || remedy.remedy || "Care step"}
                         {remedy.potency && (
-                            <span className="ml-2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-medium">
+                            <span className={`ml-2 rounded-full border bg-white px-2 py-0.5 text-[10px] font-bold ${tradition.source}`}>
                                 {remedy.potency}
                             </span>
                         )}
                     </p>
                     {(remedy.description || remedy.indication) && (
-                        <p className={`mt-1 text-xs leading-[1.6] ${subtleText}`}>
+                        <p className="text-xs leading-[1.6] text-slate-700">
                             {remedy.description || remedy.indication}
                         </p>
                     )}
                     {(remedy.method || remedy.preparation || remedy.dosage) && (
-                        <p className={`mt-1 text-xs leading-[1.6] ${subtleText}`}>
-                            <strong>How to use:</strong>{" "}
+                        <p className="rounded-md border border-black/5 bg-white/70 px-2.5 py-2 text-xs leading-[1.6] text-slate-700">
+                            <strong className={tradition.accent}>{tradition.howTo}:</strong>{" "}
                             {remedy.method || remedy.preparation || remedy.dosage}
                         </p>
                     )}
                     {remedy.ingredients?.length ? (
-                        <p className={`mt-1 text-[11px] leading-[1.5] ${subtleText}`}>
+                        <p className="text-[11px] leading-[1.5] text-slate-600">
                             Ingredients: {remedy.ingredients.join(", ")}
                         </p>
                     ) : null}
-                    {remedy.source && (() => {
-                        const sourceHref = getSourceHref(remedy.source);
-                        const sourceLabel = (
-                            <span className="mt-2 inline-block rounded-full bg-white/70 px-2 py-0.5 text-[11px]">
-                                Source: {remedy.source}
-                            </span>
-                        );
-
-                        return sourceHref ? (
-                            <a href={sourceHref} target="_blank" rel="noreferrer" className="inline-block hover:underline">
-                                {sourceLabel}
-                            </a>
-                        ) : sourceLabel;
-                    })()}
                 </div>
                 {remedy.videoUrl && (
                     <a
                         href={remedy.videoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="shrink-0 text-teal-700 hover:text-teal-800"
+                        className={`shrink-0 rounded-full border bg-white px-2.5 py-1 text-[11px] font-bold transition-colors hover:bg-white/80 ${tradition.source}`}
                         aria-label="Open remedy video"
                     >
-                        <Video size={16} />
+                        <span className="inline-flex items-center gap-1">
+                            <Video size={14} />
+                            Watch
+                        </span>
                     </a>
                 )}
             </div>
@@ -300,7 +342,8 @@ function SeverityBadge({ severity }: { severity?: string }) {
     if (s.includes("moderate")) {
         return (
             <Badge className="bg-amber-100 text-amber-800 border border-amber-200 gap-1 text-[11px]">
-                ◆ Severity: {severity}
+                <AlertCircle className="h-2.5 w-2.5" />
+                Severity: {severity}
             </Badge>
         );
     }
@@ -317,38 +360,159 @@ function SeverityBadge({ severity }: { severity?: string }) {
 
 // ─── Accordion Section ────────────────────────────────────────────────────────
 // Replaces the hidden-tab pill pattern — all content visible by default
-function RemedyAccordion({
-    title,
-    emoji,
-    headerClass,
-    defaultOpen = true,
-    children,
+function getRemedyDisplayName(remedy: unknown) {
+    if (!remedy || typeof remedy !== "object") return "Remedy";
+    const candidate = remedy as FlexibleRemedy;
+    return candidate.name || candidate.remedy || "Remedy";
+}
+
+function MedicationSafetySummary({
+    ddiAlerts,
+    ddiFlaggedRemedies,
+    ddiBlockedRemedies,
 }: {
-    title: string;
-    emoji: string;
-    headerClass: string;
-    defaultOpen?: boolean;
-    children: React.ReactNode;
+    ddiAlerts: string[];
+    ddiFlaggedRemedies: FlaggedRemedy[];
+    ddiBlockedRemedies: FlaggedRemedy[];
 }) {
-    const [open, setOpen] = useState(defaultOpen);
+    const timingAlerts = ddiFlaggedRemedies.filter((flag) => flag.timingNote);
+    const majorAlerts = ddiAlerts.filter(
+        (alert) => !alert.includes("could not be verified") && !alert.includes("Trikatu")
+    );
+    const piperineAlert = ddiAlerts.find((alert) => alert.includes("Trikatu"));
+    const unverifiedAlert = ddiAlerts.find((alert) => alert.includes("could not be verified"));
+    const moderateRemedies = ddiFlaggedRemedies.filter(
+        (flag) => (flag.severity === "moderate" || flag.severity === "minor") && !flag.timingNote
+    );
+    const itemCount =
+        timingAlerts.length +
+        majorAlerts.length +
+        (piperineAlert ? 1 : 0) +
+        (unverifiedAlert ? 1 : 0) +
+        moderateRemedies.length +
+        ddiBlockedRemedies.length;
+    const [open, setOpen] = useState(
+        majorAlerts.length > 0 || ddiBlockedRemedies.length > 0 || Boolean(piperineAlert)
+    );
+    const panelId = useId();
+
+    if (itemCount === 0) return null;
+
     return (
-        <div className="border border-slate-200 rounded-lg overflow-hidden">
+        <div className="border-b border-orange-200 bg-orange-50/70">
             <button
-                onClick={() => setOpen((o) => !o)}
-                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-all duration-75 active:scale-[0.97] active:opacity-80 ${headerClass}`}
+                type="button"
+                onClick={() => setOpen((value) => !value)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-orange-50 sm:px-6"
                 aria-expanded={open}
+                aria-controls={panelId}
             >
-                <span>{emoji} {title}</span>
-                {open
-                    ? <ChevronUp className="h-4 w-4 shrink-0" />
-                    : <ChevronDown className="h-4 w-4 shrink-0" />
-                }
+                <span className="flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-orange-700 shadow-sm">
+                        <Pill className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                        <span className="block text-sm font-bold text-orange-900">
+                            Medication interactions found ({itemCount})
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-relaxed text-orange-800">
+                            Review timing notes, blocked remedies, and consult-first guidance.
+                        </span>
+                    </span>
+                </span>
+                {open ? (
+                    <ChevronUp className="h-4 w-4 shrink-0 text-orange-700" />
+                ) : (
+                    <ChevronDown className="h-4 w-4 shrink-0 text-orange-700" />
+                )}
             </button>
-            {open && (
-                <div className="p-4 space-y-3">
-                    {children}
-                </div>
-            )}
+
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        id={panelId}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="space-y-3 px-4 pb-4 sm:px-6">
+                            {timingAlerts.length > 0 && (
+                                <div className="rounded-lg border border-amber-200 bg-white p-3">
+                                    <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-800">
+                                        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                                        Timing interactions
+                                    </h4>
+                                    <ul className="space-y-1.5">
+                                        {timingAlerts.map((flag, index) => (
+                                            <li key={`${flag.timingNote}-${index}`} className="text-xs leading-[1.6] text-amber-800">
+                                                {flag.timingNote}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {(majorAlerts.length > 0 || ddiBlockedRemedies.length > 0 || piperineAlert) && (
+                                <div className="rounded-lg border border-orange-200 bg-white p-3">
+                                    <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-orange-800">
+                                        <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                                        Consult before using
+                                    </h4>
+                                    {ddiBlockedRemedies.length > 0 && (
+                                        <p className="mb-2 text-xs leading-relaxed text-orange-800">
+                                            <strong>{ddiBlockedRemedies.length} remedy/remedies</strong> may be contraindicated with your medication profile.
+                                        </p>
+                                    )}
+                                    <ul className="space-y-1.5">
+                                        {ddiBlockedRemedies.map((flag, index) => (
+                                            <li key={`${getRemedyDisplayName(flag.remedy)}-${index}`} className="flex items-start gap-2 text-xs leading-[1.65] text-orange-800">
+                                                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden="true" />
+                                                <span><strong>{getRemedyDisplayName(flag.remedy)}:</strong> {flag.reason}</span>
+                                            </li>
+                                        ))}
+                                        {majorAlerts.map((alert, index) => (
+                                            <li key={`${alert}-${index}`} className="flex items-start gap-2 text-xs leading-[1.65] text-orange-800">
+                                                <Pill className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden="true" />
+                                                <span>{alert}</span>
+                                            </li>
+                                        ))}
+                                        {piperineAlert && (
+                                            <li className="flex items-start gap-2 text-xs leading-[1.65] text-orange-800">
+                                                <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden="true" />
+                                                <span>{piperineAlert}</span>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {moderateRemedies.length > 0 && (
+                                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                                    <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+                                        <Info className="h-3.5 w-3.5" aria-hidden="true" />
+                                        Moderate or minor notes
+                                    </h4>
+                                    <ul className="space-y-1.5">
+                                        {moderateRemedies.map((flag, index) => (
+                                            <li key={`${getRemedyDisplayName(flag.remedy)}-${index}`} className="text-xs leading-[1.65] text-slate-700">
+                                                <strong>{getRemedyDisplayName(flag.remedy)}:</strong> {flag.reason}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {unverifiedAlert && (
+                                <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs italic leading-relaxed text-slate-600">
+                                    {unverifiedAlert}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -420,7 +584,8 @@ export function DiagnosisResultCard({
         (w) =>
             w.toLowerCase().includes("immediate") ||
             w.toLowerCase().includes("emergency") ||
-            w.toLowerCase().includes("911")
+            w.toLowerCase().includes("911") ||
+            w.toLowerCase().includes("112")
     );
 
     const _shouldRecommendDoctor =
@@ -567,7 +732,7 @@ export function DiagnosisResultCard({
         hasHomeRemedies ? { id: "home" as const, label: "Home Remedies", meta: `${homeRemedies.length} safe steps` } : null,
         hasAyurvedic ? { id: "ayurveda" as const, label: "Ayurveda", meta: `${ayurvedicRemedies.length} source-backed` } : null,
         hasHomeopathic ? { id: "homeopathy" as const, label: "Homeopathy", meta: "Experimental, ask a practitioner" } : null,
-        hasExerciseWarning ? { id: "doctor" as const, label: "Warnings", meta: "Limits and next steps" } : null,
+        hasExerciseWarning ? { id: "safety" as const, label: "Warnings", meta: "Limits and next steps" } : null,
     ].filter(Boolean) as Array<{ id: CareTabId; label: string; meta: string }>;
     const activeCareTab = careTabs.some((tab) => tab.id === selectedCareTab)
         ? selectedCareTab
@@ -635,112 +800,27 @@ export function DiagnosisResultCard({
                     Sits directly below urgency banner — impossible to miss.
                     Shown only when the DDI layer detected active interactions.
                     Orange/purple palette to distinguish from clinical warnings.  */}
-                {(ddiAlerts.length > 0 || ddiBlockedRemedies.length > 0 || ddiFlaggedRemedies.length > 0) && (() => {
-                    // Separate alerts by type for tiered display
-                    const timingAlerts = ddiFlaggedRemedies.filter((f) => f.timingNote);
-                    const majorAlerts = ddiAlerts.filter(
-                        (a) => !a.includes('could not be verified') && !a.includes('Trikatu')
-                    );
-                    const piperineAlert = ddiAlerts.find((a) => a.includes('Trikatu'));
-                    const unverifiedAlert = ddiAlerts.find((a) => a.includes('could not be verified'));
-                    const moderateRemedies = ddiFlaggedRemedies.filter(
-                        (f) => (f.severity === 'moderate' || f.severity === 'minor') && !f.timingNote
-                    );
+                {isEmergency && (
+                    <div className="border-b border-red-200 bg-red-50 px-4 py-4 sm:px-6">
+                        <EmergencyRedirect detectedSymptoms={allWarnings} />
+                    </div>
+                )}
 
-                    return (
-                        <div className="border-b border-orange-200">
+                {(ddiAlerts.length > 0 || ddiBlockedRemedies.length > 0 || ddiFlaggedRemedies.length > 0) && (
+                    <MedicationSafetySummary
+                        ddiAlerts={ddiAlerts}
+                        ddiFlaggedRemedies={ddiFlaggedRemedies}
+                        ddiBlockedRemedies={ddiBlockedRemedies}
+                    />
+                )}
 
-                            {/* Timing interactions — distinct ⏱ panel */}
-                            {timingAlerts.length > 0 && (
-                                <div className="bg-amber-50 px-4 py-3 border-b border-amber-100 sm:px-6">
-                                    <div className="flex items-start gap-3">
-                                        <Clock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                        <div>
-                                            <h4 className="text-xs font-bold text-amber-800 mb-1">⏱ Timing Interactions</h4>
-                                            <ul className="space-y-1">
-                                                {timingAlerts.map((f, i) => (
-                                                    <li key={i} className="text-xs text-amber-800 leading-[1.6]">
-                                                        {f.timingNote}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Major/contraindicated interaction banner */}
-                            {(majorAlerts.length > 0 || ddiBlockedRemedies.length > 0 || piperineAlert) && (
-                                <div className="bg-orange-50 px-4 py-3 sm:px-6 sm:py-4">
-                                    <div className="flex items-start gap-3">
-                                        <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold text-orange-800 mb-1">💊 Medication Interaction Notice</h4>
-                                            {ddiBlockedRemedies.length > 0 && (
-                                                <p className="text-xs text-orange-700 mb-2 leading-relaxed">
-                                                    <strong>{ddiBlockedRemedies.length} remedy/remedies</strong> have been flagged as potentially contraindicated with your medications.
-                                                </p>
-                                            )}
-                                            <ul className="space-y-1.5">
-                                                {majorAlerts.map((alert, i) => (
-                                                    <li key={i} className="text-xs text-orange-800 leading-[1.65] flex items-start gap-1.5">
-                                                        <span className="text-orange-500 mt-0.5 shrink-0">•</span>
-                                                        <span>{alert}</span>
-                                                    </li>
-                                                ))}
-                                                {piperineAlert && (
-                                                    <li className="text-xs text-orange-800 leading-[1.65] flex items-start gap-1.5">
-                                                        <span className="text-orange-500 mt-0.5 shrink-0">⚗</span>
-                                                        <span>{piperineAlert}</span>
-                                                    </li>
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Moderate interactions — collapsed by default */}
-                            {moderateRemedies.length > 0 && (
-                                <RemedyAccordion
-                                    title={`${moderateRemedies.length} possible interaction${moderateRemedies.length > 1 ? 's' : ''} (moderate/minor)`}
-                                    emoji="ℹ️"
-                                    headerClass="bg-slate-50 text-slate-700 hover:bg-slate-100"
-                                    defaultOpen={false}
-                                >
-                                    <ul className="space-y-2">
-                                        {moderateRemedies.map((f, i) => (
-                                            <li key={i} className="text-xs text-slate-700 leading-[1.65] flex items-start gap-1.5">
-                                                <span className="text-slate-400 mt-0.5 shrink-0">•</span>
-                                                <div>
-                                                    <span className="font-medium">
-                                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                                        {(f.remedy as any)?.name ?? 'Remedy'}
-                                                    </span>
-                                                    {' — '}{f.reason}
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </RemedyAccordion>
-                            )}
-
-                            {/* Unverified medication notice */}
-                            {unverifiedAlert && (
-                                <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 sm:px-6">
-                                    <p className="text-xs text-slate-600 italic">{unverifiedAlert}</p>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })()}
 
 
                 {/* ── 2. DIAGNOSIS HEADER ───────────────────────────────────────────────
                     Tier 1 padding (px-6 py-6 = 24px) — primary zone                    */}
                 <div className="bg-white px-4 py-5 border-b border-slate-100 sm:px-6 sm:py-6">
                     <div className="flex flex-col gap-4">
-                        <div className="flex w-full flex-wrap items-center gap-2">
+                        <div className="order-2 flex w-full flex-wrap items-center gap-2">
                             {/* Copy button with 2s success state */}
                             <Button
                                 variant="outline"
@@ -768,9 +848,9 @@ export function DiagnosisResultCard({
                                 size="sm"
                                 onClick={handleDownloadReport}
                                 disabled={isGenerating}
-                                className={`h-8 gap-2 rounded-full px-3 text-xs active:scale-[0.97] ${isPremium
-                                    ? "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border-slate-200"
-                                    : "bg-teal-700 text-white border-teal-700 hover:bg-teal-800"
+                                className={`h-8 min-w-[120px] gap-2 rounded-full px-3 text-xs active:scale-[0.97] ${isPremium
+                                    ? "bg-teal-700 text-white border-teal-700 hover:bg-teal-800"
+                                    : "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border-slate-200"
                                     }`}
                             >
                                 {isGenerating ? (
@@ -788,14 +868,26 @@ export function DiagnosisResultCard({
                                 ) : (
                                     <>
                                         <Share2 className="h-4 w-4" />
-                                        <span>Share</span>
+                                        <span>Download</span>
                                     </>
                                 )}
                             </Button>
+
+                            {roundedConfidence < 80 && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleAddMoreDetails}
+                                    className="h-8 gap-2 rounded-full border-teal-200 bg-white px-3 text-xs text-teal-700 hover:bg-teal-50"
+                                >
+                                    Add more details
+                                </Button>
+                            )}
                         </div>
 
-                        <div className="min-w-0">
-                            <h3 className="w-full max-w-none whitespace-normal break-words text-[22px] font-semibold leading-[1.25] text-slate-950 sm:text-[24px]">
+                        <div className="order-1 min-w-0">
+                            <h3 className="text-display-condition w-full max-w-none whitespace-normal break-words">
                                 {condition.name}
                             </h3>
                             {condition.severity && (
@@ -838,23 +930,11 @@ export function DiagnosisResultCard({
                                     </span>
                                 </div>
 
-                                {roundedConfidence < 80 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleAddMoreDetails}
-                                        className="mb-3 h-8 border-teal-200 bg-white text-xs text-teal-700 hover:bg-teal-50"
-                                    >
-                                        Add more details
-                                    </Button>
-                                )}
-
                                 {/* Redesigned CI bar (FiveThirtyEight / Our World in Data pattern) */}
-                                <div className="w-full bg-gray-200 rounded-full h-3 mb-3 relative overflow-hidden">
+                                <div className="relative mb-3 h-3 w-full rounded-full bg-gray-200 sm:h-4">
                                     {/* CI zone: light teal between lower and upper bounds */}
                                     <div
-                                        className="bg-teal-100 h-full absolute"
+                                        className="absolute h-full rounded-full bg-teal-100"
                                         style={{
                                             left: `${uncertainty.confidenceInterval.lower}%`,
                                             width: `${uncertainty.confidenceInterval.upper - uncertainty.confidenceInterval.lower}%`,
@@ -862,7 +942,7 @@ export function DiagnosisResultCard({
                                     />
                                     {/* Point estimate fill */}
                                     <div
-                                        className={`${confidenceTone.fill} h-full rounded-l-full absolute`}
+                                        className={`absolute h-full rounded-full ${confidenceTone.fill}`}
                                         style={{ width: `${uncertainty.pointEstimate}%` }}
                                     />
                                     {/* Lower bound dashed line */}
@@ -898,17 +978,6 @@ export function DiagnosisResultCard({
                                             : "Open calculations for score details"}
                                     </span>
                                 </div>
-                                {roundedConfidence < 80 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleAddMoreDetails}
-                                        className="h-8 w-fit border-teal-200 bg-white text-xs text-teal-700 hover:bg-teal-50"
-                                    >
-                                        Add more details
-                                    </Button>
-                                )}
                             </div>
                         )}
                     </div>
@@ -1058,7 +1127,7 @@ export function DiagnosisResultCard({
                                                                     : "border-red-200 bg-red-50 text-red-700"
                                                                     }`}
                                                             >
-                                                                {trace.impact > 0 ? "+" : "-"} {getImpactLabel(trace.impact)}
+                                                                {trace.impact > 0 ? "Supports diagnosis" : "Against diagnosis"} - {getImpactLabel(trace.impact)}
                                                             </Badge>
                                                         </div>
                                                     ))}
@@ -1108,11 +1177,16 @@ export function DiagnosisResultCard({
                                 Recommended Care
                             </h4>
 
-                            <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+                            <div className="mb-4 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Recommended care sections">
                                 {careTabs.map((tab) => (
                                     <button
                                         key={tab.id}
+                                        id={`care-tab-${tab.id}`}
                                         type="button"
+                                        role="tab"
+                                        aria-selected={activeCareTab === tab.id}
+                                        aria-controls={`care-panel-${tab.id}`}
+                                        tabIndex={activeCareTab === tab.id ? 0 : -1}
                                         onClick={() => setSelectedCareTab(tab.id)}
                                         className={`min-w-fit rounded-full border px-3 py-2 text-left transition-colors ${activeCareTab === tab.id
                                             ? "border-teal-200 bg-teal-50 text-teal-800"
@@ -1126,36 +1200,36 @@ export function DiagnosisResultCard({
                             </div>
 
                             {activeCareTab === "home" && (
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div id="care-panel-home" role="tabpanel" aria-labelledby="care-tab-home" className="grid gap-3 sm:grid-cols-2">
                                     {homeRemedies.map((remedy, idx) => (
-                                        <RemedyCard key={`home-${idx}`} remedy={remedy} tone="amber" />
+                                        <RemedyCard key={`home-${idx}`} remedy={remedy} kind="home" />
                                     ))}
                                 </div>
                             )}
 
                             {activeCareTab === "ayurveda" && (
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div id="care-panel-ayurveda" role="tabpanel" aria-labelledby="care-tab-ayurveda" className="grid gap-3 sm:grid-cols-2">
                                     {ayurvedicRemedies.map((remedy, idx) => (
-                                        <RemedyCard key={`ayurveda-${idx}`} remedy={remedy} tone="green" />
+                                        <RemedyCard key={`ayurveda-${idx}`} remedy={remedy} kind="ayurveda" />
                                     ))}
                                 </div>
                             )}
 
                             {activeCareTab === "homeopathy" && (
-                                <div className="space-y-3">
-                                    <div className="rounded-lg border border-teal-100 bg-teal-50 px-3 py-2 text-xs leading-relaxed text-teal-800">
+                                <div id="care-panel-homeopathy" role="tabpanel" aria-labelledby="care-tab-homeopathy" className="space-y-3">
+                                    <div className="rounded-lg border border-[var(--healio-evidence-traditional)] bg-[var(--healio-evidence-traditional-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--healio-wellness-accent)]">
                                         Experimental suggestions. Consult a qualified homeopathic or medical practitioner before use.
                                     </div>
                                     <div className="grid gap-3 sm:grid-cols-2">
                                         {homeopathicRemedies.map((remedy, idx) => (
-                                            <RemedyCard key={`homeopathy-${idx}`} remedy={remedy} tone="teal" />
+                                            <RemedyCard key={`homeopathy-${idx}`} remedy={remedy} kind="homeopathy" />
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {activeCareTab === "doctor" && (
-                                <div className="space-y-3">
+                            {activeCareTab === "safety" && (
+                                <div id="care-panel-safety" role="tabpanel" aria-labelledby="care-tab-safety" className="space-y-3">
                                     {(condition.warnings || []).length > 0 && (
                                         <div className="rounded-lg border border-red-100 bg-red-50 p-3">
                                             <h5 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-red-700">
@@ -1165,7 +1239,7 @@ export function DiagnosisResultCard({
                                             <ul className="space-y-1.5">
                                                 {(condition.warnings || []).map((warning, idx) => (
                                                     <li key={idx} className="flex items-start gap-2 text-xs leading-[1.65] text-red-700">
-                                                        <span className="mt-0.5 text-red-400">-</span>
+                                                        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" aria-hidden="true" />
                                                         <span>{warning}</span>
                                                     </li>
                                                 ))}
@@ -1199,241 +1273,16 @@ export function DiagnosisResultCard({
                     {/* ── 5. RECOMMENDED CARE — Progressive Disclosure Accordions ────────
                         Replaces hidden-tab pill system (Baymard: 74% users miss non-default tabs).
                         All sections default-open; Exercise/Warnings closed by default.           */}
-                    {false && (hasHomeRemedies || hasAyurvedic || hasHomeopathic || hasExerciseWarning) && (
-                        <div className="px-4 py-4 space-y-2">
-                            <h4 className="font-semibold text-slate-900 mb-3 text-sm">
-                                Recommended Care
-                            </h4>
 
-                            {/* Home Remedies */}
-                            {hasHomeRemedies && (
-                                <RemedyAccordion
-                                    title="Home Remedies"
-                                    emoji="🌿"
-                                    headerClass="bg-amber-50 text-amber-800 hover:bg-amber-100"
-                                    defaultOpen={true}
-                                >
-                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                    {(condition.home_remedies || condition.indianHomeRemedies || []).slice(0, 5).map((remedy: any, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-amber-50 p-3 rounded-lg border border-amber-100 hover:border-amber-200 transition-colors"
-                                        >
-                                            <span className="font-medium text-amber-800 text-sm">
-                                                {remedy.name || remedy.remedy}
-                                            </span>
-                                            {(remedy.description || remedy.indication) && (
-                                                <p className="text-xs text-amber-800 mt-1 leading-[1.65]">
-                                                    {remedy.description || remedy.indication}
-                                                </p>
-                                            )}
-                                            {(remedy.method || remedy.preparation) && (
-                                                <p className="text-xs text-amber-800 mt-1 leading-[1.65]">
-                                                    {/* FIXED: bold label — italic restricted to disclaimers */}
-                                                    <strong>How to use:</strong>{" "}
-                                                    {remedy.method || remedy.preparation}
-                                                </p>
-                                            )}
-                                            {remedy.ingredients?.length > 0 && (
-                                                <p className="text-xs text-amber-700 mt-1">
-                                                    Ingredients: {remedy.ingredients.join(", ")}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </RemedyAccordion>
-                            )}
-
-                            {/* Ayurvedic Solutions */}
-                            {hasAyurvedic && (
-                                <RemedyAccordion
-                                    title="Ayurvedic Solutions"
-                                    emoji="🍃"
-                                    headerClass="bg-green-50 text-green-800 hover:bg-green-100"
-                                    defaultOpen={true}
-                                >
-                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                    {(condition.ayurvedic_remedies || []).slice(0, 5).map((remedy: any, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-green-50 p-3 rounded-lg border border-green-100 hover:border-green-200 transition-colors"
-                                        >
-                                            <span className="font-medium text-green-800 text-sm">
-                                                {remedy.name}
-                                            </span>
-                                            {remedy.indication && (
-                                                <p className="text-xs text-green-700 mt-1 leading-[1.65]">
-                                                    {remedy.indication}
-                                                </p>
-                                            )}
-                                            {remedy.preparation && (
-                                                <p className="text-xs text-green-800 mt-1 leading-[1.65]">
-                                                    <strong>Preparation:</strong> {remedy.preparation}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </RemedyAccordion>
-                            )}
-
-                            {/* Homeopathic Solution */}
-                            {hasHomeopathic && (
-                                <RemedyAccordion
-                                    title="Homeopathic Solution"
-                                    emoji="💊"
-                                    headerClass="bg-teal-50 text-teal-800 hover:bg-teal-100"
-                                    defaultOpen={true}
-                                >
-                                    {/* ── HOMEOPATHIC BETA DISCLAIMER ────────────────────────────── */}
-                                    <div className="flex items-start gap-2.5 bg-purple-50 border border-purple-200 rounded-lg p-3 mb-2">
-                                        <AlertTriangle className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" />
-                                        <div>
-                                            <p className="text-[11px] font-bold text-purple-800 mb-0.5 uppercase tracking-wide">
-                                                🧪 Beta Feature · Results May Vary
-                                            </p>
-                                            <p className="text-[11px] text-purple-700 leading-relaxed">
-                                                Homeopathic suggestions are AI-generated and experimental. Homeopathy is not universally recognised by mainstream medicine. <strong>Do not take any medicine without first consulting a qualified homeopathic or medical professional.</strong>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                    {(condition.homeopathic_remedies || condition.remedies || []).slice(0, 5).map((remedy: any, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-teal-50 p-3 rounded-lg border border-teal-100 hover:border-teal-200 transition-colors"
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <span className="font-medium text-teal-800 text-sm">
-                                                        {remedy.name}
-                                                    </span>
-                                                    {remedy.potency && (
-                                                        <span className="ml-2 text-[11px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">
-                                                            {remedy.potency}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {remedy.videoUrl && (
-                                                    <a
-                                                        href={remedy.videoUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="text-teal-600 hover:text-teal-700"
-                                                    >
-                                                        <Video size={16} />
-                                                    </a>
-                                                )}
-                                            </div>
-                                            {(remedy.description || remedy.indication) && (
-                                                <p className="text-xs text-teal-700 mt-1 leading-[1.65]">
-                                                    {remedy.description || remedy.indication}
-                                                </p>
-                                            )}
-                                            {(remedy.method || remedy.dosage) && (
-                                                <p className="text-xs text-teal-800 mt-1 leading-[1.65]">
-                                                    <strong>How to take:</strong>{" "}
-                                                    {remedy.method || remedy.dosage}
-                                                </p>
-                                            )}
-                                            {remedy.source && (() => {
-                                                const sourceHref = getSourceHref(remedy.source);
-                                                const sourceLabel = (
-                                                    <span className="inline-block mt-1.5 text-[11px] bg-teal-100/60 text-teal-600 px-2 py-0.5 rounded-full">
-                                                        Source: {remedy.source}
-                                                    </span>
-                                                );
-
-                                                return sourceHref ? (
-                                                    <a
-                                                        href={sourceHref}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="inline-block hover:underline"
-                                                    >
-                                                        {sourceLabel}
-                                                    </a>
-                                                ) : sourceLabel;
-                                            })()}
-                                        </div>
-                                    ))}
-                                </RemedyAccordion>
-                            )}
-
-                            {/* Exercise & Warnings — defaultOpen=false (less actionable) */}
-                            {hasExerciseWarning && (
-                                <RemedyAccordion
-                                    title="Exercise & Warnings"
-                                    emoji="⚠️"
-                                    headerClass="bg-red-50 text-red-800 hover:bg-red-100"
-                                    defaultOpen={false}
-                                >
-                                    {(condition.warnings || []).length > 0 && (
-                                        <div className="bg-red-50 p-3 rounded-lg border border-red-100">
-                                            <h5 className="text-xs font-bold text-red-700 mb-2 flex items-center gap-1.5">
-                                                <AlertTriangle className="h-3.5 w-3.5" />
-                                                Precautions &amp; Contraindications
-                                            </h5>
-                                            <ul className="space-y-1.5">
-                                                {(condition.warnings || []).map((warning, idx) => (
-                                                    <li
-                                                        key={idx}
-                                                        className="text-xs text-red-700 leading-[1.65] flex items-start gap-2"
-                                                    >
-                                                        <span className="text-red-400 mt-0.5">•</span>
-                                                        <span>{warning}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                    {(condition.exercises || []).length > 0 && (
-                                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-100">
-                                            <h5 className="text-xs font-bold text-orange-700 mb-2 flex items-center gap-1.5">
-                                                <Dumbbell className="h-3.5 w-3.5" />
-                                                Exercise Recommendations
-                                            </h5>
-                                            <div className="space-y-2">
-                                                {(condition.exercises || []).slice(0, 4).map((exercise, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="flex items-center justify-between text-xs"
-                                                    >
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-orange-400">•</span>
-                                                            <span className="text-orange-800 font-medium">
-                                                                {exercise.name}
-                                                            </span>
-                                                        </div>
-                                                        {exercise.duration && (
-                                                            <span className="text-[11px] text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                                <Clock className="h-3 w-3" />
-                                                                {exercise.duration}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(condition.warnings || []).length === 0 &&
-                                        (condition.exercises || []).length === 0 && (
-                                            <p className="text-xs text-slate-500 italic p-3">
-                                                No specific exercise warnings for this condition.
-                                            </p>
-                                        )}
-                                </RemedyAccordion>
-                            )}
-                        </div>
-                    )}
 
                     {/* ── 6. DISCLAIMER ─────────────────────────────────────────────────
                         WCAG fix: text-amber-800 (#92400e) = 7.2:1 on amber-50 ✓
                         Italic IS appropriate here — disclaimer is the sole italic role.   */}
-                    <div className="hidden">
+                    <div className="border-t border-amber-100 bg-amber-50 px-4 py-3 sm:px-6">
                         <div className="flex items-start gap-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-900 leading-[1.65] font-semibold">
-                                ⚠️ Beta · Not a Medical Diagnosis — Results May Vary
+                                Beta - Not a Medical Diagnosis - Results May Vary
                             </p>
                         </div>
                         <p className="text-xs text-amber-800 leading-[1.65] italic">
@@ -1444,7 +1293,7 @@ export function DiagnosisResultCard({
                                 : "Healio is an AI health assistant for informational and educational purposes only. This is not a medical diagnosis. AI analysis is experimental and may be inaccurate. Homeopathic, Ayurvedic, and home remedy suggestions are provided for awareness only — they have not been evaluated by a regulatory authority. Please consult a qualified healthcare professional before taking any medicine or altering any existing treatment."}
                         </p>
                         <p className="text-[11px] text-amber-700 font-medium">
-                            🩺 Always seek advice from a licensed doctor, especially before taking any medicine.
+                            Always seek advice from a licensed doctor, especially before taking any medicine.
                         </p>
                     </div>
 
