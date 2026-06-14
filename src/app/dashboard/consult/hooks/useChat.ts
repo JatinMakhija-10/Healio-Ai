@@ -266,6 +266,14 @@ function isResumeIntroMessage(message: ChatMessage): boolean {
     );
 }
 
+function interruptedResponseMessage(existingContent: string): string {
+    const trimmed = existingContent.trim();
+    const notice =
+        "I got interrupted while answering. Please send \"continue\" and I will finish from here.";
+
+    return trimmed ? `${trimmed}\n\n*${notice}*` : notice;
+}
+
 /**
  * Build a human-readable recap message from a prior consultation.
  */
@@ -698,6 +706,8 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     const reader = response.body!.getReader();
                     const decoder = new TextDecoder();
                     let buffer = "";
+                    let sawDone = false;
+                    let streamHadIssue = false;
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -711,15 +721,19 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                             const trimmed = line.trim();
                             if (!trimmed || !trimmed.startsWith("data: ")) continue;
                             const data = trimmed.slice(6);
-                            if (data === "[DONE]") continue;
+                            if (data === "[DONE]") {
+                                sawDone = true;
+                                continue;
+                            }
 
                             try {
                                 const parsed = JSON.parse(data);
                                 if (parsed.error === "STREAM_STALL") {
+                                    streamHadIssue = true;
                                     setMessages((prev) =>
                                         prev.map((m) =>
                                             m.id === assistantId
-                                                ? { ...m, content: m.content + "\n\n*(Response paused due to connection issue. Please send a quick message like 'continue' or try again.)*" }
+                                                ? { ...m, content: interruptedResponseMessage(m.content) }
                                                 : m
                                         )
                                     );
@@ -739,6 +753,17 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                                 // skip malformed
                             }
                         }
+                    }
+
+                    if (!sawDone || streamHadIssue) {
+                        fullContent = interruptedResponseMessage(fullContent);
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.id === assistantId
+                                    ? { ...m, content: fullContent }
+                                    : m
+                            )
+                        );
                     }
                 } else {
                     // Handle non-streaming response (Gemini fallback)

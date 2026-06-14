@@ -1028,9 +1028,9 @@ function streamTextResponse(text: string, customHeaders?: Record<string, string>
 export async function POST(req: NextRequest) {
     const requestStart = Date.now();
     const spans = new SpanCollector();
-    // Set to 9s — safely inside Vercel's Hobby-tier 10s serverless function timeout
+    // Keep comfortably inside the 60s function limit while allowing full model answers.
     const timeoutPromise = new Promise<Response>((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 25_000)
+        setTimeout(() => reject(new Error('timeout')), 50_000)
     );
 
     const processRequest = async (): Promise<Response> => {
@@ -1300,9 +1300,9 @@ export async function POST(req: NextRequest) {
             : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
 
         const maxTokensForTurn =
-            isFinalTurn    ? 2000 :
-            userTurns >= 3 ? 350  :
-                             200;
+            isFinalTurn    ? 2400 :
+            userTurns >= 3 ? 650  :
+                             450;
 
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
@@ -1496,9 +1496,8 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
                             ...processedMessages,
                         ],
                         temperature: AI_PHASE_CONFIG.generation.temperature,
-                        max_tokens: maxTokensForTurn,  // tight per-phase budget
-                        stream: true,
-                        stop: ["\n\nUser:", "\n\nHuman:"],
+                        max_tokens: maxTokensForTurn,
+                        stream: false,
                     }),
                     signal: controller.signal,
                 });
@@ -1702,88 +1701,27 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
             });
         }
 
-        const CHUNK_IDLE_TIMEOUT_MS = 15_000;
-        const encoder = new TextEncoder();
-        const stream = new ReadableStream({
-            async start(controller) {
-                const reader = groqResponse!.body!.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let idleTimer: ReturnType<typeof setTimeout> | null = null;
-                const chunkAbort = new AbortController();
+        const groqData = await groqResponse.json();
+        const groqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        const groqFinishReason = groqData.choices?.[0]?.finish_reason || '';
 
-                const resetIdleTimer = () => {
-                    if (idleTimer) clearTimeout(idleTimer);
-                    idleTimer = setTimeout(() => {
-                        console.warn('[stream] Chunk idle timeout — aborting Groq stream');
-                        chunkAbort.abort();
-                        reader.cancel('idle-timeout').catch(() => {});
-                    }, CHUNK_IDLE_TIMEOUT_MS);
-                };
+        if (!groqText) {
+            console.error('[Groq] Empty completion payload:', JSON.stringify(groqData).slice(0, 500));
+            return streamTextResponse("I'm having trouble forming a complete reply right now. Please send that once more and I will continue carefully.", {
+                'X-Provider': 'groq',
+                'X-Model': groqModel,
+                'X-Finish-Reason': String(groqFinishReason || 'empty'),
+            });
+        }
 
-                resetIdleTimer(); // arm on stream open
-
-                try {
-                    while (true) {
-                        // Race reader.read() against the idle abort signal
-                        const readPromise = reader.read();
-                        const abortPromise = new Promise<never>((_, rej) => {
-                            if (chunkAbort.signal.aborted) {
-                                rej(new Error('CHUNK_IDLE_TIMEOUT'));
-                                return;
-                            }
-                            chunkAbort.signal.addEventListener('abort', () =>
-                                rej(new Error('CHUNK_IDLE_TIMEOUT')), { once: true }
-                            );
-                        });
-
-                        const { done, value } = await Promise.race([readPromise, abortPromise]);
-
-                        if (done) {
-                            if (idleTimer) clearTimeout(idleTimer);
-                            break;
-                        }
-
-                        resetIdleTimer(); // reset on every received chunk
-
-                        buffer += decoder.decode(value, { stream: true });
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop() || '';
-
-                        for (const line of lines) {
-                            const trimmed = line.trim();
-                            if (!trimmed || !trimmed.startsWith('data: ')) continue;
-                            const data = trimmed.slice(6);
-                            if (data === '[DONE]') {
-                                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-                                continue;
-                            }
-                            try {
-                                const parsed = JSON.parse(data);
-                                const content = parsed.choices?.[0]?.delta?.content;
-                                if (content) {
-                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-                                }
-                            } catch { /* skip malformed chunk */ }
-                        }
-                    }
-                } catch (err: unknown) {
-                    if (idleTimer) clearTimeout(idleTimer);
-                    const msg = err instanceof Error ? err.message : String(err);
-
-                    if (msg === 'CHUNK_IDLE_TIMEOUT') {
-                        console.warn('[stream] Emitting stall error to client');
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'STREAM_STALL', fallback: true })}\n\n`));
-                        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-                    } else {
-                        console.error('[stream] Unexpected error:', err);
-                    }
-                } finally {
-                    if (idleTimer) clearTimeout(idleTimer);
-                    controller.close();
-                }
-            },
-        });
+        if (groqFinishReason === 'length') {
+            console.warn('[Groq] Completion hit token limit; returning retry-safe message.');
+            return streamTextResponse("I started a reply but it became too long to complete safely. Please send one short message like 'continue' and I will finish the guidance from here.", {
+                'X-Provider': 'groq',
+                'X-Model': groqModel,
+                'X-Finish-Reason': 'length',
+            });
+        }
 
         const totalMs = Date.now() - requestStart;
         logLatency('total', totalMs);
@@ -1799,13 +1737,12 @@ EXCLUDED SYMPTOMS (No answers): ${excludedStr}`;
             latencyMs: totalMs,
         });
 
-        return new Response(stream, {
-            headers: {
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'X-Response-Time': String(totalMs),
-            },
+        return streamTextResponse(groqText, {
+            'Connection': 'keep-alive',
+            'X-Provider': 'groq',
+            'X-Model': groqModel,
+            'X-Finish-Reason': String(groqFinishReason || 'unknown'),
+            'X-Response-Time': String(totalMs),
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (innerError: any) {

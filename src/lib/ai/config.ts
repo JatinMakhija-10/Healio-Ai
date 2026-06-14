@@ -58,7 +58,7 @@ export const AI_PHASE_CONFIG = {
     generation: {
         temperature: 0.15,          // Low temp → deterministic, medically appropriate
         maxRetries: 1,             // Retry once before fallback
-        timeoutMs: 3500,           // 3.5 s total timeout to fail fast on rate-limiting/stalls
+        timeoutMs: 15000,          // Complete-response timeout; avoids saving half-streamed answers
         maxTokens: 1500,           // Max output tokens per response
         retryDelayMs: 500,         // Wait 500ms before retry (fast key rotation)
     },
