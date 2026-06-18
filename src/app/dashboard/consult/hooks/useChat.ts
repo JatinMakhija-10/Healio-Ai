@@ -627,6 +627,8 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
             setMessages((prev) => [...prev, assistantMsg]);
 
+            let fullContent = "";
+
             try {
                 abortRef.current = new AbortController();
 
@@ -733,8 +735,16 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                     throw new Error(`API error: ${response.status}`);
                 }
 
+                if (process.env.NODE_ENV === "development") {
+                    console.log("[Chat] Response Headers:", {
+                        provider: response.headers.get("X-Provider"),
+                        model: response.headers.get("X-Model"),
+                        finishReason: response.headers.get("X-Finish-Reason"),
+                        intakeDecision: response.headers.get("X-Intake-Decision"),
+                    });
+                }
                 const contentType = response.headers.get("content-type") || "";
-                let fullContent = "";
+                fullContent = "";
 
                 if (contentType.includes("text/event-stream")) {
                     // Handle streaming response (from Groq)
@@ -746,9 +756,14 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
                     while (true) {
                         const { done, value } = await reader.read();
-                        if (done) break;
+                        
+                        if (value) {
+                            buffer += decoder.decode(value, { stream: true });
+                        }
+                        if (done) {
+                            buffer += decoder.decode(new Uint8Array(), { stream: false });
+                        }
 
-                        buffer += decoder.decode(value, { stream: true });
                         const lines = buffer.split("\n");
                         buffer = lines.pop() || "";
 
@@ -784,9 +799,44 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                                         )
                                     );
                                 }
-                            } catch {
-                                // skip malformed
+                            } catch (e) {
+                                if (process.env.NODE_ENV === "development") {
+                                    console.error("Failed to parse SSE JSON:", data, e);
+                                }
+                                streamHadIssue = true;
                             }
+                        }
+
+                        if (done) {
+                            if (buffer) {
+                                const trimmed = buffer.trim();
+                                if (trimmed.startsWith("data: ")) {
+                                    const data = trimmed.slice(6);
+                                    if (data === "[DONE]") {
+                                        sawDone = true;
+                                    } else {
+                                        try {
+                                            const parsed = JSON.parse(data);
+                                            if (parsed.content) {
+                                                fullContent += parsed.content;
+                                                setMessages((prev) =>
+                                                    prev.map((m) =>
+                                                        m.id === assistantId
+                                                            ? { ...m, content: fullContent }
+                                                            : m
+                                                    )
+                                                );
+                                            }
+                                        } catch (e) {
+                                            if (process.env.NODE_ENV === "development") {
+                                                console.error("Failed to parse SSE JSON (buffer end):", data, e);
+                                            }
+                                            streamHadIssue = true;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
                         }
                     }
 
@@ -834,6 +884,16 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                                     content:
                                         "I'm sorry, I'm having trouble connecting right now. Please try again in a moment. 🙏",
                                 }
+                                : m
+                        )
+                    );
+                } else if (fullContent) {
+                    // Stream aborted by user but we have partial content
+                    fullContent = interruptedResponseMessage(fullContent);
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.id === assistantId
+                                ? { ...m, content: fullContent }
                                 : m
                         )
                     );

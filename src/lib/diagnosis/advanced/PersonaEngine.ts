@@ -75,6 +75,11 @@ export interface PersonaProfile {
     hasAutoimmune: boolean;
     hasGout: boolean;
     hasEpilepsy: boolean;
+    // ── Phase 2 derived risk scores ─────────────────────────────────────────
+    bmiClass: 'underweight' | 'normal' | 'overweight' | 'obese_I' | 'obese_II' | 'obese_III' | 'unknown';
+    polypharmacyRisk: 'none' | 'low' | 'moderate' | 'high' | 'critical'; // §4.2
+    frailtyIndex: number;       // 0–10 frailty score (§4.4)
+    medicationCount: number;    // raw count for prompt builders
 }
 
 // ─── BMI Calculator ───────────────────────────────────────────────────────────
@@ -323,6 +328,169 @@ function parseConditionFlags(conditions: string[] | undefined | null): {
     };
 }
 
+// ─── Phase 2: BMI Prior Adjustments (§4.1) ────────────────────────────────
+
+/**
+ * Returns a map of condition-category → alpha-multiplier adjustments
+ * based on a patient’s BMI class. Used by the MCMC covariate system.
+ *
+ * @param bmi  Patient BMI (kg/m²).
+ * @returns    Record of condition regex patterns to alpha multipliers.
+ */
+export function getBMIPriorAdjustments(bmi: number | null): Record<string, number> {
+    if (bmi === null || isNaN(bmi) || bmi <= 0) return {};
+
+    if (bmi < 18.5) {
+        // Underweight: TB, anaemia, malnutrition, immune vulnerability
+        return {
+            'anemia|anaemia|iron_deficiency|b12': 2.0,
+            'tuberculosis|tb|pulmonary':          2.0,
+            'malnutrition|electrolyte':           2.5,
+            'depress|anxiety':                    1.5,
+        };
+    }
+    if (bmi < 25) {
+        // Normal weight: no major adjustments
+        return {};
+    }
+    if (bmi < 30) {
+        // Overweight (BMI 25–29.9): mild metabolic risk
+        return {
+            'diabetes|t2dm|metabolic':            1.5,
+            'hypertens|blood_pressure':           1.3,
+            'sleep_apnea|osa':                    1.5,
+            'gerd|acid_reflux':                   1.3,
+        };
+    }
+    if (bmi < 35) {
+        // Obese Class I (BMI 30–34.9)
+        return {
+            'diabetes|t2dm|metabolic':            2.5,
+            'hypertens|cardiovascular|cardiac':   2.0,
+            'sleep_apnea|osa':                    3.0,
+            'osteoarthritis|joint|knee':          2.0,
+            'gerd|fatty_liver|nafld':             2.0,
+        };
+    }
+    if (bmi < 40) {
+        // Obese Class II (BMI 35–39.9)
+        return {
+            'diabetes|t2dm|metabolic':            3.0,
+            'hypertens|cardiovascular|cardiac':   2.5,
+            'sleep_apnea|osa':                    3.5,
+            'osteoarthritis|joint|knee':          2.5,
+            'gerd|fatty_liver|nafld':             2.5,
+            'dvt|pulmonary_embolism':             2.0,
+        };
+    }
+    // Obese Class III (BMI ≥ 40) — morbid obesity
+    return {
+        'diabetes|t2dm|metabolic':                3.5,
+        'hypertens|cardiovascular|cardiac':       3.0,
+        'sleep_apnea|osa':                        4.0,
+        'osteoarthritis|joint|knee':              3.0,
+        'gerd|fatty_liver|nafld|liver':           3.0,
+        'dvt|pulmonary_embolism':                 2.5,
+        'renal|kidney|ckd':                       2.0,
+    };
+}
+
+/**
+ * Returns the WHO BMI class label for a given BMI value.
+ */
+export function getBMIClass(bmi: number | null): PersonaProfile['bmiClass'] {
+    if (bmi === null || isNaN(bmi) || bmi <= 0) return 'unknown';
+    if (bmi < 18.5) return 'underweight';
+    if (bmi < 25.0) return 'normal';
+    if (bmi < 30.0) return 'overweight';
+    if (bmi < 35.0) return 'obese_I';
+    if (bmi < 40.0) return 'obese_II';
+    return 'obese_III';
+}
+
+// ─── Phase 2: Polypharmacy Risk Score (§4.2) ────────────────────────────
+
+/**
+ * Calculates polypharmacy risk tier based on medication count.
+ *
+ * Tiers follow WHO/clinical definitions:
+ *   0–2 meds  → none
+ *   3–4 meds  → low
+ *   5–6 meds  → moderate   (standard polypharmacy threshold)
+ *   7–9 meds  → high
+ *   10+ meds  → critical   (hyperpolypharmacy)
+ *
+ * @param medicationCount  Number of active medications.
+ */
+export function calculatePolypharmacyRisk(
+    medicationCount: number
+): PersonaProfile['polypharmacyRisk'] {
+    if (medicationCount <= 0) return 'none';
+    if (medicationCount <= 2) return 'none';
+    if (medicationCount <= 4) return 'low';
+    if (medicationCount <= 6) return 'moderate';
+    if (medicationCount <= 9) return 'high';
+    return 'critical';
+}
+
+// ─── Phase 2: Frailty Index (§4.4) ─────────────────────────────────────
+
+/**
+ * Computes a composite frailty index (0–10 scale) from patient persona.
+ *
+ * Based on a simplified Clinical Frailty Scale:
+ *   0–2  = robust / fit
+ *   3–4  = pre-frail
+ *   5–6  = mildly frail
+ *   7–8  = moderately frail
+ *   9–10 = severely frail
+ *
+ * Each deficit domain contributes 1 point unless annotated otherwise.
+ *
+ * @param persona  A fully built PersonaProfile.
+ * @param age      Patient age in years (required for age-based weighting).
+ */
+export function computeFrailtyIndex(persona: PersonaProfile, age: number | null): number {
+    let score = 0;
+
+    // Age-based vulnerability weighting
+    const ageNum = age ?? 0;
+    if (ageNum >= 85) score += 3;
+    else if (ageNum >= 75) score += 2;
+    else if (ageNum >= 65) score += 1;
+
+    // Physical function deficits
+    if (persona.isSedentary)           score += 1;
+    if (persona.hasLowSleep)           score += 0.5;
+
+    // Chronic disease burden (each comorbidity = 0.5 point)
+    if (persona.hasThyroid)            score += 0.5;
+    if (persona.hasCKD)                score += 1;   // CKD has outsized frailty impact
+    if (persona.hasLiverDisease)       score += 0.5;
+    if (persona.hasAnemia)             score += 0.5;
+    if (persona.hasDepression)         score += 0.5;
+    if (persona.hasAutoimmune)         score += 0.5;
+    if (persona.hasEpilepsy)           score += 0.5;
+
+    // Nutritional / metabolic
+    if (persona.isUnderweight)         score += 1;
+    if (persona.bmiClass === 'obese_III') score += 0.5;
+
+    // Polypharmacy burden
+    if (persona.polypharmacyRisk === 'high')     score += 1;
+    if (persona.polypharmacyRisk === 'critical') score += 1.5;
+
+    // Medication-derived deficits
+    if (persona.medicationFlags.onSteroids)        score += 0.5;
+    if (persona.medicationFlags.onImmunosuppressants) score += 1;
+    if (persona.medicationFlags.onAnticoagulants)  score += 0.5;
+
+    // Alcohol / social risk
+    if (persona.isHeavyDrinker)        score += 0.5;
+
+    return Math.min(Math.round(score * 10) / 10, 10); // cap at 10
+}
+
 // ─── Master Persona Builder ───────────────────────────────────────────────────
 
 /**
@@ -360,7 +528,19 @@ export function buildPersonaProfile(
     const medicationFlags = parseMedicationFlags(mp.medications);
     const conditionFlags = parseConditionFlags(mp.conditions);
 
-    return {
+    // Count medications
+    let medicationCount = 0;
+    if (Array.isArray(mp.medicationList)) medicationCount = mp.medicationList.filter(Boolean).length;
+    else if (Array.isArray(mp.medications)) medicationCount = mp.medications.filter(Boolean).length;
+    else if (typeof mp.medications === 'string' && mp.medications) {
+        medicationCount = mp.medications.split(',').filter((s: string) => s.trim()).length;
+    }
+
+    const bmiClass = getBMIClass(bmi);
+    const polypharmacyRisk = calculatePolypharmacyRisk(medicationCount);
+
+    // Need partial profile to compute frailty — build it first then call computeFrailtyIndex
+    const partialProfile: PersonaProfile = {
         bmi,
         isObese: bmi !== null && bmi >= 30,
         isUnderweight: bmi !== null && bmi < 18.5,
@@ -375,7 +555,22 @@ export function buildPersonaProfile(
         dietRisk,
         medicationFlags,
         ...conditionFlags,
+        bmiClass,
+        polypharmacyRisk,
+        frailtyIndex: 0,     // placeholder — computed below
+        medicationCount,
     };
+
+    const ageNum = (() => {
+        const raw = vitals.age ?? topLevel?.age ?? mp.age;
+        if (!raw) return null;
+        const n = parseInt(String(raw), 10);
+        return isNaN(n) ? null : n;
+    })();
+
+    partialProfile.frailtyIndex = computeFrailtyIndex(partialProfile, ageNum);
+
+    return partialProfile;
 }
 
 function getEmptyPersonaProfile(): PersonaProfile {
@@ -403,5 +598,9 @@ function getEmptyPersonaProfile(): PersonaProfile {
         hasAutoimmune: false,
         hasGout: false,
         hasEpilepsy: false,
+        bmiClass: 'unknown',
+        polypharmacyRisk: 'none',
+        frailtyIndex: 0,
+        medicationCount: 0,
     };
 }

@@ -1619,3 +1619,198 @@ export function mcmcDiagnoseAll(
 
 export { computeLogLikelihood, computeLogPrior, computeRHat, computeCovariateAdjustedPrior };
 export type { BetaParams, CovariateRule };
+
+// ─── Phase 2: Incremental Prior Update from Conversation (§4.3) ──────────────
+
+/**
+ * Result of a single conversation-turn prior update.
+ */
+export interface ConversationPriorUpdate {
+    conditionId: string;
+    previousPrior: number;
+    updatedPrior: number;
+    delta: number;
+    reason: string;
+}
+
+/**
+ * updatePriorsFromConversation — Incremental Bayesian Prior Refinement
+ *
+ * Updates disease priors based on additional symptom information revealed
+ * during the conversation (e.g., new symptom confirmed, symptom negated,
+ * duration or severity clarified).
+ *
+ * This implements a lightweight sequential update rule:
+ *   P'(C) = clamp( P(C) × LR(symptom|C), [0.001, 0.999] )
+ *
+ * where LR is the likelihood ratio of the new evidence for each condition.
+ * The function is designed to be called once per conversation turn.
+ *
+ * IMPORTANT: This operates on the prior (base rate) only — not the full
+ * MCMC posterior. The updated priors are passed to the next mcmcInfer() call.
+ *
+ * @param currentPriors   Map of conditionId → current prior probability (0–1).
+ * @param newMessages     Array of the conversation messages added this turn.
+ * @param evidence        Current EvidenceVector (updated with the new turn's data).
+ * @returns               Array of prior updates applied, with deltas and reasons.
+ */
+export function updatePriorsFromConversation(
+    currentPriors: Map<string, number>,
+    newMessages: Array<{ role: string; content: string }>,
+    evidence: EvidenceVector
+): { updatedPriors: Map<string, number>; updates: ConversationPriorUpdate[] } {
+    const updatedPriors = new Map<string, number>(currentPriors);
+    const updates: ConversationPriorUpdate[] = [];
+
+    // Flatten the new turn's text for pattern matching
+    const newText = newMessages
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join(' ')
+        .toLowerCase();
+
+    if (!newText.trim()) {
+        return { updatedPriors, updates };
+    }
+
+    // ── Evidence signals from the new turn ──────────────────────────────────
+    // Each entry: [pattern, conditionIdPattern, LR_if_present, LR_if_negated]
+    // LR > 1 → positive evidence, LR < 1 → negative evidence
+    const CONVERSATIONAL_LR_RULES: Array<{
+        symptomPattern: RegExp;
+        conditionPattern: RegExp;
+        lrPresent: number;
+        lrAbsent: number;
+        reason: string;
+    }> = [
+        {
+            symptomPattern: /chest\s*(pain|tightness|pressure|heaviness)/i,
+            conditionPattern: /cardiac|heart|angina|mi$/i,
+            lrPresent: 3.0, lrAbsent: 0.4,
+            reason: 'Chest pain confirmed/denied → cardiac prior update',
+        },
+        {
+            symptomPattern: /radiating.*arm|arm.*pain|jaw.*pain/i,
+            conditionPattern: /cardiac|heart_attack|mi$/i,
+            lrPresent: 4.0, lrAbsent: 0.5,
+            reason: 'Radiation pattern confirmed/denied → cardiac prior update',
+        },
+        {
+            symptomPattern: /\bfever\b|temperature|bukhar/i,
+            conditionPattern: /infection|pneumonia|typhoid|dengue|malaria|sepsis/i,
+            lrPresent: 2.5, lrAbsent: 0.5,
+            reason: 'Fever confirmed/denied → infection prior update',
+        },
+        {
+            symptomPattern: /frequent\s*urinat|urine\s*(burning|pain|blood)|dysuria/i,
+            conditionPattern: /uti|urinary_tract|bladder/i,
+            lrPresent: 5.0, lrAbsent: 0.3,
+            reason: 'UTI symptoms confirmed/denied → UTI prior update',
+        },
+        {
+            symptomPattern: /worst.*headache|thunderclap|sudden.*severe.*head/i,
+            conditionPattern: /subarachnoid|brain|hemorrhage/i,
+            lrPresent: 6.0, lrAbsent: 0.2,
+            reason: 'Thunderclap headache confirmed/denied → SAH prior update',
+        },
+        {
+            symptomPattern: /stiff\s*neck|neck\s*stiffness|photophobia|light.*sensitivity/i,
+            conditionPattern: /meningitis/i,
+            lrPresent: 5.0, lrAbsent: 0.3,
+            reason: 'Meningism features confirmed/denied → meningitis prior update',
+        },
+        {
+            symptomPattern: /blood.*stool|black.*stool|melena|rectal.*bleed/i,
+            conditionPattern: /gi_bleed|peptic_ulcer|colorectal/i,
+            lrPresent: 4.0, lrAbsent: 0.4,
+            reason: 'Blood in stool confirmed/denied → GI bleed prior update',
+        },
+        {
+            symptomPattern: /excessive.*thirst|polydipsia|polyuria|frequent.*urinat/i,
+            conditionPattern: /diabetes|t2dm/i,
+            lrPresent: 3.0, lrAbsent: 0.5,
+            reason: 'Diabetic symptoms confirmed/denied → diabetes prior update',
+        },
+        {
+            symptomPattern: /shortness.*breath|breathless|saans.*phoolna/i,
+            conditionPattern: /pulmonary|asthma|heart_failure|copd/i,
+            lrPresent: 2.5, lrAbsent: 0.5,
+            reason: 'Dyspnoea confirmed/denied → respiratory/cardiac prior update',
+        },
+        {
+            symptomPattern: /palpitation|heart.*racing|tez.*dhadkan/i,
+            conditionPattern: /arrhythmia|anxiety|hyperthyroid|cardiac/i,
+            lrPresent: 2.5, lrAbsent: 0.6,
+            reason: 'Palpitations confirmed/denied → cardiac/anxiety prior update',
+        },
+    ];
+
+    // Negation detector (simple context window, matching redFlagDetector logic)
+    const NEGATION_PATTERN = /\b(?:no|not|without|deny|denies|denied|nahi|nahin|nahi\s*hai|don'?t\s*have|does\s*not\s*have)\b/i;
+    const NEGATION_WINDOW = 40;
+
+    function isNegated(text: string, matchIndex: number): boolean {
+        const before = text.slice(Math.max(0, matchIndex - NEGATION_WINDOW), matchIndex);
+        return NEGATION_PATTERN.test(before);
+    }
+
+    // Apply LR updates to matching conditions
+    for (const rule of CONVERSATIONAL_LR_RULES) {
+        const match = rule.symptomPattern.exec(newText);
+        if (!match) continue;
+
+        const negated = isNegated(newText, match.index);
+        const lr = negated ? rule.lrAbsent : rule.lrPresent;
+
+        // Apply to all priors whose conditionId matches the rule's condition pattern
+        for (const [conditionId, prior] of updatedPriors.entries()) {
+            if (!rule.conditionPattern.test(conditionId)) continue;
+
+            const previousPrior = prior;
+            // Sequential Bayes: P'(C) = P(C) × LR / (P(C) × LR + (1 - P(C)))
+            const updatedPrior = Math.min(
+                0.999,
+                Math.max(
+                    0.001,
+                    (prior * lr) / (prior * lr + (1 - prior))
+                )
+            );
+            const delta = updatedPrior - previousPrior;
+
+            // Only record updates with meaningful delta (> 0.5% change)
+            if (Math.abs(delta) >= 0.005) {
+                updatedPriors.set(conditionId, updatedPrior);
+                updates.push({
+                    conditionId,
+                    previousPrior,
+                    updatedPrior,
+                    delta,
+                    reason: `${rule.reason} (LR=${lr.toFixed(1)}, negated=${negated})`,
+                });
+            }
+        }
+    }
+
+    // ── Persona-based prior boost from newly revealed covariates ─────────────
+    // If the evidence vector reveals a high-frailty or high-risk patient
+    // from the current turn, boost relevant condition priors.
+    if (evidence.persona.frailtyIndex >= 7) {
+        for (const [conditionId, prior] of updatedPriors.entries()) {
+            if (/delirium|fall|fracture|pneumonia|sepsis/i.test(conditionId)) {
+                const boosted = Math.min(0.999, prior * 1.3);
+                if (boosted - prior >= 0.005) {
+                    updatedPriors.set(conditionId, boosted);
+                    updates.push({
+                        conditionId,
+                        previousPrior: prior,
+                        updatedPrior: boosted,
+                        delta: boosted - prior,
+                        reason: `High frailty index (${evidence.persona.frailtyIndex}) → frailty-related prior boosted ×1.3`,
+                    });
+                }
+            }
+        }
+    }
+
+    return { updatedPriors, updates };
+}

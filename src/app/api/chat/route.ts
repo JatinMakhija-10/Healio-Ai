@@ -15,6 +15,22 @@ import {
     resolveChipOptionsForSchema,
     type ConversationIntakeState,
 } from '@/lib/diagnosis/dialogue';
+// ── Phase 1: RAG & Medical Accuracy imports ────────────────────────────────────
+import { computeBMI, getBMIClass } from '@/lib/diagnosis/advanced/PersonaEngine';
+import { buildEnrichedQuery, extractProfileContext } from '@/lib/rag/queryRewriter';
+import { applyAllergyFilter, serialiseFilteredChunks, hasAnyFlaggedChunk, type RetrievedChunk } from '@/lib/rag/safetyFilter';
+import { detectCompoundRedFlags, buildEmergencyResponseText } from '@/lib/safety/redFlagDetector';
+import { validateProfileConsistency, formatValidationWarningsForPrompt } from '@/lib/profile/clinicalValidator';
+import {
+    buildDrugInteractionPrompt,
+    buildDosageGroundingPrompt,
+    buildCoTDiagnosisProtocol,
+    buildConfidenceTiersPrompt,
+    buildContextualDisclaimer,
+    inferDisclaimerType,
+    getAgeStratifiedDosingRules,
+    buildPolypharmacyWarningPrompt,
+} from '@/lib/prompts/drugInteractionBlock';
 
 // ── Vercel: allow up to 60 s for this Serverless Function ─────────────────────
 export const maxDuration = 60;
@@ -486,39 +502,91 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
     const kidneyLiver = mp.hasKidneyLiverDisease ?? mp.kidney_liver_disease;
     const recentSurgery = mp.recent_surgery ?? mp.surgeries;
 
-    // Build lines — only include fields that have data
-    const lines: string[] = [
-        '\n\n=== PATIENT PROFILE (auto-injected from medical records) ===',
-        'Use this profile for EVERY response. It affects dosing, contraindications, and personalization.',
-    ];
+    // 1. BMI calculation & class label using PersonaEngine helpers
+    const bmi = computeBMI(weight, height);
+    const bmiClass = getBMIClass(bmi);
 
-    if (fullName) lines.push(`Name: ${fullName}`);
-    if (age) lines.push(`Age: ${age} years`);
-    if (gender) lines.push(`Gender: ${gender}`);
-    if (weight) lines.push(`Weight: ${weight} kg`);
-    if (height) lines.push(`Height: ${height} cm`);
-
-    if (conditions.length) {
-        lines.push(`Pre-existing conditions: ${conditions.join(', ')}`);
-        lines.push('  -> Factor these into every differential diagnosis. Ask if current symptoms relate to known conditions.');
+    // 2. Age-stratified dosing tier
+    const ageNum = age != null ? parseInt(String(age), 10) : null;
+    let dosingTier = 'adult';
+    if (ageNum !== null && !isNaN(ageNum)) {
+        if (ageNum <= 2) dosingTier = 'neonate/infant';
+        else if (ageNum <= 11) dosingTier = 'child';
+        else if (ageNum <= 17) dosingTier = 'adolescent';
+        else if (ageNum >= 75) dosingTier = 'older elderly (75+)';
+        else if (ageNum >= 65) dosingTier = 'young elderly (65–74)';
     }
 
+    // 3. Clinical Inference Rules based on pre-existing conditions
+    const clinicalInferences: string[] = [];
+    const conditionsLower = conditions.map(c => c.toLowerCase()).join(' ');
+    if (conditionsLower.includes('kidney') || conditionsLower.includes('ckd') || conditionsLower.includes('renal')) {
+        clinicalInferences.push('Renal impairment detected: Avoid nephrotoxic agents (NSAIDs like Ibuprofen/Naproxen). Recommend renal dose adjustment.');
+    }
+    if (conditionsLower.includes('liver') || conditionsLower.includes('hepat') || conditionsLower.includes('cirrhosis')) {
+        clinicalInferences.push('Hepatic impairment detected: Avoid hepatotoxic agents (e.g. high-dose acetaminophen/paracetamol).');
+    }
+    if (conditionsLower.includes('diabet') || conditionsLower.includes('t2dm') || conditionsLower.includes('t1dm')) {
+        clinicalInferences.push('Diabetes detected: Monitor blood glucose impact. Avoid systemic corticosteroids without physician supervision.');
+    }
+    if (conditionsLower.includes('hypertension') || conditionsLower.includes('blood pressure') || conditionsLower.includes('high bp')) {
+        clinicalInferences.push('Hypertension detected: Avoid substances that raise BP (e.g. licorice/mulethi, pseudoephedrine decongestants).');
+    }
+    if (conditionsLower.includes('asthma') || conditionsLower.includes('copd')) {
+        clinicalInferences.push('Chronic respiratory disease detected: Avoid beta-blockers. Check for bronchospasm risk.');
+    }
+    if (isPregnant) {
+        clinicalInferences.push('Pregnancy: Verify fetal safety for all treatments. Avoid standard NSAIDs in 3rd trimester. Avoid tetracyclines.');
+    }
+
+    // 4. Profile staleness warning
+    let stalenessNotice = '';
+    const lastUpdateVal = mp.updatedAt || mp.updated_at || mp.lastProfileUpdate || mp.last_profile_update || mp.lastUpdated || mp.last_updated || userMeta.updated_at;
+    if (lastUpdateVal) {
+        const lastUpdateDate = new Date(lastUpdateVal);
+        if (!isNaN(lastUpdateDate.getTime())) {
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            if (lastUpdateDate < sixMonthsAgo) {
+                stalenessNotice = `[PROFILE STALENESS NOTICE]\n- Last updated: ${lastUpdateDate.toLocaleDateString()} (more than 6 months ago). This profile may be stale. Check if the patient has any new conditions, medications, or allergies.`;
+            }
+        }
+    }
+
+    // Structured Block Formatting
+    const block: string[] = [
+        '\n[STRUCTURED PATIENT PROFILE]',
+        `- Name: ${fullName || 'Unknown'}`,
+        `- Age: ${age || 'Unknown'} years (${dosingTier} dosing tier)`,
+        `- Gender: ${gender || 'Unknown'}`,
+        `- Height: ${height ? `${height} cm` : 'Unknown'}`,
+        `- Weight: ${weight ? `${weight} kg` : 'Unknown'}`,
+        `- BMI: ${bmi !== null ? `${bmi} (${bmiClass})` : 'Unknown'}`,
+    ];
+
     if (uniqueAllergies.length) {
-        lines.push(`ALLERGIES: ${uniqueAllergies.join(', ')}`);
-        lines.push('  -> CRITICAL: NEVER recommend any remedy, herb, or substance the patient is allergic to. Flag if a recommended remedy shares a class with a known allergen.');
+        block.push('\n[ALLERGIES — NEVER RECOMMEND]');
+        uniqueAllergies.forEach(allergy => block.push(`- ${allergy}`));
+    }
+
+    if (conditions.length) {
+        block.push('\n[PRE-EXISTING CONDITIONS]');
+        conditions.forEach(cond => block.push(`- ${cond}`));
     }
 
     if (medications.length) {
-        lines.push(`Current medications: ${medications.join(', ')}`);
-        lines.push('  -> Check for drug-drug interactions. Note if any homeopathic/ayurvedic remedy may conflict.');
+        block.push('\n[CURRENT MEDICATIONS]');
+        medications.forEach(med => block.push(`- ${med}`));
+        if (medications.length >= 5) {
+            block.push(`- NOTE: High-risk polypharmacy warning active (${medications.length} active medications).`);
+        }
     }
 
     if (familyHistory.length) {
-        lines.push(`Family history: ${familyHistory.join(', ')}`);
-        lines.push('  -> Consider hereditary risk factors in your differential.');
+        block.push('\n[FAMILY HISTORY]');
+        familyHistory.forEach(history => block.push(`- ${history}`));
     }
 
-    // Lifestyle block
     const lifestyleParts: string[] = [];
     if (smoking && smoking !== 'never' && smoking !== 'no') lifestyleParts.push(`Smoking: ${smoking}`);
     if (alcohol && alcohol !== 'none' && alcohol !== 'no') lifestyleParts.push(`Alcohol: ${alcohol}`);
@@ -527,32 +595,22 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
     if (sleep) lifestyleParts.push(`Sleep: ${sleep}`);
     if (occupation) lifestyleParts.push(`Occupation: ${occupation}`);
     if (lifestyleParts.length) {
-        lines.push(`Lifestyle: ${lifestyleParts.join(' | ')}`);
+        block.push('\n[LIFESTYLE]');
+        lifestyleParts.forEach(part => block.push(`- ${part}`));
     }
 
-    // Safety flags
-    if (isPregnant) {
-        lines.push('PREGNANT: YES — NEVER suggest remedies contraindicated in pregnancy. Always flag pregnancy-safety explicitly.');
-    }
-    if (kidneyLiver) {
-        lines.push('KIDNEY/LIVER DISEASE: YES — Adjust dosages. Avoid nephrotoxic/hepatotoxic substances.');
-    }
-    if (recentSurgery && recentSurgery !== 'no' && recentSurgery !== 'none' && recentSurgery !== false) {
-        lines.push(`Recent surgery: ${typeof recentSurgery === 'string' ? recentSurgery : 'Yes'}`);
+    if (clinicalInferences.length) {
+        block.push('\n[CLINICAL INFERENCE RULES]');
+        clinicalInferences.forEach(inf => block.push(`- ${inf}`));
     }
 
-    if (age && Number(age) <= 12) {
-        lines.push('PEDIATRIC PATIENT — Use child-safe dosages. Recommend consulting a pediatrician.');
-    }
-    if (age && Number(age) >= 65) {
-        lines.push('GERIATRIC PATIENT — Consider age-related sensitivities. Use conservative dosing.');
+    if (stalenessNotice) {
+        block.push('\n' + stalenessNotice);
     }
 
-    lines.push('=== END OF PATIENT PROFILE ===');
+    block.push('[END STRUCTURED PATIENT PROFILE]');
 
-    // Only return if we have meaningful data beyond the header
-    const hasData = age || gender || conditions.length || uniqueAllergies.length || medications.length;
-    return hasData ? lines.join('\n') : '';
+    return block.join('\n');
 }
 
 // buildMedicalHistoryContext imported from @/lib/chat/consultationHistory
@@ -1635,6 +1693,14 @@ export async function POST(req: NextRequest) {
             return streamTextResponse(EMERGENCY_RESPONSE, { 'X-Intake-Decision': 'emergency-keyword' });
         }
 
+        // ── Compound red-flag check (multi-symptom patterns) ─────────────────
+        // Catches patterns that single-keyword scan misses (e.g. chest pain + arm + sweating)
+        const compoundFlag = detectCompoundRedFlags(rawLastUserMsg);
+        if (compoundFlag.detected) {
+            const compoundEmergencyText = buildEmergencyResponseText(compoundFlag);
+            return streamTextResponse(compoundEmergencyText, { 'X-Intake-Decision': 'emergency-compound', 'X-Red-Flag': compoundFlag.flag ?? '' });
+        }
+
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages array is required' }), {
                 status: 400,
@@ -1744,6 +1810,19 @@ export async function POST(req: NextRequest) {
                 if (patientProfileContext) {
                     console.log('[PROFILE] Patient profile injected into prompt');
                 }
+                // ── Clinical profile consistency validation ──────────────────
+                const profileCtx = extractProfileContext(userMeta);
+                const profileWarnings = validateProfileConsistency({
+                    age: profileCtx.age,
+                    conditions: profileCtx.conditions,
+                    medications: profileCtx.medications,
+                    allergies: profileCtx.allergies,
+                });
+                if (profileWarnings.length) {
+                    const warningBlock = formatValidationWarningsForPrompt(profileWarnings);
+                    if (warningBlock) patientProfileContext += warningBlock;
+                    console.log(`[PROFILE] ${profileWarnings.length} clinical consistency warning(s) injected`);
+                }
             }
         } else if (userProfileResult.status === 'rejected') {
             console.warn('[chat/route] User profile fetch failed:', userProfileResult.reason);
@@ -1768,10 +1847,7 @@ export async function POST(req: NextRequest) {
                     : []
         );
         if (groqKeyPool.length === 0) {
-            const noKeySSE = [`data: ${JSON.stringify({ content: 'AI service is not configured. Please contact support.' })}
-
-`, `data: [DONE]\n\n`].join('');
-            return new Response(noKeySSE, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
+            return streamTextResponse('AI service is not configured. Please contact support.');
         }
         // Key selected per-attempt inside the retry loop (see below)
 
@@ -1915,14 +1991,49 @@ export async function POST(req: NextRequest) {
             if (ragWillBeFetched) {
                 const symptomSummary = extractSymptomSummary(processedMessages);
                 const personaCacheKey = typeof personaId === 'string' && personaId.trim() ? personaId.trim() : undefined;
+
+                // ── Profile-aware RAG query enrichment (§2.1) ────────────────
+                // Extract profile from user metadata for query enrichment
+                let enrichedSymptomQuery = symptomSummary;
+                if (userProfileResult.status === 'fulfilled' && userProfileResult.value) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const _meta = (userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } } })?.data?.user?.user_metadata;
+                    if (_meta) {
+                        const _profileCtx = extractProfileContext(_meta);
+                        enrichedSymptomQuery = buildEnrichedQuery(symptomSummary, _profileCtx);
+                        if (enrichedSymptomQuery !== symptomSummary) {
+                            console.log(`[RAG] Query enriched: +${enrichedSymptomQuery.length - symptomSummary.length} chars`);
+                        }
+                    }
+                }
+
                 // Skip slow 3072-dim home remedy embedding on non-final turns
                 const t0Rag = Date.now();
-                const ragResult = await fetchAllContext(symptomSummary, !isFinalTurn, spans, diagnosticPreferences.ayurvedicMode, personaCacheKey);
+                const ragResult = await fetchAllContext(enrichedSymptomQuery, !isFinalTurn, spans, diagnosticPreferences.ayurvedicMode, personaCacheKey);
                 const ragMs = Date.now() - t0Rag;
                 logLatency('rag', ragMs);
                 spans.record('rag', ragMs);
                 ragContext = ragResult.context;
                 homeRemediesAvailable = ragResult.homeRemediesAvailable;
+
+                // ── Post-retrieval allergy/contraindication safety filter (§2.2) ──
+                if (ragContext && userProfileResult.status === 'fulfilled' && userProfileResult.value) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const _filterMeta = (userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } } })?.data?.user?.user_metadata;
+                    if (_filterMeta) {
+                        const _fc = extractProfileContext(_filterMeta);
+                        if (_fc.allergies.length || _fc.conditions.length) {
+                            // Wrap the raw string context as a single annotated chunk for filtering
+                            const rawChunks: RetrievedChunk[] = [{ content: ragContext, source: 'rag', score: 1 }];
+                            const filteredChunks = applyAllergyFilter(rawChunks, _fc.allergies, _fc.conditions);
+                            ragContext = serialiseFilteredChunks(filteredChunks);
+                            if (hasAnyFlaggedChunk(filteredChunks)) {
+                                console.log('[SAFETY] Allergy/contraindication flag(s) applied to RAG context');
+                            }
+                        }
+                    }
+                }
+
                 if (ragContext) {
                     console.log(`[RAG] ${ragContext.length} chars at turn ${userTurns}, final=${isFinalTurn}, homeRemedies=${homeRemediesAvailable}, model=${groqModel}.`);
                 }
@@ -1975,6 +2086,76 @@ ${SYSTEM_PROMPT}`
         // ── Family member persona override (only when consulting for someone else)
         if (personaContext) {
             finalSystemPrompt += personaContext;
+        }
+
+        // ── Phase 1 prompt block injections ───────────────────────────────────
+        // Resolve patient age and medications for downstream prompt builders
+        let _p1Medications: string[] = [];
+        let _p1Age: number | null = null;
+        if (userProfileResult.status === 'fulfilled' && userProfileResult.value) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const _p1Meta = (userProfileResult.value as { data: { user?: { user_metadata?: Record<string, any> } } })?.data?.user?.user_metadata;
+            if (_p1Meta) {
+                const _p1Ctx = extractProfileContext(_p1Meta);
+                _p1Medications = _p1Ctx.medications;
+                _p1Age = _p1Ctx.age != null ? parseInt(String(_p1Ctx.age), 10) : null;
+                if (_p1Age !== null && isNaN(_p1Age)) _p1Age = null;
+            }
+        }
+
+        // §4.2 Polypharmacy warning (≥5 medications)
+        const _polypharmacyBlock = buildPolypharmacyWarningPrompt(_p1Medications.length);
+        if (_polypharmacyBlock) finalSystemPrompt += _polypharmacyBlock;
+
+        // §3.4 Drug interaction mandatory check (medication queries with 2+ meds)
+        if (intentResult.intent === 'medication_query' && _p1Medications.length >= 2) {
+            finalSystemPrompt += buildDrugInteractionPrompt(_p1Medications);
+        }
+
+        // §6.2 Dosage grounding rule (dosage-related user messages)
+        if (/dosage|dose|how much|how many|mg|ml|tablet|capsule|frequency|twice|once|daily|weekly/i.test(lastUserMsg)) {
+            finalSystemPrompt += buildDosageGroundingPrompt();
+        }
+
+        // §3.5 Age-stratified dosing rules (injected when patient age is known)
+        if (_p1Age !== null && !isNaN(_p1Age) && _p1Age > 0) {
+            const _ageDosingBlock = getAgeStratifiedDosingRules(_p1Age);
+            if (_ageDosingBlock) finalSystemPrompt += '\n' + _ageDosingBlock;
+        }
+
+        // §3.2 Chain-of-thought diagnosis protocol (final turns only)
+        if (isFinalTurn) {
+            finalSystemPrompt += buildCoTDiagnosisProtocol();
+        }
+
+        // §3.3 Differential confidence tiers (final turns only)
+        if (isFinalTurn) {
+            finalSystemPrompt += buildConfidenceTiersPrompt();
+        }
+
+        // §6.3 Context-specific disclaimer (appended every turn)
+        {
+            const _disclaimerType = inferDisclaimerType(intentResult.intent, lastUserMsg, _p1Age);
+            finalSystemPrompt += buildContextualDisclaimer(_disclaimerType);
+        }
+
+        // §5.2 Incremental profile update detection
+        {
+            const PROFILE_UPDATE_TRIGGERS = [
+                /\bi\s+(?:started|began|am\s+now|was\s+prescribed)\s+(?:taking|on)\s+([a-zA-Z0-9-]{3,25})/i,
+                /\bi\s+(?:was\s+diagnosed\s+with|have\s+developed|now\s+have)\s+([a-zA-Z0-9-\s]{3,30})/i,
+                /\bi\s+am\s+allergic\s+to\s+([a-zA-Z0-9-]{3,25})/i,
+            ];
+            const isProfileUpdateMentioned = PROFILE_UPDATE_TRIGGERS.some(trigger => trigger.test(lastUserMsg));
+            if (isProfileUpdateMentioned) {
+                finalSystemPrompt += `
+[INCREMENTAL PROFILE UPDATE DETECTION — ACTIVE]
+The patient mentioned a potential update to their medical profile (new medication, condition, or allergy).
+RULE: You must surface a friendly confirmation question at the very end of your response asking if they would like to update their health profile.
+Example: "Shall I update your health profile to include [X]?"
+Keep it helpful and do not perform any automated database write yourself.
+`;
+            }
         }
 
         // ── Medical history injection (AI memory across sessions) ────────────
@@ -2162,10 +2343,7 @@ UI HINT OUTPUT SAFETY:
             const geminiKeys = getGeminiApiKeys();
             if (geminiKeys.length === 0) {
                 console.error('[Groq+Gemini] Both failed — no GEMINI_API_KEY set');
-                const sse = [`data: ${JSON.stringify({ content: "I'm having trouble reaching the AI service. Please try again in a moment. 🙏" })}
-
-`, `data: [DONE]\n\n`].join('');
-                return new Response(sse, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
+                return streamTextResponse("I'm having trouble reaching the AI service. Please try again in a moment. 🙏");
             }
 
             console.log('[Groq] Failed — falling back to Gemini...');
@@ -2270,17 +2448,9 @@ UI HINT OUTPUT SAFETY:
                                     isFinalTurn,
                                     conversationIntakeState
                                 );
-                                const rescueSSE = [
-                                    `data: ${JSON.stringify({ content: safeRescueText })}\n\n`,
-                                    `data: [DONE]\n\n`,
-                                ].join('');
-                                return new Response(rescueSSE, {
-                                    headers: {
-                                        'Content-Type': 'text/event-stream',
-                                        'Cache-Control': 'no-cache',
-                                        'X-Provider': 'groq-rescue',
-                                        'X-Model': AI_PHASE_CONFIG.models.groqFast,
-                                    },
+                                return streamTextResponse(safeRescueText, {
+                                    'X-Provider': 'groq-rescue',
+                                    'X-Model': AI_PHASE_CONFIG.models.groqFast,
                                 });
                             }
                         } else {
@@ -2295,15 +2465,7 @@ UI HINT OUTPUT SAFETY:
                 }
 
                 // Stream a friendly message instead of returning 503 (which triggers the error banner)
-                const fallbackSSE = [
-                    `data: ${JSON.stringify({ content: "I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏" })}
-
-`,
-                    `data: [DONE]\n\n`,
-                ].join('');
-                return new Response(fallbackSSE, {
-                    headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
-                });
+                return streamTextResponse("I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏");
             }
 
             // Normalize Gemini response into SSE format to match Groq stream shape
@@ -2313,10 +2475,6 @@ UI HINT OUTPUT SAFETY:
                 isFinalTurn,
                 conversationIntakeState
             );
-            const geminiSSE = [
-                `data: ${JSON.stringify({ content: safeGeminiText })}\n\n`,
-                `data: [DONE]\n\n`,
-            ].join('');
 
             await logLlmRequest(serviceClient, {
                 userId,
@@ -2327,13 +2485,9 @@ UI HINT OUTPUT SAFETY:
                 latencyMs: Date.now() - requestStart,
             });
 
-            return new Response(geminiSSE, {
-                headers: {
-                    'Content-Type': 'text/event-stream',
-                    'Cache-Control': 'no-cache',
-                    'X-Provider': 'gemini',
-                    'X-Model': geminiModelUsed,
-                },
+            return streamTextResponse(safeGeminiText, {
+                'X-Provider': 'gemini',
+                'X-Model': geminiModelUsed,
             });
         }
 
@@ -2399,15 +2553,7 @@ UI HINT OUTPUT SAFETY:
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (innerError: any) {
             console.error('[chat/route] Inner error:', innerError);
-            const errSSE = [
-                `data: ${JSON.stringify({ content: "Something went wrong on my end. Please try again in a moment. 🙏" })}
-
-`,
-                `data: [DONE]\n\n`,
-            ].join('');
-            return new Response(errSSE, {
-                headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
-            });
+            return streamTextResponse("Something went wrong on my end. Please try again in a moment. 🙏");
         }
     };
 
@@ -2419,11 +2565,6 @@ UI HINT OUTPUT SAFETY:
             ? "This is taking longer than usual. Please try again. 🙏"
             : "Something went wrong on my end. Please try again in a moment. 🙏";
         console.error('[chat/route] Unhandled error:', error.message);
-        const sse = [`data: ${JSON.stringify({ content: msg })}
-
-`, `data: [DONE]\n\n`].join('');
-        return new Response(sse, {
-            headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
-        });
+        return streamTextResponse(msg);
     }
 }
