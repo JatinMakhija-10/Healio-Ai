@@ -50,8 +50,24 @@ function parseUiHint(content: string): any {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inferWidgetHintFromText(content: string): any {
     const visiblePrompt = content.split(/\{"ui_hint"\s*:/)[0] ?? content;
-    const asksSeverity = /\b(severe|severity|intensity|pain|bad|rate|rating)\b/i.test(visiblePrompt);
-    const mentionsScale = /\b(scale\s+(?:of|from)|1\s*(?:to|-)\s*10|out\s+of\s+10)\b/i.test(visiblePrompt);
+    
+    // If we detect a specific score acknowledgement (like "4 out of 10" or "6/10"),
+    // it means we already have the severity rating and are asking a different question.
+    const hasSpecificScore = /\b(?:[1-9]|10)\s*(?:out\s+of|\/)\s*10\b/i.test(visiblePrompt) ||
+                             /\b(?:rating|score|severity)\s+(?:of\s+)?(?:[1-9]|10)\b/i.test(visiblePrompt);
+    if (hasSpecificScore) {
+        return null;
+    }
+
+    // Split into sentences/questions using common punctuation boundaries
+    const sentences = visiblePrompt.trim().split(/[.!?\n]+/).map(s => s.trim()).filter(Boolean);
+    if (sentences.length === 0) return null;
+
+    // Check if the final sentence/question is the one asking to rate
+    const finalSentence = sentences[sentences.length - 1];
+
+    const asksSeverity = /\b(severity|intensity|rate|rating|how\s+severe|how\s+bad|kitna\s+tez|kitna\s+dard)\b/i.test(finalSentence);
+    const mentionsScale = /\b(scale|1\s*(?:se|to|-)\s*10|0\s*(?:se|to|-)\s*10|out\s+of\s+10)\b/i.test(finalSentence);
 
     if (asksSeverity && mentionsScale) {
         return { type: "pain_slider" };
