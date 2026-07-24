@@ -169,10 +169,10 @@ export function Sidebar() {
                 </div>
                 <div className="flex flex-col">
                     <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
-                        Healio
+                        Healio.AI
                     </span>
-                    <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#0D9488" }}>
-                        HEALTH AI
+                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#0D9488" }}>
+                        WHERE SCIENCE MEETS SOUL
                     </span>
                 </div>
             </div>

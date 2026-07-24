@@ -340,7 +340,12 @@ export default function LandingPage() {
         <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <Link href="/" className="flex items-center gap-3" aria-label="Healio home">
             <HealioMark />
-            <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio.AI</span>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0F6E56" }}>
+                Where science meets soul
+              </span>
+            </div>
           </Link>
 
           <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-[#1C1C1E]" aria-label="Primary navigation">

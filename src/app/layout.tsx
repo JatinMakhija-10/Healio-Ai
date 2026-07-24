@@ -24,12 +24,14 @@ const dmSerifDisplay = DM_Serif_Display({
 export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
-    default: "Healio - Your Family Health Guide",
-    template: "%s | Healio",
+    default: "Healio.AI - Where Science Meets Soul",
+    template: "%s | Healio.AI",
   },
-  description: "Simple, honest wellness guidance for Indian families in their language, with Ayurvedic home care, homeopathic context, source-led scoring, and clear doctor escalation signals.",
+  description: "Healio.AI — Where science meets soul. Simple, honest wellness guidance for Indian families in their language, with Ayurvedic home care, homeopathic context, source-led scoring, and clear doctor escalation signals.",
   keywords: [
     "Healio",
+    "Healio.AI",
+    "Where science meets soul",
     "Indian family health guide",
     "Ayurvedic home remedies",
     "homeopathic context",
@@ -40,17 +42,17 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Healio - Your Family Health Guide",
+    title: "Healio.AI - Where Science Meets Soul",
     description: "Language-first wellness guidance for Indian families, with safe home-care context and clear doctor escalation signals.",
     locale: "en_IN",
-    siteName: "Healio",
+    siteName: "Healio.AI",
     type: "website",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "Healio - Your Family Health Guide",
-    description: "Simple, honest wellness guidance for Indian families in their language.",
+    title: "Healio.AI - Where Science Meets Soul",
+    description: "Simple, honest wellness guidance for Indian families in their language. Where science meets soul.",
   },
 };
 
