@@ -23,6 +23,7 @@ import {
     Shield,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import {
     PLANS,
@@ -118,12 +119,13 @@ export default function BillingPage() {
 
             if (res.ok) {
                 await fetchBilling();
+                toast.success("Credits added successfully!");
             } else {
                 const err = await res.json();
-                alert(err.error || "Purchase failed");
+                toast.error(err.error || "Purchase failed");
             }
         } catch {
-            alert("Network error — please try again");
+            toast.error("Network error — please try again");
         } finally {
             setPurchasing(null);
         }

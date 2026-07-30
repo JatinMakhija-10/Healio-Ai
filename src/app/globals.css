@@ -9,10 +9,10 @@
   --font-serif: var(--font-dm-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   /* Specific Teal Tokens from Design System */
-  --color-teal-base: #0D9488;
-  --color-teal-dark: #0B7A70;
-  --color-teal-light: #F0FDFA;
-  --color-teal-mid: #CCFBF1;
+  --color-teal-base: #0F6E56;
+  --color-teal-dark: #0B5B47;
+  --color-teal-light: #E1F5EE;
+  --color-teal-mid: #9FE1CB;
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -238,145 +238,28 @@
   animation: marquee 20s linear infinite;
 }
 
-/* Dark mode is intentionally opt-in only. Add `data-healio-theme="dark"` to
-   the root element, or `.healio-theme-dark` to a parent, when the toggle ships. */
-:root[data-healio-theme="dark"] .healio-public-page,
-.healio-theme-dark .healio-public-page {
-  background-color: #1c1c1e !important;
-  color: #f7f6f2 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page header,
-:root[data-healio-theme="dark"] .healio-public-page section,
-:root[data-healio-theme="dark"] .healio-public-page article,
-:root[data-healio-theme="dark"] .healio-public-page figure,
-:root[data-healio-theme="dark"] .healio-public-page footer,
-:root[data-healio-theme="dark"] .healio-public-page form,
-:root[data-healio-theme="dark"] .healio-public-page div,
-.healio-theme-dark .healio-public-page header,
-.healio-theme-dark .healio-public-page section,
-.healio-theme-dark .healio-public-page article,
-.healio-theme-dark .healio-public-page figure,
-.healio-theme-dark .healio-public-page footer,
-.healio-theme-dark .healio-public-page form,
-.healio-theme-dark .healio-public-page div {
-  border-color: #3a3a3c !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .bg-white,
-:root[data-healio-theme="dark"] .healio-public-page .bg-\[\#FFFFFF\],
-:root[data-healio-theme="dark"] .healio-public-page .bg-\[\#FDFBF7\],
-:root[data-healio-theme="dark"] .healio-public-page .bg-\[\#F7F6F2\],
-.healio-theme-dark .healio-public-page .bg-white,
-.healio-theme-dark .healio-public-page .bg-\[\#FFFFFF\],
-.healio-theme-dark .healio-public-page .bg-\[\#FDFBF7\],
-.healio-theme-dark .healio-public-page .bg-\[\#F7F6F2\] {
-  background-color: #2c2c2e !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .bg-\[\#E1F5EE\],
-.healio-theme-dark .healio-public-page .bg-\[\#E1F5EE\] {
-  background-color: #17382f !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .bg-\[\#1A1A2E\],
-.healio-theme-dark .healio-public-page .bg-\[\#1A1A2E\] {
-  background-color: #111114 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#1C1C1E\],
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#1A1A2E\],
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#555555\],
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#6B6B6B\],
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#33594D\],
-.healio-theme-dark .healio-public-page .text-\[\#1C1C1E\],
-.healio-theme-dark .healio-public-page .text-\[\#1A1A2E\],
-.healio-theme-dark .healio-public-page .text-\[\#555555\],
-.healio-theme-dark .healio-public-page .text-\[\#6B6B6B\],
-.healio-theme-dark .healio-public-page .text-\[\#33594D\] {
-  color: #f7f6f2 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .text-\[\#0F6E56\],
-.healio-theme-dark .healio-public-page .text-\[\#0F6E56\] {
-  color: #9fe1cb !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page .text-white,
-:root[data-healio-theme="dark"] .healio-public-page .text-white\/70,
-:root[data-healio-theme="dark"] .healio-public-page .text-white\/75,
-.healio-theme-dark .healio-public-page .text-white,
-.healio-theme-dark .healio-public-page .text-white\/70,
-.healio-theme-dark .healio-public-page .text-white\/75 {
-  color: #ffffff !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page input,
-:root[data-healio-theme="dark"] .healio-public-page select,
-:root[data-healio-theme="dark"] .healio-public-page textarea,
-.healio-theme-dark .healio-public-page input,
-.healio-theme-dark .healio-public-page select,
-.healio-theme-dark .healio-public-page textarea {
-  background-color: #2c2c2e !important;
-  border-color: #4a4a4d !important;
-  color: #f7f6f2 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-public-page ::placeholder,
-.healio-theme-dark .healio-public-page ::placeholder {
-  color: #b8b8bc !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page,
-.healio-theme-dark .healio-consult-page {
-  background-color: #1c1c1e !important;
-  color: #f7f6f2 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page header,
-:root[data-healio-theme="dark"] .healio-consult-page div,
-:root[data-healio-theme="dark"] .healio-consult-page button,
-:root[data-healio-theme="dark"] .healio-consult-page textarea,
-.healio-theme-dark .healio-consult-page header,
-.healio-theme-dark .healio-consult-page div,
-.healio-theme-dark .healio-consult-page button,
-.healio-theme-dark .healio-consult-page textarea {
-  border-color: #3a3a3c !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page .bg-white,
-:root[data-healio-theme="dark"] .healio-consult-page .bg-white\/90,
-:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#FDFBF7\],
-:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#F7F6F2\],
-.healio-theme-dark .healio-consult-page .bg-white,
-.healio-theme-dark .healio-consult-page .bg-white\/90,
-.healio-theme-dark .healio-consult-page .bg-\[\#FDFBF7\],
-.healio-theme-dark .healio-consult-page .bg-\[\#F7F6F2\] {
-  background-color: #2c2c2e !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page .bg-\[\#E1F5EE\],
-.healio-theme-dark .healio-consult-page .bg-\[\#E1F5EE\] {
-  background-color: #17382f !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#1C1C1E\],
-:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#1A1A2E\],
-:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#555555\],
-:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#6B6B6B\],
-.healio-theme-dark .healio-consult-page .text-\[\#1C1C1E\],
-.healio-theme-dark .healio-consult-page .text-\[\#1A1A2E\],
-.healio-theme-dark .healio-consult-page .text-\[\#555555\],
-.healio-theme-dark .healio-consult-page .text-\[\#6B6B6B\] {
-  color: #f7f6f2 !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page .text-\[\#0F6E56\],
-.healio-theme-dark .healio-consult-page .text-\[\#0F6E56\] {
-  color: #9fe1cb !important;
-}
-
-:root[data-healio-theme="dark"] .healio-consult-page textarea,
-.healio-theme-dark .healio-consult-page textarea {
-  color: #f7f6f2 !important;
+/* Dark mode tokens (Opt-in via data-healio-theme="dark" or .dark) */
+:root[data-healio-theme="dark"],
+.dark,
+.healio-theme-dark {
+  --background: oklch(0.18 0.01 240);
+  --foreground: oklch(0.96 0.005 240);
+  --card: oklch(0.22 0.01 240);
+  --card-foreground: oklch(0.96 0.005 240);
+  --popover: oklch(0.22 0.01 240);
+  --popover-foreground: oklch(0.96 0.005 240);
+  --primary: #0F6E56;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.25 0.01 240);
+  --secondary-foreground: oklch(0.90 0.01 240);
+  --muted: oklch(0.25 0.01 240);
+  --muted-foreground: oklch(0.65 0.01 240);
+  --accent: oklch(0.25 0.03 190);
+  --accent-foreground: oklch(0.96 0.005 240);
+  --border: oklch(0.30 0.01 240);
+  --input: oklch(0.30 0.01 240);
+  --ring: #0F6E56;
+  --sidebar: oklch(0.18 0.01 240);
+  --sidebar-foreground: oklch(0.96 0.005 240);
+  --sidebar-border: oklch(0.30 0.01 240);
 }

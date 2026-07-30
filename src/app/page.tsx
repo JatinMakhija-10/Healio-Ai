@@ -342,7 +342,7 @@ export default function LandingPage() {
             <HealioMark />
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio.AI</span>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0F6E56" }}>
+              <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                 Where science meets soul
               </span>
             </div>

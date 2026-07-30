@@ -124,7 +124,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                                     <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
                                         Healio.AI
                                     </span>
-                                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#0D9488" }}>
+                                    <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                                         WHERE SCIENCE MEETS SOUL
                                     </span>
                                 </div>

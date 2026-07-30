@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -134,8 +135,7 @@ export default function DoctorRegisterPage() {
             setSubmitted(true);
         } catch (error) {
             console.error("Registration error:", error);
-            // In a real app, show toast notification here
-            alert("Failed to create profile. Please check console for details.");
+            toast.error("Failed to create profile. Please check console for details.");
         } finally {
             setSubmitting(false);
         }

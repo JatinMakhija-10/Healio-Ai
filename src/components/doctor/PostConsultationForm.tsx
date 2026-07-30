@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { X, Plus, FileText, Send, Save } from "lucide-react";
+import { X, Plus, Save, Send } from "lucide-react";
 import { Prescription, LabTest } from "@/lib/clinical-notes/clinicalNotesService";
+import { toast } from "sonner";
 
 interface PostConsultationFormProps {
     appointmentId: string;
@@ -69,7 +69,7 @@ export default function PostConsultationForm({
 
     const addPrescription = () => {
         if (!currentPrescription.medicine || !currentPrescription.dosage) {
-            alert("Please enter medicine name and dosage");
+            toast.warning("Please enter medicine name and dosage");
             return;
         }
 
@@ -96,7 +96,7 @@ export default function PostConsultationForm({
 
     const addLabTest = () => {
         if (!currentLabTest.test_name) {
-            alert("Please enter test name");
+            toast.warning("Please enter test name");
             return;
         }
 
@@ -121,7 +121,7 @@ export default function PostConsultationForm({
 
     const handleSave = async () => {
         if (!formData.assessment || !formData.plan) {
-            alert("Please fill in Assessment and Plan sections");
+            toast.warning("Please fill in Assessment and Plan sections");
             return;
         }
         await onSave(formData);
@@ -129,7 +129,7 @@ export default function PostConsultationForm({
 
     const handleSaveAndInvoice = async () => {
         if (!formData.assessment || !formData.plan) {
-            alert("Please fill in Assessment and Plan sections");
+            toast.warning("Please fill in Assessment and Plan sections");
             return;
         }
         await onSaveAndInvoice(formData);

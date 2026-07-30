@@ -128,6 +128,8 @@ export function Sidebar() {
     const router = useRouter();
     const { logout, profile } = useAuth();
     const plan = profile?.subscription_plan || 'free';
+    const isPaid = plan === 'plus' || plan === 'pro';
+    const planName = plan === 'pro' ? 'Pro Active' : plan === 'plus' ? 'Plus Active' : 'Free Plan';
     const creditsBalance = Number(profile?.credits_balance ?? 0);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -171,7 +173,7 @@ export function Sidebar() {
                     <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
                         Healio.AI
                     </span>
-                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#0D9488" }}>
+                    <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                         WHERE SCIENCE MEETS SOUL
                     </span>
                 </div>
@@ -190,19 +192,11 @@ export function Sidebar() {
                                     aria-keyshortcuts={showShortcutTooltip ? "Control+Shift+O" : undefined}
                                     aria-label={showShortcutTooltip ? `New consultation (${NEW_CONSULTATION_SHORTCUT})` : undefined}
                                     className={cn(
-                                        "w-full flex items-center gap-3 rounded-lg text-left transition-all duration-150",
+                                        "w-full flex items-center gap-3 rounded-lg text-left transition-all duration-150 px-3 py-2.5 text-[13.5px] tracking-[0.01em]",
                                         isActive
-                                            ? "text-teal-700 font-semibold"
-                                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                                            ? "text-teal-700 font-semibold border-l-[3px] border-[#0F6E56] bg-[#E1F5EE]"
+                                            : "text-slate-500 font-medium hover:text-slate-900 hover:bg-slate-50 border-l-[3px] border-transparent"
                                     )}
-                                    style={{
-                                        padding: "10px 12px",
-                                        fontSize: "13.5px",
-                                        fontWeight: isActive ? 600 : 500,
-                                        letterSpacing: "0.01em",
-                                        borderLeft: isActive ? "3px solid #0D9488" : "3px solid transparent",
-                                        background: isActive ? "#F0FDFA" : undefined,
-                                    }}
                                 >
                                     <item.icon size={18} />
                                     {item.title}
@@ -218,11 +212,10 @@ export function Sidebar() {
                                     <TooltipTrigger asChild>{navLink}</TooltipTrigger>
                                     <TooltipContent
                                         side="right"
-                                        sideOffset={12}
-                                        className="flex items-center gap-2 whitespace-nowrap rounded-[8px] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10"
+                                        className="bg-slate-900 text-slate-100 border-slate-800 text-xs px-2.5 py-1.5 shadow-md flex items-center gap-2"
                                     >
                                         <span>New consultation</span>
-                                        <kbd className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-500">
+                                        <kbd className="bg-slate-800 text-slate-300 rounded px-1.5 py-0.5 text-[10px] font-mono border border-slate-700">
                                             {NEW_CONSULTATION_SHORTCUT}
                                         </kbd>
                                     </TooltipContent>
@@ -233,27 +226,36 @@ export function Sidebar() {
                 </TooltipProvider>
             </div>
 
-            {/* Footer */}
-            <div className="px-4 py-4 border-t border-slate-100 flex flex-col gap-2">
-                {/* Plan + credits badge */}
+            {/* Footer / Account */}
+            <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
                 <Link href="/dashboard/billing">
-                    <div className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150 cursor-pointer ${
-                        plan === 'plus' || plan === 'pro'
-                            ? 'bg-teal-50 border border-teal-200 hover:bg-teal-100'
-                            : 'bg-slate-50 border border-slate-200 hover:bg-slate-100'
-                    }`}>
-                        {plan === 'plus' || plan === 'pro' ? (
-                            <Crown size={14} className="text-teal-600" />
-                        ) : (
-                            <CreditCard size={14} className="text-slate-400" />
+                    <div
+                        className={cn(
+                            "mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all duration-150 border",
+                            isPaid
+                                ? "bg-teal-50/80 border-teal-200/80 hover:bg-teal-100/60"
+                                : "bg-slate-50 border-slate-200/80 hover:bg-slate-100/60"
                         )}
-                        <div className="min-w-0 text-[11px] leading-tight">
-                            <span className={`font-bold ${
-                                plan === 'plus' || plan === 'pro' ? 'text-teal-700' : 'text-slate-500'
-                            }`}>
-                                {plan === 'pro' ? 'Pro Active' : plan === 'plus' ? 'Plus Active' : 'Free Plan'}
-                            </span>
-                            <span className="mx-1.5 text-slate-300">·</span>
+                    >
+                        <div
+                            className={cn(
+                                "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
+                                isPaid ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-600"
+                            )}
+                        >
+                            {isPaid ? <Crown size={14} /> : <CreditCard size={14} />}
+                        </div>
+                        <div className="min-w-0 flex-1 text-[11px] leading-tight">
+                            <div className="flex items-center justify-between">
+                                <span
+                                    className={cn(
+                                        "font-bold truncate",
+                                        isPaid ? "text-teal-900" : "text-slate-700"
+                                    )}
+                                >
+                                    {planName}
+                                </span>
+                            </div>
                             <span className="text-slate-500">
                                 {creditsBalance} credits
                             </span>
@@ -262,8 +264,7 @@ export function Sidebar() {
                 </Link>
 
                 <button
-                    className="w-full flex items-center gap-3 rounded-lg text-left text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ padding: "10px 12px", fontSize: "13.5px", fontWeight: 500 }}
+                    className="w-full flex items-center gap-3 rounded-lg text-left text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2.5 text-[13.5px] font-medium"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                 >

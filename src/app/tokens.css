@@ -17,11 +17,12 @@
 
 :root {
     /* ── Brand ─────────────────────────────────────────────── */
-    --healio-brand-primary: oklch(0.488 0.14 185);
-    /* Muted teal — trust, medical */
-    --healio-brand-primary-light: oklch(0.65 0.12 185);
+    --healio-brand-primary: #0F6E56;
+    /* Primary teal — trust, medical */
+    --healio-brand-primary-light: #9FE1CB;
+    --healio-brand-primary-bg: #E1F5EE;
     /* Lighter teal for hover/accents */
-    --healio-brand-primary-dark: oklch(0.38 0.12 185);
+    --healio-brand-primary-dark: #0B5B47;
     /* Darker teal for active states */
     --healio-brand-secondary: oklch(0.55 0.13 220);
     /* Soft blue — complementary */

@@ -7,6 +7,7 @@ import { Check, Loader2, Sparkles, Shield, Zap } from "lucide-react";
 import { PLANS, createCheckoutSession, type SubscriptionPlan } from "@/lib/stripe/mockClient";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface PlanSelectionModalProps {
     open: boolean;
@@ -36,7 +37,7 @@ export function PlanSelectionModal({
                 onOpenChange(false);
                 setLoading(null);
                 // In real app: router.push(url);
-                alert("This is a mock checkout! In a real app, you would be redirected to Stripe.");
+                toast.info("This is a mock checkout! In a real app, you would be redirected to Stripe.");
             }, 1000);
         } catch (error) {
             console.error("Upgrade failed:", error);

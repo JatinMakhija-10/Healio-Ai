@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // ─── Medicine Types ───────────────────────────────────────────────────────────
 type MedicineEntry = { name: string; category: "Allopathic" | "Homeopathic" | "Ayurvedic" };
@@ -453,7 +454,7 @@ export default function OnboardingWizard() {
             router.push("/dashboard");
         } catch (err) {
             console.error("Error saving profile:", err);
-            alert("Data saved locally. There was a cloud sync issue.");
+            toast.warning("Data saved locally. There was a cloud sync issue.");
             router.push("/dashboard");
         } finally {
             setSaving(false);

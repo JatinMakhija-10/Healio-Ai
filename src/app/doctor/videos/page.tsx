@@ -28,10 +28,6 @@ import {
 } from "@/components/ui/select";
 import {
     Upload,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Video,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Plus,
     Trash2,
     Edit3,
     Eye,
@@ -48,6 +44,7 @@ import {
     CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const CATEGORIES = [
     { value: "yoga", label: "Yoga", color: "bg-purple-100 text-purple-700 hover:bg-purple-200" },
@@ -90,7 +87,7 @@ export default function DoctorVideosPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterCategory, setFilterCategory] = useState("all");
 
-    // Form state (Shared for Upload Tab and Edit Dialog)
+    // Form state
     const [editingVideo, setEditingVideo] = useState<WellnessVideo | null>(null);
     const [uploadMode, setUploadMode] = useState<"file" | "url">("url");
     const [formState, setFormState] = useState({
@@ -108,7 +105,6 @@ export default function DoctorVideosPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch doctor ID and videos
     useEffect(() => {
         async function load() {
             if (!user) return;
@@ -156,7 +152,7 @@ export default function DoctorVideosPage() {
             isPublished: video.is_published,
         });
         setThumbnailPreview(video.thumbnail_url || null);
-        setSelectedThumbnail(null); // Reset new selection
+        setSelectedThumbnail(null);
         setUploadMode("url");
         setEditDialogOpen(true);
     }
@@ -168,7 +164,6 @@ export default function DoctorVideosPage() {
         setUploading(true);
         setUploadProgress(0);
 
-        // Simulate progress for better UX
         const progressInterval = setInterval(() => {
             setUploadProgress(prev => Math.min(prev + Math.random() * 10, 90));
         }, 500);
@@ -177,7 +172,6 @@ export default function DoctorVideosPage() {
             let finalUrl = formState.videoUrl;
             let finalThumbnailUrl = editingVideo?.thumbnail_url || null;
 
-            // 1. Upload Video File (if selected)
             if (uploadMode === "file" && selectedFile) {
                 const fileExt = selectedFile.name.split(".").pop();
                 const filePath = `${doctorId}/${Date.now()}_video.${fileExt}`;
@@ -193,7 +187,6 @@ export default function DoctorVideosPage() {
                 finalUrl = urlData.publicUrl;
             }
 
-            // 2. Upload Thumbnail (if selected)
             if (selectedThumbnail) {
                 const fileExt = selectedThumbnail.name.split(".").pop();
                 const filePath = `${doctorId}/${Date.now()}_thumb.${fileExt}`;
@@ -210,14 +203,13 @@ export default function DoctorVideosPage() {
             }
 
             if (!finalUrl) {
-                alert("Please provide a video URL or upload a file.");
+                toast.warning("Please provide a video URL or upload a file.");
                 setUploading(false);
                 clearInterval(progressInterval);
                 return;
             }
 
             if (editingVideo) {
-                // Update existing
                 await api.updateVideo(editingVideo.id, {
                     title: formState.title,
                     description: formState.description,
@@ -240,8 +232,8 @@ export default function DoctorVideosPage() {
                     )
                 );
                 setEditDialogOpen(false);
+                toast.success("Video updated successfully!");
             } else {
-                // Create new
                 const newVideo = await api.uploadVideoMetadata({
                     doctor_id: doctorId,
                     title: formState.title,
@@ -252,7 +244,8 @@ export default function DoctorVideosPage() {
                     is_published: formState.isPublished,
                 });
                 setVideos((prev) => [newVideo, ...prev]);
-                setActiveTab("videos"); // Switch back to videos list
+                setActiveTab("videos");
+                toast.success("Video uploaded successfully!");
             }
 
             setUploadProgress(100);
@@ -263,7 +256,7 @@ export default function DoctorVideosPage() {
 
         } catch (err) {
             console.error("Error saving video:", err);
-            alert("Failed to save video. Please try again.");
+            toast.error("Failed to save video. Please try again.");
         } finally {
             clearInterval(progressInterval);
             setUploading(false);
@@ -275,8 +268,10 @@ export default function DoctorVideosPage() {
         try {
             await api.deleteVideo(videoId);
             setVideos((prev) => prev.filter((v) => v.id !== videoId));
+            toast.success("Video deleted.");
         } catch (err) {
             console.error("Error deleting video:", err);
+            toast.error("Failed to delete video.");
         }
     }
 
@@ -288,12 +283,12 @@ export default function DoctorVideosPage() {
                     v.id === video.id ? { ...v, is_published: !v.is_published } : v
                 )
             );
+            toast.success(video.is_published ? "Video unpublished" : "Video published");
         } catch (err) {
             console.error("Error toggling publish:", err);
         }
     }
 
-    // Drag & Drop Handlers
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
@@ -312,7 +307,6 @@ export default function DoctorVideosPage() {
             if (file.type.startsWith("video/")) {
                 setSelectedFile(file);
                 setUploadMode("file");
-                // Auto-fill title from filename
                 if (!formState.title) {
                     setFormState(prev => ({
                         ...prev,
@@ -320,7 +314,7 @@ export default function DoctorVideosPage() {
                     }));
                 }
             } else {
-                alert("Please drop a video file.");
+                toast.warning("Please drop a video file.");
             }
         }
     };
@@ -329,7 +323,7 @@ export default function DoctorVideosPage() {
         const file = e.target.files?.[0];
         if (file) {
             if (!file.type.startsWith("image/")) {
-                alert("Please select an image file.");
+                toast.warning("Please select an image file.");
                 return;
             }
             setSelectedThumbnail(file);
@@ -337,14 +331,12 @@ export default function DoctorVideosPage() {
         }
     };
 
-    // Derived filtered videos
     const filteredVideos = videos.filter(v => {
         const matchesSearch = v.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = filterCategory === 'all' || v.category === filterCategory;
         return matchesSearch && matchesCategory;
     });
 
-    // Form Component (Reusable)
     const VideoForm = () => (
         <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
@@ -407,7 +399,6 @@ export default function DoctorVideosPage() {
                 </div>
 
                 <div className="space-y-4">
-                    {/* Source Selection */}
                     <div className="bg-white p-1 rounded-lg border border-slate-200 inline-flex w-full">
                         <button
                             type="button"
@@ -450,15 +441,6 @@ export default function DoctorVideosPage() {
                                     className="pl-9"
                                 />
                             </div>
-                            {/* URL Preview */}
-                            {formState.videoUrl && (
-                                <div className="mt-2 aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative group">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <Play className="h-10 w-10 text-slate-400" />
-                                    </div>
-                                    <p className="absolute bottom-2 left-0 right-0 text-center text-xs text-slate-500">Preview Available after save</p>
-                                </div>
-                            )}
                         </div>
                     ) : (
                         <div className="space-y-2">
@@ -485,7 +467,6 @@ export default function DoctorVideosPage() {
                                         const file = e.target.files?.[0];
                                         if (file) {
                                             setSelectedFile(file);
-                                            // Auto-fill title
                                             if (!formState.title) {
                                                 setFormState(prev => ({
                                                     ...prev,
@@ -534,7 +515,6 @@ export default function DoctorVideosPage() {
                         </div>
                     )}
 
-                    {/* Thumbnail Upload */}
                     <div>
                         <Label>Thumbnail Image</Label>
                         <div
@@ -630,7 +610,6 @@ export default function DoctorVideosPage() {
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-500 container mx-auto max-w-6xl">
-            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Media Library</h1>
@@ -638,7 +617,6 @@ export default function DoctorVideosPage() {
                 </div>
             </div>
 
-            {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="bg-slate-50 border-slate-100 shadow-sm">
                     <CardContent className="p-4 flex flex-col gap-1">
@@ -678,9 +656,7 @@ export default function DoctorVideosPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                {/* TAB 1: VIDEOS LIST */}
                 <TabsContent value="videos" className="space-y-6 animate-in slide-in-from-left-2 duration-300">
-                    {/* Filters */}
                     <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm sticky top-4 z-10">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -717,7 +693,6 @@ export default function DoctorVideosPage() {
                         )}
                     </div>
 
-                    {/* Grid */}
                     {filteredVideos.length === 0 ? (
                         <div className="text-center py-20 bg-slate-50/50 rounded-2xl border border-dashed border-slate-300">
                             <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
@@ -746,10 +721,10 @@ export default function DoctorVideosPage() {
                                                 <>
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
-                                                    src={video.thumbnail_url}
-                                                    alt={video.title}
-                                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-300"
-                                                />
+                                                        src={video.thumbnail_url}
+                                                        alt={video.title}
+                                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-300"
+                                                    />
                                                 </>
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
@@ -763,7 +738,6 @@ export default function DoctorVideosPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Status Badge */}
                                             <div className="absolute top-3 left-3 flex gap-2">
                                                 {!video.is_published && (
                                                     <Badge variant="secondary" className="bg-amber-100/90 text-amber-800 backdrop-blur-sm shadow-sm">
@@ -775,7 +749,6 @@ export default function DoctorVideosPage() {
                                                 </Badge>
                                             </div>
 
-                                            {/* Duration */}
                                             {video.duration_seconds && (
                                                 <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
                                                     <Clock className="h-3 w-3" />
@@ -797,24 +770,20 @@ export default function DoctorVideosPage() {
                                                     <Eye className="h-3.5 w-3.5 mr-1.5 text-slate-400" />
                                                     {video.views_count} views
                                                 </div>
-
-                                                <div className="flex gap-1">
+                                                <div className="flex items-center gap-1">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className={cn(
-                                                            "h-8 w-8 p-0 rounded-lg",
-                                                            video.is_published ? "text-teal-600 bg-teal-50" : "text-slate-400 hover:text-slate-600"
-                                                        )}
+                                                        className="h-8 w-8 p-0 rounded-lg text-slate-600 hover:bg-slate-100"
                                                         onClick={() => togglePublished(video)}
                                                         title={video.is_published ? "Unpublish" : "Publish"}
                                                     >
-                                                        {video.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                        {video.is_published ? <Eye className="h-4 w-4 text-teal-600" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-8 w-8 p-0 rounded-lg text-blue-600 hover:bg-blue-50"
+                                                        className="h-8 w-8 p-0 rounded-lg text-slate-600 hover:bg-slate-100"
                                                         onClick={() => openEditDialog(video)}
                                                         title="Edit"
                                                     >
@@ -839,7 +808,6 @@ export default function DoctorVideosPage() {
                     )}
                 </TabsContent>
 
-                {/* TAB 2: UPLOAD VIDEO */}
                 <TabsContent value="upload" className="animate-in slide-in-from-right-2 duration-300">
                     <Card className="max-w-4xl mx-auto border-slate-200 shadow-lg">
                         <CardContent className="p-8">
@@ -859,7 +827,6 @@ export default function DoctorVideosPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Edit Dialog (Reuses VideoForm Logic) */}
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -877,7 +844,6 @@ export default function DoctorVideosPage() {
     );
 }
 
-// Icon helper
 function CloudUploadIcon({ className }: { className?: string }) {
     return (
         <svg

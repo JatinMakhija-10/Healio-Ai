@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 import { Badge } from "@/components/ui/badge";
-import {
 
+import {
     Beaker,
     GitBranch,
     Brain,
@@ -234,10 +233,4 @@ export default function ClinicalSandboxPage() {
         </div>
         </ProFeatureGate>
     );
-}
-
- 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-function VideoIcon(props: any) {
-    return null; // Used elsewhere, avoiding check errors
 }

@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { UserSymptomData, DiagnosisResult, Condition } from "@/lib/diagnosis/types";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { pdf } from '@react-pdf/renderer';
 // eslint-disable-next-line no-restricted-imports
@@ -272,7 +273,7 @@ export default function HistoryPage() {
 
         } catch (error) {
             console.error("Report generation failed:", error);
-            alert("Failed to generate report. Please try again.");
+            toast.error("Failed to generate report. Please try again.");
         } finally {
             setGeneratingId(null);
             setReportData(null);

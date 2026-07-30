@@ -9,6 +9,7 @@ import { appointmentService } from "@/lib/appointments/appointmentService";
 import { clinicalNotesService } from "@/lib/clinical-notes/clinicalNotesService";
 import { invoiceService } from "@/lib/invoices/invoiceService";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function CompleteConsultationPage() {
     const params = useParams();
@@ -30,7 +31,6 @@ export default function CompleteConsultationPage() {
     async function loadAppointmentData() {
         try {
             setLoading(true);
-
 
             // Get current user
             const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -110,12 +110,12 @@ export default function CompleteConsultationPage() {
             // Mark appointment as completed
             await appointmentService.completeAppointment(appointmentId);
 
-            alert('Clinical notes saved successfully to patient profile!');
+            toast.success('Clinical notes saved successfully to patient profile!');
             setSuccess(true);
 
         } catch (error) {
             console.error('Error saving clinical notes:', error);
-            alert('Failed to save clinical notes. Please try again.');
+            toast.error('Failed to save clinical notes. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -154,7 +154,7 @@ export default function CompleteConsultationPage() {
                 consultation_fee: appointment.consultation_fee
             });
 
-            alert('Clinical notes saved and invoice sent to admin for approval!');
+            toast.success('Clinical notes saved and invoice sent to admin for approval!');
             setSuccess(true);
 
             // Redirect to revenue page after 2 seconds
@@ -164,7 +164,7 @@ export default function CompleteConsultationPage() {
 
         } catch (error) {
             console.error('Error saving notes and creating invoice:', error);
-            alert('Failed to process. Please try again.');
+            toast.error('Failed to process. Please try again.');
         } finally {
             setSaving(false);
         }

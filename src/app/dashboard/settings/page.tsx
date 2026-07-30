@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 function getLocalHealioKeys(userId: string) {
     const suffix = `_${userId}`;
@@ -210,7 +211,7 @@ export default function SettingsPage() {
     const handleSaveEmergency = () => {
         if (!user) return;
         localStorage.setItem(`healio_emergency_contact_${user.id}`, JSON.stringify(emergencyContact));
-        alert("Emergency contact saved.");
+        toast.success("Emergency contact saved.");
     };
 
     const toggleEmail = () => {
@@ -259,10 +260,10 @@ export default function SettingsPage() {
         try {
             clearLocalHealioData(user.id);
             window.dispatchEvent(new Event("storage"));
-            alert("Local Healio history has been cleared from this device.");
+            toast.success("Local Healio history has been cleared from this device.");
         } catch (error) {
             console.error("Error clearing data:", error);
-            alert("Failed to clear local data. Please try again.");
+            toast.error("Failed to clear local data. Please try again.");
         } finally {
             setIsClearingLocalData(false);
         }
@@ -308,10 +309,10 @@ export default function SettingsPage() {
             anchor.remove();
             URL.revokeObjectURL(url);
 
-            alert(`Your Healio data export is ready.\n\nFile: ${filename}`);
+            toast.success(`Your Healio data export is ready. File: ${filename}`);
         } catch (error) {
             console.error("Export error:", error);
-            alert(`Failed to export data.\n\n${error instanceof Error ? error.message : "Please try again."}`);
+            toast.error(`Failed to export data. ${error instanceof Error ? error.message : "Please try again."}`);
         } finally {
             setIsExportingData(false);
         }
@@ -346,7 +347,7 @@ export default function SettingsPage() {
             }
 
             clearLocalHealioData(user.id);
-            alert(
+            toast.success(
                 result.auth_deleted
                     ? "Your Healio account and health data have been deleted."
                     : `Your health data was deleted, but login deletion needs support follow-up. ${result.warning || ""}`.trim()
@@ -354,7 +355,7 @@ export default function SettingsPage() {
             await logout();
         } catch (err) {
             console.error("Deletion error:", err);
-            alert(err instanceof Error ? err.message : "Failed to delete account. Please try again.");
+            toast.error(err instanceof Error ? err.message : "Failed to delete account. Please try again.");
         } finally {
             setIsDeletingAccount(false);
             setDeletionConfirm("");
