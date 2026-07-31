@@ -392,7 +392,7 @@ export default function HistoryPage() {
                         const isExpanded = expandedId === consultation.id;
                         const symptomDisplay = buildSymptomDisplay(consultation);
                         return (
-                            <Card key={consultation.id} className="hover:shadow-md transition-shadow overflow-hidden">
+                            <Card key={consultation.id} className="hover:shadow-md transition-shadow">
                                 <CardHeader
                                     className="cursor-pointer"
                                     onClick={() => toggleExpand(consultation.id)}
@@ -453,9 +453,10 @@ export default function HistoryPage() {
                                             {/* Visually Separated Badges: Severity (outlined) + Confidence (filled) */}
                                             {!isMentalHealthPattern(consultation.diagnosis?.condition) && (
                                                 <div className="flex items-center gap-2">
-                                                    <SeverityBadge level={consultation.diagnosis?.severity || 'mild'} />
+                                                    <SeverityBadge level={consultation.diagnosis?.severity || 'mild'} tooltipPosition="bottom-right" />
                                                     <ConfidenceBadge
                                                         score={consultation.uncertainty?.pointEstimate ?? consultation.confidence}
+                                                        tooltipPosition="bottom-right"
                                                     />
                                                 </div>
                                             )}
@@ -464,7 +465,7 @@ export default function HistoryPage() {
                                 </CardHeader>
 
                                 {isExpanded && (
-                                    <CardContent className="space-y-5 border-t border-slate-100 bg-slate-50/50">
+                                    <CardContent className="space-y-5 border-t border-slate-100 bg-slate-50/50 rounded-b-xl">
                                         {/* Mental Health Special Pathway */}
                                         {isMentalHealthPattern(consultation.diagnosis?.condition) ? (
                                             <MentalHealthAssessmentCard
