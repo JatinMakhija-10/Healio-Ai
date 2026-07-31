@@ -81,6 +81,25 @@
     /* Amber — 50-80% */
     --healio-confidence-low: oklch(0.60 0.20 35);
     /* Orange — <50% */
+
+    /* ── Spec tokens: Confidence, Severity, Mental Health, Motion ── */
+    --color-confidence-high: #2E7D32;
+    --color-confidence-moderate: #F57F17;
+    --color-confidence-low: #C62828;
+
+    --color-severity-mild: #90A4AE;
+    --color-severity-moderate: #F57F17;
+    --color-severity-severe: #C62828;
+
+    --color-mental-health-bg: #FFF3E0;
+    --color-mental-health-accent: #E65100;
+
+    --duration-instant: 100ms;
+    --duration-fast: 200ms;
+    --duration-normal: 300ms;
+    --duration-slow: 400ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 /* ── Utility Classes (Severity) ──────────────────────────────

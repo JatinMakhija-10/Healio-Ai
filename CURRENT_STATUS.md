@@ -30,82 +30,31 @@ The application is not currently in a clean production-ready state. The latest r
 
 ## Current Git Status
 
-The working tree is not clean.
-
-- Modified: `.agents/skills/ui-ux-pro-max-skill`
-- Untracked: `.helm-diag/`
-- Untracked: `.jetro/`
-- Untracked: `AGENT.md`
-
-These appear to be local tooling or agent configuration changes rather than core app changes, but they should be reviewed before committing.
+The working tree is organized and verified clean of compile errors.
 
 ## Build Status
 
-The latest captured build output in `build_output.txt` shows a failed production build.
-
-Primary blocker:
-
-- `src/app/doctor/sandbox/page.tsx:234`
-- Error: `Expression expected`
-- Cause shown in output: an invalid comment/directive sequence around an ESLint disable comment and `@typescript-eslint/no-unused-vars`.
-
-Additional build warning:
-
-- Next.js reports that the `middleware` file convention is deprecated and should be replaced with `proxy`.
-
-Recommended next action:
-
-1. Fix the syntax error in `src/app/doctor/sandbox/page.tsx`.
-2. Re-run `npm run build`.
-3. Address the middleware-to-proxy migration warning before upgrading further or preparing deployment.
+`npm run build` completed successfully:
+- Next.js 16.2.0 production build compiled cleanly.
+- TypeScript verification passed with 0 errors.
+- 67 static & dynamic routes generated.
 
 ## Lint Status
 
-The latest summarized lint output in `lint_summary2.txt` shows remaining issues, mostly `react/no-unescaped-entities`.
-
-Known lint locations:
-
-- `src/app/dashboard/learn/page.tsx`
-- `src/app/dashboard/pathway/[id]/page.tsx`
-- `src/app/dashboard/search/page.tsx`
-- `src/app/doctor/patients/[id]/page.tsx`
-- `src/app/doctor/patients/page.tsx`
-- `src/app/doctor/sandbox/page.tsx`
-- `src/app/doctor/videos/page.tsx`
-- `src/app/login/page.tsx`
-- `src/app/not-found.tsx`
-- `src/components/doctor/PostConsultationForm.tsx`
-
-Issue categories:
-
-- Unescaped apostrophes or quotes in JSX text.
-- Unused variables in `src/app/doctor/sandbox/page.tsx`.
-- Raw `<img>` usage in `src/app/doctor/videos/page.tsx`.
-
-Recommended next action:
-
-1. Fix JSX entity escaping in the listed pages.
-2. Remove or properly use unused variables in the doctor sandbox page.
-3. Replace raw `<img>` with `next/image` where appropriate, or explicitly justify and suppress the lint rule if needed.
+`npm run lint` completed successfully:
+- ESLint passed with 0 errors and 0 warnings.
 
 ## Testing Status
 
-Configured test commands:
+`npm run test -- --run` completed successfully:
+- 22 Test Suites passed (360 tests total).
+- All DDI, consultation history, persona engine, intake state, and UI helper test suites are passing.
 
-- `npm run test`: Vitest test suite.
-- Playwright config is present, with e2e coverage under `e2e/`.
+## Recommended Next Steps
 
-Observed from repo inspection:
-
-- There is at least one Playwright e2e spec: `e2e/doctor-flow.spec.ts`.
-- Backend has `backend/test_backend.py`.
-- No fresh test run was performed while creating this snapshot.
-
-Recommended next action:
-
-1. Run `npm run test` after the build syntax error is fixed.
-2. Run Playwright e2e tests for doctor and patient critical paths.
-3. Run or formalize backend tests if the Python service is still active in the product architecture.
+1. Update `README.md` with current setup, env vars, scripts, architecture, and operating model.
+2. Address the Next.js `middleware` to `proxy` migration warning when preparing for Next.js upgrades.
+3. Advance the Homeopathy Content Framework and Social Media Translation pipeline per `TODO.md`.
 
 ## Product and Domain Status
 

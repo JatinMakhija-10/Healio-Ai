@@ -245,19 +245,51 @@ function StickyCta({
 
 function CookieConsentBanner() {
   const [isVisible, setIsVisible] = useState(false);
+  const [showManage, setShowManage] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setIsVisible(window.localStorage.getItem("healio_cookie_consent") !== "accepted");
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
+    const consent = window.localStorage.getItem("healio_cookie_consent");
+    if (!consent) {
+      const timeout = window.setTimeout(() => setIsVisible(true), 400);
+      return () => window.clearTimeout(timeout);
+    }
   }, []);
 
-  const acceptCookies = () => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isVisible) {
+        rejectNonEssential();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isVisible]);
+
+  const acceptAll = () => {
     window.localStorage.setItem("healio_cookie_consent", "accepted");
     setIsVisible(false);
+    showToast("All preferences saved");
   };
+
+  const rejectNonEssential = () => {
+    window.localStorage.setItem("healio_cookie_consent", "essential_only");
+    setIsVisible(false);
+    showToast("Preferences saved: Essential cookies only");
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  if (toastMessage) {
+    return (
+      <div className="fixed bottom-4 left-4 z-50 rounded-lg bg-[#1A1A2E] px-4 py-2.5 text-xs font-semibold text-white shadow-lg animate-fadeInUp">
+        {toastMessage}
+      </div>
+    );
+  }
 
   if (!isVisible) {
     return null;
@@ -265,36 +297,65 @@ function CookieConsentBanner() {
 
   return (
     <div
-      aria-label="Cookie and privacy notice"
-      className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-3xl rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-[#1C1C1E] shadow-[0_12px_40px_rgba(26,26,46,0.16)] md:bottom-4"
-      role="region"
+      aria-label="Cookie consent"
+      aria-live="polite"
+      className="fixed inset-x-0 bottom-0 z-[1000] max-h-[25vh] overflow-y-auto border-t border-[#DAD7CF] bg-white/98 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] backdrop-blur-md transition-all duration-300 ease-out sm:px-6"
+      role="dialog"
     >
-      <div className="grid gap-3 md:grid-cols-[auto_1fr_auto] md:items-center">
-        <div className="grid size-11 place-items-center rounded-[8px] bg-[#E1F5EE] text-[#0F6E56]">
-          <ShieldCheck className="size-5" aria-hidden="true" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[#1A1A2E]">Privacy-first cookies</p>
-          <p className="mt-1 text-sm leading-6 text-[#555555]">
-            Healio uses essential cookies and local storage to remember privacy choices and session preferences. We do not sell health data.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#0F6E56]">
-            <Link className="underline underline-offset-2" href="/privacy">Privacy Policy</Link>
-            <Link className="underline underline-offset-2" href="/cookie-policy">Cookie Policy</Link>
-            <Link className="underline underline-offset-2" href="/data-request">Data Request</Link>
-            <Link className="underline underline-offset-2" href="/terms">Terms</Link>
-            <Link className="underline underline-offset-2" href="/medical-disclaimer">Medical Disclaimer</Link>
+      <div className="mx-auto flex max-w-5xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-[#E1F5EE] text-[#0F6E56]">
+            <ShieldCheck className="size-5" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-[#1A1A2E]">Privacy & Cookie Choices</p>
+            <p className="mt-0.5 text-xs leading-5 text-[#555555]">
+              We use essential cookies for service operation. You can choose to accept all or reject non-essential cookies. We do not sell health data.
+            </p>
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] font-semibold text-[#0F6E56]">
+              <Link className="underline underline-offset-2 hover:text-[#0B5F4A]" href="/privacy">Privacy Policy</Link>
+              <Link className="underline underline-offset-2 hover:text-[#0B5F4A]" href="/cookie-policy">Cookie Policy</Link>
+              <Link className="underline underline-offset-2 hover:text-[#0B5F4A]" href="/terms">Terms</Link>
+              <Link className="underline underline-offset-2 hover:text-[#0B5F4A]" href="/medical-disclaimer">Medical Disclaimer</Link>
+            </div>
           </div>
         </div>
-        <button
-          aria-label="Accept cookie and local storage notice"
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1A1A2E] px-5 text-sm font-bold text-white hover:bg-[#0F6E56]"
-          onClick={acceptCookies}
-          type="button"
-        >
-          Accept
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1 md:pt-0">
+          <button
+            className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#DAD7CF] bg-white px-3.5 text-xs font-semibold text-[#1C1C1E] transition hover:bg-[#F7F6F2]"
+            onClick={() => setShowManage((prev) => !prev)}
+            type="button"
+          >
+            {showManage ? "Hide" : "Manage"}
+          </button>
+          <button
+            className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#DAD7CF] bg-white px-3.5 text-xs font-semibold text-[#1C1C1E] transition hover:bg-[#F7F6F2]"
+            onClick={rejectNonEssential}
+            type="button"
+          >
+            Reject non-essential
+          </button>
+          <button
+            aria-label="Accept all cookies"
+            className="inline-flex min-h-9 items-center justify-center rounded-full bg-[#1A1A2E] px-4 text-xs font-bold text-white transition hover:bg-[#0F6E56]"
+            onClick={acceptAll}
+            type="button"
+          >
+            Accept all
+          </button>
+        </div>
       </div>
+
+      {showManage && (
+        <div className="mx-auto mt-3 max-w-5xl border-t border-[#E5E3DC] pt-2 text-xs leading-5 text-[#555555]">
+          <p className="font-semibold text-[#1A1A2E]">Cookie Categories:</p>
+          <ul className="mt-1 space-y-1">
+            <li>• <strong>Essential:</strong> Required for authentication, security, and storing privacy preferences. (Always active)</li>
+            <li>• <strong>Analytics & Performance:</strong> Aggregated usage telemetry to improve health response accuracy. (Optional)</li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -388,7 +449,7 @@ export default function LandingPage() {
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#D6D2C8] bg-white px-6 text-base font-bold text-[#1C1C1E] transition hover:border-[#9FE1CB] hover:bg-[#E1F5EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
                 href="#how-it-works"
               >
-                See a sample diagnosis
+                See a sample consultation
               </Link>
             </div>
 

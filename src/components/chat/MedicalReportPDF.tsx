@@ -797,7 +797,7 @@ export const MedicalReportDocument = ({
                 <View style={styles.header}>
                     <View style={styles.headerTitleContainer}>
                         <Text style={styles.headerTitle}>Healio.AI</Text>
-                        <Text style={styles.headerSubtitle}>Medical Assessment Report</Text>
+                        <Text style={styles.headerSubtitle}>Wellness Summary Report</Text>
                     </View>
                     <View style={styles.headerDateContainer}>
                         <Text style={styles.headerDateLabel}>Assessment Date</Text>

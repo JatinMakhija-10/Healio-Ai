@@ -2,23 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, AlertCircle, Leaf, Dumbbell, AlertTriangle, ChevronDown, ChevronUp, Lock, Activity, Share2, Loader2, MessageSquareHeart } from "lucide-react";
+import { Calendar, Clock, AlertCircle, Leaf, Dumbbell, AlertTriangle, ChevronDown, ChevronUp, Lock, Share2, Loader2, MessageSquareHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { UserSymptomData, DiagnosisResult, Condition } from "@/lib/diagnosis/types";
+import { UserSymptomData, Condition } from "@/lib/diagnosis/types";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { pdf } from '@react-pdf/renderer';
-// eslint-disable-next-line no-restricted-imports
 import { MedicalReportDocument } from '@/components/chat/MedicalReportPDF';
-// eslint-disable-next-line no-restricted-imports
 import type { SymptomDetailsSummary } from '@/components/chat/MedicalReportPDF';
+import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
+import { SeverityBadge } from "@/components/ui/SeverityBadge";
+import { MentalHealthAssessmentCard, isMentalHealthPattern } from "@/components/chat/MentalHealthAssessmentCard";
+import { SourcesDisclosure } from "@/components/chat/SourcesDisclosure";
+import { FamilyInviteCard } from "@/components/dashboard/FamilyInviteCard";
 
 
 type SavedDiagnosis = {
@@ -447,31 +448,15 @@ export default function HistoryPage() {
                                                         <Share2 className="h-4 w-4" />
                                                     )}
                                                 </Button>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={getSeverityColor(consultation.diagnosis?.severity || '')}
-                                                >
-                                                    {consultation.diagnosis?.severity || 'Unknown'}
-                                                </Badge>
                                             </div>
 
-                                            {/* Enhanced Confidence Display */}
-                                            {consultation.uncertainty ? (
-                                                <div className="flex flex-col items-end">
-                                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-teal-700">
-                                                        <Activity className="h-3.5 w-3.5" />
-                                                        <span>{getConfidenceLabel(consultation.uncertainty.pointEstimate)}</span>
-                                                    </div>
-                                                    <span className="sr-only">
-                                                        Range: {consultation.uncertainty.confidenceInterval.lower.toFixed(0)}-{consultation.uncertainty.confidenceInterval.upper.toFixed(0)}%
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 text-sm">
-                                                    <TrendingUp className="h-4 w-4 text-teal-600" />
-                                                    <span className="font-medium text-teal-700">
-                                                        {getConfidenceLabel(consultation.confidence || 0)}
-                                                    </span>
+                                            {/* Visually Separated Badges: Severity (outlined) + Confidence (filled) */}
+                                            {!isMentalHealthPattern(consultation.diagnosis?.condition) && (
+                                                <div className="flex items-center gap-2">
+                                                    <SeverityBadge level={consultation.diagnosis?.severity || 'mild'} />
+                                                    <ConfidenceBadge
+                                                        score={consultation.uncertainty?.pointEstimate ?? consultation.confidence}
+                                                    />
                                                 </div>
                                             )}
                                         </div>
@@ -480,30 +465,43 @@ export default function HistoryPage() {
 
                                 {isExpanded && (
                                     <CardContent className="space-y-5 border-t border-slate-100 bg-slate-50/50">
-                                        {/* Symptoms Reported */}
-                                        <div>
-                                            <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                                                <AlertCircle className="h-4 w-4 text-slate-500" />
-                                                Symptoms Reported
-                                            </h4>
-                                            <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-1">
-                                                <p><span className="font-medium">Location:</span> {symptomDisplay.location}</p>
-                                                <p><span className="font-medium">Sensation:</span> {symptomDisplay.sensation}</p>
-                                                <p><span className="font-medium">Intensity:</span> {symptomDisplay.intensity}</p>
-                                                <p><span className="font-medium">Duration:</span> {symptomDisplay.duration}</p>
-                                                {symptomDisplay.notes && (
-                                                    <p><span className="font-medium">Notes:</span> {symptomDisplay.notes}</p>
-                                                )}
-                                            </div>
-                                        </div>
+                                        {/* Mental Health Special Pathway */}
+                                        {isMentalHealthPattern(consultation.diagnosis?.condition) ? (
+                                            <MentalHealthAssessmentCard
+                                                conditionName={consultation.diagnosis?.condition}
+                                                description={consultation.diagnosis?.description}
+                                            />
+                                        ) : (
+                                            <>
+                                                {/* Symptoms Reported */}
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                                        <AlertCircle className="h-4 w-4 text-slate-500" />
+                                                        Symptoms Reported
+                                                    </h4>
+                                                    <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-1">
+                                                        <p><span className="font-medium">Location:</span> {symptomDisplay.location}</p>
+                                                        <p><span className="font-medium">Sensation:</span> {symptomDisplay.sensation}</p>
+                                                        <p><span className="font-medium">Intensity:</span> {symptomDisplay.intensity}</p>
+                                                        <p><span className="font-medium">Duration:</span> {symptomDisplay.duration}</p>
+                                                        {symptomDisplay.notes && (
+                                                            <p><span className="font-medium">Notes:</span> {symptomDisplay.notes}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
 
-                                        {/* Diagnosis Summary */}
-                                        <div>
-                                            <h4 className="text-sm font-semibold text-slate-700 mb-2">Diagnosis Summary</h4>
-                                            <p className="text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-200">
-                                                {consultation.diagnosis?.description || 'No description available.'}
-                                            </p>
-                                        </div>
+                                                {/* Assessment Summary (Renamed from Diagnosis Summary) */}
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Assessment Summary</h4>
+                                                    <p className="text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-200">
+                                                        {consultation.diagnosis?.description || 'No description available.'}
+                                                    </p>
+                                                </div>
+
+                                                {/* Source Transparency */}
+                                                <SourcesDisclosure />
+                                            </>
+                                        )}
 
                                         {/* Standard Remedies */}
                                         {consultation.diagnosis?.remedies && consultation.diagnosis.remedies.length > 0 && (
@@ -602,6 +600,9 @@ export default function HistoryPage() {
                                             <MessageSquareHeart className="h-4 w-4" />
                                             Ask Follow-up About This Consultation
                                         </button>
+
+                                        {/* Family Invite Loop */}
+                                        <FamilyInviteCard className="mt-4" />
                                     </CardContent>
                                 )}
                             </Card>

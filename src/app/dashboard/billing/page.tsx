@@ -200,6 +200,11 @@ export default function BillingPage() {
                                         ? `${formatINR(planDetails.price)}/${planDetails.interval} · ${getMonthlyCreditGrant(plan)} credits/month included`
                                         : `${FREE_MONTHLY_CONSULTATIONS} consultations/month · ${FREE_DAILY_CONSULTATIONS}/day · ${FREE_COOLDOWN_SECONDS}s cooldown`}
                                 </p>
+                                <p className="mt-1 text-xs text-slate-500">
+                                    {isPaid
+                                        ? "Unlimited basic AI consultations. Advanced features (Wellness Snapshot, Family Consult, PDF Wellness Summary) use 1–5 credits each from your monthly pool."
+                                        : "Basic consultations use free monthly quota. Premium add-ons require credits."}
+                                </p>
                             </div>
                         </div>
                         {isPaid && (
@@ -297,7 +302,7 @@ export default function BillingPage() {
                             <span className="text-sm text-slate-400">credits</span>
                         </div>
                         <p className="text-xs text-slate-400 mt-2">
-                            Use credits when free limits are exceeded
+                            Use credits for premium extra features
                         </p>
                     </CardContent>
                 </Card>
@@ -308,16 +313,16 @@ export default function BillingPage() {
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
                         <FileText className="h-4 w-4 text-teal-600" />
-                        Credit Costs
+                        Premium Feature Credit Costs
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[
-                            { label: "AI Consultation", cost: CREDIT_COSTS.consultation, icon: Activity },
+                            { label: "Specialist AI Consultation (add-on)", cost: CREDIT_COSTS.consultation, icon: Activity },
                             { label: "Wellness Snapshot", cost: CREDIT_COSTS.wellness_snapshot, icon: Heart },
                             { label: "Family Consult", cost: CREDIT_COSTS.family_consult, icon: Users },
-                            { label: "PDF Medical Report", cost: CREDIT_COSTS.pdf_report, icon: FileText },
+                            { label: "PDF Wellness Summary", cost: CREDIT_COSTS.pdf_report, icon: FileText },
                             { label: "Priority Booking", cost: CREDIT_COSTS.priority_booking, icon: TrendingUp },
                             { label: "Specialist 2nd Opinion", cost: CREDIT_COSTS.specialist_opinion, icon: Sparkles },
                             { label: "Lab Report Analysis", cost: CREDIT_COSTS.lab_report_analysis, icon: FileText },

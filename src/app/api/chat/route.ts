@@ -520,8 +520,8 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
     // 3. Clinical Inference Rules based on pre-existing conditions
     const clinicalInferences: string[] = [];
     const conditionsLower = conditions.map(c => c.toLowerCase()).join(' ');
-    if (conditionsLower.includes('kidney') || conditionsLower.includes('ckd') || conditionsLower.includes('renal')) {
-        clinicalInferences.push('Renal impairment detected: Avoid nephrotoxic agents (NSAIDs like Ibuprofen/Naproxen). Recommend renal dose adjustment.');
+    if (conditionsLower.includes('kidney') || conditionsLower.includes('ckd') || conditionsLower.includes('renal') || kidneyLiver) {
+        clinicalInferences.push('Renal/Hepatic impairment noted: Avoid nephrotoxic/hepatotoxic agents (NSAIDs, high-dose acetaminophen). Recommend dose adjustment.');
     }
     if (conditionsLower.includes('liver') || conditionsLower.includes('hepat') || conditionsLower.includes('cirrhosis')) {
         clinicalInferences.push('Hepatic impairment detected: Avoid hepatotoxic agents (e.g. high-dose acetaminophen/paracetamol).');
@@ -537,6 +537,9 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
     }
     if (isPregnant) {
         clinicalInferences.push('Pregnancy: Verify fetal safety for all treatments. Avoid standard NSAIDs in 3rd trimester. Avoid tetracyclines.');
+    }
+    if (recentSurgery) {
+        clinicalInferences.push(`Recent Surgery noted: ${recentSurgery}. Factor post-operative recovery and wound healing into recommendations.`);
     }
 
     // 4. Profile staleness warning

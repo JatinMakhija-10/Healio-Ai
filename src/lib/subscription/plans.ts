@@ -113,7 +113,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
         audience: "patient",
         tagline: "Start your health journey free",
         features: [
-            "Basic AI Diagnosis",
+            "Basic AI Health Consultation",
             `${FREE_MONTHLY_CONSULTATIONS} consultations/month`,
             `${FREE_DAILY_CONSULTATIONS} per day · ${FREE_COOLDOWN_SECONDS}s cooldown`,
             "1 profile",
@@ -133,7 +133,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
             "Unlimited AI consultations",
             "0s cooldown · no daily cap",
             `${PLUS_MONTHLY_CREDITS} credits/month included`,
-            "PDF medical reports",
+            "PDF Wellness Summaries",
             `Family profiles (${PLUS_FAMILY_PROFILE_LIMIT})`,
             "Vikriti wellness tracking",
             "Priority doctor booking",
