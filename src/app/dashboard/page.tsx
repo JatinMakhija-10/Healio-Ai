@@ -8,7 +8,7 @@ import { SeasonalBanner } from "@/components/wellness/SeasonalBanner";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock, Activity, ArrowRight } from "lucide-react";
+import { Plus, Clock, Activity, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -121,7 +121,7 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <Link href="/dashboard/consult">
-                    <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-5 shadow-sm transition-all duration-150 py-2.5 h-auto font-semibold">
+                    <Button className="bg-[#1A1A2E] hover:bg-[#0F6E56] text-white rounded-full px-5 shadow-sm transition-all duration-150 py-2.5 h-auto font-semibold">
                         <Plus className="mr-2 h-4 w-4" /> New Consultation
                     </Button>
                 </Link>
@@ -129,8 +129,9 @@ export default function DashboardPage() {
 
             {isPersonaBuilt ? (
                 <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <p className="text-sm text-green-800 font-medium">
-                        ✓ Health persona built. Consultations are now personalised to you.
+                    <p className="text-sm text-green-800 font-medium flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                        Health persona built. Consultations are now personalised to you.
                     </p>
                     <Link href="/onboarding" className="shrink-0">
                         <Button size="sm" variant="outline" className="border-green-300 text-green-800 hover:bg-green-100">

@@ -31,6 +31,7 @@ import OpenAI from 'openai';
 import { getJinaEmbedding, getParallelEmbeddings } from "@/lib/ai/jina";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
+import { validateOutputAgainstProfile } from "@/lib/safety/outputValidator";
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -448,6 +449,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Symptoms data is required" }, { status: 400 });
         }
 
+        // ── 0. Authoritative Profile Fallback ─────────────────────────────────────
+        // If client body is missing demographic fields, resolve from Supabase auth user metadata
+        const userMeta = user.user_metadata || {};
+        const mp = userMeta.medical_profile || {};
+        const vitals = mp.vitals || {};
+        const effectiveProfile = {
+            ...userProfile,
+            gender: userProfile?.gender || mp.gender || vitals.gender || userMeta.gender || null,
+            age: userProfile?.age || mp.age || vitals.age || userMeta.age || null,
+        };
+
         // ── 1. Multi-Query RAG ─────────────────────────────────────────────────
         const symptomText = [
             ...(symptoms.location ?? []),
@@ -525,7 +537,7 @@ Symptoms:
 ${JSON.stringify(symptoms, null, 2)}
 
 Patient Profile:
-${JSON.stringify(userProfile || {}, null, 2)}
+${JSON.stringify(effectiveProfile, null, 2)}
 
 ${ragContext}
 
@@ -675,6 +687,13 @@ Based on all of the above, generate the formatting JSON.`;
             jsonResult.seekHelp = true;
             jsonResult.seekHelpReason = jsonResult.seekHelpReason ||
                 "The statistical engine detected non-trivial probability for serious conditions. Professional evaluation is recommended.";
+        }
+
+        // Demographic Output Safety Validation
+        const validation = validateOutputAgainstProfile(jsonResult, effectiveProfile);
+        if (!validation.isValid && validation.sanitizedJson) {
+            console.warn('[Diagnose] Sanitized output for demographic compliance:', validation.violations);
+            jsonResult = validation.sanitizedJson;
         }
 
         return NextResponse.json({

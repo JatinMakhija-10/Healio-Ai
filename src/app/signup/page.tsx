@@ -53,13 +53,22 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 py-6 px-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2] py-6 px-4">
             {/* Card */}
-            <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
-                {/* Header (No Logo) */}
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg shadow-[#1A1A2E]/8 p-8 border border-[#DAD7CF]">
+                {/* HealioMark + Brand Header */}
                 <div className="flex flex-col items-center text-center mb-8">
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Create your account</h1>
-                    <p className="text-slate-500 mt-2 text-sm">Join Healio.AI to start your healthcare journey</p>
+                    <div className="relative mb-4">
+                        <div className="absolute inset-0 rounded-[8px] bg-[#C8E7DA] opacity-50" />
+                        <div className="relative flex h-12 w-12 items-center justify-center rounded-[8px] border border-[#B8DED0] bg-white shadow-sm">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                                <path d="M14 3C9.5 3 5.5 6.5 5.5 11.5C5.5 17.5 14 25 14 25C14 25 22.5 17.5 22.5 11.5C22.5 6.5 18.5 3 14 3Z" fill="#0F6E56" />
+                                <path d="M14 8C12 10 11 13 12 16C13 13 15 11 18 10C16.5 8.5 15 7.5 14 8Z" fill="#E1F5EE" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontWeight: 400 }} className="text-2xl text-[#1A1A2E] tracking-tight">Create your account</h1>
+                    <p className="text-[#6B6B6B] mt-1.5 text-sm">Join Healio.AI to start your healthcare journey</p>
                 </div>
 
                 <form onSubmit={handleSignup} className="space-y-4">
@@ -83,7 +92,7 @@ export default function SignupPage() {
                             placeholder="name@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-sm text-slate-900 placeholder:text-slate-400"
+                            className="w-full px-3 py-2.5 bg-[#F7F6F2] border border-[#DAD7CF] rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6E56]/20 focus:border-[#0F6E56] transition-all text-sm text-[#1A1A2E] placeholder:text-[#9CA3AF]"
                         />
                     </div>
 
@@ -97,7 +106,7 @@ export default function SignupPage() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-sm text-slate-900"
+                            className="w-full px-3 py-2.5 bg-[#F7F6F2] border border-[#DAD7CF] rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6E56]/20 focus:border-[#0F6E56] transition-all text-sm text-[#1A1A2E]"
                         />
                     </div>
 
@@ -111,14 +120,14 @@ export default function SignupPage() {
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-sm text-slate-900"
+                            className="w-full px-3 py-2.5 bg-[#F7F6F2] border border-[#DAD7CF] rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6E56]/20 focus:border-[#0F6E56] transition-all text-sm text-[#1A1A2E]"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-slate-900/20 active:scale-[0.99] mt-2"
+                        className="w-full py-3 bg-[#1A1A2E] text-white rounded-full text-sm font-semibold hover:bg-[#0F6E56] disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:opacity-90 mt-2"
                     >
                         {loading ? 'Creating account...' : 'Sign Up'}
                     </button>

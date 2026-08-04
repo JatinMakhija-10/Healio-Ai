@@ -41,7 +41,7 @@ function StatCard({ title, value, subtitle, icon: Icon, color, href }: {
     icon: React.ElementType; color: string; href?: string;
 }) {
     const inner = (
-        <Card className={`border-0 bg-gradient-to-br ${color} hover:shadow-md transition-all cursor-pointer group`}>
+        <Card className={`border-0 bg-gradient-to-br ${color} hover:shadow-md transition-all cursor-pointer`}>
             <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                     <div>
@@ -49,7 +49,7 @@ function StatCard({ title, value, subtitle, icon: Icon, color, href }: {
                         <p className="text-3xl font-bold text-white mt-1">{value}</p>
                         {subtitle && <p className="text-xs text-white/60 mt-1">{subtitle}</p>}
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                         <Icon className="h-5 w-5 text-white" />
                     </div>
                 </div>
@@ -153,7 +153,7 @@ function AdminDashboardContent() {
                         value={stats?.totalUsers ?? 0}
                         subtitle={`+${stats?.newUsersToday ?? 0} today`}
                         icon={Users}
-                        color="from-blue-500 to-blue-600"
+                        color="from-[#0F6E56] to-[#1D9E75]"
                         href="/admin/users"
                     />
                     <StatCard
@@ -161,7 +161,7 @@ function AdminDashboardContent() {
                         value={stats?.totalDoctors ?? 0}
                         subtitle={`${stats?.pendingDoctors ?? 0} pending`}
                         icon={UserCheck}
-                        color="from-emerald-500 to-teal-600"
+                        color="from-[#1A1A2E] to-[#2D3561]"
                         href="/admin/doctors"
                     />
                     <StatCard
@@ -169,7 +169,7 @@ function AdminDashboardContent() {
                         value={stats?.totalConsultations ?? 0}
                         subtitle={`${stats?.todayConsultations ?? 0} today`}
                         icon={Activity}
-                        color="from-purple-500 to-purple-600"
+                        color="from-[#0B5F4A] to-[#0F6E56]"
                         href="/admin/analytics"
                     />
                     <StatCard
@@ -177,7 +177,7 @@ function AdminDashboardContent() {
                         value={`₹${(stats?.totalRevenue ?? 0).toLocaleString("en-IN")}`}
                         subtitle="total platform"
                         icon={CreditCard}
-                        color="from-amber-500 to-orange-500"
+                        color="from-amber-600 to-amber-700"
                         href="/admin/transactions"
                     />
                 </div>
@@ -266,37 +266,37 @@ function AdminDashboardContent() {
                         <CardContent className="p-5">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-red-600 font-semibold text-sm">🗺️ Outbreak Radar</p>
+                                    <p className="text-red-600 font-semibold text-sm flex items-center gap-1.5"><Map className="h-3.5 w-3.5" /> Outbreak Radar</p>
                                     <p className="text-xl font-bold text-slate-900 mt-1">Pandemic Map</p>
                                     <p className="text-xs text-slate-500 mt-1">Disease cluster detection</p>
                                 </div>
-                                <AlertTriangle className="h-7 w-7 text-red-400 group-hover:scale-110 transition-transform" />
+                                <AlertTriangle className="h-7 w-7 text-red-400" />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-l-4 border-l-purple-400 bg-gradient-to-br from-purple-50 to-white hover:shadow-md transition cursor-pointer group" onClick={() => router.push("/admin/analytics")}>
+                    <Card className="border-l-4 border-l-slate-400 bg-gradient-to-br from-slate-50 to-white hover:shadow-md transition cursor-pointer group" onClick={() => router.push("/admin/analytics")}>
                         <CardContent className="p-5">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-purple-600 font-semibold text-sm">📊 Analytics</p>
+                                    <p className="text-slate-600 font-semibold text-sm flex items-center gap-1.5"><BarChart2 className="h-3.5 w-3.5" /> Analytics</p>
                                     <p className="text-xl font-bold text-slate-900 mt-1">6 Live Charts</p>
                                     <p className="text-xs text-slate-500 mt-1">Platform insights</p>
                                 </div>
-                                <BarChart2 className="h-7 w-7 text-purple-400 group-hover:scale-110 transition-transform" />
+                                <BarChart2 className="h-7 w-7 text-slate-400" />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-l-4 border-l-blue-400 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition cursor-pointer group" onClick={() => router.push("/admin/users")}>
+                    <Card className="border-l-4 border-l-[#0F6E56] bg-gradient-to-br from-[#E1F5EE] to-white hover:shadow-md transition cursor-pointer group" onClick={() => router.push("/admin/users")}>
                         <CardContent className="p-5">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-blue-600 font-semibold text-sm">👥 Users</p>
+                                    <p className="text-[#0F6E56] font-semibold text-sm flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> Users</p>
                                     <p className="text-xl font-bold text-slate-900 mt-1">{loading ? "—" : stats?.totalUsers ?? 0} Total</p>
                                     <p className="text-xs text-slate-500 mt-1">Manage all accounts</p>
                                 </div>
-                                <Users className="h-7 w-7 text-blue-400 group-hover:scale-110 transition-transform" />
+                                <Users className="h-7 w-7 text-[#0F6E56]" />
                             </div>
                         </CardContent>
                     </Card>

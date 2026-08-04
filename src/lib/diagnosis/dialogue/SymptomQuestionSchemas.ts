@@ -100,7 +100,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'abdominal_pain.location', aliases: ['location'], priority: 1, required: true, responseType: 'text', question: 'Where exactly is the abdominal pain?' },
             { key: 'abdominal_pain.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the abdominal pain been present?' },
             { key: 'abdominal_pain.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'abdominal_pain.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any severe worsening, rigid belly, fainting, blood in stool or vomit, or pregnancy possibility?', redFlagFn: (v) => v === 'yes' },
+            { key: 'abdominal_pain.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Any severe worsening, rigid belly, fainting, or blood in stool or vomit?', redFlagFn: (v) => v === 'yes' },
             { key: 'abdominal_pain.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any vomiting, diarrhea, fever, burning urine, constipation, or bloating?' },
             { key: 'abdominal_pain.food_stool', aliases: ['history'], priority: 3, required: false, responseType: 'text', question: 'Did it start after food, travel, alcohol, or a bowel change?' },
         ],
@@ -227,3 +227,22 @@ export function getRequiredPriorityOneFields(schema: SymptomQuestionSchema): Int
         .filter((field) => field.required && field.priority === 1)
         .map((field) => field.key);
 }
+
+/**
+ * Returns a dynamically formatted question string for a schema field,
+ * conditionally appending sex-trait specific questions (e.g. pregnancy) ONLY for female patients.
+ */
+export function getFormattedFieldQuestion(
+    field: SymptomQuestionField,
+    userProfile?: { gender?: string | null; age?: number | string | null } | null
+): string {
+    if (field.key === 'abdominal_pain.danger_signs') {
+        const gender = (userProfile?.gender || '').toLowerCase().trim();
+        const isFemale = ['female', 'f', 'woman'].includes(gender);
+        if (isFemale) {
+            return `${field.question} Could there also be any possibility of pregnancy?`;
+        }
+    }
+    return field.question;
+}
+
