@@ -689,9 +689,83 @@ Based on all of the above, generate the formatting JSON.`;
                 "The statistical engine detected non-trivial probability for serious conditions. Professional evaluation is recommended.";
         }
 
-        // Demographic Output Safety Validation
-        const validation = validateOutputAgainstProfile(jsonResult, effectiveProfile);
-        if (!validation.isValid && validation.sanitizedJson) {
+        // Demographic Output Safety Validation (F9 — retry cap)
+        // If the AI output contains inapplicable content (e.g. reproductive terms for
+        // a male profile), attempt a single re-generation with an explicit safety
+        // constraint prepended.  We cap to 1 retry to bound latency and LLM cost.
+        let validation = validateOutputAgainstProfile(jsonResult, effectiveProfile);
+
+        if (!validation.isValid && validation.fieldViolations?.length) {
+            console.warn('[Diagnose] Validation failed — attempting 1 safety retry.', {
+                violations: validation.fieldViolations.map((v) => v.field),
+            });
+
+            const violationHint = validation.fieldViolations
+                .map((v) => `[${v.field}] contains "${v.term}"`)
+                .join('; ');
+
+            const safetyConstraint =
+                `CRITICAL SAFETY CORRECTION:\n` +
+                `Your previous response contained demographically inapplicable content: ${violationHint}.\n` +
+                `The patient profile is: gender=${effectiveProfile?.gender ?? 'unknown'}, age=${effectiveProfile?.age ?? 'unknown'}.\n` +
+                `Re-generate the JSON strictly omitting any terms or concepts that do not apply to this patient's demographics.\n` +
+                `Do NOT include pregnancy, obstetric, or reproductive terms for a male or unknown-gender patient.\n\n`;
+
+            let retryContent = '';
+            try {
+                const retryGroqKey = getGroqApiKey();
+                if (retryGroqKey) {
+                    const retryGroq = new OpenAI({
+                        baseURL: AI_PHASE_CONFIG.endpoints.groq,
+                        apiKey: retryGroqKey,
+                    });
+                    const retryAbort = new AbortController();
+                    const retryTimeout = setTimeout(() => retryAbort.abort(), 30_000);
+                    try {
+                        const retryCompletion = await retryGroq.chat.completions.create(
+                            {
+                                model: AI_PHASE_CONFIG.models.groq,
+                                messages: [
+                                    { role: 'system', content: safetyConstraint + SYSTEM_PROMPT },
+                                    { role: 'user', content: userPrompt },
+                                ],
+                                response_format: { type: 'json_object' },
+                                temperature: 0.1, // Lower temperature for constrained retry
+                            },
+                            { signal: retryAbort.signal }
+                        );
+                        retryContent = retryCompletion.choices[0].message.content || '';
+                    } finally {
+                        clearTimeout(retryTimeout);
+                    }
+                }
+            } catch (retryErr) {
+                console.warn('[Diagnose] Safety retry failed — falling back to sanitized output:', retryErr);
+            }
+
+            if (retryContent) {
+                try {
+                    const retryJson = JSON.parse(retryContent);
+                    const retryValidation = validateOutputAgainstProfile(retryJson, effectiveProfile);
+                    if (retryValidation.isValid) {
+                        console.log('[Diagnose] Safety retry succeeded — violations resolved.');
+                        jsonResult = retryJson;
+                        validation = retryValidation;
+                    } else {
+                        // Retry still has violations — fall back to sanitised original
+                        console.warn('[Diagnose] Safety retry still has violations — using sanitised fallback.');
+                        jsonResult = retryValidation.sanitizedJson ?? validation.sanitizedJson ?? jsonResult;
+                        validation = retryValidation;
+                    }
+                } catch {
+                    // Retry JSON invalid — use sanitised original
+                    jsonResult = validation.sanitizedJson ?? jsonResult;
+                }
+            } else {
+                // No retry content — apply sanitization
+                jsonResult = validation.sanitizedJson ?? jsonResult;
+            }
+        } else if (!validation.isValid && validation.sanitizedJson) {
             console.warn('[Diagnose] Sanitized output for demographic compliance:', validation.violations);
             jsonResult = validation.sanitizedJson;
         }

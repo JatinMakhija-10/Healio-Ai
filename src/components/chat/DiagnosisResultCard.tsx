@@ -1281,9 +1281,14 @@ export function DiagnosisResultCard({
                     <div className="border-t border-amber-100 bg-amber-50 px-4 py-3 sm:px-6">
                         <div className="flex items-start gap-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-900 leading-[1.65] font-semibold">
-                                Beta - Assessment Summary &amp; Informational Care Guidance
-                            </p>
+                            <div className="flex flex-col gap-0.5">
+                                <p className="text-xs text-amber-900 leading-[1.65] font-bold tracking-wide uppercase">
+                                    Not a Medical Diagnosis
+                                </p>
+                                <p className="text-xs text-amber-900 leading-[1.65] font-semibold">
+                                    Beta - Assessment Summary &amp; Informational Care Guidance
+                                </p>
+                            </div>
                         </div>
                         <p className="text-xs text-amber-800 leading-[1.65] italic">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

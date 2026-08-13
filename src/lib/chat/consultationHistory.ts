@@ -3,6 +3,54 @@
 //   - Last 3 consultations: full detail (condition, date, severity, remedies)
 //   - Older consultations (4-10): compressed into a single narrative line
 //   - Recurring condition detection: flags any condition appearing 2+ times
+//
+// Security note (Forensic Audit §F6):
+//   All text fields from consultation records are sanitized before injection
+//   into the system prompt to prevent prompt-injection attacks. A malicious
+//   or corrupted record could otherwise override model instructions.
+
+/**
+ * Strips prompt-injection attack patterns from a string before it is
+ * inserted into an LLM system prompt.
+ *
+ * Patterns removed:
+ *   - Role-change instructions: "You are", "Act as", "From now on"
+ *   - Separator tokens: [SYSTEM], [INST], <</SYS>>, ### Instruction
+ *   - Override phrases: "Ignore previous", "Forget all"
+ *   - Null-byte / control characters
+ *
+ * This is a best-effort heuristic. The primary protection is that
+ * consultation data is inserted into a clearly-delimited section
+ * of the prompt, not at the top level where it could override
+ * core instructions.
+ */
+export function sanitizeForPromptInjection(text: string, maxLength = 300): string {
+    if (!text) return '';
+
+    // Strip common separator / role tokens used in injection attacks
+    const INJECTION_PATTERNS = [
+        /\[\s*(?:SYSTEM|INST|END|BEGIN|USER|ASSISTANT|SYS)\s*\]/gi,
+        /<<\/?SYS>>/gi,
+        /###\s*(?:Instruction|System|Human|Assistant|Prompt)/gi,
+        /\bIgnore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?\b/gi,
+        /\bForget\s+(?:all\s+)?(?:previous|prior|above|everything)\b/gi,
+        /\bYou\s+are\s+(?:now\s+)?(?:a|an|the)\b/gi,
+        /\bAct\s+as\s+(?:a|an|the)\b/gi,
+        /\bFrom\s+now\s+on\b/gi,
+        /\bDisregard\s+(?:all\s+)?(?:previous|prior)\b/gi,
+        // Null bytes and other control chars
+        // eslint-disable-next-line no-control-regex
+        /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,
+    ];
+
+    let sanitized = text;
+    for (const pattern of INJECTION_PATTERNS) {
+        sanitized = sanitized.replace(pattern, '[REDACTED]');
+    }
+
+    // Truncate to prevent context window flooding
+    return sanitized.slice(0, maxLength);
+}
 
 export interface ConsultationRecord {
     created_at?: string;
@@ -36,8 +84,11 @@ function extractRemedyNames(d: Record<string, any>): string[] {
                     .slice(0, 2)
                     .map((r: unknown) =>
                         typeof r === 'string'
-                            ? r
-                            : ((r as Record<string, unknown>)?.name as string) || ''
+                            ? sanitizeForPromptInjection(r, 80)
+                            : sanitizeForPromptInjection(
+                                  ((r as Record<string, unknown>)?.name as string) || '',
+                                  80
+                              )
                     )
                     .filter(Boolean)
             );
@@ -57,7 +108,7 @@ export function detectRecurringConditions(
 
     for (const c of consultations) {
         const d = c.diagnosis || {};
-        const raw = (d.condition || d.name || '').trim();
+        const raw = sanitizeForPromptInjection((d.condition || d.name || '').trim(), 100);
         if (!raw || raw === 'Unknown Condition') continue;
 
         const key = raw.toLowerCase();
@@ -102,16 +153,20 @@ export function buildMedicalHistoryContext(consultations: ConsultationRecord[]):
                   year: 'numeric',
               })
             : 'unknown date';
-        const condition = d.condition || d.name || 'Unknown';
-        const severity = d.severity || 'unknown';
+        // Sanitize all user-derived text fields before prompt injection (Audit F6)
+        const condition = sanitizeForPromptInjection(d.condition || d.name || 'Unknown', 100);
+        const severity = sanitizeForPromptInjection(d.severity || 'unknown', 40);
         const confidence =
             typeof c.confidence === 'number' ? `${c.confidence}%` : 'N/A';
         const remedies = extractRemedyNames(d);
         const symptoms = c.symptoms || {};
         const location = Array.isArray(symptoms.location)
-            ? symptoms.location.join(', ')
+            ? symptoms.location.map((l: string) => sanitizeForPromptInjection(l, 40)).join(', ')
             : '';
-        const sensation = symptoms.sensation || symptoms.painType || '';
+        const sensation = sanitizeForPromptInjection(
+            symptoms.sensation || symptoms.painType || '',
+            80
+        );
 
         let entry = `  ${i + 1}. [${dateStr}] ${condition} (severity: ${severity}, confidence: ${confidence})`;
         if (location) entry += `\n     Location: ${location}`;
@@ -119,7 +174,9 @@ export function buildMedicalHistoryContext(consultations: ConsultationRecord[]):
         if (remedies.length) entry += `\n     Remedies prescribed: ${remedies.join(', ')}`;
         if (d.seekHelp)
             entry += `\n     Advised: ${
-                typeof d.seekHelp === 'string' ? d.seekHelp.slice(0, 100) : ''
+                typeof d.seekHelp === 'string'
+                    ? sanitizeForPromptInjection(d.seekHelp, 100)
+                    : ''
             }`;
         if (d.is_followup) entry += ' [FOLLOW-UP]';
         return entry;

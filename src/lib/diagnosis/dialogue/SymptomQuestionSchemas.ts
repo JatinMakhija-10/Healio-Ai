@@ -1,4 +1,9 @@
 import type { IntakeFieldDefinition, IntakeFieldKey } from './ConversationIntakeState';
+import {
+    normalizeReproductiveContext,
+    shouldAskPregnancyQuestion,
+    type RawProfileInput,
+} from '../QuestionApplicabilityEngine';
 
 export type SymptomSchemaId =
     | 'generic'
@@ -230,19 +235,29 @@ export function getRequiredPriorityOneFields(schema: SymptomQuestionSchema): Int
 
 /**
  * Returns a dynamically formatted question string for a schema field,
- * conditionally appending sex-trait specific questions (e.g. pregnancy) ONLY for female patients.
+ * conditionally appending sex-specific questions (e.g. pregnancy) ONLY when
+ * the patient's profile affirmatively supports it.
+ *
+ * Fail-closed: unknown/missing/malformed gender → no pregnancy question appended.
+ * The QuestionApplicabilityEngine handles normalization so this function cannot
+ * fail open regardless of what the caller passes.
  */
 export function getFormattedFieldQuestion(
     field: SymptomQuestionField,
-    userProfile?: { gender?: string | null; age?: number | string | null } | null
+    userProfile?: RawProfileInput | { gender?: string | null; age?: number | string | null } | null
 ): string {
     if (field.key === 'abdominal_pain.danger_signs') {
-        const gender = (userProfile?.gender || '').toLowerCase().trim();
-        const isFemale = ['female', 'f', 'woman'].includes(gender);
-        if (isFemale) {
+        // Use the engine's typed normalization — handles case, trim, and unknown.
+        // shouldAskPregnancyQuestion returns true only when:
+        //   pregnancyCapacity === 'capable' (female or intersex) AND
+        //   pregnancyStatus === 'unknown'  (not already answered)
+        const ctx = {
+            reproductive: normalizeReproductiveContext(userProfile ?? {}),
+            age: null,
+        };
+        if (shouldAskPregnancyQuestion(ctx)) {
             return `${field.question} Could there also be any possibility of pregnancy?`;
         }
     }
     return field.question;
 }
-

@@ -21,6 +21,10 @@ import type {
     LongitudinalInsight,
     DynamicConfidenceResult,
 } from './intelligenceTypes';
+import {
+    normalizeReproductiveContext,
+    isPregnancyApplicable,
+} from '../QuestionApplicabilityEngine';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGE-SPECIFIC SAFETY RULES
@@ -288,14 +292,26 @@ export class SafetyGuardEnhancer {
 
         // 2. Age-specific safety rules
         const age = ctx.symptoms.userProfile?.age ? parseInt(ctx.symptoms.userProfile.age) : null;
-        const gender = ctx.symptoms.userProfile?.gender?.toLowerCase() || null;
+
+        // Normalize the reproductive context using the deterministic engine.
+        // This replaces the raw gender string comparison which had a fail-open bug:
+        // when gender was null/undefined, `gender && !['female','f'].includes(gender)`
+        // short-circuited to false, so `continue` never fired and the ectopic pregnancy
+        // alert was incorrectly raised for all unknown-gender patients.
+        const reproCtx = normalizeReproductiveContext({
+            gender: ctx.symptoms.userProfile?.gender,
+        });
+        const profileApplicabilityCtx = { reproductive: reproCtx, age };
 
         if (age !== null) {
             for (const rule of AGE_SAFETY_RULES) {
                 if (age >= rule.ageRange[0] && age <= rule.ageRange[1]) {
-                    // Gender filter for reproductive age
+                    // Fail-closed reproductive gate:
+                    // Only apply pregnancy/ectopic alerts when pregnancy is
+                    // AFFIRMATIVELY known to be clinically applicable.
+                    // Unknown gender → isPregnancyApplicable returns false → skip.
                     if (rule.alert.message.includes('Reproductive-age female') &&
-                        gender && !['female', 'f'].includes(gender)) {
+                        !isPregnancyApplicable(profileApplicabilityCtx)) {
                         continue;
                     }
 

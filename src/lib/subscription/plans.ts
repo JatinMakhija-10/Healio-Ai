@@ -133,7 +133,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
             "Unlimited AI consultations",
             "0s cooldown · no daily cap",
             `${PLUS_MONTHLY_CREDITS} credits/month included`,
-            "PDF Wellness Summaries",
+            "PDF medical reports",
             `Family profiles (${PLUS_FAMILY_PROFILE_LIMIT})`,
             "Vikriti wellness tracking",
             "Priority doctor booking",
