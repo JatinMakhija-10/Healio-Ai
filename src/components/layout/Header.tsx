@@ -185,7 +185,7 @@ export function Header() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-800 hidden sm:flex">
+                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-800 hidden sm:flex" onClick={() => router.push('/dashboard/search')} aria-label="Find specialist">
                         <Search size={20} />
                     </Button>
 

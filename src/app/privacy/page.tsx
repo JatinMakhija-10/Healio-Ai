@@ -92,7 +92,8 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">7. Contact Us</h2>
               <p>
-                If you have questions, comments, or privacy requests about this notice or the processing of your Sensitive Personal Data, contact us at privacy@healio.ai.
+                If you have questions, comments, or privacy requests about this notice or the processing of your Sensitive Personal Data, contact us at{" "}
+                <a href="mailto:privacy@healio.ai" className="text-primary underline underline-offset-2 hover:opacity-80">privacy@healio.ai</a>.
               </p>
             </section>
           </div>

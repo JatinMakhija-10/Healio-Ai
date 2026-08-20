@@ -443,14 +443,14 @@ export async function POST(req: Request) {
             posteriorRedFlags = [] as string[],
             _detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
             ddiPromptSection = '' as string,
+            blockedRemedies = [] as string[],
         } = body;
 
         if (!symptoms) {
             return NextResponse.json({ error: "Symptoms data is required" }, { status: 400 });
         }
 
-        // ── 0. Authoritative Profile Fallback ─────────────────────────────────────
-        // If client body is missing demographic fields, resolve from Supabase auth user metadata
+        // ── 0. Authoritative Profile Fallback & P0-3 Safety Parameters ─────────────
         const userMeta = user.user_metadata || {};
         const mp = userMeta.medical_profile || {};
         const vitals = mp.vitals || {};
@@ -458,10 +458,21 @@ export async function POST(req: Request) {
             ...userProfile,
             gender: userProfile?.gender || mp.gender || vitals.gender || userMeta.gender || null,
             age: userProfile?.age || mp.age || vitals.age || userMeta.age || null,
+            blockedRemedies: Array.isArray(blockedRemedies) ? blockedRemedies : [],
+        };
+
+        // P0-8 Helper: PHI Redaction for external LLM inference
+        const redactPHI = (text: string): string => {
+            if (!text) return '';
+            return text
+                .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[REDACTED EMAIL]')
+                .replace(/\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[REDACTED PHONE]')
+                .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[REDACTED ID]')
+                .replace(/(my name is|i am)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi, '$1 [REDACTED NAME]');
         };
 
         // ── 1. Multi-Query RAG ─────────────────────────────────────────────────
-        const symptomText = [
+        const rawSymptomText = [
             ...(symptoms.location ?? []),
             symptoms.painType ?? "",
             symptoms.additionalNotes ?? "",
@@ -470,6 +481,9 @@ export async function POST(req: Request) {
         ]
             .filter(Boolean)
             .join(" ");
+
+        // Redact any PHI present in free-text notes before external retrieval/prompt
+        const symptomText = redactPHI(rawSymptomText);
 
         let ragContext = "";
         let ragRemediesFound: string[] = [];
@@ -768,6 +782,27 @@ Based on all of the above, generate the formatting JSON.`;
         } else if (!validation.isValid && validation.sanitizedJson) {
             console.warn('[Diagnose] Sanitized output for demographic compliance:', validation.violations);
             jsonResult = validation.sanitizedJson;
+        }
+        // P0-9 Audit Log Recording
+        try {
+            await (supabase as any).from('audit_logs').insert({
+                user_id: user.id,
+                event_type: 'diagnostic_run',
+                input_summary: {
+                    symptomCount: (symptoms.location?.length || 0) + (symptoms.painType ? 1 : 0),
+                    primaryCondition: primaryDiagnosis.condition || null,
+                    bayesianScore: primaryDiagnosis.bayesianScore || 0,
+                    provider,
+                },
+                decision_output: jsonResult,
+                bayesian_scores: {
+                    score: primaryDiagnosis.bayesianScore || 0,
+                    condition: primaryDiagnosis.condition || null,
+                },
+                ddi_blocked: effectiveProfile.blockedRemedies,
+            });
+        } catch (auditErr) {
+            console.error('[Diagnose] Audit log record failed (non-fatal):', auditErr);
         }
 
         return NextResponse.json({

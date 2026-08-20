@@ -38,6 +38,8 @@ export interface ValidationProfile {
     age?: number | string | null;
     /** Optional: sexAtBirth takes precedence over gender if provided. */
     sexAtBirth?: string | null;
+    /** Optional: list of remedies blocked by Stage 2.5 DDI filter */
+    blockedRemedies?: string[];
 }
 
 export interface FieldViolation {
@@ -128,18 +130,6 @@ function scanTextField(
 ): FieldViolation[] {
     if (!text) return [];
 
-    // Gate: only scan for violations when pregnancy is EXPLICITLY not applicable.
-    //
-    // pregnancyCapacity === 'not_applicable' (male, post-hysterectomy):
-    //   → SCAN — reproductive content here is wrong
-    // pregnancyCapacity === 'capable' (female, intersex):
-    //   → DON'T SCAN — content is clinically appropriate for this profile
-    // pregnancyCapacity === 'unknown' (missing/malformed gender):
-    //   → DON'T SCAN — we cannot determine whether content is appropriate;
-    //     raising a violation here would be a false positive
-    //
-    // This is distinct from the primary applicability gate upstream, which
-    // prevents inapplicable content from entering the prompt at all.
     if (ctx.reproductive.pregnancyCapacity !== 'not_applicable') return [];
 
     const violations: FieldViolation[] = [];
@@ -168,14 +158,15 @@ function scanTextField(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Validates an AI JSON response against the patient's applicability context.
+ * Validates an AI JSON response against the patient's applicability context and DDI safety list.
  *
  * @param jsonResponse  Parsed JSON response object from LLM inference
  * @param profile       Patient profile (legacy shape) or QuestionApplicabilityContext
+ *                      May include `blockedRemedies` array from DDI check
  */
 export function validateOutputAgainstProfile(
     jsonResponse: Record<string, unknown>,
-    profile?: ValidationProfile | RawProfileInput | null,
+    profile?: (ValidationProfile & RawProfileInput) | null,
 ): OutputValidationResult {
     if (!jsonResponse || typeof jsonResponse !== 'object') {
         return { isValid: true, fieldViolations: [], violations: [], sanitizedJson: jsonResponse };
@@ -225,6 +216,39 @@ export function validateOutputAgainstProfile(
         }
     }
 
+    // ── 2. DDI Blocked Remedies Safety Rule (P0-3) ───────────────────────────
+    const blockedRemedies = profile?.blockedRemedies || [];
+    if (blockedRemedies.length > 0) {
+        const fullContentText = JSON.stringify(jsonResponse).toLowerCase();
+        for (const blocked of blockedRemedies) {
+            const blockedLower = blocked.trim().toLowerCase();
+            if (!blockedLower) continue;
+
+            // Check if blocked remedy appears in remedies array
+            if (Array.isArray(jsonResponse.remedies)) {
+                jsonResponse.remedies.forEach((r: unknown, idx: number) => {
+                    const remedyName = (r as { name?: string })?.name?.toLowerCase() || '';
+                    if (remedyName.includes(blockedLower) || blockedLower.includes(remedyName)) {
+                        fieldViolations.push({
+                            field: `remedies[${idx}]`,
+                            term: `blocked_remedy:${blocked}`,
+                            excerpt: `DDI Contraindication: "${blocked}" is strictly blocked for this patient.`,
+                        });
+                    }
+                });
+            }
+
+            // Check if blocked remedy is mentioned in prose or description
+            if (fullContentText.includes(blockedLower)) {
+                fieldViolations.push({
+                    field: 'response_text',
+                    term: `blocked_remedy:${blocked}`,
+                    excerpt: `DDI Contraindication: Mention of blocked remedy "${blocked}" detected in LLM output.`,
+                });
+            }
+        }
+    }
+
     // ── 2. Pediatric Aspirin Safety Rule ────────────────────────────────────
     const parsedAge = (() => {
         if (!profile?.age) return null;
@@ -260,6 +284,18 @@ export function validateOutputAgainstProfile(
     console.warn('[OutputValidator] Field-level violations detected:', fieldViolations);
 
     const sanitized = JSON.parse(JSON.stringify(jsonResponse)) as Record<string, unknown>;
+
+    // P0-3 Blocked Remedy Sanitization
+    if (blockedRemedies.length > 0 && Array.isArray(sanitized.remedies)) {
+        sanitized.remedies = (sanitized.remedies as Array<{ name?: string }>).filter((r) => {
+            const name = r.name?.toLowerCase() || '';
+            return !blockedRemedies.some((b) => {
+                const bLower = b.trim().toLowerCase();
+                return bLower && (name.includes(bLower) || bLower.includes(name));
+            });
+        });
+    }
+
     const reproCtx = normalizeReproductiveContext({
         gender: profile?.gender,
         sexAtBirth: (profile as RawProfileInput)?.sexAtBirth,

@@ -25,8 +25,8 @@ describe('Demographic Output Safety & Validation Tests', () => {
             expect(result.sanitizedJson).toBeDefined();
 
             // Warnings array should have pregnancy warning removed
-            expect(result.sanitizedJson?.warnings).toHaveLength(1);
-            expect(result.sanitizedJson?.warnings[0]).toBe('Drink plenty of fluids.');
+            expect((result.sanitizedJson as any)?.warnings).toHaveLength(1);
+            expect((result.sanitizedJson as any)?.warnings[0]).toBe('Drink plenty of fluids.');
 
             // Description and rationale should be sanitized
             expect(result.sanitizedJson?.description).not.toContain('possibility of pregnancy');

@@ -116,7 +116,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                     >
                         {/* Header */}
                         <div className="p-6 flex items-center justify-between border-b border-slate-100">
-                            <div className="flex items-center gap-2">
+                            <Link href="/" onClick={onClose} className="flex items-center gap-2 hover:opacity-90 transition-opacity" aria-label="Healio home">
                                 <div className="bg-teal-600 text-white p-1.5 rounded-lg">
                                     <Leaf size={20} strokeWidth={2.5} />
                                 </div>
@@ -128,7 +128,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                                         WHERE SCIENCE MEETS SOUL
                                     </span>
                                 </div>
-                            </div>
+                            </Link>
                             <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-500">
                                 <X size={20} />
                             </Button>

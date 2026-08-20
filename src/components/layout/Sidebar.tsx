@@ -165,7 +165,7 @@ export function Sidebar() {
     return (
         <div className="flex h-full flex-col border-r border-slate-200 bg-white w-64 hidden md:flex">
             {/* Logo */}
-            <div className="px-6 py-5 flex items-center gap-2.5">
+            <Link href="/" className="px-6 py-5 flex items-center gap-2.5 hover:opacity-90 transition-opacity" aria-label="Healio home">
                 <div className="bg-teal-600 text-white p-1.5 rounded-lg">
                     <Leaf size={20} strokeWidth={2.5} />
                 </div>
@@ -177,7 +177,7 @@ export function Sidebar() {
                         WHERE SCIENCE MEETS SOUL
                     </span>
                 </div>
-            </div>
+            </Link>
 
             {/* Navigation */}
             <div className="flex-1 overflow-y-auto pt-4 pb-6 px-4">

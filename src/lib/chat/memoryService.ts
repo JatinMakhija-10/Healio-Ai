@@ -44,7 +44,7 @@ export interface StoreFactParams {
  * Stores a new medical fact in Supabase `user_medical_facts`.
  */
 export async function storeMedicalFact(params: StoreFactParams): Promise<MedicalFact | null> {
-    const supabase = getSupabaseAdmin();
+    const supabase = getSupabaseAdmin() as any;
     const cleanText = sanitizeForPromptInjection(params.factText, 300);
 
     if (!cleanText) return null;
@@ -80,7 +80,7 @@ export async function supersedeMedicalFact(
     oldFactId: string,
     newParams: StoreFactParams
 ): Promise<MedicalFact | null> {
-    const supabase = getSupabaseAdmin();
+    const supabase = getSupabaseAdmin() as any;
 
     // 1. Insert the new correcting fact
     const newFact = await storeMedicalFact(newParams);
@@ -107,7 +107,7 @@ export async function supersedeMedicalFact(
  * Fetches all active (non-superseded, non-deleted) facts for a user.
  */
 export async function getActiveUserMedicalFacts(userId: string): Promise<MedicalFact[]> {
-    const supabase = getSupabaseAdmin();
+    const supabase = getSupabaseAdmin() as any;
 
     const { data, error } = await supabase
         .from('user_medical_facts')
@@ -134,10 +134,9 @@ export async function searchActiveMedicalFacts(
     threshold = 0.60,
     count = 5
 ): Promise<Array<MedicalFact & { similarity: number }>> {
-    const supabase = getSupabaseAdmin();
+    const supabase = getSupabaseAdmin() as any;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('match_user_medical_facts', {
+    const { data, error } = await supabase.rpc('match_user_medical_facts', {
         p_user_id: userId,
         query_embedding: queryEmbedding,
         match_threshold: threshold,
@@ -150,4 +149,31 @@ export async function searchActiveMedicalFacts(
     }
 
     return data || [];
+}
+
+/**
+ * P0-6 Fix: Exact Structured Safety Fact Retrieval
+ * Fetches all immutable and safety-critical facts (allergies, medications, chronic conditions)
+ * via exact structured lookup, guaranteeing they are never missed by vector similarity thresholds
+ * and do not compete for the similarity top-K budget.
+ */
+export async function getExactSafetyFacts(userId: string): Promise<MedicalFact[]> {
+    const supabase = getSupabaseAdmin() as any;
+
+    const { data, error } = await supabase
+        .from('user_medical_facts')
+        .select('*')
+        .eq('user_id', userId)
+        .is('superseded_by', null)
+        .is('deleted_at', null)
+        .or('immutable.eq.true,category.in.(allergy,medication,chronic_condition)')
+        .order('immutable', { ascending: false })
+        .order('confidence', { ascending: false });
+
+    if (error) {
+        console.error('[MemoryService] Error fetching exact safety facts:', error);
+        return [];
+    }
+
+    return (data || []) as MedicalFact[];
 }

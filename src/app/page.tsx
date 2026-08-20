@@ -581,7 +581,7 @@ export default function LandingPage() {
       <section className="border-b border-[#E5E3DC] bg-white py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            copy="Peer voices are city-specific and practical, so social proof feels local instead of generic."
+            copy="Illustrative feedback showing how families describe their experience with Healio."
             kicker="Trusted by families"
             title="Real worries, calmer next steps."
           />
@@ -597,7 +597,7 @@ export default function LandingPage() {
                   </span>
                   <span>
                     <span className="block font-bold text-[#0F6E56]">{testimonial.name}, {testimonial.city}</span>
-                    <span className="block text-xs font-semibold text-[#6B6B6B]">Verified family use - {testimonial.detail}</span>
+                    <span className="block text-xs font-semibold text-[#6B6B6B]">{testimonial.detail}</span>
                   </span>
                 </figcaption>
               </figure>
@@ -700,6 +700,9 @@ export default function LandingPage() {
                 <span className="font-bold text-white">Medical safety:</span> serious, persistent, or worsening symptoms should be reviewed by a qualified doctor.
               </p>
             </div>
+            <p className="mt-6 border-t border-white/15 pt-5 text-center text-xs text-white/50">
+              &copy; {new Date().getFullYear()} Healio.AI. All rights reserved.
+            </p>
           </footer>
         </div>
       </section>

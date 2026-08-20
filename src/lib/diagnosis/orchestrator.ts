@@ -196,6 +196,37 @@ export async function diagnose(
     const alerts = scanRedFlags(symptoms);
     completedStages.push("red_flags");
 
+    // P0-5 Fix: Emergency Red Flag Immediate Bypass
+    // If a severe, life-threatening red flag is detected, bypass the diagnostic engine entirely.
+    const hasCriticalEmergency = alerts.some(a => a.startsWith("🚨") || a.includes("EMERGENCY") || a.includes("911") || a.includes("CRISIS"));
+    if (hasCriticalEmergency) {
+        console.warn("[Orchestrator] P0-5 CRITICAL EMERGENCY BYPASS TRIGGERED:", alerts);
+        completedStages.push("emergency_bypass_triggered");
+        return {
+            results: [],
+            alerts,
+            orchestrationMeta: {
+                bayesianTopK: [],
+                ragApplied: false,
+                ragRemediesFound: [],
+                aiProvider: "none",
+                aiLatencyMs: 0,
+                bayesianCalibratedConfidence: 0,
+                fusionMethod: "bayesian_dominant",
+                pipelineStages: completedStages,
+                convergenceGated: false,
+                posteriorRedFlags: [],
+                ddi: {
+                    ddiApplied: false,
+                    ddiBlockedCount: 0,
+                    ddiFlaggedCount: 0,
+                    ddiAlerts: [],
+                    unrecognizedMeds: [],
+                },
+            },
+        };
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // STAGE 1 — Bayesian Candidate Scoring (Multi-Chain MCMC)
     // ═══════════════════════════════════════════════════════════════════════
@@ -262,11 +293,12 @@ export async function diagnose(
     // If the top candidate's MCMC chain didn't converge (R̂ > threshold,
     // ESS too low, or CrI too wide), the statistical engine is unreliable.
     // Instead of feeding garbage to the AI, force a follow-up question.
+    // P0-2 Fix: Gate on !converged alone, independent of candidate count.
     // ═══════════════════════════════════════════════════════════════════════
     const topCandidate = bayesianCandidates[0];
     const topMcmc = topCandidate?.mcmcDiagnostics;
 
-    if (topMcmc && !topMcmc.converged && bayesianCandidates.length >= 2) {
+    if (topMcmc && !topMcmc.converged) {
         // MCMC did not converge — try to ask a disambiguating question
         try {
             const candidates = bayesianCandidates.slice(0, 5).map((c) => ({
