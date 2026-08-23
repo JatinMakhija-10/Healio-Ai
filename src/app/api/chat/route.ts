@@ -36,7 +36,7 @@ import {
 export const maxDuration = 60;
 
 const EMERGENCY_RESPONSE =
-    'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Healio cannot assist with potential emergencies.';
+    'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Avoria cannot assist with potential emergencies.';
 
 const EMERGENCY_PATTERNS: RegExp[] = [
     /\bchest\s*(?:pain|pressure|tightness)\b/i,
@@ -968,13 +968,12 @@ FORBIDDEN: Mixing languages. Defaulting to Hindi when user spoke English. Using 
 - NEVER show a numbered list, form, or bullet points. Speak conversationally.
 - Output structure per turn: [empathy line] + [one question] + [optional ui_hint on new line]
 
-[EMERGENCY ABORT — HIGHEST PRIORITY]
-Scan every user message for these red flags BEFORE doing anything else:
-chest pain, shortness of breath, sudden severe headache, loss of consciousness, coughing blood, slurred speech, facial drooping, severe abdominal pain, high fever in infant (under 3 months), signs of stroke, suicidal thoughts, seizure.
-
-IF ANY red flag detected → output ONLY this exact string, nothing else:
-"WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Avoria cannot assist with potential emergencies."
-THEN STOP. Do not ask questions. Do not suggest remedies.
+[SAFETY & ESCALATION BOUNDARIES]
+Server-side algorithms handle immediate emergency keyword scans (chest pain, stroke, severe respiratory distress, trauma).
+Your role during the intake Q&A phase is to be a calm, reassuring wellness guide:
+- For common symptoms (fever, stomach ache, pale stool, weakness, cough, acidity, headache): conduct normal intake Q&A, ask appropriate follow-up questions, and provide calm guidance.
+- Do NOT output emergency warning text for routine or common symptoms during intake.
+- If symptoms suggest a doctor consult is needed, continue intake calmly and set escalation_level to L3 or L4 in the final summary card.
 
 [DIAGNOSTIC STATE MACHINE]
 You are running a structured diagnostic interview. Track internally which of the 9 data points below have been answered. Ask the NEXT unanswered question in priority order. Never ask a question whose answer was already given.
