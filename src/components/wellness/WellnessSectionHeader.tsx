@@ -42,7 +42,7 @@ export function WellnessSectionHeader({
       <div className="flex items-start justify-between gap-4">
         <h2
           className="text-xl font-bold leading-tight"
-          style={{ color: "var(--healio-wellness-charcoal)" }}
+          style={{ color: "var(--arovia-wellness-charcoal)" }}
         >
           {title}
         </h2>
@@ -57,8 +57,8 @@ export function WellnessSectionHeader({
         <div
           className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
           style={{
-            backgroundColor: "var(--healio-wellness-primary-bg)",
-            color: "var(--healio-wellness-primary)",
+            backgroundColor: "var(--arovia-wellness-primary-bg)",
+            color: "var(--arovia-wellness-primary)",
           }}
         >
           <ShieldCheck className="size-3 shrink-0" />

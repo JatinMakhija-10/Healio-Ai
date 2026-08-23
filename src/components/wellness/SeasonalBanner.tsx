@@ -42,8 +42,8 @@ const SEASONS: Record<SeasonKey, SeasonConfig> = {
     tip: "Stay hydrated — aim for 10-12 glasses of water. Watch for heat exhaustion signs: dizziness, rapid heartbeat, very dark urine.",
     cta: "Summer care tips",
     ctaHref: "/dashboard/wellness/library",
-    color: "var(--healio-wellness-marigold)",
-    bg: "var(--healio-wellness-marigold-bg)",
+    color: "var(--arovia-wellness-marigold)",
+    bg: "var(--arovia-wellness-marigold-bg)",
   },
   monsoon: {
     key: "monsoon",
@@ -53,8 +53,8 @@ const SEASONS: Record<SeasonKey, SeasonConfig> = {
     tip: "Digestive infections and mosquito-borne illnesses are more common. Eat freshly cooked food and use mosquito protection.",
     cta: "Monsoon hygiene guide",
     ctaHref: "/dashboard/wellness/library",
-    color: "var(--healio-wellness-indigo)",
-    bg: "var(--healio-wellness-indigo-bg)",
+    color: "var(--arovia-wellness-indigo)",
+    bg: "var(--arovia-wellness-indigo-bg)",
   },
   winter: {
     key: "winter",
@@ -64,8 +64,8 @@ const SEASONS: Record<SeasonKey, SeasonConfig> = {
     tip: "Cold and dry air can irritate respiratory passages. Warm fluids, steam inhalation, and keeping the throat moist all help.",
     cta: "Winter wellness library",
     ctaHref: "/dashboard/wellness/library",
-    color: "var(--healio-wellness-primary)",
-    bg: "var(--healio-wellness-primary-bg)",
+    color: "var(--arovia-wellness-primary)",
+    bg: "var(--arovia-wellness-primary-bg)",
   },
   festival: {
     key: "festival",
@@ -75,8 +75,8 @@ const SEASONS: Record<SeasonKey, SeasonConfig> = {
     tip: "Late nights and rich food during festivals can stress your digestion and sleep. Light meals, hydration, and brief walks help recovery.",
     cta: "Digestive care tips",
     ctaHref: "/dashboard/wellness/library",
-    color: "var(--healio-wellness-rose)",
-    bg: "var(--healio-wellness-rose-bg)",
+    color: "var(--arovia-wellness-rose)",
+    bg: "var(--arovia-wellness-rose-bg)",
   },
   exam: {
     key: "exam",
@@ -86,8 +86,8 @@ const SEASONS: Record<SeasonKey, SeasonConfig> = {
     tip: "Consistent sleep matters more than extra study hours. A brief walk, deep breathing, and regular meals improve focus and reduce burnout.",
     cta: "Stress & sleep tips",
     ctaHref: "/dashboard/wellness/library",
-    color: "var(--healio-wellness-indigo)",
-    bg: "var(--healio-wellness-indigo-bg)",
+    color: "var(--arovia-wellness-indigo)",
+    bg: "var(--arovia-wellness-indigo-bg)",
   },
 };
 

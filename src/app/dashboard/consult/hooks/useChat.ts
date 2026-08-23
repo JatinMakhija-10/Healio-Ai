@@ -292,9 +292,9 @@ function loadDiagnosticPreferences(userId?: string): DiagnosticPreferences {
 
     const suffix = `_${userId}`;
     return {
-        ayurvedicMode: localStorage.getItem(`avoria_pref_ayurvedic${suffix}`) !== "false",
-        showUncertainty: localStorage.getItem(`avoria_pref_uncertainty${suffix}`) !== "false",
-        detailedExplanations: localStorage.getItem(`avoria_pref_detailed${suffix}`) !== "false",
+        ayurvedicMode: localStorage.getItem(`arovia_pref_ayurvedic${suffix}`) !== "false",
+        showUncertainty: localStorage.getItem(`arovia_pref_uncertainty${suffix}`) !== "false",
+        detailedExplanations: localStorage.getItem(`arovia_pref_detailed${suffix}`) !== "false",
     };
 }
 
@@ -408,7 +408,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
     // Get user-specific storage key
     const getStorageKey = useCallback(() => {
-        return user?.id ? `avoria_current_chat_${user.id}` : null;
+        return user?.id ? `arovia_current_chat_${user.id}` : null;
     }, [user?.id]);
 
     // ── Resume Logic: load prior consultation and inject recap ──────────────
@@ -441,7 +441,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
             // 2. Fallback to localStorage
             if (!consultation) {
                 try {
-                    const storageKey = `avoria_consultation_history_${user.id}`;
+                    const storageKey = `arovia_consultation_history_${user.id}`;
                     const localHistory = JSON.parse(
                         localStorage.getItem(storageKey) || "[]"
                     );
@@ -569,7 +569,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
             // Save to localStorage backup (user-specific)
             if (user) {
                 try {
-                    const storageKey = `avoria_consultation_history_${user.id}`;
+                    const storageKey = `arovia_consultation_history_${user.id}`;
                     const existing = JSON.parse(
                         localStorage.getItem(storageKey) || "[]"
                     );

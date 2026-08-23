@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 import "../bones/registry";
 import { Analytics } from "@vercel/analytics/next";
 
-const siteUrl = new URL("https://avoria-ai.vercel.app");
+const siteUrl = new URL("https://arovia-ai.vercel.app");
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -24,13 +24,13 @@ const dmSerifDisplay = DM_Serif_Display({
 export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
-    default: "Avoria.AI - Where Science Meets Soul",
-    template: "%s | Avoria.AI",
+    default: "Arovia.AI - Where Science Meets Soul",
+    template: "%s | Arovia.AI",
   },
-  description: "Avoria.AI — Where science meets soul. Simple, honest wellness guidance for Indian families in their language, with Ayurvedic home care, homeopathic context, source-led scoring, and clear doctor escalation signals.",
+  description: "Arovia.AI — Where science meets soul. Simple, honest wellness guidance for Indian families in their language, with Ayurvedic home care, homeopathic context, source-led scoring, and clear doctor escalation signals.",
   keywords: [
-    "Avoria",
-    "Avoria.AI",
+    "Arovia",
+    "Arovia.AI",
     "Where science meets soul",
     "Indian family health guide",
     "Ayurvedic home remedies",
@@ -42,16 +42,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Avoria.AI - Where Science Meets Soul",
+    title: "Arovia.AI - Where Science Meets Soul",
     description: "Language-first wellness guidance for Indian families, with safe home-care context and clear doctor escalation signals.",
     locale: "en_IN",
-    siteName: "Avoria.AI",
+    siteName: "Arovia.AI",
     type: "website",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "Avoria.AI - Where Science Meets Soul",
+    title: "Arovia.AI - Where Science Meets Soul",
     description: "Simple, honest wellness guidance for Indian families in their language. Where science meets soul.",
   },
 };

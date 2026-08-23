@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * AskHealioResponseRenderer
+ * AskAroviaResponseRenderer
  *
  * Plan ref: Part IV §4.3 + Enhanced Plan §7
  *
- * Renders the full 7-block AskHealioResponse structure inside the chat UI.
+ * Renders the full 7-block AskAroviaResponse structure inside the chat UI.
  * Each block maps to a distinct visual section.
  *
  * Rendering rules enforced here (plan §4.3 + §4.10):
@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { EvidenceLabelBadge } from "@/components/wellness/EvidenceLabelBadge";
 import { EscalationAlert } from "@/components/wellness/EscalationAlert";
 import {
-  type AskHealioResponse,
+  type AskAroviaResponse,
   type AcknowledgementBlock,
   type UnderstandingBlock,
   type EscalationBlock,
@@ -44,8 +44,8 @@ import {
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
-interface AskHealioResponseRendererProps {
-  response: AskHealioResponse;
+interface AskAroviaResponseRendererProps {
+  response: AskAroviaResponse;
   /** Called when a follow-up question chip is tapped */
   onFollowUpQuestion?: (question: string) => void;
   /** Called when "View content" is tapped on the related content link */
@@ -57,13 +57,13 @@ interface AskHealioResponseRendererProps {
 
 // ─── Main renderer ────────────────────────────────────────────────────────────
 
-export function AskHealioResponseRenderer({
+export function AskAroviaResponseRenderer({
   response,
   onFollowUpQuestion,
   onViewContent,
   onStartRoutine,
   className,
-}: AskHealioResponseRendererProps) {
+}: AskAroviaResponseRendererProps) {
   // Pull typed blocks from the response
   const blocks = response.blocks;
   const ack       = blocks.find(b => b.type === 'acknowledgement')  as AcknowledgementBlock | undefined;

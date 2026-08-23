@@ -327,13 +327,13 @@ export class EmpatheticResponseGenerator {
         const language = state.context.detectedLanguage || 'en';
 
         if (language === 'hi') {
-            return "नमस्ते! मैं Healio हूँ, आपका हेल्थ असिस्टेंट। आज मैं आपकी क्या मदद कर सकता हूँ?";
+            return "नमस्ते! मैं Arovia हूँ, आपका हेल्थ असिस्टेंट। आज मैं आपकी क्या मदद कर सकता हूँ?";
         } else if (language === 'hinglish') {
-            return "Hello! Main Healio hu, aapka health assistant. Aaj main aapki kya help kar sakta hu?";
+            return "Hello! Main Arovia hu, aapka health assistant. Aaj main aapki kya help kar sakta hu?";
         }
 
         const greetings = [
-            "Hello! I'm Healio, your health assistant. How can I help you today?",
+            "Hello! I'm Arovia, your health assistant. How can I help you today?",
             "Hi there! I'm here to help you understand your symptoms. What's been bothering you?",
             "Welcome! Tell me what's going on, and I'll help you figure out what might be happening."
         ];

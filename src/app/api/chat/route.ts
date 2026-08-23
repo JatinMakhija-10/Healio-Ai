@@ -36,7 +36,7 @@ import {
 export const maxDuration = 60;
 
 const EMERGENCY_RESPONSE =
-    'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Avoria cannot assist with potential emergencies.';
+    'WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Arovia cannot assist with potential emergencies.';
 
 const EMERGENCY_PATTERNS: RegExp[] = [
     /\bchest\s*(?:pain|pressure|tightness)\b/i,
@@ -929,7 +929,7 @@ async function logLlmRequest(
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
 const SYSTEM_PROMPT = `
 [ROLE IDENTITY]
-You are Avoria - a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness - homeopathy, Ayurveda, evidence-based self-care, and conventional medicine - but you are NOT a diagnosing physician and you never present yourself as one.
+You are Arovia - a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness - homeopathy, Ayurveda, evidence-based self-care, and conventional medicine - but you are NOT a diagnosing physician and you never present yourself as one.
 
 Your mental model: "Help you understand it, manage what is safe at home, reach the right person for what is not."
 Your brand promise: Give people something genuinely useful - without panic, and without replacing professional care.
@@ -1072,7 +1072,7 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - BEFORE suggesting ANY remedy, mentally cross-check against the patient's allergy list.
 - If a remedy contains or is related to an allergen, DO NOT suggest it. Suggest an alternative and note why: "I would normally suggest [X] but given your [allergen] allergy, [Y] is a safer alternative."
 
-[WHAT AVORIA NEVER DOES]
+[WHAT AROVIA NEVER DOES]
 - Never say "you have [condition]" or make a definitive diagnosis. Always use population-level language: "this could suggest", "commonly caused by", "may indicate".
 - Never suggest allopathic prescription medicines (antibiotics, antihypertensives, steroids, controlled drugs).
 - Never contradict, modify, or override what a specific practitioner has already prescribed.
@@ -1195,7 +1195,7 @@ ASSESSMENT SPECIFICITY RULES:
   "when_to_consult": "Specific time threshold and trigger — e.g. 'If symptoms do not improve within 48 hours, or worsen at any point, see a GP.'",
   "practitioner_prep": "What to tell the practitioner and what they may check — e.g. 'Tell them: headache started 2 days ago, throbbing, right-sided, with nausea. They may check blood pressure and do a neurological screen.'",
   "red_flags": ["Specific worsening signs that warrant immediate escalation"],
-  "disclaimer": "Avoria provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
+  "disclaimer": "Arovia provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
 }
 \`\`\`
 `;
@@ -1563,7 +1563,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
         severity,
         confidence,
         emergency: false,
-        bayesianFactors: `Avoria matched the ${schemaLabel.toLowerCase()} intake pathway using: ${summaryForUser}. Confidence stays conservative because a physical exam, vitals, and any missing symptom details could change the assessment.`,
+        bayesianFactors: `Arovia matched the ${schemaLabel.toLowerCase()} intake pathway using: ${summaryForUser}. Confidence stays conservative because a physical exam, vitals, and any missing symptom details could change the assessment.`,
         differentialDiagnoses: [
             {
                 name: `Alternate ${schemaLabel.toLowerCase()} cause`,
@@ -1614,7 +1614,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
         seekHelp: hasRedFlags || severity === 'severe'
             ? 'Seek same-day medical care.'
             : 'Seek care if symptoms worsen or do not improve within 24-48 hours.',
-        disclaimer: 'Avoria provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms.',
+        disclaimer: 'Arovia provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms.',
     };
 }
 
@@ -2046,7 +2046,7 @@ export async function POST(req: NextRequest) {
         // The knowledge base is labeled clearly so the model knows where to source each section
         const t0Prompt = Date.now();
         let finalSystemPrompt = ragContext
-            ? `=== AVORIA MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
+            ? `=== AROVIA MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
 ${diagnosticPreferences.ayurvedicMode
     ? 'the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.'

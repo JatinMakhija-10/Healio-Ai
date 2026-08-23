@@ -1,4 +1,4 @@
-# Avoria.AI — Where Science Meets Soul
+# Arovia.AI — Where Science Meets Soul
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

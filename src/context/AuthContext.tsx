@@ -65,7 +65,7 @@ const clearAllUserData = () => {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('healio_') || key.startsWith('settings_'))) {
+        if (key && (key.startsWith('arovia_') || key.startsWith('settings_'))) {
             keysToRemove.push(key);
         }
     }
@@ -78,7 +78,7 @@ const clearAllUserData = () => {
     const sessionKeysToRemove: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
-        if (key && key.startsWith('healio_')) {
+        if (key && key.startsWith('arovia_')) {
             sessionKeysToRemove.push(key);
         }
     }

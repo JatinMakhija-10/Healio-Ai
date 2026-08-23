@@ -1,9 +1,9 @@
 /**
- * Ask Healio — 7-Step Response Structure
+ * Ask Arovia — 7-Step Response Structure
  *
  * Plan ref: Part IV §4.3 + Enhanced Plan §7 (AI Response Format)
  *
- * Every Ask Healio response MUST contain all 7 blocks.
+ * Every Ask Arovia response MUST contain all 7 blocks.
  * The renderer decides which blocks to surface and in what order,
  * but the data contract is defined here.
  *
@@ -30,12 +30,12 @@ export interface AcknowledgementBlock {
   text: string;
 }
 
-// ─── Step 2: Understanding (what Healio understood) ───────────────────────────
+// ─── Step 2: Understanding (what Arovia understood) ───────────────────────────
 export interface UnderstandingBlock {
   type: 'understanding';
-  /** Plain-language summary of what Healio understood from the input */
+  /** Plain-language summary of what Arovia understood from the input */
   summary: string;
-  /** Any clarifications Healio had to make (e.g. assumed symptom duration) */
+  /** Any clarifications Arovia had to make (e.g. assumed symptom duration) */
   assumptions?: string[];
 }
 
@@ -116,7 +116,7 @@ export interface FollowUpBlock {
 
 // ─── Union and full response ──────────────────────────────────────────────────
 
-export type AskHealioBlock =
+export type AskAroviaBlock =
   | AcknowledgementBlock
   | UnderstandingBlock
   | EscalationBlock
@@ -126,10 +126,10 @@ export type AskHealioBlock =
   | FollowUpBlock;
 
 /**
- * The complete structured response from Ask Healio.
+ * The complete structured response from Ask Arovia.
  * All 7 blocks are required; home_care items may be empty at L4/L5.
  */
-export interface AskHealioResponse {
+export interface AskAroviaResponse {
   id: string;
   /** ISO timestamp */
   generatedAt: string;
@@ -150,10 +150,10 @@ export interface AskHealioResponse {
  * Runtime check that a response has all 7 required block types.
  * Returns an array of missing block types (empty = valid).
  */
-export function validateAskHealioResponse(
-  response: Partial<AskHealioResponse>
+export function validateAskAroviaResponse(
+  response: Partial<AskAroviaResponse>
 ): string[] {
-  const REQUIRED_TYPES: AskHealioBlock['type'][] = [
+  const REQUIRED_TYPES: AskAroviaBlock['type'][] = [
     'acknowledgement',
     'understanding',
     'escalation',
@@ -170,7 +170,7 @@ export function validateAskHealioResponse(
  * Check if home care items should be suppressed for this response.
  * Plan ref: §4.10
  */
-export function homeCareAllowed(response: AskHealioResponse): boolean {
+export function homeCareAllowed(response: AskAroviaResponse): boolean {
   const escalation = response.blocks.find(b => b.type === 'escalation') as
     | EscalationBlock
     | undefined;
@@ -180,7 +180,7 @@ export function homeCareAllowed(response: AskHealioResponse): boolean {
 
 /** Standard safety note text used across all responses. */
 export const STANDARD_SAFETY_NOTE =
-  'Healio provides wellness information only. It is not a licensed medical ' +
+  'Arovia provides wellness information only. It is not a licensed medical ' +
   'practitioner and cannot diagnose conditions, prescribe treatment, or replace ' +
   'a doctor\'s consultation. Always seek professional advice for persistent, ' +
   'worsening, or concerning symptoms. In an emergency, call 112.';

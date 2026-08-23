@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -61,11 +62,11 @@ const chatMessages = [
     text: "Bacche ko shaam se fever hai. Ghar par abhi kya safe hai?",
   },
   {
-    from: "avoria",
+    from: "arovia",
     text: "Temperature note karein, fluids/ORS dete rahein, aur light clothing rakhein. I can explain home remedies and traditional care, but breathing trouble, severe weakness, or very high fever needs a doctor urgently.",
   },
   {
-    from: "avoria",
+    from: "arovia",
     text: "Age, current temperature, aur fever kitne ghante se hai batayein. I use source-backed scoring, not assumptions, to ask the next question.",
   },
 ];
@@ -103,7 +104,7 @@ const evidencePoints = [
   "Structured scoring instead of one-shot assumptions",
 ];
 
-function AvoriaMark({ className = "" }: { className?: string }) {
+function AroviaMark({ className = "" }: { className?: string }) {
   return (
     <div
       className={`grid size-[52px] place-items-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm ${className}`}
@@ -116,41 +117,103 @@ function AvoriaMark({ className = "" }: { className?: string }) {
 
 function FamilyIllustration() {
   return (
-    <div
-      className="relative mx-auto aspect-[4/3] w-full max-w-[420px]"
-      aria-label="Illustration of an Indian family using Avoria at home"
-      role="img"
-    >
-      <div className="absolute inset-x-4 bottom-3 h-16 rounded-[8px] bg-[#E5E3DC]" />
-      <div className="absolute left-8 top-14 h-40 w-28 rounded-t-[52px] rounded-b-[8px] bg-[#CFEFE4] shadow-sm">
-        <div className="absolute left-1/2 top-5 size-16 -translate-x-1/2 rounded-full bg-[#8B5E3C]" />
-        <div className="absolute left-1/2 top-8 size-11 -translate-x-1/2 rounded-full bg-[#B9855B]" />
-        <div className="absolute left-5 top-28 h-7 w-[72px] rounded-full bg-[#1D9E75]" />
-      </div>
-      <div className="absolute right-10 top-20 h-36 w-24 rounded-t-[48px] rounded-b-[8px] bg-[#EFE7D6] shadow-sm">
-        <div className="absolute left-1/2 top-3 size-[60px] -translate-x-1/2 rounded-full bg-[#4A3728]" />
-        <div className="absolute left-1/2 top-7 size-10 -translate-x-1/2 rounded-full bg-[#A77755]" />
-        <div className="absolute left-4 top-[92px] h-6 w-16 rounded-full bg-[#D8B56D]" />
-      </div>
-      <div className="absolute bottom-9 left-1/2 w-[140px] -translate-x-1/2 rounded-[8px] border border-[#DAD7CF] bg-white p-2 shadow-lg">
-        <div className="mb-2 flex items-center gap-1.5">
-          <AvoriaMark className="size-7 rounded-[6px]" />
-          <div>
-            <div className="h-2.5 w-12 rounded-full bg-[#1C1C1E]" />
-            <div className="mt-1 h-1.5 w-18 rounded-full bg-[#9E9E9E]" />
+    <div className="relative mx-auto w-full max-w-[480px]">
+      {/* Soft Ambient Radial Aura Glow */}
+      <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-tr from-[#0F6E56]/20 via-[#9FE1CB]/30 to-amber-200/20 opacity-70 blur-2xl transition-all duration-500 hover:opacity-100" />
+
+      {/* Main Ultra-Minimal Glass Card */}
+      <div className="relative overflow-hidden rounded-[20px] border border-[#0F6E56]/15 bg-white/90 p-5 shadow-[0_20px_50px_rgba(15,110,86,0.1)] backdrop-blur-xl sm:p-6">
+        
+        {/* Top Header Status Row */}
+        <div className="flex items-center justify-between border-b border-[#E5E3DC]/80 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F6E56] to-[#0B5B47] text-white shadow-md">
+              <Leaf className="size-5" />
+              <span className="absolute -right-0.5 -top-0.5 flex size-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#9FE1CB] opacity-75" />
+                <span className="relative inline-flex size-3 rounded-full bg-[#10B981]" />
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-bold text-[#1C1C1E]">Arovia.AI</h3>
+                <span className="rounded-full bg-[#E1F5EE] px-2 py-0.5 text-[10px] font-bold text-[#0F6E56]">
+                  Live Triage
+                </span>
+              </div>
+              <p className="text-[11px] text-[#6B6B6B]">Integrative Health Intelligence</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1.5 rounded-full border border-[#B8DED0] bg-[#E1F5EE] px-3 py-1 text-xs font-semibold text-[#0F6E56]">
+            <span>🌙</span>
+            <span>2:14 AM</span>
           </div>
         </div>
-        <div className="space-y-1.5">
-          <div className="h-4 rounded-[6px] bg-[#E1F5EE]" />
-          <div className="h-4 w-10/12 rounded-[6px] bg-[#F7F6F2]" />
-          <div className="ml-auto h-4 w-8/12 rounded-[6px] bg-[#1D9E75]" />
+
+        {/* User Query Simulation Card */}
+        <div className="mt-4 rounded-xl border border-[#E5E3DC] bg-[#FDFBF7] p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-[#6B6B6B]">
+            <span>Family Profile: Child (4 yrs)</span>
+            <span className="text-[#0F6E56]">Fever Query</span>
+          </div>
+          <p className="mt-1.5 text-xs font-medium leading-relaxed text-[#1C1C1E]">
+            &ldquo;Bacche ko 100.2°F fever hai. Ghar par abhi kya safe hai?&rdquo;
+          </p>
         </div>
-      </div>
-      <div className="absolute left-2 top-5 rounded-full border border-[#DAD7CF] bg-white px-3 py-2 text-xs font-semibold text-[#0F6E56] shadow-sm">
-        2:14 AM
-      </div>
-      <div className="absolute right-2 bottom-20 rounded-full border border-[#DAD7CF] bg-white px-3 py-2 text-xs font-semibold text-[#1C1C1E] shadow-sm">
-        Fever care
+
+        {/* Live Triage Result Preview */}
+        <div className="mt-3.5 space-y-2.5">
+          {/* Level Pill */}
+          <div className="flex items-center justify-between rounded-lg bg-[#E1F5EE]/80 px-3 py-2 border border-[#9FE1CB]/40">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="size-4 text-[#0F6E56]" />
+              <span className="text-xs font-bold text-[#0F6E56]">L1 Routine Self-Care</span>
+            </div>
+            <span className="text-[11px] font-bold text-[#0B5B47]">88% Confidence</span>
+          </div>
+
+          {/* Action Chips */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-2 rounded-lg border border-[#E5E3DC] bg-white p-2.5 shadow-2xs">
+              <span className="text-sm">🌿</span>
+              <div>
+                <p className="font-bold text-[#1C1C1E]">Tulsi Kadha</p>
+                <p className="text-[10px] text-[#6B6B6B]">Home Care</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-lg border border-[#E5E3DC] bg-white p-2.5 shadow-2xs">
+              <span className="text-sm">💧</span>
+              <div>
+                <p className="font-bold text-[#1C1C1E]">ORS Fluids</p>
+                <p className="text-[10px] text-[#6B6B6B]">Hydration</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Interactive Voice Bar */}
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-[#DAD7CF] bg-white p-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-full bg-[#E1F5EE] text-[#0F6E56]">
+              <Mic className="size-4 animate-pulse" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#1C1C1E]">Speak in Hindi or English</p>
+              <p className="text-[10px] text-[#6B6B6B]">Elder-friendly voice input ready</p>
+            </div>
+          </div>
+
+          {/* Animated Waveform Lines */}
+          <div className="flex items-center gap-1">
+            <span className="h-4 w-1 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:0ms]" />
+            <span className="h-6 w-1 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:150ms]" />
+            <span className="h-3 w-1 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:300ms]" />
+            <span className="h-5 w-1 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:450ms]" />
+          </div>
+        </div>
+
       </div>
     </div>
   );
@@ -181,9 +244,9 @@ function ChatDemo() {
     <div className="mx-auto max-w-md rounded-[8px] border border-[#DAD7CF] bg-white p-3 shadow-sm">
       <div className="mb-3 flex items-center justify-between border-b border-[#E5E3DC] pb-3">
         <div className="flex items-center gap-2">
-          <AvoriaMark className="size-9 rounded-[8px]" />
+          <AroviaMark className="size-9 rounded-[8px]" />
           <div>
-            <p className="text-sm font-bold text-[#1C1C1E]">Avoria</p>
+            <p className="text-sm font-bold text-[#1C1C1E]">Arovia</p>
             <p className="text-xs text-[#6B6B6B]">Usually replies in seconds</p>
           </div>
         </div>
@@ -249,7 +312,7 @@ function CookieConsentBanner() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const consent = window.localStorage.getItem("avoria_cookie_consent");
+    const consent = window.localStorage.getItem("arovia_cookie_consent");
     if (!consent) {
       const timeout = window.setTimeout(() => setIsVisible(true), 400);
       return () => window.clearTimeout(timeout);
@@ -267,13 +330,13 @@ function CookieConsentBanner() {
   }, [isVisible]);
 
   const acceptAll = () => {
-    window.localStorage.setItem("avoria_cookie_consent", "accepted");
+    window.localStorage.setItem("arovia_cookie_consent", "accepted");
     setIsVisible(false);
     showToast("All preferences saved");
   };
 
   const rejectNonEssential = () => {
-    window.localStorage.setItem("avoria_cookie_consent", "essential_only");
+    window.localStorage.setItem("arovia_cookie_consent", "essential_only");
     setIsVisible(false);
     showToast("Preferences saved: Essential cookies only");
   };
@@ -393,16 +456,16 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="avoria-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
+    <main className="arovia-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
       <section
         className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8"
         ref={heroRef}
       >
         <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <Link href="/" className="flex items-center gap-3" aria-label="Avoria home">
-            <AvoriaMark />
+          <Link href="/" className="flex items-center gap-3" aria-label="Arovia home">
+            <AroviaMark />
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Avoria.AI</span>
+              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Arovia.AI</span>
               <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                 Where science meets soul
               </span>
@@ -534,7 +597,7 @@ export default function LandingPage() {
               Home remedies feel safer when the limits are clear.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Avoria brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
+              Arovia brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
@@ -558,7 +621,7 @@ export default function LandingPage() {
               We use maths, sources, and safety rules before giving guidance.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#33594D]">
-              Avoria does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, including public government health data where relevant, then keeps doctor escalation visible when risk is present.
+              Arovia does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, including public government health data where relevant, then keeps doctor escalation visible when risk is present.
             </p>
           </div>
           <div className="rounded-[8px] border border-[#B8DED0] bg-white p-5 shadow-sm">
@@ -581,7 +644,7 @@ export default function LandingPage() {
       <section className="border-b border-[#E5E3DC] bg-white py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            copy="Illustrative feedback showing how families describe their experience with Avoria."
+            copy="Illustrative feedback showing how families describe their experience with Arovia."
             kicker="Trusted by families"
             title="Real worries, calmer next steps."
           />
@@ -653,12 +716,12 @@ export default function LandingPage() {
 
       <section className="bg-[#1A1A2E] py-16 text-white" ref={footerRef}>
         <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
-          <AvoriaMark className="mx-auto mb-5" />
+          <AroviaMark className="mx-auto mb-5" />
           <h2 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-normal sm:text-4xl">
             A calmer way to understand family wellness questions.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/75">
-            Review how Avoria balances home remedies, source-backed reasoning, privacy, and doctor-escalation signals.
+            Review how Arovia balances home remedies, source-backed reasoning, privacy, and doctor-escalation signals.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -679,7 +742,7 @@ export default function LandingPage() {
           <footer className="mt-12 border-t border-white/15 pt-6 text-left text-sm leading-6 text-white/70">
             <div className="grid gap-6 md:grid-cols-[1.4fr_0.6fr]">
               <p>
-                Avoria.AI is an informational wellness tool and does not provide medical diagnosis, prescriptions, or emergency care. In an emergency in India, call 112 or visit the nearest emergency room.
+                Arovia.AI is an informational wellness tool and does not provide medical diagnosis, prescriptions, or emergency care. In an emergency in India, call 112 or visit the nearest emergency room.
               </p>
               <div className="flex flex-col gap-2">
                 <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
@@ -701,7 +764,7 @@ export default function LandingPage() {
               </p>
             </div>
             <p className="mt-6 border-t border-white/15 pt-5 text-center text-xs text-white/50">
-              &copy; {new Date().getFullYear()} Avoria.AI. All rights reserved.
+              &copy; {new Date().getFullYear()} Arovia.AI. All rights reserved.
             </p>
           </footer>
         </div>

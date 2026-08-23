@@ -48,7 +48,7 @@ export function buildDosageGroundingPrompt(): string {
 [DOSAGE GROUNDING RULE — CRITICAL]
 The user's message contains a dosage or medication administration question.
 RULE: Any specific dosage, frequency, or administration route you state MUST come directly from the
-retrieved clinical documents provided in the AVORIA MEDICAL KNOWLEDGE BASE context above.
+retrieved clinical documents provided in the AROVIA MEDICAL KNOWLEDGE BASE context above.
 If no retrieved document contains the specific dosage for this patient's exact situation (accounting for
 age, weight, renal function, and co-medications), respond with:
 "I don't have verified dosing information for this specific combination — please confirm the exact dose

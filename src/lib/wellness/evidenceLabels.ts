@@ -39,8 +39,8 @@ export const EVIDENCE_LABELS: Record<EvidenceLabelKey, EvidenceLabelConfig> = {
       'Supported by robust clinical research and accepted in mainstream medical practice.',
     textClass: 'text-evidence-established',
     bgClass: 'bg-evidence-established',
-    colorVar: 'var(--avoria-evidence-established)',
-    bgColorVar: 'var(--avoria-evidence-established-bg)',
+    colorVar: 'var(--arovia-evidence-established)',
+    bgColorVar: 'var(--arovia-evidence-established-bg)',
   },
   common_self_care: {
     key: 'common_self_care',
@@ -49,8 +49,8 @@ export const EVIDENCE_LABELS: Record<EvidenceLabelKey, EvidenceLabelConfig> = {
       'Widely practiced and generally considered safe for everyday home management.',
     textClass: 'text-evidence-selfcare',
     bgClass: 'bg-evidence-selfcare',
-    colorVar: 'var(--avoria-evidence-selfcare)',
-    bgColorVar: 'var(--avoria-evidence-selfcare-bg)',
+    colorVar: 'var(--arovia-evidence-selfcare)',
+    bgColorVar: 'var(--arovia-evidence-selfcare-bg)',
   },
   traditional_practice: {
     key: 'traditional_practice',
@@ -59,8 +59,8 @@ export const EVIDENCE_LABELS: Record<EvidenceLabelKey, EvidenceLabelConfig> = {
       'Part of traditional Indian or Ayurvedic practice. Evidence from clinical research is limited or mixed.',
     textClass: 'text-evidence-traditional',
     bgClass: 'bg-evidence-traditional',
-    colorVar: 'var(--avoria-evidence-traditional)',
-    bgColorVar: 'var(--avoria-evidence-traditional-bg)',
+    colorVar: 'var(--arovia-evidence-traditional)',
+    bgColorVar: 'var(--arovia-evidence-traditional-bg)',
   },
   emerging_limited: {
     key: 'emerging_limited',
@@ -69,8 +69,8 @@ export const EVIDENCE_LABELS: Record<EvidenceLabelKey, EvidenceLabelConfig> = {
       'Some early or preliminary research exists, but evidence is not yet sufficient for strong recommendations.',
     textClass: 'text-evidence-emerging',
     bgClass: 'bg-evidence-emerging',
-    colorVar: 'var(--avoria-evidence-emerging)',
-    bgColorVar: 'var(--avoria-evidence-emerging-bg)',
+    colorVar: 'var(--arovia-evidence-emerging)',
+    bgColorVar: 'var(--arovia-evidence-emerging-bg)',
   },
   avoid_or_consult: {
     key: 'avoid_or_consult',
@@ -79,8 +79,8 @@ export const EVIDENCE_LABELS: Record<EvidenceLabelKey, EvidenceLabelConfig> = {
       'Not appropriate for self-care or requires professional review before use. Check with your doctor or pharmacist.',
     textClass: 'text-evidence-avoid',
     bgClass: 'bg-evidence-avoid',
-    colorVar: 'var(--avoria-evidence-avoid)',
-    bgColorVar: 'var(--avoria-evidence-avoid-bg)',
+    colorVar: 'var(--arovia-evidence-avoid)',
+    bgColorVar: 'var(--arovia-evidence-avoid-bg)',
   },
 };
 

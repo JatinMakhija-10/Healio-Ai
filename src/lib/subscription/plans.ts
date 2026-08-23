@@ -105,7 +105,7 @@ export const CREDIT_PACKS: CreditPack[] = [
 export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
     free: {
         id: "free",
-        name: "Avoria Basic",
+        name: "Arovia Basic",
         price: 0,
         yearlyPrice: 0,
         interval: "month",
@@ -122,7 +122,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
     },
     plus: {
         id: "plus",
-        name: "Avoria Plus",
+        name: "Arovia Plus",
         price: 149,
         yearlyPrice: 1299,
         interval: "month",
@@ -142,7 +142,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
     },
     pro: {
         id: "pro",
-        name: "Avoria Pro",
+        name: "Arovia Pro",
         price: 399,
         yearlyPrice: 3499,
         interval: "month",
@@ -150,7 +150,7 @@ export const PLANS: Record<SubscriptionPlan, PlanDetails> = {
         audience: "patient",
         tagline: "Premium family health + video consults",
         features: [
-            "Everything in Avoria Plus",
+            "Everything in Arovia Plus",
             `${PRO_MONTHLY_CREDITS} credits/month included`,
             `Family profiles (${PRO_FAMILY_PROFILE_LIMIT})`,
             "4 video consults/month with doctors",

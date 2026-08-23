@@ -1,5 +1,5 @@
 /**
- * Long-conversation cutoff test for Healio AI Chat API.
+ * Long-conversation cutoff test for Arovia AI Chat API.
  *
  * Simulates a full 7-turn diagnostic conversation (user→assistant→user→...),
  * then verifies the final response is:
@@ -161,7 +161,7 @@ function extractJsonFromResponse(content) {
 
 // ── Main test ──────────────────────────────────────────────────────────
 async function main() {
-    console.log('\n=== Healio AI Long Conversation Cutoff Test ===\n');
+    console.log('\n=== Arovia AI Long Conversation Cutoff Test ===\n');
     console.log(`Target: ${BASE_URL}/api/chat`);
     console.log(`Turns:  ${Math.floor(CONVERSATION_TURNS.length / 2) + 1} user messages + 1 final diagnosis request\n`);
 

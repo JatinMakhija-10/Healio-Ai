@@ -205,7 +205,7 @@ export function buildMedicalHistoryContext(consultations: ConsultationRecord[]):
     }
 
     const lines: string[] = [
-        '\n\n=== PATIENT MEDICAL HISTORY (past consultations on Healio) ===',
+        '\n\n=== PATIENT MEDICAL HISTORY (past consultations on Arovia) ===',
         'Use this context to:',
         '- Avoid re-asking about known conditions, allergies, or medications',
         '- Reference past diagnoses naturally ("I see you had X last month...")',

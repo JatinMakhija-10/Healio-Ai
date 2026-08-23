@@ -76,7 +76,7 @@ export function RoutineCard({
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div
         className="px-5 py-4"
-        style={{ backgroundColor: "var(--healio-wellness-primary-bg)" }}
+        style={{ backgroundColor: "var(--arovia-wellness-primary-bg)" }}
       >
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -132,7 +132,7 @@ export function RoutineCard({
                 aria-expanded={isOpen}
               >
                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <span style={{ color: "var(--healio-wellness-primary)" }}>
+                  <span style={{ color: "var(--arovia-wellness-primary)" }}>
                     {SLOT_ICONS[slot]}
                   </span>
                   {ROUTINE_TIME_SLOT_LABELS[slot]}

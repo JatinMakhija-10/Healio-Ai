@@ -5,7 +5,7 @@
  * Consumed by Tailwind via CSS custom properties.
  *
  * Naming convention:
- *   --avoria-{category}-{variant}
+ *   --arovia-{category}-{variant}
  *
  * Categories:
  *   brand       – Primary brand palette
@@ -17,69 +17,69 @@
 
 :root {
     /* ── Brand ─────────────────────────────────────────────── */
-    --avoria-brand-primary: #0F6E56;
+    --arovia-brand-primary: #0F6E56;
     /* Primary teal — trust, medical */
-    --avoria-brand-primary-light: #9FE1CB;
-    --avoria-brand-primary-bg: #E1F5EE;
+    --arovia-brand-primary-light: #9FE1CB;
+    --arovia-brand-primary-bg: #E1F5EE;
     /* Lighter teal for hover/accents */
-    --avoria-brand-primary-dark: #0B5B47;
+    --arovia-brand-primary-dark: #0B5B47;
     /* Darker teal for active states */
-    --avoria-brand-secondary: oklch(0.55 0.13 220);
+    --arovia-brand-secondary: oklch(0.55 0.13 220);
     /* Soft blue — complementary */
 
     /* ── Severity Scale (clinical) ─────────────────────────── */
-    --avoria-severity-info: oklch(0.65 0.15 230);
+    --arovia-severity-info: oklch(0.65 0.15 230);
     /* Blue — informational */
-    --avoria-severity-mild: oklch(0.65 0.15 145);
+    --arovia-severity-mild: oklch(0.65 0.15 145);
     /* Green — mild, safe */
-    --avoria-severity-moderate: oklch(0.75 0.16 85);
+    --arovia-severity-moderate: oklch(0.75 0.16 85);
     /* Amber — moderate concern */
-    --avoria-severity-severe: oklch(0.60 0.20 35);
+    --arovia-severity-severe: oklch(0.60 0.20 35);
     /* Orange — high concern */
-    --avoria-severity-critical: oklch(0.55 0.22 25);
+    --arovia-severity-critical: oklch(0.55 0.22 25);
     /* Red — emergency */
 
     /* Severity backgrounds (low-opacity fills for cards/badges) */
-    --avoria-severity-info-bg: oklch(0.95 0.03 230);
-    --avoria-severity-mild-bg: oklch(0.95 0.03 145);
-    --avoria-severity-moderate-bg: oklch(0.96 0.04 85);
-    --avoria-severity-severe-bg: oklch(0.95 0.04 35);
-    --avoria-severity-critical-bg: oklch(0.95 0.05 25);
+    --arovia-severity-info-bg: oklch(0.95 0.03 230);
+    --arovia-severity-mild-bg: oklch(0.95 0.03 145);
+    --arovia-severity-moderate-bg: oklch(0.96 0.04 85);
+    --arovia-severity-severe-bg: oklch(0.95 0.04 35);
+    --arovia-severity-critical-bg: oklch(0.95 0.05 25);
 
     /* ── Status (UI feedback) ──────────────────────────────── */
-    --avoria-status-success: oklch(0.60 0.16 145);
+    --arovia-status-success: oklch(0.60 0.16 145);
     /* Green — confirmation */
-    --avoria-status-warning: oklch(0.75 0.16 85);
+    --arovia-status-warning: oklch(0.75 0.16 85);
     /* Amber — caution */
-    --avoria-status-error: oklch(0.637 0.237 25.331);
+    --arovia-status-error: oklch(0.637 0.237 25.331);
     /* Red — errors */
-    --avoria-status-info: oklch(0.65 0.15 230);
+    --arovia-status-info: oklch(0.65 0.15 230);
     /* Blue — neutral info */
 
     /* ── Surfaces ──────────────────────────────────────────── */
-    --avoria-surface-elevated: oklch(1 0 0);
+    --arovia-surface-elevated: oklch(1 0 0);
     /* White card surface */
-    --avoria-surface-sunken: oklch(0.968 0.007 247.896);
+    --arovia-surface-sunken: oklch(0.968 0.007 247.896);
     /* Slightly recessed bg */
-    --avoria-surface-overlay: oklch(0.984 0.003 247.858);
+    --arovia-surface-overlay: oklch(0.984 0.003 247.858);
     /* Popover/modal backdrop */
 
     /* ── Text ──────────────────────────────────────────────── */
-    --avoria-text-primary: oklch(0.129 0.042 264.695);
+    --arovia-text-primary: oklch(0.129 0.042 264.695);
     /* Near-black */
-    --avoria-text-secondary: oklch(0.45 0.02 260);
+    --arovia-text-secondary: oklch(0.45 0.02 260);
     /* Dark gray */
-    --avoria-text-muted: oklch(0.552 0.016 285.938);
+    --arovia-text-muted: oklch(0.552 0.016 285.938);
     /* Light gray */
-    --avoria-text-on-brand: oklch(1 0 0);
+    --arovia-text-on-brand: oklch(1 0 0);
     /* White on teal */
 
     /* ── Confidence Scale (diagnosis results) ──────────────── */
-    --avoria-confidence-high: oklch(0.60 0.16 145);
+    --arovia-confidence-high: oklch(0.60 0.16 145);
     /* Green — >80% */
-    --avoria-confidence-medium: oklch(0.75 0.16 85);
+    --arovia-confidence-medium: oklch(0.75 0.16 85);
     /* Amber — 50-80% */
-    --avoria-confidence-low: oklch(0.60 0.20 35);
+    --arovia-confidence-low: oklch(0.60 0.20 35);
     /* Orange — <50% */
 
     /* ── Spec tokens: Confidence, Severity, Mental Health, Motion ── */
@@ -108,137 +108,137 @@
  */
 
 .text-severity-info {
-    color: var(--avoria-severity-info);
+    color: var(--arovia-severity-info);
 }
 
 .text-severity-mild {
-    color: var(--avoria-severity-mild);
+    color: var(--arovia-severity-mild);
 }
 
 .text-severity-moderate {
-    color: var(--avoria-severity-moderate);
+    color: var(--arovia-severity-moderate);
 }
 
 .text-severity-severe {
-    color: var(--avoria-severity-severe);
+    color: var(--arovia-severity-severe);
 }
 
 .text-severity-critical {
-    color: var(--avoria-severity-critical);
+    color: var(--arovia-severity-critical);
 }
 
 .bg-severity-info {
-    background-color: var(--avoria-severity-info-bg);
+    background-color: var(--arovia-severity-info-bg);
 }
 
 .bg-severity-mild {
-    background-color: var(--avoria-severity-mild-bg);
+    background-color: var(--arovia-severity-mild-bg);
 }
 
 .bg-severity-moderate {
-    background-color: var(--avoria-severity-moderate-bg);
+    background-color: var(--arovia-severity-moderate-bg);
 }
 
 .bg-severity-severe {
-    background-color: var(--avoria-severity-severe-bg);
+    background-color: var(--arovia-severity-severe-bg);
 }
 
 .bg-severity-critical {
-    background-color: var(--avoria-severity-critical-bg);
+    background-color: var(--arovia-severity-critical-bg);
 }
 
 /* Status */
 .text-status-success {
-    color: var(--avoria-status-success);
+    color: var(--arovia-status-success);
 }
 
 .text-status-warning {
-    color: var(--avoria-status-warning);
+    color: var(--arovia-status-warning);
 }
 
 .text-status-error {
-    color: var(--avoria-status-error);
+    color: var(--arovia-status-error);
 }
 
 .text-status-info {
-    color: var(--avoria-status-info);
+    color: var(--arovia-status-info);
 }
 
 /* Confidence */
 .text-confidence-high {
-    color: var(--avoria-confidence-high);
+    color: var(--arovia-confidence-high);
 }
 
 .text-confidence-medium {
-    color: var(--avoria-confidence-medium);
+    color: var(--arovia-confidence-medium);
 }
 
 .text-confidence-low {
-    color: var(--avoria-confidence-low);
+    color: var(--arovia-confidence-low);
 }
 
 /* ── Wellness Repositioning Tokens ───────────────────────────
  * Plan ref: Part II palette + Part IV §4.1
- * Namespace: --avoria-wellness-*
+ * Namespace: --arovia-wellness-*
  * These layer on top of the existing clinical token set.
- * Do NOT replace --avoria-brand-* or --avoria-severity-* tokens.
+ * Do NOT replace --arovia-brand-* or --arovia-severity-* tokens.
  */
 
 :root {
     /* Primary — Tulsi green (#2D6A4F) */
-    --avoria-wellness-primary:         #2D6A4F;
-    --avoria-wellness-primary-light:   #4A9B75;
-    --avoria-wellness-primary-dark:    #1E4D38;
-    --avoria-wellness-primary-bg:      #EAF4EF;
+    --arovia-wellness-primary:         #2D6A4F;
+    --arovia-wellness-primary-light:   #4A9B75;
+    --arovia-wellness-primary-dark:    #1E4D38;
+    --arovia-wellness-primary-bg:      #EAF4EF;
 
     /* Secondary — Marigold (#E9A21A) */
-    --avoria-wellness-secondary:       #E9A21A;
-    --avoria-wellness-secondary-light: #F0BC52;
-    --avoria-wellness-secondary-bg:    #FEF6E0;
+    --arovia-wellness-secondary:       #E9A21A;
+    --arovia-wellness-secondary-light: #F0BC52;
+    --arovia-wellness-secondary-bg:    #FEF6E0;
 
     /* Accent — Indigo deep (#3D405B) */
-    --avoria-wellness-accent:          #3D405B;
-    --avoria-wellness-accent-light:    #5C6080;
-    --avoria-wellness-accent-bg:       #ECEDF4;
+    --arovia-wellness-accent:          #3D405B;
+    --arovia-wellness-accent-light:    #5C6080;
+    --arovia-wellness-accent-bg:       #ECEDF4;
 
     /* Soft support — Rose clay (#C9675A) */
-    --avoria-wellness-rose:            #C9675A;
-    --avoria-wellness-rose-light:      #D98A80;
-    --avoria-wellness-rose-bg:         #FAEEEC;
+    --arovia-wellness-rose:            #C9675A;
+    --arovia-wellness-rose-light:      #D98A80;
+    --arovia-wellness-rose-bg:         #FAEEEC;
 
     /* Background — Warm ivory */
-    --avoria-wellness-ivory:           #FDF8F0;
+    --arovia-wellness-ivory:           #FDF8F0;
 
     /* Evidence label colours (plan §3 — 5 label types) */
-    --avoria-evidence-established:     #2D6A4F;   /* Clinically established   → tulsi green */
-    --avoria-evidence-established-bg:  #EAF4EF;
-    --avoria-evidence-selfcare:        #E9A21A;   /* Common self-care         → marigold    */
-    --avoria-evidence-selfcare-bg:     #FEF6E0;
-    --avoria-evidence-traditional:     #3D405B;   /* Traditional practice     → indigo      */
-    --avoria-evidence-traditional-bg:  #ECEDF4;
-    --avoria-evidence-emerging:        #B45309;   /* Emerging / limited       → amber-700   */
-    --avoria-evidence-emerging-bg:     #FEF3C7;
-    --avoria-evidence-avoid:           #B91C1C;   /* Avoid or consult first   → red-700     */
-    --avoria-evidence-avoid-bg:        #FEE2E2;
+    --arovia-evidence-established:     #2D6A4F;   /* Clinically established   → tulsi green */
+    --arovia-evidence-established-bg:  #EAF4EF;
+    --arovia-evidence-selfcare:        #E9A21A;   /* Common self-care         → marigold    */
+    --arovia-evidence-selfcare-bg:     #FEF6E0;
+    --arovia-evidence-traditional:     #3D405B;   /* Traditional practice     → indigo      */
+    --arovia-evidence-traditional-bg:  #ECEDF4;
+    --arovia-evidence-emerging:        #B45309;   /* Emerging / limited       → amber-700   */
+    --arovia-evidence-emerging-bg:     #FEF3C7;
+    --arovia-evidence-avoid:           #B91C1C;   /* Avoid or consult first   → red-700     */
+    --arovia-evidence-avoid-bg:        #FEE2E2;
 
     /* Escalation level colours (plan §3.5 — L1 → L5) */
-    --avoria-escalation-l1:            #2D6A4F;   /* Routine self-care   */
-    --avoria-escalation-l2:            #E9A21A;   /* Watchful waiting    */
-    --avoria-escalation-l3:            #B45309;   /* Non-urgent consult  */
-    --avoria-escalation-l4:            #C2410C;   /* Urgent consult      */
-    --avoria-escalation-l5:            #B91C1C;   /* Emergency           */
-    --avoria-escalation-l5-bg:         #FEE2E2;
+    --arovia-escalation-l1:            #2D6A4F;   /* Routine self-care   */
+    --arovia-escalation-l2:            #E9A21A;   /* Watchful waiting    */
+    --arovia-escalation-l3:            #B45309;   /* Non-urgent consult  */
+    --arovia-escalation-l4:            #C2410C;   /* Urgent consult      */
+    --arovia-escalation-l5:            #B91C1C;   /* Emergency           */
+    --arovia-escalation-l5-bg:         #FEE2E2;
 }
 
 /* Evidence label utility classes */
-.text-evidence-established  { color: var(--avoria-evidence-established);  }
-.text-evidence-selfcare     { color: var(--avoria-evidence-selfcare);     }
-.text-evidence-traditional  { color: var(--avoria-evidence-traditional);  }
-.text-evidence-emerging     { color: var(--avoria-evidence-emerging);     }
-.text-evidence-avoid        { color: var(--avoria-evidence-avoid);        }
+.text-evidence-established  { color: var(--arovia-evidence-established);  }
+.text-evidence-selfcare     { color: var(--arovia-evidence-selfcare);     }
+.text-evidence-traditional  { color: var(--arovia-evidence-traditional);  }
+.text-evidence-emerging     { color: var(--arovia-evidence-emerging);     }
+.text-evidence-avoid        { color: var(--arovia-evidence-avoid);        }
 
-.bg-evidence-established    { background-color: var(--avoria-evidence-established-bg);  }
-.bg-evidence-selfcare       { background-color: var(--avoria-evidence-selfcare-bg);     }
-.bg-evidence-traditional    { background-color: var(--avoria-evidence-traditional-bg);  }
-.bg-evidence-emerging       { background-color: var(--avoria-evidence-emerging-bg);     }
-.bg-evidence-avoid          { background-color: var(--avoria-evidence-avoid-bg);        }
+.bg-evidence-established    { background-color: var(--arovia-evidence-established-bg);  }
+.bg-evidence-selfcare       { background-color: var(--arovia-evidence-selfcare-bg);     }
+.bg-evidence-traditional    { background-color: var(--arovia-evidence-traditional-bg);  }
+.bg-evidence-emerging       { background-color: var(--arovia-evidence-emerging-bg);     }
+.bg-evidence-avoid          { background-color: var(--arovia-evidence-avoid-bg);        }

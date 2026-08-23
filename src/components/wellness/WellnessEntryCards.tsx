@@ -39,40 +39,40 @@ const CARDS: EntryCard[] = [
     label: "I feel unwell",
     sublabel: "Get calm, safe guidance",
     href: "/dashboard/consult",
-    accent: "var(--healio-wellness-primary)",
-    accentBg: "var(--healio-wellness-primary-bg)",
+    accent: "var(--arovia-wellness-primary)",
+    accentBg: "var(--arovia-wellness-primary-bg)",
   },
   {
     icon: <Leaf className="size-5" />,
     label: "Home-care routine",
     sublabel: "Daily wellness practices",
     href: "/dashboard/wellness/routines",
-    accent: "var(--healio-wellness-primary)",
-    accentBg: "var(--healio-wellness-primary-bg)",
+    accent: "var(--arovia-wellness-primary)",
+    accentBg: "var(--arovia-wellness-primary-bg)",
   },
   {
     icon: <Sparkles className="size-5" />,
     label: "Preventive tips",
     sublabel: "Seasonal & lifestyle care",
     href: "/dashboard/wellness/library",
-    accent: "var(--healio-wellness-marigold)",
-    accentBg: "var(--healio-wellness-marigold-bg)",
+    accent: "var(--arovia-wellness-marigold)",
+    accentBg: "var(--arovia-wellness-marigold-bg)",
   },
   {
     icon: <ShieldAlert className="size-5" />,
     label: "Is this serious?",
     sublabel: "Red-flag check",
     href: "/dashboard/consult",
-    accent: "var(--healio-wellness-rose)",
-    accentBg: "var(--healio-wellness-rose-bg)",
+    accent: "var(--arovia-wellness-rose)",
+    accentBg: "var(--arovia-wellness-rose-bg)",
   },
   {
     icon: <Stethoscope className="size-5" />,
     label: "Consult a practitioner",
     sublabel: "Talk to a qualified doctor",
     href: "/dashboard/search",
-    accent: "var(--healio-wellness-indigo)",
-    accentBg: "var(--healio-wellness-indigo-bg)",
+    accent: "var(--arovia-wellness-indigo)",
+    accentBg: "var(--arovia-wellness-indigo-bg)",
   },
 ];
 
@@ -85,7 +85,7 @@ export function WellnessEntryCards({ className }: WellnessEntryCardsProps) {
     <div className={cn("space-y-3", className)}>
       <p
         className="text-base font-semibold"
-        style={{ color: "var(--healio-wellness-charcoal)" }}
+        style={{ color: "var(--arovia-wellness-charcoal)" }}
       >
         What do you need help with today?
       </p>
@@ -111,7 +111,7 @@ export function WellnessEntryCards({ className }: WellnessEntryCardsProps) {
               <div>
                 <p
                   className="text-sm font-semibold leading-tight"
-                  style={{ color: "var(--healio-wellness-charcoal)" }}
+                  style={{ color: "var(--arovia-wellness-charcoal)" }}
                 >
                   {card.label}
                 </p>

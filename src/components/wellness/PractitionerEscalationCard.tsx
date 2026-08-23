@@ -230,7 +230,7 @@ export function PractitionerEscalationCard({
         <Link
           href="/dashboard/search"
           className="flex items-center justify-center gap-2 w-full rounded-xl py-2.5 text-sm font-medium text-white transition-colors"
-          style={{ backgroundColor: "var(--healio-wellness-indigo)" }}
+          style={{ backgroundColor: "var(--arovia-wellness-indigo)" }}
         >
           <Stethoscope className="size-4" />
           Find a practitioner
