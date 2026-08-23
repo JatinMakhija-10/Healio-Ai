@@ -1963,10 +1963,7 @@ export async function POST(req: NextRequest) {
             ? AI_PHASE_CONFIG.models.groq        // llama-3.3-70b-versatile — rich diagnosis
             : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
 
-        const maxTokensForTurn =
-            isFinalTurn    ? 4096 :
-            userTurns >= 3 ? 650  :
-                             450;
+        const maxTokensForTurn = isFinalTurn ? 4096 : 1500;
 
         const ragGateOpen =
             userTurns >= 2 ||
