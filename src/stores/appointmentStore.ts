@@ -135,7 +135,7 @@ export const useAppointmentStore = create<AppointmentState>()(
             setError: (error) => set({ error }),
         }),
         {
-            name: 'healio-appointments',
+            name: 'avoria-appointments',
             partialize: (state) => ({ filters: state.filters }), // Only persist filters
         }
     )

@@ -929,7 +929,7 @@ async function logLlmRequest(
 // ── System prompt (injected AFTER RAG context for maximum weight) ─────────────
 const SYSTEM_PROMPT = `
 [ROLE IDENTITY]
-You are Healio - a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness - homeopathy, Ayurveda, evidence-based self-care, and conventional medicine - but you are NOT a diagnosing physician and you never present yourself as one.
+You are Avoria - a trusted wellness guide for Indian families. Your purpose is to help people understand everyday health concerns, manage what they safely can at home, and reach the right practitioner for what they cannot. You have deep knowledge of integrative wellness - homeopathy, Ayurveda, evidence-based self-care, and conventional medicine - but you are NOT a diagnosing physician and you never present yourself as one.
 
 Your mental model: "Help you understand it, manage what is safe at home, reach the right person for what is not."
 Your brand promise: Give people something genuinely useful - without panic, and without replacing professional care.
@@ -973,7 +973,7 @@ Scan every user message for these red flags BEFORE doing anything else:
 chest pain, shortness of breath, sudden severe headache, loss of consciousness, coughing blood, slurred speech, facial drooping, severe abdominal pain, high fever in infant (under 3 months), signs of stroke, suicidal thoughts, seizure.
 
 IF ANY red flag detected → output ONLY this exact string, nothing else:
-"WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Healio cannot assist with potential emergencies."
+"WARNING: Based on your symptoms, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room NOW. Avoria cannot assist with potential emergencies."
 THEN STOP. Do not ask questions. Do not suggest remedies.
 
 [DIAGNOSTIC STATE MACHINE]
@@ -1073,7 +1073,7 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - BEFORE suggesting ANY remedy, mentally cross-check against the patient's allergy list.
 - If a remedy contains or is related to an allergen, DO NOT suggest it. Suggest an alternative and note why: "I would normally suggest [X] but given your [allergen] allergy, [Y] is a safer alternative."
 
-[WHAT HEALIO NEVER DOES]
+[WHAT AVORIA NEVER DOES]
 - Never say "you have [condition]" or make a definitive diagnosis. Always use population-level language: "this could suggest", "commonly caused by", "may indicate".
 - Never suggest allopathic prescription medicines (antibiotics, antihypertensives, steroids, controlled drugs).
 - Never contradict, modify, or override what a specific practitioner has already prescribed.
@@ -1196,7 +1196,7 @@ ASSESSMENT SPECIFICITY RULES:
   "when_to_consult": "Specific time threshold and trigger — e.g. 'If symptoms do not improve within 48 hours, or worsen at any point, see a GP.'",
   "practitioner_prep": "What to tell the practitioner and what they may check — e.g. 'Tell them: headache started 2 days ago, throbbing, right-sided, with nausea. They may check blood pressure and do a neurological screen.'",
   "red_flags": ["Specific worsening signs that warrant immediate escalation"],
-  "disclaimer": "Healio provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
+  "disclaimer": "Avoria provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
 }
 \`\`\`
 `;
@@ -1564,7 +1564,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
         severity,
         confidence,
         emergency: false,
-        bayesianFactors: `Healio matched the ${schemaLabel.toLowerCase()} intake pathway using: ${summaryForUser}. Confidence stays conservative because a physical exam, vitals, and any missing symptom details could change the assessment.`,
+        bayesianFactors: `Avoria matched the ${schemaLabel.toLowerCase()} intake pathway using: ${summaryForUser}. Confidence stays conservative because a physical exam, vitals, and any missing symptom details could change the assessment.`,
         differentialDiagnoses: [
             {
                 name: `Alternate ${schemaLabel.toLowerCase()} cause`,
@@ -1615,7 +1615,7 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
         seekHelp: hasRedFlags || severity === 'severe'
             ? 'Seek same-day medical care.'
             : 'Seek care if symptoms worsen or do not improve within 24-48 hours.',
-        disclaimer: 'Healio provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms.',
+        disclaimer: 'Avoria provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms.',
     };
 }
 
@@ -1650,7 +1650,7 @@ export async function POST(req: NextRequest) {
     const spans = new SpanCollector();
     // Keep comfortably inside the 60s function limit while allowing full model answers.
     const timeoutPromise = new Promise<Response>((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 50_000)
+        setTimeout(() => reject(new Error('timeout')), 55_000)
     );
 
     const processRequest = async (): Promise<Response> => {
@@ -1964,7 +1964,7 @@ export async function POST(req: NextRequest) {
             : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
 
         const maxTokensForTurn =
-            isFinalTurn    ? 2400 :
+            isFinalTurn    ? 4096 :
             userTurns >= 3 ? 650  :
                              450;
 
@@ -2050,7 +2050,7 @@ export async function POST(req: NextRequest) {
         // The knowledge base is labeled clearly so the model knows where to source each section
         const t0Prompt = Date.now();
         let finalSystemPrompt = ragContext
-            ? `=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
+            ? `=== AVORIA MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
 ${diagnosticPreferences.ayurvedicMode
     ? 'the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.'
@@ -2257,11 +2257,13 @@ UI HINT OUTPUT SAFETY:
         // Call Groq API with streaming — with timeout and retry
         let groqResponse: Response | null = null;
         const retryDelay = AI_PHASE_CONFIG.generation.retryDelayMs;
-        const timeoutMs = AI_PHASE_CONFIG.generation.timeoutMs;
+        // Dynamic timeout: 35s for final diagnosis (full JSON card), 25s for balanced-model
+        // turns (70B + RAG context), 15s for fast 8B Q&A turns.
+        const timeoutMs = isFinalTurn ? 35_000 : needsBalancedModel ? 25_000 : AI_PHASE_CONFIG.generation.timeoutMs;
         const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
         const groqStartIndex = groqKeyIndex % groqKeyPool.length;
         groqKeyIndex = (groqKeyIndex + 1) % groqKeyPool.length;
-        const maxGroqRetryBudgetMs = 12_000;
+        const maxGroqRetryBudgetMs = isFinalTurn ? 20_000 : needsBalancedModel ? 15_000 : 12_000;
         const maxGroqRetryDelayMs = 3_000;
         const groqRetryStartedAt = Date.now();
 
@@ -2436,7 +2438,7 @@ UI HINT OUTPUT SAFETY:
                                     ...processedMessages.slice(-6),
                                 ],
                                 temperature: AI_PHASE_CONFIG.generation.temperature,
-                                max_tokens: Math.min(maxTokensForTurn, 500),
+                                max_tokens: Math.min(maxTokensForTurn, 1500),
                                 stream: false,
                             }),
                             signal: rescueController.signal,

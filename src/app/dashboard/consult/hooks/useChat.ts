@@ -292,9 +292,9 @@ function loadDiagnosticPreferences(userId?: string): DiagnosticPreferences {
 
     const suffix = `_${userId}`;
     return {
-        ayurvedicMode: localStorage.getItem(`healio_pref_ayurvedic${suffix}`) !== "false",
-        showUncertainty: localStorage.getItem(`healio_pref_uncertainty${suffix}`) !== "false",
-        detailedExplanations: localStorage.getItem(`healio_pref_detailed${suffix}`) !== "false",
+        ayurvedicMode: localStorage.getItem(`avoria_pref_ayurvedic${suffix}`) !== "false",
+        showUncertainty: localStorage.getItem(`avoria_pref_uncertainty${suffix}`) !== "false",
+        detailedExplanations: localStorage.getItem(`avoria_pref_detailed${suffix}`) !== "false",
     };
 }
 
@@ -408,7 +408,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
 
     // Get user-specific storage key
     const getStorageKey = useCallback(() => {
-        return user?.id ? `healio_current_chat_${user.id}` : null;
+        return user?.id ? `avoria_current_chat_${user.id}` : null;
     }, [user?.id]);
 
     // ── Resume Logic: load prior consultation and inject recap ──────────────
@@ -441,7 +441,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
             // 2. Fallback to localStorage
             if (!consultation) {
                 try {
-                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const storageKey = `avoria_consultation_history_${user.id}`;
                     const localHistory = JSON.parse(
                         localStorage.getItem(storageKey) || "[]"
                     );
@@ -569,7 +569,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
             // Save to localStorage backup (user-specific)
             if (user) {
                 try {
-                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const storageKey = `avoria_consultation_history_${user.id}`;
                     const existing = JSON.parse(
                         localStorage.getItem(storageKey) || "[]"
                     );
@@ -840,7 +840,11 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
                         }
                     }
 
-                    if (!sawDone || streamHadIssue) {
+                    // Only show the interrupted notice when the stream genuinely
+                    // failed (no [DONE] AND content is too short to be a real answer).
+                    // streamHadIssue alone is unreliable — a JSON parse hiccup on a
+                    // stray SSE line doesn't mean the actual content was lost.
+                    if (!sawDone && fullContent.length < 20) {
                         fullContent = interruptedResponseMessage(fullContent);
                         setMessages((prev) =>
                             prev.map((m) =>

@@ -61,11 +61,11 @@ const chatMessages = [
     text: "Bacche ko shaam se fever hai. Ghar par abhi kya safe hai?",
   },
   {
-    from: "healio",
+    from: "avoria",
     text: "Temperature note karein, fluids/ORS dete rahein, aur light clothing rakhein. I can explain home remedies and traditional care, but breathing trouble, severe weakness, or very high fever needs a doctor urgently.",
   },
   {
-    from: "healio",
+    from: "avoria",
     text: "Age, current temperature, aur fever kitne ghante se hai batayein. I use source-backed scoring, not assumptions, to ask the next question.",
   },
 ];
@@ -103,7 +103,7 @@ const evidencePoints = [
   "Structured scoring instead of one-shot assumptions",
 ];
 
-function HealioMark({ className = "" }: { className?: string }) {
+function AvoriaMark({ className = "" }: { className?: string }) {
   return (
     <div
       className={`grid size-[52px] place-items-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm ${className}`}
@@ -118,7 +118,7 @@ function FamilyIllustration() {
   return (
     <div
       className="relative mx-auto aspect-[4/3] w-full max-w-[420px]"
-      aria-label="Illustration of an Indian family using Healio at home"
+      aria-label="Illustration of an Indian family using Avoria at home"
       role="img"
     >
       <div className="absolute inset-x-4 bottom-3 h-16 rounded-[8px] bg-[#E5E3DC]" />
@@ -134,7 +134,7 @@ function FamilyIllustration() {
       </div>
       <div className="absolute bottom-9 left-1/2 w-[140px] -translate-x-1/2 rounded-[8px] border border-[#DAD7CF] bg-white p-2 shadow-lg">
         <div className="mb-2 flex items-center gap-1.5">
-          <HealioMark className="size-7 rounded-[6px]" />
+          <AvoriaMark className="size-7 rounded-[6px]" />
           <div>
             <div className="h-2.5 w-12 rounded-full bg-[#1C1C1E]" />
             <div className="mt-1 h-1.5 w-18 rounded-full bg-[#9E9E9E]" />
@@ -181,9 +181,9 @@ function ChatDemo() {
     <div className="mx-auto max-w-md rounded-[8px] border border-[#DAD7CF] bg-white p-3 shadow-sm">
       <div className="mb-3 flex items-center justify-between border-b border-[#E5E3DC] pb-3">
         <div className="flex items-center gap-2">
-          <HealioMark className="size-9 rounded-[8px]" />
+          <AvoriaMark className="size-9 rounded-[8px]" />
           <div>
-            <p className="text-sm font-bold text-[#1C1C1E]">Healio</p>
+            <p className="text-sm font-bold text-[#1C1C1E]">Avoria</p>
             <p className="text-xs text-[#6B6B6B]">Usually replies in seconds</p>
           </div>
         </div>
@@ -249,7 +249,7 @@ function CookieConsentBanner() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const consent = window.localStorage.getItem("healio_cookie_consent");
+    const consent = window.localStorage.getItem("avoria_cookie_consent");
     if (!consent) {
       const timeout = window.setTimeout(() => setIsVisible(true), 400);
       return () => window.clearTimeout(timeout);
@@ -267,13 +267,13 @@ function CookieConsentBanner() {
   }, [isVisible]);
 
   const acceptAll = () => {
-    window.localStorage.setItem("healio_cookie_consent", "accepted");
+    window.localStorage.setItem("avoria_cookie_consent", "accepted");
     setIsVisible(false);
     showToast("All preferences saved");
   };
 
   const rejectNonEssential = () => {
-    window.localStorage.setItem("healio_cookie_consent", "essential_only");
+    window.localStorage.setItem("avoria_cookie_consent", "essential_only");
     setIsVisible(false);
     showToast("Preferences saved: Essential cookies only");
   };
@@ -393,16 +393,16 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="healio-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
+    <main className="avoria-public-page min-h-screen bg-[#F7F6F2] text-[#1C1C1E]">
       <section
         className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8"
         ref={heroRef}
       >
         <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <Link href="/" className="flex items-center gap-3" aria-label="Healio home">
-            <HealioMark />
+          <Link href="/" className="flex items-center gap-3" aria-label="Avoria home">
+            <AvoriaMark />
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Healio.AI</span>
+              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Avoria.AI</span>
               <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                 Where science meets soul
               </span>
@@ -534,7 +534,7 @@ export default function LandingPage() {
               Home remedies feel safer when the limits are clear.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Healio brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
+              Avoria brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
@@ -558,7 +558,7 @@ export default function LandingPage() {
               We use maths, sources, and safety rules before giving guidance.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#33594D]">
-              Healio does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, including public government health data where relevant, then keeps doctor escalation visible when risk is present.
+              Avoria does not invent answers from a single message. It weighs symptom patterns against curated medical and traditional-wellness sources, including public government health data where relevant, then keeps doctor escalation visible when risk is present.
             </p>
           </div>
           <div className="rounded-[8px] border border-[#B8DED0] bg-white p-5 shadow-sm">
@@ -581,7 +581,7 @@ export default function LandingPage() {
       <section className="border-b border-[#E5E3DC] bg-white py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            copy="Illustrative feedback showing how families describe their experience with Healio."
+            copy="Illustrative feedback showing how families describe their experience with Avoria."
             kicker="Trusted by families"
             title="Real worries, calmer next steps."
           />
@@ -653,12 +653,12 @@ export default function LandingPage() {
 
       <section className="bg-[#1A1A2E] py-16 text-white" ref={footerRef}>
         <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
-          <HealioMark className="mx-auto mb-5" />
+          <AvoriaMark className="mx-auto mb-5" />
           <h2 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-normal sm:text-4xl">
             A calmer way to understand family wellness questions.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-white/75">
-            Review how Healio balances home remedies, source-backed reasoning, privacy, and doctor-escalation signals.
+            Review how Avoria balances home remedies, source-backed reasoning, privacy, and doctor-escalation signals.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -679,7 +679,7 @@ export default function LandingPage() {
           <footer className="mt-12 border-t border-white/15 pt-6 text-left text-sm leading-6 text-white/70">
             <div className="grid gap-6 md:grid-cols-[1.4fr_0.6fr]">
               <p>
-                Healio.AI is an informational wellness tool and does not provide medical diagnosis, prescriptions, or emergency care. In an emergency in India, call 112 or visit the nearest emergency room.
+                Avoria.AI is an informational wellness tool and does not provide medical diagnosis, prescriptions, or emergency care. In an emergency in India, call 112 or visit the nearest emergency room.
               </p>
               <div className="flex flex-col gap-2">
                 <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
@@ -701,7 +701,7 @@ export default function LandingPage() {
               </p>
             </div>
             <p className="mt-6 border-t border-white/15 pt-5 text-center text-xs text-white/50">
-              &copy; {new Date().getFullYear()} Healio.AI. All rights reserved.
+              &copy; {new Date().getFullYear()} Avoria.AI. All rights reserved.
             </p>
           </footer>
         </div>

@@ -206,7 +206,7 @@ function isNegated(text: string, matchIndex: number): boolean {
 // ─── Main Detector ────────────────────────────────────────────────────────────
 
 const DEFAULT_EMERGENCY_MESSAGE =
-    '⚠️ URGENT: Based on what you have described, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room now. Healio cannot assist with potential emergencies.';
+    '⚠️ URGENT: Based on what you have described, please seek emergency medical care immediately. Call 112 (India) or 911 (US) or go to the nearest emergency room now. Avoria cannot assist with potential emergencies.';
 
 /**
  * Detects compound red-flag patterns in a user message.
@@ -245,7 +245,7 @@ export function detectCompoundRedFlags(message: string): RedFlagResult {
 
 /**
  * Builds the emergency SSE response text for a detected compound red flag.
- * Includes the specific emergency message + the standard Healio disclaimer.
+ * Includes the specific emergency message + the standard Avoria disclaimer.
  */
 export function buildEmergencyResponseText(result: RedFlagResult): string {
     if (!result.detected || !result.flag) return DEFAULT_EMERGENCY_MESSAGE;
@@ -253,6 +253,6 @@ export function buildEmergencyResponseText(result: RedFlagResult): string {
     return [
         result.emergencyMessage,
         '',
-        'WARNING: Healio cannot assist with potential emergencies. Please call emergency services immediately.',
+        'WARNING: Avoria cannot assist with potential emergencies. Please call emergency services immediately.',
     ].join('\n');
 }

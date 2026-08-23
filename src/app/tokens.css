@@ -1,11 +1,11 @@
 /*
- * Healio.AI — Semantic Design Tokens
+ * Avoria.AI — Semantic Design Tokens
  *
  * Single source of truth for all domain-specific color tokens.
  * Consumed by Tailwind via CSS custom properties.
  *
  * Naming convention:
- *   --healio-{category}-{variant}
+ *   --avoria-{category}-{variant}
  *
  * Categories:
  *   brand       – Primary brand palette
@@ -17,69 +17,69 @@
 
 :root {
     /* ── Brand ─────────────────────────────────────────────── */
-    --healio-brand-primary: #0F6E56;
+    --avoria-brand-primary: #0F6E56;
     /* Primary teal — trust, medical */
-    --healio-brand-primary-light: #9FE1CB;
-    --healio-brand-primary-bg: #E1F5EE;
+    --avoria-brand-primary-light: #9FE1CB;
+    --avoria-brand-primary-bg: #E1F5EE;
     /* Lighter teal for hover/accents */
-    --healio-brand-primary-dark: #0B5B47;
+    --avoria-brand-primary-dark: #0B5B47;
     /* Darker teal for active states */
-    --healio-brand-secondary: oklch(0.55 0.13 220);
+    --avoria-brand-secondary: oklch(0.55 0.13 220);
     /* Soft blue — complementary */
 
     /* ── Severity Scale (clinical) ─────────────────────────── */
-    --healio-severity-info: oklch(0.65 0.15 230);
+    --avoria-severity-info: oklch(0.65 0.15 230);
     /* Blue — informational */
-    --healio-severity-mild: oklch(0.65 0.15 145);
+    --avoria-severity-mild: oklch(0.65 0.15 145);
     /* Green — mild, safe */
-    --healio-severity-moderate: oklch(0.75 0.16 85);
+    --avoria-severity-moderate: oklch(0.75 0.16 85);
     /* Amber — moderate concern */
-    --healio-severity-severe: oklch(0.60 0.20 35);
+    --avoria-severity-severe: oklch(0.60 0.20 35);
     /* Orange — high concern */
-    --healio-severity-critical: oklch(0.55 0.22 25);
+    --avoria-severity-critical: oklch(0.55 0.22 25);
     /* Red — emergency */
 
     /* Severity backgrounds (low-opacity fills for cards/badges) */
-    --healio-severity-info-bg: oklch(0.95 0.03 230);
-    --healio-severity-mild-bg: oklch(0.95 0.03 145);
-    --healio-severity-moderate-bg: oklch(0.96 0.04 85);
-    --healio-severity-severe-bg: oklch(0.95 0.04 35);
-    --healio-severity-critical-bg: oklch(0.95 0.05 25);
+    --avoria-severity-info-bg: oklch(0.95 0.03 230);
+    --avoria-severity-mild-bg: oklch(0.95 0.03 145);
+    --avoria-severity-moderate-bg: oklch(0.96 0.04 85);
+    --avoria-severity-severe-bg: oklch(0.95 0.04 35);
+    --avoria-severity-critical-bg: oklch(0.95 0.05 25);
 
     /* ── Status (UI feedback) ──────────────────────────────── */
-    --healio-status-success: oklch(0.60 0.16 145);
+    --avoria-status-success: oklch(0.60 0.16 145);
     /* Green — confirmation */
-    --healio-status-warning: oklch(0.75 0.16 85);
+    --avoria-status-warning: oklch(0.75 0.16 85);
     /* Amber — caution */
-    --healio-status-error: oklch(0.637 0.237 25.331);
+    --avoria-status-error: oklch(0.637 0.237 25.331);
     /* Red — errors */
-    --healio-status-info: oklch(0.65 0.15 230);
+    --avoria-status-info: oklch(0.65 0.15 230);
     /* Blue — neutral info */
 
     /* ── Surfaces ──────────────────────────────────────────── */
-    --healio-surface-elevated: oklch(1 0 0);
+    --avoria-surface-elevated: oklch(1 0 0);
     /* White card surface */
-    --healio-surface-sunken: oklch(0.968 0.007 247.896);
+    --avoria-surface-sunken: oklch(0.968 0.007 247.896);
     /* Slightly recessed bg */
-    --healio-surface-overlay: oklch(0.984 0.003 247.858);
+    --avoria-surface-overlay: oklch(0.984 0.003 247.858);
     /* Popover/modal backdrop */
 
     /* ── Text ──────────────────────────────────────────────── */
-    --healio-text-primary: oklch(0.129 0.042 264.695);
+    --avoria-text-primary: oklch(0.129 0.042 264.695);
     /* Near-black */
-    --healio-text-secondary: oklch(0.45 0.02 260);
+    --avoria-text-secondary: oklch(0.45 0.02 260);
     /* Dark gray */
-    --healio-text-muted: oklch(0.552 0.016 285.938);
+    --avoria-text-muted: oklch(0.552 0.016 285.938);
     /* Light gray */
-    --healio-text-on-brand: oklch(1 0 0);
+    --avoria-text-on-brand: oklch(1 0 0);
     /* White on teal */
 
     /* ── Confidence Scale (diagnosis results) ──────────────── */
-    --healio-confidence-high: oklch(0.60 0.16 145);
+    --avoria-confidence-high: oklch(0.60 0.16 145);
     /* Green — >80% */
-    --healio-confidence-medium: oklch(0.75 0.16 85);
+    --avoria-confidence-medium: oklch(0.75 0.16 85);
     /* Amber — 50-80% */
-    --healio-confidence-low: oklch(0.60 0.20 35);
+    --avoria-confidence-low: oklch(0.60 0.20 35);
     /* Orange — <50% */
 
     /* ── Spec tokens: Confidence, Severity, Mental Health, Motion ── */
@@ -108,137 +108,137 @@
  */
 
 .text-severity-info {
-    color: var(--healio-severity-info);
+    color: var(--avoria-severity-info);
 }
 
 .text-severity-mild {
-    color: var(--healio-severity-mild);
+    color: var(--avoria-severity-mild);
 }
 
 .text-severity-moderate {
-    color: var(--healio-severity-moderate);
+    color: var(--avoria-severity-moderate);
 }
 
 .text-severity-severe {
-    color: var(--healio-severity-severe);
+    color: var(--avoria-severity-severe);
 }
 
 .text-severity-critical {
-    color: var(--healio-severity-critical);
+    color: var(--avoria-severity-critical);
 }
 
 .bg-severity-info {
-    background-color: var(--healio-severity-info-bg);
+    background-color: var(--avoria-severity-info-bg);
 }
 
 .bg-severity-mild {
-    background-color: var(--healio-severity-mild-bg);
+    background-color: var(--avoria-severity-mild-bg);
 }
 
 .bg-severity-moderate {
-    background-color: var(--healio-severity-moderate-bg);
+    background-color: var(--avoria-severity-moderate-bg);
 }
 
 .bg-severity-severe {
-    background-color: var(--healio-severity-severe-bg);
+    background-color: var(--avoria-severity-severe-bg);
 }
 
 .bg-severity-critical {
-    background-color: var(--healio-severity-critical-bg);
+    background-color: var(--avoria-severity-critical-bg);
 }
 
 /* Status */
 .text-status-success {
-    color: var(--healio-status-success);
+    color: var(--avoria-status-success);
 }
 
 .text-status-warning {
-    color: var(--healio-status-warning);
+    color: var(--avoria-status-warning);
 }
 
 .text-status-error {
-    color: var(--healio-status-error);
+    color: var(--avoria-status-error);
 }
 
 .text-status-info {
-    color: var(--healio-status-info);
+    color: var(--avoria-status-info);
 }
 
 /* Confidence */
 .text-confidence-high {
-    color: var(--healio-confidence-high);
+    color: var(--avoria-confidence-high);
 }
 
 .text-confidence-medium {
-    color: var(--healio-confidence-medium);
+    color: var(--avoria-confidence-medium);
 }
 
 .text-confidence-low {
-    color: var(--healio-confidence-low);
+    color: var(--avoria-confidence-low);
 }
 
 /* ── Wellness Repositioning Tokens ───────────────────────────
  * Plan ref: Part II palette + Part IV §4.1
- * Namespace: --healio-wellness-*
+ * Namespace: --avoria-wellness-*
  * These layer on top of the existing clinical token set.
- * Do NOT replace --healio-brand-* or --healio-severity-* tokens.
+ * Do NOT replace --avoria-brand-* or --avoria-severity-* tokens.
  */
 
 :root {
     /* Primary — Tulsi green (#2D6A4F) */
-    --healio-wellness-primary:         #2D6A4F;
-    --healio-wellness-primary-light:   #4A9B75;
-    --healio-wellness-primary-dark:    #1E4D38;
-    --healio-wellness-primary-bg:      #EAF4EF;
+    --avoria-wellness-primary:         #2D6A4F;
+    --avoria-wellness-primary-light:   #4A9B75;
+    --avoria-wellness-primary-dark:    #1E4D38;
+    --avoria-wellness-primary-bg:      #EAF4EF;
 
     /* Secondary — Marigold (#E9A21A) */
-    --healio-wellness-secondary:       #E9A21A;
-    --healio-wellness-secondary-light: #F0BC52;
-    --healio-wellness-secondary-bg:    #FEF6E0;
+    --avoria-wellness-secondary:       #E9A21A;
+    --avoria-wellness-secondary-light: #F0BC52;
+    --avoria-wellness-secondary-bg:    #FEF6E0;
 
     /* Accent — Indigo deep (#3D405B) */
-    --healio-wellness-accent:          #3D405B;
-    --healio-wellness-accent-light:    #5C6080;
-    --healio-wellness-accent-bg:       #ECEDF4;
+    --avoria-wellness-accent:          #3D405B;
+    --avoria-wellness-accent-light:    #5C6080;
+    --avoria-wellness-accent-bg:       #ECEDF4;
 
     /* Soft support — Rose clay (#C9675A) */
-    --healio-wellness-rose:            #C9675A;
-    --healio-wellness-rose-light:      #D98A80;
-    --healio-wellness-rose-bg:         #FAEEEC;
+    --avoria-wellness-rose:            #C9675A;
+    --avoria-wellness-rose-light:      #D98A80;
+    --avoria-wellness-rose-bg:         #FAEEEC;
 
     /* Background — Warm ivory */
-    --healio-wellness-ivory:           #FDF8F0;
+    --avoria-wellness-ivory:           #FDF8F0;
 
     /* Evidence label colours (plan §3 — 5 label types) */
-    --healio-evidence-established:     #2D6A4F;   /* Clinically established   → tulsi green */
-    --healio-evidence-established-bg:  #EAF4EF;
-    --healio-evidence-selfcare:        #E9A21A;   /* Common self-care         → marigold    */
-    --healio-evidence-selfcare-bg:     #FEF6E0;
-    --healio-evidence-traditional:     #3D405B;   /* Traditional practice     → indigo      */
-    --healio-evidence-traditional-bg:  #ECEDF4;
-    --healio-evidence-emerging:        #B45309;   /* Emerging / limited       → amber-700   */
-    --healio-evidence-emerging-bg:     #FEF3C7;
-    --healio-evidence-avoid:           #B91C1C;   /* Avoid or consult first   → red-700     */
-    --healio-evidence-avoid-bg:        #FEE2E2;
+    --avoria-evidence-established:     #2D6A4F;   /* Clinically established   → tulsi green */
+    --avoria-evidence-established-bg:  #EAF4EF;
+    --avoria-evidence-selfcare:        #E9A21A;   /* Common self-care         → marigold    */
+    --avoria-evidence-selfcare-bg:     #FEF6E0;
+    --avoria-evidence-traditional:     #3D405B;   /* Traditional practice     → indigo      */
+    --avoria-evidence-traditional-bg:  #ECEDF4;
+    --avoria-evidence-emerging:        #B45309;   /* Emerging / limited       → amber-700   */
+    --avoria-evidence-emerging-bg:     #FEF3C7;
+    --avoria-evidence-avoid:           #B91C1C;   /* Avoid or consult first   → red-700     */
+    --avoria-evidence-avoid-bg:        #FEE2E2;
 
     /* Escalation level colours (plan §3.5 — L1 → L5) */
-    --healio-escalation-l1:            #2D6A4F;   /* Routine self-care   */
-    --healio-escalation-l2:            #E9A21A;   /* Watchful waiting    */
-    --healio-escalation-l3:            #B45309;   /* Non-urgent consult  */
-    --healio-escalation-l4:            #C2410C;   /* Urgent consult      */
-    --healio-escalation-l5:            #B91C1C;   /* Emergency           */
-    --healio-escalation-l5-bg:         #FEE2E2;
+    --avoria-escalation-l1:            #2D6A4F;   /* Routine self-care   */
+    --avoria-escalation-l2:            #E9A21A;   /* Watchful waiting    */
+    --avoria-escalation-l3:            #B45309;   /* Non-urgent consult  */
+    --avoria-escalation-l4:            #C2410C;   /* Urgent consult      */
+    --avoria-escalation-l5:            #B91C1C;   /* Emergency           */
+    --avoria-escalation-l5-bg:         #FEE2E2;
 }
 
 /* Evidence label utility classes */
-.text-evidence-established  { color: var(--healio-evidence-established);  }
-.text-evidence-selfcare     { color: var(--healio-evidence-selfcare);     }
-.text-evidence-traditional  { color: var(--healio-evidence-traditional);  }
-.text-evidence-emerging     { color: var(--healio-evidence-emerging);     }
-.text-evidence-avoid        { color: var(--healio-evidence-avoid);        }
+.text-evidence-established  { color: var(--avoria-evidence-established);  }
+.text-evidence-selfcare     { color: var(--avoria-evidence-selfcare);     }
+.text-evidence-traditional  { color: var(--avoria-evidence-traditional);  }
+.text-evidence-emerging     { color: var(--avoria-evidence-emerging);     }
+.text-evidence-avoid        { color: var(--avoria-evidence-avoid);        }
 
-.bg-evidence-established    { background-color: var(--healio-evidence-established-bg);  }
-.bg-evidence-selfcare       { background-color: var(--healio-evidence-selfcare-bg);     }
-.bg-evidence-traditional    { background-color: var(--healio-evidence-traditional-bg);  }
-.bg-evidence-emerging       { background-color: var(--healio-evidence-emerging-bg);     }
-.bg-evidence-avoid          { background-color: var(--healio-evidence-avoid-bg);        }
+.bg-evidence-established    { background-color: var(--avoria-evidence-established-bg);  }
+.bg-evidence-selfcare       { background-color: var(--avoria-evidence-selfcare-bg);     }
+.bg-evidence-traditional    { background-color: var(--avoria-evidence-traditional-bg);  }
+.bg-evidence-emerging       { background-color: var(--avoria-evidence-emerging-bg);     }
+.bg-evidence-avoid          { background-color: var(--avoria-evidence-avoid-bg);        }
