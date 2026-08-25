@@ -2256,7 +2256,115 @@ UI HINT OUTPUT SAFETY:
         // Dynamic timeout: 35s for final diagnosis (full JSON card), 25s for balanced-model
         // turns (70B + RAG context), 15s for fast 8B Q&A turns.
         const timeoutMs = isFinalTurn ? 35_000 : needsBalancedModel ? 25_000 : AI_PHASE_CONFIG.generation.timeoutMs;
-        const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
+        // ── Primary Provider Execution ──────────────────────────────────────
+        if (AI_PHASE_CONFIG.primary === 'gemini') {
+            const geminiKeys = getGeminiApiKeys();
+            if (geminiKeys.length === 0) {
+                console.error('[Gemini] Primary provider set to gemini but no GEMINI_API_KEY set');
+                return streamTextResponse("AI service is not configured with a valid Gemini API key. Please add your key in settings.");
+            }
+
+            console.log('[Gemini] Executing Gemini 3.6 Flash as Primary LLM...');
+
+            const geminiMessages = processedMessages.map((m: { role: string; content: string }) => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }],
+            }));
+
+            const geminiModels = [
+                AI_PHASE_CONFIG.models.gemini,
+                AI_PHASE_CONFIG.models.geminiLite,
+            ];
+            let geminiText = '';
+            let geminiSucceeded = false;
+            let geminiModelUsed = '';
+            let lastGeminiError = '';
+
+            for (const model of geminiModels) {
+                for (const geminiKey of geminiKeys) {
+                    const geminiController = new AbortController();
+                    const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
+
+                    try {
+                        const geminiResponse = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    systemInstruction: { parts: [{ text: finalSystemPrompt }] },
+                                    contents: geminiMessages,
+                                    generationConfig: {
+                                        temperature: AI_PHASE_CONFIG.generation.temperature,
+                                        maxOutputTokens: maxTokensForTurn,
+                                    },
+                                    thinkingConfig: { thinkingBudget: 0 }, // disable thinking for fast responses
+                                }),
+                                signal: geminiController.signal,
+                            }
+                        );
+
+                        if (geminiResponse.ok) {
+                            const geminiData = await geminiResponse.json();
+                            geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            geminiSucceeded = true;
+                            geminiModelUsed = model;
+                            break;
+                        }
+
+                        const errorText = await geminiResponse.text();
+                        lastGeminiError = `${geminiResponse.status} ${errorText.slice(0, 300)}`;
+                        console.error(`[Gemini] ${model} failed status=${geminiResponse.status} body=${errorText.slice(0, 300)}`);
+                        if (geminiResponse.status === 400 && /api key not valid|api_key_invalid|invalid api key/i.test(errorText)) {
+                            disableGeminiApiKey(geminiKey);
+                        }
+                    } catch (error) {
+                        lastGeminiError = providerErrorText(error).slice(0, 300);
+                        console.error(`[Gemini] ${model} request failed: ${lastGeminiError}`);
+                        if (isInvalidGeminiKeyError(error)) {
+                            disableGeminiApiKey(geminiKey);
+                        }
+                    } finally {
+                        clearTimeout(geminiTimeoutId);
+                    }
+                }
+
+                if (geminiSucceeded) break;
+            }
+
+            if (geminiSucceeded && geminiText) {
+                const totalMs = Date.now() - requestStart;
+                logLatency('total', totalMs);
+                alertIfSlow(totalMs);
+                spans.record('total', totalMs);
+                spans.flush();
+                await logLlmRequest(serviceClient, {
+                    userId,
+                    provider: 'gemini',
+                    model: geminiModelUsed,
+                    intent: intentResult.intent,
+                    creditAction,
+                    latencyMs: totalMs,
+                });
+
+                const safeGeminiText = ensureFinalDiagnosisPayload(
+                    geminiText,
+                    isFinalTurn,
+                    conversationIntakeState
+                );
+
+                return streamTextResponse(safeGeminiText, {
+                    'Connection': 'keep-alive',
+                    'X-Provider': 'gemini',
+                    'X-Model': geminiModelUsed,
+                    'X-Response-Time': String(totalMs),
+                });
+            } else {
+                console.error('[Gemini Primary] Failed to get response:', lastGeminiError);
+                return streamTextResponse("I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏");
+            }
+        }
+
         const groqStartIndex = groqKeyIndex % groqKeyPool.length;
         groqKeyIndex = (groqKeyIndex + 1) % groqKeyPool.length;
         const maxGroqRetryBudgetMs = isFinalTurn ? 20_000 : needsBalancedModel ? 15_000 : 12_000;
