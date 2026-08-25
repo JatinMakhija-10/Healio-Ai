@@ -1,7 +1,7 @@
 # Uptime Monitoring
 
 External uptime monitors ping public endpoints on a schedule and alert you
-when they fail. Healio.AI exposes three endpoints designed for this purpose.
+when they fail. Arovia.AI exposes three endpoints designed for this purpose.
 
 ---
 
@@ -41,7 +41,7 @@ Switch to Better Stack later if you want the slick status page or 1-min checks.
 1. Sign up at <https://uptimerobot.com>.
 2. **Add New Monitor** → type **HTTPS**.
 3. Configure:
-   - **Friendly Name**: `Healio Web — Ping`
+   - **Friendly Name**: `Arovia Web — Ping`
    - **URL**: `https://your-vercel-domain.com/api/ping`
    - **Monitoring Interval**: 5 minutes
    - **Monitor Timeout**: 30 seconds
@@ -95,7 +95,7 @@ inside that process. Uptime monitors run outside.
 
 ## Status page (optional, recommended)
 
-Create a public page at e.g. `status.healio.ai` showing current health.
+Create a public page at e.g. `status.arovia.ai` showing current health.
 Both services include this on the free tier. Useful for:
 - Customer transparency during incidents
 - Internal SRE dashboard

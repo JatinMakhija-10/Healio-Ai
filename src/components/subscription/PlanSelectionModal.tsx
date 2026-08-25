@@ -157,7 +157,7 @@ export function PlanSelectionModal({
                                             Processing...
                                         </>
                                     ) : (
-                                        isPro ? "Upgrade to Healio Pro" : "Start Free Trial"
+                                        isPro ? "Upgrade to Arovia Pro" : "Start Free Trial"
                                     )}
                                 </Button>
                             </div>

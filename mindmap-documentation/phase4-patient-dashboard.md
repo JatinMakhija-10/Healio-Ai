@@ -1,4 +1,4 @@
-# Healio.AI Mindmap - Phase 4: Patient Dashboard (Detailed)
+# Arovia.AI Mindmap - Phase 4: Patient Dashboard (Detailed)
 ## Personal Health & Wellness Hub
 
 ---

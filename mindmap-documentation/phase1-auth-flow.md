@@ -1,12 +1,12 @@
-# Healio.AI Mindmap - Phase 1: Authentication Flow
+# Arovia.AI Mindmap - Phase 1: Authentication Flow
 ## Landing Page → Signup/Login → Dashboards
 
 ---
 
-## 🌐 1. HEALIO.IN (Landing Page - `/`)
+## 🌐 1. AROVIA.IN (Landing Page - `/`)
 
 ### **Overview**
-- **URL**: `healio.in` or `localhost:3000/`
+- **URL**: `arovia.in` or `localhost:3000/`
 - **Purpose**: First touchpoint for all users
 - **Design**: Minimal, professional, clinical-grade aesthetic
 - **File**: `src/app/page.tsx`
@@ -16,7 +16,7 @@
 #### **A. Hero Section**
 ```
 ┌─────────────────────────────────────┐
-│   🩺 HEALIO.AI LOGO (Stethoscope)   │
+│   🩺 AROVIA.AI LOGO (Stethoscope)   │
 │                                     │
 │   "Understand your pain.            │
 │    Safely."                         │
@@ -36,7 +36,7 @@
 - ℹ️ Educational Use Only (Medical disclaimer)
 
 #### **D. Legal Disclaimer**
-> "By continuing, you agree that Healio.AI is an informational tool and does not provide medical diagnosis or treatment advice."
+> "By continuing, you agree that Arovia.AI is an informational tool and does not provide medical diagnosis or treatment advice."
 
 **Key Insight**: The landing page is intentionally simple to reduce cognitive load and build trust before signup.
 
@@ -389,7 +389,7 @@ IF rejected:
 
 **Admin Access**:
 - Manually granted via database
-- Typically for internal Healio.AI team
+- Typically for internal Arovia.AI team
 - Has override access to all dashboards
 
 ---
@@ -400,12 +400,12 @@ IF rejected:
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                          HEALIO.AI                                 │
+│                          AROVIA.AI                                 │
 │                     Authentication System                          │
 └───────────────────────────────────────────────────────────────────┘
 
      ┌─────────────────────────────────────────────────────────────┐
-     │ 1. LANDING PAGE (healio.in)                                 │
+     │ 1. LANDING PAGE (arovia.in)                                 │
      │    • "Get Started" button                                   │
      │    • "Login" link                                           │
      └─────────────┬───────────────────────────────────────────────┘
@@ -454,7 +454,7 @@ LOGIN  → Dashboard (profile already exists)
 
 ### **Main Branches for Your Mindmap**
 
-#### **Level 1: HEALIO.IN**
+#### **Level 1: AROVIA.IN**
 - Subbranch: Hero Section
 - Subbranch: CTA Buttons
   - "Get Started" → Signup
@@ -575,7 +575,7 @@ DOCTOR ONBOARDING (/doctor/onboarding):
 ## ✅ PHASE 1 COMPLETE
 
 **What We Covered:**
-1. ✅ Landing page structure (healio.in)
+1. ✅ Landing page structure (arovia.in)
 2. ✅ Signup page logic (email + Google OAuth)
 3. ✅ Login page logic (role-based routing)
 4. ✅ How authentication leads to all 3 dashboards

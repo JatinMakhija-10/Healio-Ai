@@ -9,7 +9,7 @@ function getQ(schemaId: string, key: string) {
     return schema?.fields.find(f => f.key === key)?.question ?? '';
 }
 
-describe('Healio AI Quality Optimization v2.0 Regression Suite', () => {
+describe('Arovia AI Quality Optimization v2.0 Regression Suite', () => {
 
     it('TC-01: Correctly identifies schema and queues P1 fields', () => {
         const messages = [{ role: 'user', content: 'I have a terrible headache.' }];

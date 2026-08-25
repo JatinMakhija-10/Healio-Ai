@@ -1,9 +1,9 @@
-# Healio.AI - Pitch Deck & Technical Overview
+# Arovia.AI - Pitch Deck & Technical Overview
 
 ---
 
 ## **Slide 1: Title**
-# Healio.AI
+# Arovia.AI
 ### The Future of Personalized, Integrated Healthcare
 **"Modern Clinical Precision Meets Ancient Ayurvedic Wisdom"**
 
@@ -20,9 +20,9 @@
 ---
 
 ## **Slide 3: The Solution**
-### Healio.AI – Your Intelligent, Holistic Health Companion
+### Arovia.AI – Your Intelligent, Holistic Health Companion
 
-Healio.AI is not just a symptom checker; it is a **Type 2 AI Medical Device** (in roadmap) that bridges the gap between acute medical diagnosis and long-term holistic wellness.
+Arovia.AI is not just a symptom checker; it is a **Type 2 AI Medical Device** (in roadmap) that bridges the gap between acute medical diagnosis and long-term holistic wellness.
 
 *   **Instant Triage:** Clinical-grade symptom analysis in seconds.
 *   **Holistic Integration:** Unique fusion of standardized medicine with **Ayurveda** (Prakriti/Dosha analysis).
@@ -34,7 +34,7 @@ Healio.AI is not just a symptom checker; it is a **Type 2 AI Medical Device** (i
 ## **Slide 4: The Unique Value Proposition (UVP)**
 ### Why We Are Different
 
-| Feature | Generic Symptom Checkers | **Healio.AI** |
+| Feature | Generic Symptom Checkers | **Arovia.AI** |
 | :--- | :--- | :--- |
 | **Logic Core** | Simple Decision Trees / Keywords | **Bayesian Inference + Information Gain** |
 | **Approach** | Clinical Only | **Clinical + Ayurvedic (Holistic)** |
@@ -47,7 +47,7 @@ Healio.AI is not just a symptom checker; it is a **Type 2 AI Medical Device** (i
 ## **Slide 5: The Engine (The "Secret Sauce")**
 ### How It Works: A Tiered Clinical Approach
 
-Healio’s "Brain" avoids black-box hallucinations by using a transparent, math-backed diagnostic engine.
+Arovia’s "Brain" avoids black-box hallucinations by using a transparent, math-backed diagnostic engine.
 
 #### **1. The Bayesian Probabilistic Core**
 *   **Not just Keywords:** We use **Bayesian Inference** (Math) to calculate probabilities:
@@ -84,7 +84,7 @@ Healio’s "Brain" avoids black-box hallucinations by using a transparent, math-
 ## **Slide 7: Ayurvedic Integration**
 ### Beyond "Fixing what's Broken"
 
-Healio.AI helps users *stay* healthy, not just get better.
+Arovia.AI helps users *stay* healthy, not just get better.
 
 *   **Prakriti Engine:** Specialized onboarding flow determines the user's Dominant Dosha (Constitution).
 *   **Vikriti Analysis:** Identifies current imbalances based on recent symptoms phases.
@@ -117,6 +117,6 @@ Healio.AI helps users *stay* healthy, not just get better.
 ## **Slide 9: Conclusion**
 ### Reimagining the First Step of Care
 
-Healio.AI is building the **front door to the healthcare system**. By combining the analytical rigidity of Bayesian math with the empathetic, holistic approach of Ayurveda, we are creating a tool that users trust not just to diagnose them, but to care for them.
+Arovia.AI is building the **front door to the healthcare system**. By combining the analytical rigidity of Bayesian math with the empathetic, holistic approach of Ayurveda, we are creating a tool that users trust not just to diagnose them, but to care for them.
 
-**Healio.AI: Smarter Diagnosis. Older Wisdom. Better Health.**
+**Arovia.AI: Smarter Diagnosis. Older Wisdom. Better Health.**

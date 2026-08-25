@@ -76,7 +76,7 @@
     "2026-05-12 13:25:50.924 [info] E0512 13:25:50.915701  7508 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
     "2026-05-12 13:25:58.527 [info] I0512 13:25:58.527612  7508 planner_generator.go:283] Requesting planner with 160 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:26:00.958 [info] I0512 13:26:00.947686  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x95f4e0a2b2432c67",
-    "2026-05-12 13:26:09.198 [info] (Antigravity) 2026-05-12 13:26:09.196 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-12 13:26:09.198 [info] (Antigravity) 2026-05-12 13:26:09.196 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-12 13:26:10.592 [info] (Antigravity) 2026-05-12 13:26:10.591 [INFO]: [Terminal] Command completed: git checkout HEAD -- src/lib/diagnosis/types.ts exit code 0",
     "2026-05-12 13:26:10.924 [info] I0512 13:26:10.924148  7508 planner_generator.go:283] Requesting planner with 162 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:26:12.918 [info] I0512 13:26:12.912671  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc7e9c2c76dff0ee2",
@@ -87,7 +87,7 @@
     "2026-05-12 13:26:36.975 [info] E0512 13:26:36.967341  7508 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
     "2026-05-12 13:26:45.423 [info] I0512 13:26:45.349543  7508 planner_generator.go:283] Requesting planner with 168 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:26:48.225 [info] I0512 13:26:48.224387  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xca4b1d5e597f84fb",
-    "2026-05-12 13:26:55.106 [info] (Antigravity) 2026-05-12 13:26:55.105 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-12 13:26:55.106 [info] (Antigravity) 2026-05-12 13:26:55.105 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-12 13:27:04.705 [info] I0512 13:27:04.320732  7508 planner_generator.go:283] Requesting planner with 170 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:27:06.679 [info] I0512 13:27:06.664331  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x3231717be6d1a796",
     "2026-05-12 13:27:13.438 [info] I0512 13:27:13.437605  7508 planner_generator.go:283] Requesting planner with 172 chat messages at model retry attempt 1 and API retry attempt 1",
@@ -103,7 +103,7 @@
     "2026-05-12 13:27:43.045 [info] E0512 13:27:43.043504  7508 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server: UNAVAILABLE (code 503): No capacity available for model claude-opus-4-6-thinking on the server",
     "2026-05-12 13:27:51.703 [info] I0512 13:27:51.695345  7508 planner_generator.go:283] Requesting planner with 182 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:27:53.696 [info] I0512 13:27:53.688736  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x5a4c13808ee6307c",
-    "2026-05-12 13:28:10.020 [info] (Antigravity) 2026-05-12 13:28:10.019 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-12 13:28:10.020 [info] (Antigravity) 2026-05-12 13:28:10.019 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-12 13:28:19.343 [info] I0512 13:28:19.320201  7508 planner_generator.go:283] Requesting planner with 184 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:28:22.371 [info] I0512 13:28:22.342570  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x6e48e9638f4e3160",
     "2026-05-12 13:28:23.795 [info] (Antigravity) 2026-05-12 13:28:23.795 [INFO]: [Terminal] Command completed: npx tsc --noEmit --skipLibCheck 2>&1 | Select-String -Pattern \"PersonaEngine|MCMCEngine|types\\.ts|useDiagnosisChat|error\" | Select-Object -First 20 exit code 0",
@@ -111,7 +111,7 @@
     "2026-05-12 13:28:27.313 [info] I0512 13:28:27.310431  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xd295207c6483f303",
     "2026-05-12 13:29:20.789 [info] I0512 13:29:20.789067  7508 planner_generator.go:283] Requesting planner with 188 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:29:22.961 [info] I0512 13:29:22.954775  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xb8e3061a5ff536f",
-    "2026-05-12 13:29:34.198 [info] (Antigravity) 2026-05-12 13:29:34.197 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-12 13:29:34.198 [info] (Antigravity) 2026-05-12 13:29:34.197 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-12 13:29:43.280 [info] I0512 13:29:43.235064  7508 planner_generator.go:283] Requesting planner with 190 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:29:45.646 [info] I0512 13:29:45.557246  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x939dc285d40259e0",
     "2026-05-12 13:29:45.947 [info] (Antigravity) 2026-05-12 13:29:45.947 [INFO]: [Terminal] Command completed: npx vitest run src/lib/diagnosis/advanced/__tests__/personaEngine.test.ts 2>&1 exit code 0",
@@ -120,7 +120,7 @@
     "2026-05-12 13:29:50.187 [info] I0512 13:29:50.083768  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x5b36aaec0cba59e6",
     "2026-05-12 13:29:50.902 [info] I0512 13:29:50.899421  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xbf984bf1ec1198d8",
     "2026-05-12 13:29:52.233 [info] I0512 13:29:52.227492  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0x5a7b15304070018d",
-    "2026-05-12 13:29:54.900 [info] (Antigravity) 2026-05-12 13:29:54.899 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-12 13:29:54.900 [info] (Antigravity) 2026-05-12 13:29:54.899 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-12 13:30:04.204 [info] I0512 13:30:04.196710  7508 planner_generator.go:283] Requesting planner with 194 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 13:30:06.231 [info] (Antigravity) 2026-05-12 13:30:06.231 [INFO]: [Terminal] Command completed: npx vitest run src/lib/diagnosis/ddi/__tests__/ 2>&1 | Select-Object -Last 15 exit code 0",
     "2026-05-12 13:30:06.295 [info] I0512 13:30:06.276380  7508 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x26d8357a63bafc0",
@@ -316,7 +316,7 @@
     {
       "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
       "trajectoryId": "4e3aa043-7600-48dc-a60a-37b660f40c2e",
-      "summary": "Healio Project Development Resumption",
+      "summary": "Arovia Project Development Resumption",
       "lastStepIndex": 852,
       "lastModifiedTime": "2026-05-12T08:00:36.791Z"
     },
@@ -330,21 +330,21 @@
     {
       "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
       "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
-      "summary": "Fixing Healio Notification System",
+      "summary": "Fixing Arovia Notification System",
       "lastStepIndex": 118,
       "lastModifiedTime": "2026-05-04T19:34:48.008Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

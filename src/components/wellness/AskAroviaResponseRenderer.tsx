@@ -40,7 +40,7 @@ import {
   type FollowUpBlock,
   homeCareAllowed,
   STANDARD_SAFETY_NOTE,
-} from "@/lib/wellness/askHealioResponse";
+} from "@/lib/wellness/askAroviaResponse";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -282,7 +282,7 @@ export function AskAroviaResponseRenderer({
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
-export function AskHealioResponseSkeleton({ className }: { className?: string }) {
+export function AskAroviaResponseSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn("space-y-4 animate-pulse", className)}>
       <div className="h-4 bg-gray-100 rounded w-3/4" />

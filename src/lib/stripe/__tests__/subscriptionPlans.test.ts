@@ -30,7 +30,7 @@ describe("Subscription Plans", () => {
         expect(pro.price).toBe(399);
         expect(pro.yearlyPrice).toBe(3499);
         expect(pro.audience).toBe("patient");
-        expect(pro.features).toContain("Everything in Healio Plus");
+        expect(pro.features).toContain("Everything in Arovia Plus");
         expect(pro.features).toContain("4 video consults/month with doctors");
     });
 

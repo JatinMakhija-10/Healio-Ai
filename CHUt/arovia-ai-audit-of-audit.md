@@ -1,4 +1,4 @@
-# Healio.AI — Audit of the Audit: Principal Engineering Review
+# Arovia.AI — Audit of the Audit: Principal Engineering Review
 
 **Scope note:** I only have the two markdown audit reports as evidence — not the actual repository, not the referenced TypeScript files, not logs, not test results, not the database schema. Every claim below is tagged with an evidence status. Where the original report cites a specific file/line (e.g. `SafetyGuardEnhancer.ts#L98`), I treat that as **UNVERIFIED** — I can't read the file myself, so I can only assess whether the report's own narrative is internally consistent and clinically/architecturally sound. Items that need repository access are flagged explicitly so nothing here gets treated as fact it isn't.
 

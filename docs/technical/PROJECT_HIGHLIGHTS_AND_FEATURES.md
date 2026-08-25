@@ -1,7 +1,7 @@
-# Healio.AI - Project Highlights & Features
+# Arovia.AI - Project Highlights & Features
 
 ## 🌟 Executive Summary
-Healio.AI is a next-generation healthcare platform that bridges the gap between modern clinical precision and ancient Ayurvedic wisdom. Unlike standard symptom checkers that rely on static decision trees, Healio.AI uses a **Bayesian Probabilistic Engine** to calculate condition probabilities and a **Holistic Integration Layer** to provide personalized care based on a user's unique constitution (Prakriti).
+Arovia.AI is a next-generation healthcare platform that bridges the gap between modern clinical precision and ancient Ayurvedic wisdom. Unlike standard symptom checkers that rely on static decision trees, Arovia.AI uses a **Bayesian Probabilistic Engine** to calculate condition probabilities and a **Holistic Integration Layer** to provide personalized care based on a user's unique constitution (Prakriti).
 
 **Mission**: To democratize access to high-quality, personalized healthcare that treats the individual, not just the symptom.
 
@@ -38,7 +38,7 @@ Healio.AI is a next-generation healthcare platform that bridges the gap between 
 
 ---
 
-## 👨‍⚕️ Provider-Facing Features (Healio Pro)
+## 👨‍⚕️ Provider-Facing Features (Arovia Pro)
 
 ### 1. Doctor Dashboard
 *   **AI-Assisted Intake**: Doctors receive an AI-generated summary of the patient's symptoms, valid red flags, and preliminary diagnosis *before* the consultation starts.
@@ -65,7 +65,7 @@ Healio.AI is a next-generation healthcare platform that bridges the gap between 
 
 ## 🧠 The Diagnosis Engine (Technical Deep Dive)
 
-The core of Healio.AI is located in `src/lib/diagnosis/engine.ts`. It is a sophisticated system comprising:
+The core of Arovia.AI is located in `src/lib/diagnosis/engine.ts`. It is a sophisticated system comprising:
 
 *   **Bayesian Inference Core**: Calculates $P(Condition | Symptoms)$ using standard epidemiological priors.
 *   **Symptom Correlation Detector**: Identifies "syndromes" where symptoms occurring together (e.g., "Fever + Stiff Neck") imply a higher probability than the sum of their parts.

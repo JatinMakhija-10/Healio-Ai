@@ -61,7 +61,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 // Utility to clear ALL user-specific data from storage
 // This prevents data leakage between accounts
 const clearAllUserData = () => {
-    // Clear all healio and settings localStorage items (both generic and user-specific patterns)
+    // Clear all arovia and settings localStorage items (both generic and user-specific patterns)
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -74,7 +74,7 @@ const clearAllUserData = () => {
     // Also clear known non-prefixed keys
     localStorage.removeItem('paywall_dismissed_at');
 
-    // Clear all healio sessionStorage items
+    // Clear all arovia sessionStorage items
     const sessionKeysToRemove: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);

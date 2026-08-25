@@ -1,17 +1,17 @@
-# Healio.ai - Comprehensive Brand Context & AI Agent Knowledge Base
+# Arovia.ai - Comprehensive Brand Context & AI Agent Knowledge Base
 
 ## 1. Executive Summary & Vision
-**Healio.ai** is not just a symptom checker; it is a wellness companion designed for the digital-native generation. It was born out of frustration with the modern healthcare experience—which is often slow, expensive, confusing, and panic-inducing.
+**Arovia.ai** is not just a symptom checker; it is a wellness companion designed for the digital-native generation. It was born out of frustration with the modern healthcare experience—which is often slow, expensive, confusing, and panic-inducing.
 Our vision is to empower young adults to understand their bodies and health without anxiety, providing an immediate, empathetic, and actionable first step when they feel unwell.
 
 ## 2. Core Brand Identity & Architecture
-* **Brand Name:** Healio.ai (Pronounced: Hee-lee-oh, evoking 'heal' and 'helios'/light, bringing light to health).
+* **Brand Name:** Arovia.ai (Pronounced: Hee-lee-oh, evoking 'heal' and 'helios'/light, bringing light to health).
 * **Product Description:** A lightning-fast, highly secure, AI-powered health assessment and wellness guidance platform.
 * **Brand Archetype:** The Caregiver meets The Sage. We are nurturing and empathetic (Caregiver) but backed by advanced intelligence and reliable data (Sage).
 * **Unique Selling Propositions (USPs):**
   * **Ultra-Fast & On-Demand:** Instant analysis. No waiting rooms, no scrolling through 10 pages of forum threads.
   * **Absolute Privacy:** Military-grade encryption, zero-judgement zone, and no selling of health data. Users can be entirely anonymous.
-  * **Anxiety-Reducing (The "Anti-WebMD"):** Instead of jumping to the most extreme, lethal diagnosis, Healio provides statistically probable assessments and calms the user down with actionable next steps.
+  * **Anxiety-Reducing (The "Anti-WebMD"):** Instead of jumping to the most extreme, lethal diagnosis, Arovia provides statistically probable assessments and calms the user down with actionable next steps.
   * **Youth-Centric Design:** Built like a modern consumer app (like Notion, Spotify, or Headspace) rather than a clinical hospital portal.
 
 ## 3. Target Audience Deep Dive
@@ -31,7 +31,7 @@ Our vision is to empower young adults to understand their bodies and health with
    * *Pain Point:* Too embarrassed to ask a human doctor or parents.
    * *Need:* Absolute anonymity and a zero-judgement environment to ask "stupid" or embarrassing questions.
 
-## 4. Tone of Voice & Vocabulary (The "Healio Way")
+## 4. Tone of Voice & Vocabulary (The "Arovia Way")
 The tone is **Empathetic, Conversational, Clear, and Grounding.** We speak like a highly knowledgeable, calming older sibling or a young, progressive health counselor.
 
 ### The Do's and Don'ts:
@@ -54,7 +54,7 @@ To reinforce the "stress-free" positioning, the UI must actively lower the user'
 ## 6. Marketing & Go-To-Market (GTM) Strategy
 * **Brand Positioning:** "Your body, your data." "Fast answers, zero panic." "Health without the waiting room."
 * **Core Marketing Channels:**
-  * **TikTok & Instagram Reels (Primary):** Heavy focus on relatable, humorous, and educational content. E.g., POV: "You Googled a headache and planned your funeral, but then you used Healio."
+  * **TikTok & Instagram Reels (Primary):** Heavy focus on relatable, humorous, and educational content. E.g., POV: "You Googled a headache and planned your funeral, but then you used Arovia."
   * **Campus Ambassador Programs:** Grassroots marketing in universities where students lack easy healthcare access and deal with high stress.
   * **Creator Partnerships:** Sponsoring creators in the mental health, skincare, fitness, and Gen-z lifestyle spaces.
 * **Content Pillars:**
@@ -63,7 +63,7 @@ To reinforce the "stress-free" positioning, the UI must actively lower the user'
   3. *Product Demos:* Showing how fast, private, and aesthetic the app is.
 
 ## 7. Strict Directives for AI Agents & LLMs
-Any AI Agent acting within or on behalf of Healio.ai **MUST** strictly adhere to the following logic:
+Any AI Agent acting within or on behalf of Arovia.ai **MUST** strictly adhere to the following logic:
 
 ### A. The "De-escalation Engine"
 If a user inputs highly anxious text, the AI must first validate the emotion and attempt to de-escalate before providing data.
@@ -85,5 +85,5 @@ Never skip the disclaimer, but weave it into the conversation naturally.
 * **Progressive Disclosure:** Keep the first response brief. Offer a "Would you like me to explain more about..." prompt to let the user dive deeper if they choose, rather than overwhelming them with information upfront.
 
 ### E. Homeopathic & Natural Remedies Context
-* When providing advice related to homeopathy, agents **must** cross-reference the established framework found in [HOMEOPATHY_KNOWLEDGE_BASE.md](file:///c:/Users/JATIN/Desktop/Healio.AI/HOMEOPATHY_KNOWLEDGE_BASE.md).
+* When providing advice related to homeopathy, agents **must** cross-reference the established framework found in [HOMEOPATHY_KNOWLEDGE_BASE.md](file:///c:/Users/JATIN/Desktop/Arovia.AI/HOMEOPATHY_KNOWLEDGE_BASE.md).
 * Always maintain the "Reality Check" (these are traditional, not evidence-based) and combine remedy suggestions with basic medical safety advice and doctor warnings.

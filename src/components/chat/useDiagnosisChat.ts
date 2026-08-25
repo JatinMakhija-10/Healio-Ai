@@ -115,9 +115,9 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
         const prefSuffix = user?.id ? `_${user.id}` : '';
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPreferences({
-            ayurvedicMode: localStorage.getItem(`healio_pref_ayurvedic${prefSuffix}`) !== "false",
-            showUncertainty: localStorage.getItem(`healio_pref_uncertainty${prefSuffix}`) !== "false",
-            detailedExplanations: localStorage.getItem(`healio_pref_detailed${prefSuffix}`) !== "false",
+            ayurvedicMode: localStorage.getItem(`arovia_pref_ayurvedic${prefSuffix}`) !== "false",
+            showUncertainty: localStorage.getItem(`arovia_pref_uncertainty${prefSuffix}`) !== "false",
+            detailedExplanations: localStorage.getItem(`arovia_pref_detailed${prefSuffix}`) !== "false",
         });
     }, [user?.id]);
 
@@ -156,7 +156,7 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
             // Save to localStorage backup (user-specific)
             if (user) {
                 try {
-                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const storageKey = `arovia_consultation_history_${user.id}`;
                     const existing = JSON.parse(
                         localStorage.getItem(storageKey) || "[]"
                     );

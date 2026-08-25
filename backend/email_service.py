@@ -1,5 +1,5 @@
 """
-Email Notification Service for Healio.AI
+Email Notification Service for Arovia.AI
 
 Handles sending transactional emails using Resend API.
 Supports diagnosis results, reminders, and health tips.
@@ -17,8 +17,8 @@ load_dotenv()
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 # Email configuration
-FROM_EMAIL = os.getenv("FROM_EMAIL", "Healio.AI <notifications@healio.ai>")
-REPLY_TO_EMAIL = os.getenv("REPLY_TO_EMAIL", "support@healio.ai")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "Arovia.AI <notifications@arovia.ai>")
+REPLY_TO_EMAIL = os.getenv("REPLY_TO_EMAIL", "support@arovia.ai")
 
 class EmailService:
     """Service for sending various types of email notifications"""
@@ -63,7 +63,7 @@ class EmailService:
                 
                 <div style="background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%); 
                             padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: white; margin: 0; font-size: 28px;">Healio.AI</h1>
+                    <h1 style="color: white; margin: 0; font-size: 28px;">Arovia.AI</h1>
                     <p style="color: rgba(255,255,255,0.9); margin:10px 0 0 0; font-size: 16px;">
                         Your Health Diagnosis is Ready
                     </p>
@@ -107,7 +107,7 @@ class EmailService:
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://healio.ai/dashboard/history" 
+                        <a href="https://arovia.ai/dashboard/history" 
                            style="display: inline-block; background: #0d9488; color: white; 
                                   padding: 14px 32px; text-decoration: none; border-radius: 8px; 
                                   font-weight: 600; font-size: 16px;">
@@ -125,11 +125,11 @@ class EmailService:
                 
                 <div style="text-align: center; margin-top: 30px; padding: 20px; color: #64748b; font-size: 14px;">
                     <p style="margin: 0 0 10px 0;">
-                        Stay healthy with Healio.AI 🌿
+                        Stay healthy with Arovia.AI 🌿
                     </p>
                     <p style="margin: 0;">
-                        <a href="https://healio.ai/unsubscribe" style="color: #0d9488;">Unsubscribe</a> | 
-                        <a href="https://healio.ai/help" style="color: #0d9488;">Help</a>
+                        <a href="https://arovia.ai/unsubscribe" style="color: #0d9488;">Unsubscribe</a> | 
+                        <a href="https://arovia.ai/help" style="color: #0d9488;">Help</a>
                     </p>
                 </div>
                 
@@ -140,7 +140,7 @@ class EmailService:
             params = {
                 "from": FROM_EMAIL,
                 "to": [to_email],
-                "subject": f"Your Healio.AI Diagnosis Results - {datetime.now().strftime('%b %d, %Y')}",
+                "subject": f"Your Arovia.AI Diagnosis Results - {datetime.now().strftime('%b %d, %Y')}",
                 "html": html_content,
                 "reply_to": REPLY_TO_EMAIL
             }
@@ -229,7 +229,7 @@ class EmailService:
             params = {
                 "from": FROM_EMAIL,
                 "to": [to_email],
-                "subject": f"Healio.AI {title}",
+                "subject": f"Arovia.AI {title}",
                 "html": html_content
             }
             
@@ -267,7 +267,7 @@ class EmailService:
                     <p style="font-size: 16px; line-height: 1.8;">{tip_content}</p>
                     
                     <div style="text-align: center; margin-top: 30px;">
-                        <a href="https://healio.ai/tips" style="color: #0d9488; text-decoration: none; font-weight: 600;">
+                        <a href="https://arovia.ai/tips" style="color: #0d9488; text-decoration: none; font-weight: 600;">
                             Read More Health Tips →
                         </a>
                     </div>

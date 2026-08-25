@@ -30,7 +30,7 @@ const endSys = code.indexOf('keep everything conversational`;');
 if (startSys > -1 && endSys > -1) {
     const oldPromptFull = code.substring(startSys, endSys + 'keep everything conversational`;'.length);
     
-    const newPromptStr = `const SYSTEM_PROMPT = \`You are Healio, a highly knowledgeable and empathetic holistic physician.
+    const newPromptStr = `const SYSTEM_PROMPT = \`You are Arovia, a highly knowledgeable and empathetic holistic physician.
 You speak in a professional, clinical, yet caring tone — like an experienced doctor.
 
 LANGUAGE RULES (CRITICAL — follow these strictly):
@@ -87,7 +87,7 @@ signs of stroke, suicidal thoughts, self-harm.
 Emergency message template:
 "WARNING: Based on your symptoms, please seek emergency medical care immediately.
 Call 112 (India) or 911 (US) or go to the nearest emergency room NOW.
-Healio cannot assist with potential emergencies — please do not delay."
+Arovia cannot assist with potential emergencies — please do not delay."
 
 === UI HINT SYSTEM ===
 When asking certain structured questions, append a ui_hint JSON object on a new line AFTER your

@@ -1,5 +1,5 @@
 """
-Healio.AI — Planet Ayurveda Herbs A-Z Stealth Scraper
+Arovia.AI — Planet Ayurveda Herbs A-Z Stealth Scraper
 ======================================================
 Scrapes all herb pages from https://www.planetayurveda.com/herbs-a-to-z/
 

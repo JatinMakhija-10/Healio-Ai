@@ -5,13 +5,13 @@
  *
  * Plan ref: Part IV §4.3 + Part II §3.5 (Escalation Ladder)
  *
- * Renders the 5-level escalation ladder result from Ask Healio responses.
+ * Renders the 5-level escalation ladder result from Ask Arovia responses.
  * - L1 / L2 / L3  — dismissible informational banners
  * - L4 / L5       — NON-DISMISSIBLE, hard CTA required (plan requirement)
  *
  * Note: The existing EmergencyRedirect component handles hard L5 detection
  * mid-conversation and is preserved. This component is for the structured
- * escalation output attached to every Ask Healio response.
+ * escalation output attached to every Ask Arovia response.
  */
 
 import * as React from "react";

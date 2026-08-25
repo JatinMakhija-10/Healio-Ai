@@ -1,4 +1,4 @@
-# Healio.AI Implementation Priority Order
+# Arovia.AI Implementation Priority Order
 
 This document outlines the strategic sequence for implementing the features defined in `REVENUE_STRATEGY.md`, `DOCTOR_DASHBOARD_SPEC.md`, and `ADMIN_DASHBOARD_SPEC.md`. It balances technical foundations with immediate revenue generation.
 
@@ -15,7 +15,7 @@ This document outlines the strategic sequence for implementing the features defi
 
 ### 1.2. The Consult Flow
 - [ ] **Appointment Engine**: logic to link an AI Diagnosis session to a booking.
-- [ ] **Payment Integration**: Stripe/Razorpay setup for escrow (Patient -> Healio -> Doctor).
+- [ ] **Payment Integration**: Stripe/Razorpay setup for escrow (Patient -> Arovia -> Doctor).
 - [ ] **The "Cockpit" (Doctor MVP)**: 
     - Appointment list view.
     - Basic "AI Summary" panel (Tab 1) fetching data from the linked AI session.
@@ -28,17 +28,17 @@ This document outlines the strategic sequence for implementing the features defi
 ---
 
 ## 🟡 Priority 2: Subscription & Clinical Excellence
-**Goal**: Launch "Healio Plus" (Consumer) and "Healio Pro" (Doctor SaaS).
+**Goal**: Launch "Arovia Plus" (Consumer) and "Arovia Pro" (Doctor SaaS).
 **Business Value**: Predictable MRR (Monthly Recurring Revenue) and doctor retention.
 
-### 2.1. Healio Plus (Consumer Sub)
-- [ ] **Paywall UI**: Implementation of the "Healio Plus" landing page and gatekeeping logic.
+### 2.1. Arovia Plus (Consumer Sub)
+- [ ] **Paywall UI**: Implementation of the "Arovia Plus" landing page and gatekeeping logic.
 - [ ] **Premium Features**: 
     - Full PDF report generation.
     - Family profile management.
     - Vikriti (Imbalance) long-term tracking.
 
-### 2.2. Healio Pro (Doctor SaaS)
+### 2.2. Arovia Pro (Doctor SaaS)
 - [ ] **Smart SOAP Notes**: AI-assisted note-taking with auto-complete.
 - [ ] **Clinical Sandbox**: Differential Diagnosis explorer for doctors to test hypotheses.
 - [ ] **Patient Analytics**: Dashboard for doctors to see outcomes across their patient base.

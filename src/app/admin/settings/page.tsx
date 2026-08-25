@@ -33,12 +33,12 @@ interface PlatformSettings {
 }
 
 const defaultSettings: PlatformSettings = {
-    support_email: "support@healio.ai",
+    support_email: "support@arovia.ai",
     contact_phone: "+91-",
     address: "",
     commission_rate: 20,
-    platform_name: "Healio.AI",
-    help_url: "https://healio.ai/help",
+    platform_name: "Arovia.AI",
+    help_url: "https://arovia.ai/help",
 };
 
 export default function AdminSettingsPage() {
@@ -185,7 +185,7 @@ export default function AdminSettingsPage() {
                                     type="email"
                                     value={settings.support_email}
                                     onChange={(e) => update("support_email", e.target.value)}
-                                    placeholder="support@healio.ai"
+                                    placeholder="support@arovia.ai"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -263,7 +263,7 @@ export default function AdminSettingsPage() {
                                 <Input
                                     value={settings.platform_name}
                                     onChange={(e) => update("platform_name", e.target.value)}
-                                    placeholder="Healio.AI"
+                                    placeholder="Arovia.AI"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -275,7 +275,7 @@ export default function AdminSettingsPage() {
                                     type="url"
                                     value={settings.help_url}
                                     onChange={(e) => update("help_url", e.target.value)}
-                                    placeholder="https://healio.ai/help"
+                                    placeholder="https://arovia.ai/help"
                                 />
                             </div>
                         </>

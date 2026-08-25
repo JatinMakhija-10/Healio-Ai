@@ -7,7 +7,7 @@
  * (EscalationAlertProps). Converts the intelligence layer's safety output
  * into the structured props the EscalationAlert component needs.
  *
- * Used by Ask Healio response rendering — every response must run through
+ * Used by Ask Arovia response rendering — every response must run through
  * this before home-care suggestions are shown to the user.
  */
 

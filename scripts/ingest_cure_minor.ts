@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Ingest cure_minor.xlsx into Supabase
+ * Arovia.AI — Ingest cure_minor.xlsx into Supabase
  *
  * Reads cure_minor.xlsx, splits remedies inside it by comma, generates Gemini
  * embeddings for each unique remedy/instruction, and inserts into the

@@ -1,4 +1,4 @@
-# Healio.AI — Strategic Technical & Business Analysis
+# Arovia.AI — Strategic Technical & Business Analysis
 
 > **Date:** February 2026 | **Classification:** Comprehensive Due Diligence  
 > **Scope:** Full-stack Architecture, Algorithmic Logic, Market Strategy & Financial Projections
@@ -28,7 +28,7 @@ The architecture is inherently highly scalable. By offloading the computationall
 ### 2. Algorithm & Logic Examination
 
 **Core Diagnosis Algorithms**
-The heart of Healio.AI is its custom Bayesian Inference Engine. Unlike simple decision trees, it calculates the posterior probability of a condition given a set of symptoms using Bayes' Theorem. The logic dynamically updates priors based on user demographics (age, gender, risk factors) and incoming evidence. I examined the `calculateProbabilities` method, which utilizes log-odds to prevent floating-point underflow errors — a mark of high-quality numerical computing implementation.
+The heart of Arovia.AI is its custom Bayesian Inference Engine. Unlike simple decision trees, it calculates the posterior probability of a condition given a set of symptoms using Bayes' Theorem. The logic dynamically updates priors based on user demographics (age, gender, risk factors) and incoming evidence. I examined the `calculateProbabilities` method, which utilizes log-odds to prevent floating-point underflow errors — a mark of high-quality numerical computing implementation.
 
 **Innovative Technical Approaches**
 A standout innovation is the **Symptom Correlation Engine**. It addresses the "naive" assumption in Naive Bayes by detecting when symptoms occur in clinically significant clusters (e.g., the "FAST" pattern for stroke). This utilizes a custom grouping algorithm that applies specificity multipliers (ranging from 1.5x to 6.0x) to probability scores, significantly improving diagnostic accuracy for complex conditions. Another key innovation is the **Prakriti Engine**, which digitizes ancient Ayurvedic assessment logic using a weighted vector scoring system, bridging traditional knowledge with modern data structures.
@@ -68,13 +68,13 @@ This problem costs billions in unnecessary ER visits (due to panic) and delayed 
 ### 2. Solution
 
 **Unified Intelligent Platform**
-Healio.AI solves this by unifying the journey. It starts with an instant, medical-grade AI diagnosis that acts as a "digital triage nurse," providing immediate clarity and answering "what do I have?" and "what should I do?".
+Arovia.AI solves this by unifying the journey. It starts with an instant, medical-grade AI diagnosis that acts as a "digital triage nurse," providing immediate clarity and answering "what do I have?" and "what should I do?".
 
 **Holistic Integration**
 Uniquely, it layers Ayurvedic intelligence over clinical diagnosis. It doesn't just say "take aspirin"; it analyzes the user's *Prakriti* (constitution) to recommend specific foods, yoga poses, and home remedies that align with their body type, offering a bridge between acute cure and long-term care.
 
 **Core Value Proposition**
-"Medical precision meets holistic wisdom." Healio.AI offers the speed and accuracy of an AI doctor with the personalized care of a holistic wellness coach, all leading seamlessly into a verified human doctor marketplace when necessary.
+"Medical precision meets holistic wisdom." Arovia.AI offers the speed and accuracy of an AI doctor with the personalized care of a holistic wellness coach, all leading seamlessly into a verified human doctor marketplace when necessary.
 
 ### 3. Technology (Moats & Scalability)
 
@@ -109,15 +109,15 @@ Ideal users are health-conscious, digital-native millennials (25-45) in urban an
 -   **Indirect Competitors:** Google/WebMD (Information), Local clinics.
 
 **Differentiation Strategy**
--   **vs. Practo/1mg:** They are logistics/booking players. They lack the "AI Brain" that engages users *before* they know they need a doctor. Healio captures the demand upstream at the "symptom" phase.
--   **vs. Ada Health:** Ada is excellent at clinical AI but has zero competence in Ayurveda/Holistic care. Healio wins in the Indian cultural context by speaking the language of "Doshas" and "Home Remedies" alongside clinical terms.
+-   **vs. Practo/1mg:** They are logistics/booking players. They lack the "AI Brain" that engages users *before* they know they need a doctor. Arovia captures the demand upstream at the "symptom" phase.
+-   **vs. Ada Health:** Ada is excellent at clinical AI but has zero competence in Ayurveda/Holistic care. Arovia wins in the Indian cultural context by speaking the language of "Doshas" and "Home Remedies" alongside clinical terms.
 -   **Barriers to Entry:** The primary barrier is the "Data & Trust" moat. Building the unified database of Clinical + Ayurvedic protocols is a multidisciplinary challenge that pure-tech firms cannot easily solve.
 
 ### 6. Business Model & Revenue Strategy
 
 **Revenue Models**
-1.  **Freemium Subscription (D2C):** Basic diagnosis is free. Premium users (Healio Plus) pay ₹199/month for unlimited reports, family profiles, and deep Ayurvedic analysis.
-2.  **Marketplace Commission (B2B):** Healio takes a 10-20% commission on every doctor consultation booked through the platform.
+1.  **Freemium Subscription (D2C):** Basic diagnosis is free. Premium users (Arovia Plus) pay ₹199/month for unlimited reports, family profiles, and deep Ayurvedic analysis.
+2.  **Marketplace Commission (B2B):** Arovia takes a 10-20% commission on every doctor consultation booked through the platform.
 3.  **Contextual Commerce:** Recommendations for Ayurvedic products (e.g., "Ashwagandha" for stress) link to affiliate partners or a native store (future), earning conversion fees.
 
 **Unit Economics**

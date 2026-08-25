@@ -56,7 +56,7 @@ export default function SignupPage() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2] py-6 px-4">
             {/* Card */}
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg shadow-[#1A1A2E]/8 p-8 border border-[#DAD7CF]">
-                {/* HealioMark + Brand Header */}
+                {/* AroviaMark + Brand Header */}
                 <div className="flex flex-col items-center text-center mb-8">
                     <div className="relative mb-4">
                         <div className="absolute inset-0 rounded-[8px] bg-[#C8E7DA] opacity-50" />
@@ -68,7 +68,7 @@ export default function SignupPage() {
                         </div>
                     </div>
                     <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontWeight: 400 }} className="text-2xl text-[#1A1A2E] tracking-tight">Create your account</h1>
-                    <p className="text-[#6B6B6B] mt-1.5 text-sm">Join Healio.AI to start your healthcare journey</p>
+                    <p className="text-[#6B6B6B] mt-1.5 text-sm">Join Arovia.AI to start your healthcare journey</p>
                 </div>
 
                 <form onSubmit={handleSignup} className="space-y-4">

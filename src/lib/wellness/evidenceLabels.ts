@@ -3,8 +3,8 @@
  *
  * Plan ref: Part II §Product Principles #3 + Part IV §4.4
  * Source documents:
- *   - Healio_Enhanced_Repositioning_Plan.md §5 / §10.1
- *   - Healio_Traditional_Wellness_Repositioning_Plan.md §4 / §9
+ *   - Arovia_Enhanced_Repositioning_Plan.md §5 / §10.1
+ *   - Arovia_Traditional_Wellness_Repositioning_Plan.md §4 / §9
  *
  * Five label types that MUST appear on every wellness recommendation.
  * These are the exact vocabulary locked in the plan (Decision #3).

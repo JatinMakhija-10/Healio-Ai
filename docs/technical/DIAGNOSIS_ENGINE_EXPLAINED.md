@@ -1,8 +1,8 @@
-# Healio.AI Diagnosis Engine - Complete Technical Explanation
+# Arovia.AI Diagnosis Engine - Complete Technical Explanation
 
 ## Overview
 
-Healio's diagnosis engine uses a **Bayesian inference approach** combined with **information gain-based questioning** to iteratively narrow down possible conditions. Think of it like a highly sophisticated game of "20 Questions" where each question is strategically chosen to eliminate the maximum number of possibilities.
+Arovia's diagnosis engine uses a **Bayesian inference approach** combined with **information gain-based questioning** to iteratively narrow down possible conditions. Think of it like a highly sophisticated game of "20 Questions" where each question is strategically chosen to eliminate the maximum number of possibilities.
 
 ---
 
@@ -435,7 +435,7 @@ Recommendation:
 
 ## Summary
 
-The Healio diagnosis engine is a **multi-stage Bayesian inference system** that:
+The Arovia diagnosis engine is a **multi-stage Bayesian inference system** that:
 
 1. Extracts and normalizes medical entities from free text
 2. Checks for emergencies in <1ms

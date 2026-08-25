@@ -208,7 +208,7 @@ export const api = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return appointments.map((a: any) => ({
             ...a,
-            doctor: doctorMap.get(a.doctor_id) || { full_name: 'Healio Doctor', specialty: [] }
+            doctor: doctorMap.get(a.doctor_id) || { full_name: 'Arovia Doctor', specialty: [] }
         }));
     },
 

@@ -9,7 +9,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="fixed inset-0 flex overflow-hidden bg-[var(--healio-wellness-ivory)]">
+        <div className="fixed inset-0 flex overflow-hidden bg-[var(--arovia-wellness-ivory)]">
             {/* Sidebar - Hidden on mobile, controlled via Sheet later if needed */}
             <Sidebar />
 

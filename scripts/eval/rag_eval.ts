@@ -192,7 +192,7 @@ async function main() {
     const evalFile = path.resolve(__dirname, 'expected_results.json');
     const { queries }: { queries: EvalQuery[] } = JSON.parse(fs.readFileSync(evalFile, 'utf8'));
 
-    console.log(`\n🔬  Healio RAG Eval — ${queries.length} queries\n${'─'.repeat(60)}`);
+    console.log(`\n🔬  Arovia RAG Eval — ${queries.length} queries\n${'─'.repeat(60)}`);
 
     const results: EvalResult[] = [];
     const failures: string[] = [];

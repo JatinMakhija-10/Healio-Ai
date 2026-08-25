@@ -24,7 +24,7 @@ export default function DoctorPendingPage() {
                     <div className="space-y-2">
                         <h2 className="text-2xl font-bold text-slate-900">Verification In Progress</h2>
                         <p className="text-slate-600">
-                            Thank you for registering with Healio.AI! Our team is reviewing your credentials.
+                            Thank you for registering with Arovia.AI! Our team is reviewing your credentials.
                         </p>
                     </div>
 
@@ -68,8 +68,8 @@ export default function DoctorPendingPage() {
                     {/* Contact */}
                     <p className="text-xs text-slate-500">
                         Questions? Contact us at{" "}
-                        <a href="mailto:support@healio.ai" className="text-teal-600 hover:underline">
-                            support@healio.ai
+                        <a href="mailto:support@arovia.ai" className="text-teal-600 hover:underline">
+                            support@arovia.ai
                         </a>
                     </p>
                 </CardContent>

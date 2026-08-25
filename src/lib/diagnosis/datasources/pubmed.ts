@@ -53,8 +53,8 @@ function buildApiUrl(endpoint: string, params: Record<string, string>): string {
     const p = new URLSearchParams({
         ...params,
         ...(NCBI_API_KEY ? { api_key: NCBI_API_KEY } : {}),
-        tool: 'healio_ai',
-        email: 'healio@healio.ai',
+        tool: 'arovia_ai',
+        email: 'arovia@arovia.ai',
     });
     return `${NCBI_BASE}/${endpoint}.fcgi?${p.toString()}`;
 }

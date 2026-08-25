@@ -7,7 +7,7 @@
  *
  * A supportive, non-fear-inducing card that surfaces when a user should
  * consider speaking to a practitioner. Renders in:
- *   - Ask Healio L3/L4 responses (within AskHealioResponseRenderer)
+ *   - Ask Arovia L3/L4 responses (within AskAroviaResponseRenderer)
  *   - Wellness library cards with 'avoid_or_consult' evidence label
  *   - Standalone escalation flow
  *

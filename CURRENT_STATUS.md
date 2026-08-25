@@ -1,10 +1,10 @@
-# Healio.AI Current Status
+# Arovia.AI Current Status
 
 Last reviewed: 2026-05-01
 
 ## Executive Summary
 
-Healio.AI is a Next.js 16 / React 19 TypeScript application for healthcare and homeopathy-oriented patient and doctor workflows. The repo also contains a small Python backend, Supabase assets, Playwright e2e tests, Vitest setup, project documentation, generated diagnostic reports, and domain knowledge files.
+Arovia.AI is a Next.js 16 / React 19 TypeScript application for healthcare and homeopathy-oriented patient and doctor workflows. The repo also contains a small Python backend, Supabase assets, Playwright e2e tests, Vitest setup, project documentation, generated diagnostic reports, and domain knowledge files.
 
 The application is not currently in a clean production-ready state. The latest recorded build output shows a hard TypeScript parsing failure in `src/app/doctor/sandbox/page.tsx`, and the latest lint summary still lists several ESLint issues. There are also untracked local tool directories and one modified skill subdirectory in the working tree.
 
@@ -64,9 +64,9 @@ The repo contains strong domain planning assets:
 - `docs/ARCHITECTURE.md`
 - `docs/FUTURE_ROADMAP.md`
 - `docs/MCMC_BAYESIAN_ENGINE.md`
-- `HEALIO_BRAND_CONTEXT.md`
+- `AROVIA_BRAND_CONTEXT.md`
 - `HOMEOPATHY_KNOWLEDGE_BASE.md`
-- `Healio_Engine_Documentation.md`
+- `Arovia_Engine_Documentation.md`
 
 Immediate TODOs currently call out:
 

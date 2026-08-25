@@ -35,7 +35,7 @@ function PersonaRequiredBanner() {
                         Build your health profile first
                     </h2>
                     <p className="text-[15px] leading-relaxed text-[#555555]">
-                        Complete your health persona first so Healio can understand your medical background,
+                        Complete your health persona first so Arovia can understand your medical background,
                         current medications, and allergies before giving you personalised advice.
                     </p>
                 </div>
@@ -201,8 +201,8 @@ function ConsultPageInner() {
             });
         };
 
-        window.addEventListener("healio:open-upgrade", handleUpgradeEvent);
-        return () => window.removeEventListener("healio:open-upgrade", handleUpgradeEvent);
+        window.addEventListener("arovia:open-upgrade", handleUpgradeEvent);
+        return () => window.removeEventListener("arovia:open-upgrade", handleUpgradeEvent);
     }, []);
 
     // Show nothing while auth resolves
@@ -230,7 +230,7 @@ function ConsultPageInner() {
 
     return (
         <div
-            className="healio-consult-page flex h-full min-h-0 flex-col bg-[#F7F6F2]"
+            className="arovia-consult-page flex h-full min-h-0 flex-col bg-[#F7F6F2]"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
             {/* Follow-up Banner */}

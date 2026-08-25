@@ -86,7 +86,7 @@ PERSONALISATION RULES:
   "when_to_consult": "Specific time threshold and trigger — e.g. 'If symptoms do not improve within 48 hours, or worsen at any point, see a GP.'",
   "practitioner_prep": "What to tell the practitioner and what they may check — e.g. 'Tell them: headache started 2 days ago, throbbing, right-sided, with nausea. They may check blood pressure and do a neurological screen.'",
   "red_flags": ["Specific worsening signs that warrant immediate escalation"],
-  "disclaimer": "Healio provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
+  "disclaimer": "Arovia provides wellness guidance, not a medical diagnosis. Always consult a qualified practitioner for persistent, worsening, or serious symptoms."
 }
 \`\`\`
 `;

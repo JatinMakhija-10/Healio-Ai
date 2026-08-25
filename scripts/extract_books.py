@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Extract & Structure Ayurvedic Books into JSON
+Arovia.AI -- Extract & Structure Ayurvedic Books into JSON
 ==========================================================
 Processes PDFs from the Books/ folder and extracts structured
 text chunks for embedding into Supabase.

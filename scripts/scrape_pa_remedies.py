@@ -1,5 +1,5 @@
 """
-Healio.AI — Planet Ayurveda Home Remedies Stealth Scraper
+Arovia.AI — Planet Ayurveda Home Remedies Stealth Scraper
 ==========================================================
 Scrapes all home remedies from https://www.planetayurveda.com/home-remedies/
 Uses Playwright (headless Chromium) to:

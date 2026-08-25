@@ -7,7 +7,7 @@ export { EvidenceLabelBadge } from './EvidenceLabelBadge';
 export { EscalationAlert } from './EscalationAlert';
 export { ContentCard } from './ContentCard';
 export { RoutineCard } from './RoutineCard';
-export { AskAroviaResponseRenderer, AskHealioResponseSkeleton } from './AskHealioResponseRenderer';
+export { AskAroviaResponseRenderer, AskAroviaResponseSkeleton } from './AskAroviaResponseRenderer';
 export { WellnessEntryCards } from './WellnessEntryCards';
 export { SeasonalBanner } from './SeasonalBanner';
 export { PractitionerEscalationCard } from './PractitionerEscalationCard';

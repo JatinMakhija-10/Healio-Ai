@@ -1,12 +1,12 @@
-# Healio.AI — Product & UX Audit
+# Arovia.AI — Product & UX Audit
 
-*Method note: the standard benchmark set (Linear, Stripe, Apple) is built for productivity-tool comparisons. Healio's actual competitive set is Ada Health, Practo/Tata 1mg, and WebMD — the products that already own trust in AI-mediated health guidance. Benchmarking against them produces sharper, more actionable findings than forcing a fit with tools that don't share Healio's job-to-be-done. Where a screenshot can't answer a question (live performance, code quality, mobile rendering), I've said so rather than guessed.*
+*Method note: the standard benchmark set (Linear, Stripe, Apple) is built for productivity-tool comparisons. Arovia's actual competitive set is Ada Health, Practo/Tata 1mg, and WebMD — the products that already own trust in AI-mediated health guidance. Benchmarking against them produces sharper, more actionable findings than forcing a fit with tools that don't share Arovia's job-to-be-done. Where a screenshot can't answer a question (live performance, code quality, mobile rendering), I've said so rather than guessed.*
 
 ---
 
 ## A. Executive Summary
 
-Healio.AI has a genuinely sharp, differentiated position — culturally fluent (Hindi/Hinglish), family-oriented, Ayurveda-and-homeopathy-aware health guidance with visible doctor-escalation logic — and the visual craft is close to premium-SaaS quality already. But the product currently contradicts its own medical disclaimer in its own marketing and UI copy (a "sample diagnosis" CTA and a "Diagnosis" table column, next to a footer stating it provides no diagnosis), and its pricing model is internally inconsistent ("unlimited consultations" sitting beside a credit-cost table that charges per consultation). Fix the diagnostic-language contradiction and the credits/pricing confusion before scaling distribution — both are the kind of issue that erodes trust fastest in a health product, and both are same-day fixes.
+Arovia.AI has a genuinely sharp, differentiated position — culturally fluent (Hindi/Hinglish), family-oriented, Ayurveda-and-homeopathy-aware health guidance with visible doctor-escalation logic — and the visual craft is close to premium-SaaS quality already. But the product currently contradicts its own medical disclaimer in its own marketing and UI copy (a "sample diagnosis" CTA and a "Diagnosis" table column, next to a footer stating it provides no diagnosis), and its pricing model is internally inconsistent ("unlimited consultations" sitting beside a credit-cost table that charges per consultation). Fix the diagnostic-language contradiction and the credits/pricing confusion before scaling distribution — both are the kind of issue that erodes trust fastest in a health product, and both are same-day fixes.
 
 ---
 
@@ -81,14 +81,14 @@ The skeleton-bar hero art (#5) is the single biggest miss here — it's the one 
 
 ## D. Competitive Comparison Table
 
-| Dimension | Healio.AI | Ada Health | Practo / Tata 1mg | Winner & Why |
+| Dimension | Arovia.AI | Ada Health | Practo / Tata 1mg | Winner & Why |
 |---|---|---|---|---|
-| Cultural/language localization | Hindi/Hinglish chat, India-specific remedies | English-first, globally generic | Multi-language, India-first, but chat is not the core product | **Healio** — the Hinglish conversational layer is a real, defensible differentiator |
-| Diagnostic-language discipline | "Diagnosis" label + "sample diagnosis" CTA *despite* a no-diagnosis disclaimer | Consistently says "possible conditions," never "diagnosis" | Frames everything as "consult a doctor," avoids diagnostic claims | **Ada** — most legally disciplined language; Healio should copy this exactly |
-| Confidence transparency | Shows "Moderate confidence" / "Good match" (but conflated with severity) | Shows likelihood with plain-language explanation, kept separate from urgency | Rarely exposes model confidence at all | **Ada** — same instinct as Healio, cleaner execution |
+| Cultural/language localization | Hindi/Hinglish chat, India-specific remedies | English-first, globally generic | Multi-language, India-first, but chat is not the core product | **Arovia** — the Hinglish conversational layer is a real, defensible differentiator |
+| Diagnostic-language discipline | "Diagnosis" label + "sample diagnosis" CTA *despite* a no-diagnosis disclaimer | Consistently says "possible conditions," never "diagnosis" | Frames everything as "consult a doctor," avoids diagnostic claims | **Ada** — most legally disciplined language; Arovia should copy this exactly |
+| Confidence transparency | Shows "Moderate confidence" / "Good match" (but conflated with severity) | Shows likelihood with plain-language explanation, kept separate from urgency | Rarely exposes model confidence at all | **Ada** — same instinct as Arovia, cleaner execution |
 | Pricing clarity | Hybrid subscription + credits, with contradictory "unlimited" copy | Free | Pay-per-consult, unambiguous | **Practo** — a user always knows what they're paying for |
-| Traditional-medicine integration | Ayurveda + homeopathy woven into the reasoning with safety caveats | None (pure biomedical) | Some Ayurveda content sections, but not integrated into the AI chat | **Healio** — unique position; needs stronger "evidence label" framing (which the Learn page already does well) to earn it |
-| Family/multi-profile support | "Family Consult" feature exists but no visible invite/growth loop | No | Multiple patient profiles supported | **Tie** — Healio has the pricing SKU already; needs the actual feature surfaced |
+| Traditional-medicine integration | Ayurveda + homeopathy woven into the reasoning with safety caveats | None (pure biomedical) | Some Ayurveda content sections, but not integrated into the AI chat | **Arovia** — unique position; needs stronger "evidence label" framing (which the Learn page already does well) to earn it |
+| Family/multi-profile support | "Family Consult" feature exists but no visible invite/growth loop | No | Multiple patient profiles supported | **Tie** — Arovia has the pricing SKU already; needs the actual feature surfaced |
 
 ---
 
@@ -106,7 +106,7 @@ The skeleton-bar hero art (#5) is the single biggest miss here — it's the one 
 **Layout notes:** Two small pill badges side by side, each a different shape or icon family (confidence = filled dot scale; severity = outlined tag), so they're not visually interchangeable at a glance.
 
 ### 3. Plan & Credits
-**What changes:** One sentence directly beneath "Healio Plus · ACTIVE": *"Unlimited basic chat consultations. Premium features (Wellness Snapshot, Family Consult, PDF Summary) use your monthly credits."* Rename "PDF Medical Report" → "PDF Wellness Summary."
+**What changes:** One sentence directly beneath "Arovia Plus · ACTIVE": *"Unlimited basic chat consultations. Premium features (Wellness Snapshot, Family Consult, PDF Summary) use your monthly credits."* Rename "PDF Medical Report" → "PDF Wellness Summary."
 **Why:** Resolves #7 and #8 — both are trust-and-liability issues, not just cosmetic ones.
 **Dev notes:** This is copy-only; no layout change required, which makes it a same-day fix.
 

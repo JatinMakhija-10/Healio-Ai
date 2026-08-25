@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Ingest BhashaBench-Ayur Q&A into Supabase
+ * Arovia.AI — Ingest BhashaBench-Ayur Q&A into Supabase
  * ========================================================
  * Reads data/ayurveda/raw/bhashabench/bhashabench_combined.json
  * Generates Gemini embeddings and inserts into ayurvedic_qna_embeddings table.

@@ -12,7 +12,7 @@
  *   <WellnessSectionHeader
  *     title="Remedies & Routines"
  *     subtitle="Traditional practices with honest evidence context"
- *     evidenceNote="All content reviewed by the Healio medical team"
+ *     evidenceNote="All content reviewed by the Arovia medical team"
  *   />
  */
 

@@ -52,8 +52,8 @@ interface TrendPoint {
     date: string;
 }
 
-const STORAGE_KEY_STREAK = "healio_wellness_streak";
-const STORAGE_KEY_LAST_VISIT = "healio_wellness_last_visit";
+const STORAGE_KEY_STREAK = "arovia_wellness_streak";
+const STORAGE_KEY_LAST_VISIT = "arovia_wellness_last_visit";
 
 function computeStreak(): number {
     try {
@@ -389,7 +389,7 @@ export default function WellnessPage() {
                             <Sparkles className="h-5 w-5 text-teal-700" />
                         </div>
                         <div className="min-w-0">
-                            <p className="font-semibold text-gray-900 text-sm">Ask Healio</p>
+                            <p className="font-semibold text-gray-900 text-sm">Ask Arovia</p>
                             <p className="text-xs text-gray-500 truncate">Wellness guidance &amp; home remedies</p>
                         </div>
                         <ArrowUpRight className="h-4 w-4 text-gray-300 group-hover:text-teal-500 shrink-0 ml-auto transition-colors" />

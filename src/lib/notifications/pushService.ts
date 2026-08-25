@@ -177,10 +177,10 @@ export async function sendTestNotification(): Promise<void> {
 
     const registration = await navigator.serviceWorker.ready;
 
-    registration.showNotification('Healio.AI Test', {
+    registration.showNotification('Arovia.AI Test', {
         body: 'Push notifications are working! 🎉',
-        icon: '/healio-icon-192.png',
-        badge: '/healio-badge-72.png',
+        icon: '/arovia-icon-192.png',
+        badge: '/arovia-badge-72.png',
         tag: 'test-notification',
     });
 }

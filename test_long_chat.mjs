@@ -13,13 +13,13 @@
  *
  * Requires:
  *   - The dev server running on localhost:3000
- *   - A valid Supabase session token (HEALIO_TEST_TOKEN env var or .env.local)
+ *   - A valid Supabase session token (AROVIA_TEST_TOKEN env var or .env.local)
  */
 
 import fs from 'fs';
 import path from 'path';
 
-// Load .env.local for SUPABASE creds if HEALIO_TEST_TOKEN not set
+// Load .env.local for SUPABASE creds if AROVIA_TEST_TOKEN not set
 const envPath = path.resolve('.env.local');
 const envVars = {};
 try {
@@ -30,7 +30,7 @@ try {
     }
 } catch { /* ignore */ }
 
-const BASE_URL = process.env.HEALIO_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.AROVIA_BASE_URL || 'http://localhost:3000';
 
 // Simulated multi-turn conversation — designed to reach the final diagnosis turn
 const CONVERSATION_TURNS = [
@@ -76,7 +76,7 @@ let _tokenExpiry = 0;
 
 async function getTestToken(forceRefresh = false) {
     // If explicit token, use it
-    if (process.env.HEALIO_TEST_TOKEN && !forceRefresh) return process.env.HEALIO_TEST_TOKEN;
+    if (process.env.AROVIA_TEST_TOKEN && !forceRefresh) return process.env.AROVIA_TEST_TOKEN;
 
     // Return cached token if still valid (with 60s buffer)
     if (_cachedToken && !forceRefresh && Date.now() < _tokenExpiry - 60_000) {
@@ -88,15 +88,15 @@ async function getTestToken(forceRefresh = false) {
     const supabaseKey = envVars.NEXT_PUBLIC_SUPABASE_ANON_KEY || envVars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Set HEALIO_TEST_TOKEN env var, or ensure .env.local has NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY');
+        throw new Error('Set AROVIA_TEST_TOKEN env var, or ensure .env.local has NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY');
     }
 
     // Read test creds
-    const testEmail = process.env.HEALIO_TEST_EMAIL || envVars.TEST_EMAIL;
-    const testPassword = process.env.HEALIO_TEST_PASSWORD || envVars.TEST_PASSWORD;
+    const testEmail = process.env.AROVIA_TEST_EMAIL || envVars.TEST_EMAIL;
+    const testPassword = process.env.AROVIA_TEST_PASSWORD || envVars.TEST_PASSWORD;
 
     if (!testEmail || !testPassword) {
-        throw new Error('Set HEALIO_TEST_EMAIL + HEALIO_TEST_PASSWORD env vars or TEST_EMAIL + TEST_PASSWORD in .env.local');
+        throw new Error('Set AROVIA_TEST_EMAIL + AROVIA_TEST_PASSWORD env vars or TEST_EMAIL + TEST_PASSWORD in .env.local');
     }
 
     console.log(`  Authenticating as ${testEmail}${forceRefresh ? ' (token refresh)' : ''}...`);
@@ -172,7 +172,7 @@ async function main() {
     } catch (e) {
         console.error(`  ✗ ${e.message}`);
         console.log('\n  To run this test, set a valid session token:');
-        console.log('    HEALIO_TEST_TOKEN=<jwt> node test_long_chat.mjs\n');
+        console.log('    AROVIA_TEST_TOKEN=<jwt> node test_long_chat.mjs\n');
         process.exit(1);
     }
 

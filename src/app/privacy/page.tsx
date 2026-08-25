@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
               <p>
-                Welcome to Healio.AI ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice or our practices with regard to your personal information, please contact us.
+                Welcome to Arovia.AI ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice or our practices with regard to your personal information, please contact us.
               </p>
               <p>
                 When you visit our website and use our services (the "Services"), you trust us with your personal information. We take your privacy very seriously. In this privacy policy, we describe our privacy practices in accordance with the Information Technology Act, 2000, the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011 (SPDI Rules), and the Digital Personal Data Protection Act, 2023 (DPDPA) of India.
@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
               </p>
               <ul className="list-disc pl-6 space-y-2 mt-2">
                 <li><strong>Personal Data:</strong> Names, email addresses, and account credentials used to access the chatbot.</li>
-                <li><strong>Health/Medical Data & Chat Transcripts:</strong> Any symptoms, conditions, or related queries you input into our AI chatbot. Note: As per SPDI Rules, physical, physiological, and mental health conditions are considered Sensitive Personal Data. We process this text solely to provide the Healio.AI assistant services. Do not upload or paste highly sensitive, personally identifying health records (like full medical charts or Aadhaar numbers) into the chat.</li>
+                <li><strong>Health/Medical Data & Chat Transcripts:</strong> Any symptoms, conditions, or related queries you input into our AI chatbot. Note: As per SPDI Rules, physical, physiological, and mental health conditions are considered Sensitive Personal Data. We process this text solely to provide the Arovia.AI assistant services. Do not upload or paste highly sensitive, personally identifying health records (like full medical charts or Aadhaar numbers) into the chat.</li>
                 <li><strong>Automatically Collected Data:</strong> IP address, device characteristics, operating system, and information about how you interact with the chatbot interface.</li>
               </ul>
             </section>
@@ -93,7 +93,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-2xl font-semibold mt-8 mb-4">7. Contact Us</h2>
               <p>
                 If you have questions, comments, or privacy requests about this notice or the processing of your Sensitive Personal Data, contact us at{" "}
-                <a href="mailto:privacy@healio.ai" className="text-primary underline underline-offset-2 hover:opacity-80">privacy@healio.ai</a>.
+                <a href="mailto:privacy@arovia.ai" className="text-primary underline underline-offset-2 hover:opacity-80">privacy@arovia.ai</a>.
               </p>
             </section>
           </div>

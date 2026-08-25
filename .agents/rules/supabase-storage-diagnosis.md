@@ -211,13 +211,13 @@ async function uploadToR2(file: File) {
     const key = `videos/${Date.now()}_${file.name}`;
     
     await r2.send(new PutObjectCommand({
-        Bucket: 'healio-videos',
+        Bucket: 'arovia-videos',
         Key: key,
         Body: Buffer.from(await file.arrayBuffer()),
         ContentType: file.type,
     }));
     
-    return `https://videos.healio.ai/${key}`;
+    return `https://videos.arovia.ai/${key}`;
 }
 ```
 

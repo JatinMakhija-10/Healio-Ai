@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Download PubMed Ayurveda Abstracts via NCBI E-utilities API
+Arovia.AI -- Download PubMed Ayurveda Abstracts via NCBI E-utilities API
 =========================================================================
 Fetches open-access Ayurveda research paper abstracts using the NCBI
 Entrez API (free, no API key required for low volume -- add your key
@@ -159,7 +159,7 @@ def clean_xml_tags(text: str) -> str:
 
 
 def main():
-    print("PubMed Ayurveda Downloader -- Healio.AI\n")
+    print("PubMed Ayurveda Downloader -- Arovia.AI\n")
 
     all_pmids: list = []
     seen_pmids: set = set()

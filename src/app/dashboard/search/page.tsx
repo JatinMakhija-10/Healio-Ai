@@ -153,7 +153,7 @@ export default function SearchPage() {
                                                     {(doctor.verified || doctor.is_pro) && (
                                                         <div
                                                             className={`absolute -bottom-1 -right-1 text-white p-0.5 rounded-full border-2 border-white ${doctor.is_pro ? "bg-purple-600" : "bg-teal-500"}`}
-                                                            title={doctor.is_pro ? "Healio Pro Verified" : "Verified Doctor"}
+                                                            title={doctor.is_pro ? "Arovia Pro Verified" : "Verified Doctor"}
                                                         >
                                                             <Award className="h-3 w-3" />
                                                         </div>
@@ -172,7 +172,7 @@ export default function SearchPage() {
                                                     </div>
                                                     {doctor.is_pro && (
                                                         <Badge variant="outline" className="mt-2 bg-purple-50 text-purple-700 border-purple-200">
-                                                            Healio Pro
+                                                            Arovia Pro
                                                         </Badge>
                                                     )}
                                                 </div>

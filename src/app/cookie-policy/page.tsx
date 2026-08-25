@@ -5,7 +5,7 @@ const cookieGroups = [
   {
     icon: ShieldCheck,
     title: "Consent notice",
-    items: ["healio_cookie_consent"],
+    items: ["arovia_cookie_consent"],
     copy: "Stores whether the cookie and local-storage notice was accepted on this device.",
   },
   {
@@ -18,17 +18,17 @@ const cookieGroups = [
     icon: Database,
     title: "Product analytics",
     items: ["Vercel Analytics events when enabled"],
-    copy: "Used in aggregate to understand page performance and improve public flows. Healio does not sell health data.",
+    copy: "Used in aggregate to understand page performance and improve public flows. Arovia does not sell health data.",
   },
 ];
 
 export default function CookiePolicyPage() {
   return (
-    <main className="healio-public-page min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
+    <main className="arovia-public-page min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
       <div className="mx-auto max-w-4xl">
         <Link className="inline-flex min-h-12 items-center gap-2 text-sm font-bold text-[#0F6E56]" href="/">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Back to Healio
+          Back to Arovia
         </Link>
 
         <section className="py-8">
@@ -39,10 +39,10 @@ export default function CookiePolicyPage() {
               </div>
               <p className="mt-5 text-sm font-bold uppercase text-[#0F6E56]">Cookie policy</p>
               <h1 className="mt-3 text-4xl font-bold leading-tight text-[#1A1A2E]">
-                What Healio stores on your device
+                What Arovia stores on your device
               </h1>
               <p className="mt-4 text-base leading-7 text-[#555555]">
-                Healio uses essential cookies and local storage for consent state, account sessions, and service improvement. These tools help the app work reliably; they are not used to sell health information.
+                Arovia uses essential cookies and local storage for consent state, account sessions, and service improvement. These tools help the app work reliably; they are not used to sell health information.
               </p>
               <p className="mt-4 text-sm leading-6 text-[#6B6B6B]">
                 Last updated: June 14, 2026

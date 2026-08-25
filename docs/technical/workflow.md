@@ -2,7 +2,7 @@
 <!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Healio.AI - Complete Technical &amp; Business Specification</title>
+    <title>Arovia.AI - Complete Technical &amp; Business Specification</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tiempos+Text:wght@400;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
@@ -246,7 +246,7 @@
             <!-- Title Block -->
             <div class="lg:col-span-2">
               <h1 class="font-tiempos text-5xl font-bold text-slate-900 mb-6 leading-tight">
-                <em class="text-teal">Healio.AI</em>
+                <em class="text-teal">Arovia.AI</em>
                 <br/>
                 Enhanced Technical &amp; Business Specification
               </h1>
@@ -379,7 +379,7 @@
             <div class="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
               <p class="font-medium text-blue-900 mb-2">Mission Evolution</p>
               <p class="text-blue-800">
-                Healio.AI&#39;s mission expands from &#34;democratizing access to high-quality, personalized healthcare
+                Arovia.AI&#39;s mission expands from &#34;democratizing access to high-quality, personalized healthcare
                 that treats the individual, not just the symptom&#34; to explicitly encompassing its role as the
                 <strong>world&#39;s first universal translator between medical paradigms</strong>.
               </p>
@@ -392,7 +392,7 @@
               <sup>
                 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12602521/" class="text-teal hover:underline">[87]</a>
               </sup>.
-              Healio.AI is uniquely positioned to capture this market through technical capabilities that competitors cannot easily replicate:
+              Arovia.AI is uniquely positioned to capture this market through technical capabilities that competitors cannot easily replicate:
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -470,7 +470,7 @@
                 </div>
               </div>
               <div class="mt-4 text-sm text-slate-600 text-center">
-                Enhanced Healio.AI Ecosystem Architecture - Multi-layered system integrating traditional medicine
+                Enhanced Arovia.AI Ecosystem Architecture - Multi-layered system integrating traditional medicine
                 practitioner portals while preserving core technical advantages
               </div>
             </div>
@@ -1349,7 +1349,7 @@
                 </ul>
               </div>
               <div class="bg-blue-50 p-4 rounded-lg">
-                <h5 class="font-semibold text-blue-900 mb-2">Healio.AI Contribution</h5>
+                <h5 class="font-semibold text-blue-900 mb-2">Arovia.AI Contribution</h5>
                 <ul class="text-sm text-blue-800 space-y-1">
                   <li>• Real-world evidence generation</li>
                   <li>• Insurance coding enablement</li>
@@ -1529,22 +1529,22 @@
                 </thead>
                 <tbody class="text-slate-700">
                   <tr class="border-b border-slate-200">
-                    <td class="py-2 px-3 font-medium">Healio Basic</td>
+                    <td class="py-2 px-3 font-medium">Arovia Basic</td>
                     <td class="py-2 px-3">Free</td>
                     <td class="py-2 px-3">Limited symptom checks, basic Prakriti</td>
                   </tr>
                   <tr class="border-b border-slate-200">
-                    <td class="py-2 px-3 font-medium">Healio Plus</td>
+                    <td class="py-2 px-3 font-medium">Arovia Plus</td>
                     <td class="py-2 px-3">$9.99/month</td>
                     <td class="py-2 px-3">Unlimited AI consultations, full traditional system access</td>
                   </tr>
                   <tr class="border-b border-slate-200">
-                    <td class="py-2 px-3 font-medium">Healio Pro</td>
+                    <td class="py-2 px-3 font-medium">Arovia Pro</td>
                     <td class="py-2 px-3">$29.99/month</td>
                     <td class="py-2 px-3">Plus features + priority booking, personalized protocols</td>
                   </tr>
                   <tr>
-                    <td class="py-2 px-3 font-medium">Healio Scholar</td>
+                    <td class="py-2 px-3 font-medium">Arovia Scholar</td>
                     <td class="py-2 px-3">$49.99/month</td>
                     <td class="py-2 px-3">Pro features + research participation, advanced analytics</td>
                   </tr>
@@ -1688,7 +1688,7 @@
                 </div>
                 <div class="mermaid">
                   timeline
-                  title Healio.AI Product Roadmap
+                  title Arovia.AI Product Roadmap
 
                   section Phase 1: Foundation
                   Week 1 : ICD-11 Integration
@@ -1719,7 +1719,7 @@
                 </div>
               </div>
               <div class="mt-4 text-sm text-slate-600 text-center">
-                Healio.AI Implementation Timeline - Three-phase approach from foundation to global expansion
+                Arovia.AI Implementation Timeline - Three-phase approach from foundation to global expansion
               </div>
             </div>
           </div>
@@ -1767,7 +1767,7 @@
                   </tr>
                   <tr>
                     <td class="py-2 px-3 font-medium">AI-Assisted vs. Standard Care</td>
-                    <td class="py-2 px-3">Cluster RCT: Healio-supported vs. usual care</td>
+                    <td class="py-2 px-3">Cluster RCT: Arovia-supported vs. usual care</td>
                     <td class="py-2 px-3">50 practitioners, 2,500 patients</td>
                     <td class="py-2 px-3">18 months</td>
                     <td class="py-2 px-3">$750,000</td>
@@ -1838,7 +1838,7 @@
           <div class="max-w-6xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
               <div>
-                <h3 class="font-tiempos text-xl font-bold mb-4">Healio.AI</h3>
+                <h3 class="font-tiempos text-xl font-bold mb-4">Arovia.AI</h3>
                 <p class="text-slate-300 text-sm">
                   Bridging modern clinical precision with WHO-standardized ancient wisdom through AI-powered multi-traditional medicine integration.
                 </p>
@@ -1864,7 +1864,7 @@
             </div>
 
             <div class="border-t border-slate-700 pt-8 text-center text-slate-400 text-sm">
-              <p>© 2026 Healio.AI - All Rights Reserved. Confidential Internal Technical Documentation.</p>
+              <p>© 2026 Arovia.AI - All Rights Reserved. Confidential Internal Technical Documentation.</p>
               <p class="mt-2">Version 4.0.0 | Last Updated: February 7, 2026</p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Resume Ingest Home Remedies
+ * Arovia.AI — Resume Ingest Home Remedies
  * 
  * Picks up where the original ingestion left off by finding remedies that
  * are not yet in the 'home_remedy_embeddings' table.

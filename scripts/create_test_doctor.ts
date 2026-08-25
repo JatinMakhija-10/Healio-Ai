@@ -27,7 +27,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function createTestDoctor() {
-    const email = 'doctor_test@healio.ai';
+    const email = 'doctor_test@arovia.ai';
     const password = 'Doctor123!@#'; // Strong password
 
     console.log(`Creating test doctor: ${email}`);

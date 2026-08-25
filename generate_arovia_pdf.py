@@ -31,7 +31,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages > 1)
         if self._pageNumber > 1:
-            self.drawString(54, 750, "AVORIA.AI — OFFICIAL COMPANY REGISTRATION & INCORPORATION DOSSIER")
+            self.drawString(54, 750, "AROVIA.AI — OFFICIAL COMPANY REGISTRATION & INCORPORATION DOSSIER")
             self.setStrokeColor(colors.HexColor("#E5E7EB"))
             self.setLineWidth(0.5)
             self.line(54, 744, 558, 744)
@@ -39,7 +39,7 @@ class NumberedCanvas(canvas.Canvas):
         # Footer
         footer_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(558, 36, footer_text)
-        self.drawString(54, 36, "CONFIDENTIAL — FOR AVORIA HEALTHTECH PRIVATE LIMITED INCORPORATION FILING")
+        self.drawString(54, 36, "CONFIDENTIAL — FOR AROVIA HEALTHTECH PRIVATE LIMITED INCORPORATION FILING")
         self.setStrokeColor(colors.HexColor("#E5E7EB"))
         self.setLineWidth(0.5)
         self.line(54, 48, 558, 48)
@@ -259,14 +259,14 @@ def build_pdf(md_content, output_pdf_path):
     doc.build(story, canvasmaker=NumberedCanvas)
     print(f"PDF successfully created: {output_pdf_path}")
 
-md_content = """# Official Company Registration & Incorporation Dossier: Avoria.AI
+md_content = """# Official Company Registration & Incorporation Dossier: Arovia.AI
 
 ## 1. Company Quick Reference & NIC Codes
 
 | Field | Official Value / Specification |
 |---|---|
-| Proposed Corporate Name | Avoria Healthtech Private Limited (or Avoria.AI Inc.) |
-| Brand / Trade Name | Avoria.AI |
+| Proposed Corporate Name | Arovia Healthtech Private Limited (or Arovia.AI Inc.) |
+| Brand / Trade Name | Arovia.AI |
 | Industry Sector | Healthcare Technology (HealthTech) / Digital Health & AI Wellness |
 | Business Category | Information Technology Enabled Services (ITES) — Software & Triage Platform |
 | Primary NIC Code 1 | 62011 / 62099 — Development of computer software, medical AI engines, and IT services |
@@ -277,17 +277,17 @@ md_content = """# Official Company Registration & Incorporation Dossier: Avoria.
 
 ## 2. Nature of Business (Short Formal Statement)
 
-> Nature of Business: Avoria.AI is engaged in the business of software development, artificial intelligence research, and digital healthcare delivery. The company designs, operates, and maintains an AI-powered clinical decision support and health triage platform that integrates modern evidence-based medicine with digitized Ayurvedic constitutional intelligence (Prakriti/Vikriti). The platform operates a three-sided marketplace connecting individual patients, verified medical doctors and Ayurvedic practitioners, and public health analytics administrators.
+> Nature of Business: Arovia.AI is engaged in the business of software development, artificial intelligence research, and digital healthcare delivery. The company designs, operates, and maintains an AI-powered clinical decision support and health triage platform that integrates modern evidence-based medicine with digitized Ayurvedic constitutional intelligence (Prakriti/Vikriti). The platform operates a three-sided marketplace connecting individual patients, verified medical doctors and Ayurvedic practitioners, and public health analytics administrators.
 
 ---
 
 ## 3. Short Description of Business (For Official Forms / SPICe+ Brief — 150 Words)
 
-Avoria.AI is a next-generation HealthTech platform that functions as the "intelligent front door" to healthcare. It replaces panicky web searches with a mathematically backed, empathetic Bayesian AI diagnosis engine that assesses 265+ medical conditions across 19 specialized databases in real time.
+Arovia.AI is a next-generation HealthTech platform that functions as the "intelligent front door" to healthcare. It replaces panicky web searches with a mathematically backed, empathetic Bayesian AI diagnosis engine that assesses 265+ medical conditions across 19 specialized databases in real time.
 
-Uniquely fusing modern clinical decision rules (such as Wells, PERC, and HEART scores) with digitized Ayurvedic wisdom (Prakriti body-type analysis and Vikriti imbalance tracking), Avoria provides users with instant, anxiety-reducing triage reports, home remedies, dietary guidance, and seamless appointment booking with certified medical specialists.
+Uniquely fusing modern clinical decision rules (such as Wells, PERC, and HEART scores) with digitized Ayurvedic wisdom (Prakriti body-type analysis and Vikriti imbalance tracking), Arovia provides users with instant, anxiety-reducing triage reports, home remedies, dietary guidance, and seamless appointment booking with certified medical specialists.
 
-The platform operates on a multi-pillar business model, combining Direct-to-Consumer (DTC) wellness subscriptions (Avoria Plus), Provider SaaS subscriptions (Avoria Pro dashboard for doctors), consultation marketplace commissions, and anonymized public health bio-surveillance analytics.
+The platform operates on a multi-pillar business model, combining Direct-to-Consumer (DTC) wellness subscriptions (Arovia Plus), Provider SaaS subscriptions (Arovia Pro dashboard for doctors), consultation marketplace commissions, and anonymized public health bio-surveillance analytics.
 
 ---
 
@@ -308,12 +308,12 @@ The platform operates on a multi-pillar business model, combining Direct-to-Cons
 
 ### 4.3 Three-Sided Platform Architecture
 1. Patient Portal (B2C App): Unlimited AI health triage, anxiety reduction, 5 automated health risk calculators (Framingham-adapted cardiovascular, diabetes, liver, respiratory, BMI), downloadable medical reports, and specialist booking.
-2. Doctor/Practitioner Portal (B2B SaaS — Avoria Pro): AI-generated pre-consultation intake summaries (saving physicians up to 2 hours of daily notes), digital prescription tools, credential verification, and patient recovery analytics.
+2. Doctor/Practitioner Portal (B2B SaaS — Arovia Pro): AI-generated pre-consultation intake summaries (saving physicians up to 2 hours of daily notes), digital prescription tools, credential verification, and patient recovery analytics.
 3. Admin & Bio-Surveillance Portal (Enterprise): Real-time geographic symptom clustering heatmaps for epidemic outbreak detection and clinical trial participant matching.
 
 ### 4.4 Business & Revenue Model (4-Pillar Ecosystem)
-1. Direct-to-Consumer (DTC): Avoria Plus freemium subscription (Rs 199/month or $4.99/month) for deep reports, family profiles, and unlimited Ayurvedic scans + Contextual affiliate commerce.
-2. Provider SaaS (B2B): Monthly/annual subscriptions for doctors to access the Avoria Pro Workspace and sponsored clinic search placement.
+1. Direct-to-Consumer (DTC): Arovia Plus freemium subscription (Rs 199/month or $4.99/month) for deep reports, family profiles, and unlimited Ayurvedic scans + Contextual affiliate commerce.
+2. Provider SaaS (B2B): Monthly/annual subscriptions for doctors to access the Arovia Pro Workspace and sponsored clinic search placement.
 3. Marketplace Commissions: 10%–20% platform commission fee per virtual/in-person doctor booking.
 4. Enterprise & Data Licensing: Anonymized public health bio-surveillance analytics for health authorities and clinical trial recruitment fees.
 
@@ -341,5 +341,5 @@ The platform operates on a multi-pillar business model, combining Direct-to-Cons
 """
 
 if __name__ == '__main__':
-    output_pdf = r"c:\Users\JATIN\Desktop\Healio.AI\Avoria_AI_Company_Registration_Dossier.pdf"
+    output_pdf = r"c:\Users\JATIN\Desktop\Arovia.AI\Arovia_AI_Company_Registration_Dossier.pdf"
     build_pdf(md_content, output_pdf)

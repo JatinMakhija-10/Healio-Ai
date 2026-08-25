@@ -31,7 +31,7 @@
     "2026-04-29 12:16:35.134 [info] E0429 12:16:35.134495 17224 log.go:398] executor is not currently running",
     "2026-04-29 12:16:37.022 [info] I0429 12:16:37.021601 17224 planner_generator.go:283] Requesting planner with 46 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-04-29 12:18:32.334 [info] I0429 12:18:32.334009 17224 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x79c0a96861a2aa53",
-    "2026-04-29 12:18:36.952 [info] (Antigravity) 2026-04-29 12:18:36.951 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\Healio.AI' exit code 0",
+    "2026-04-29 12:18:36.952 [info] (Antigravity) 2026-04-29 12:18:36.951 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\Arovia.AI' exit code 0",
     "2026-04-29 12:18:38.082 [info] (Antigravity) 2026-04-29 12:18:38.082 [INFO]: [Terminal] Command completed: node scripts/api_perf_test.js exit code 1",
     "2026-04-29 12:18:38.114 [info] I0429 12:18:38.114124 17224 planner_generator.go:283] Requesting planner with 47 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-04-29 12:20:21.194 [info] I0429 12:20:21.194148 17224 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xe3898b1cc8c91ef0",
@@ -60,7 +60,7 @@
     "2026-04-29 12:30:32.598 [info] I0429 12:30:32.598223 17224 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0x21023c0cc09ea741",
     "2026-04-29 12:30:34.270 [info] I0429 12:30:34.269551 17224 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist Trace: 0xb23cf29c78713f75",
     "2026-04-29 12:31:03.163 [info] I0429 12:31:03.162782 17224 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x6aeb92408e8a273f",
-    "2026-04-29 12:31:06.835 [info] (Antigravity) 2026-04-29 12:31:06.835 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\Healio.AI' exit code 0",
+    "2026-04-29 12:31:06.835 [info] (Antigravity) 2026-04-29 12:31:06.835 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\Arovia.AI' exit code 0",
     "2026-04-29 12:31:10.657 [info] I0429 12:31:10.656837 17224 planner_generator.go:283] Requesting planner with 55 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-04-29 12:31:17.090 [info] E0429 12:31:17.090359 17224 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server: UNAVAILABLE (code 503): No capacity available for model gemini-3.1-pro-high on the server"
   ],
@@ -151,21 +151,21 @@
     {
       "googleAgentId": "30f72e36-05bc-4c2b-89cd-245f89949a03",
       "trajectoryId": "dc3d2e03-882f-48c4-9590-69ef0b5f1f82",
-      "summary": "Optimizing Healio RAG Performance",
+      "summary": "Optimizing Arovia RAG Performance",
       "lastStepIndex": 197,
       "lastModifiedTime": "2026-04-29T07:01:17.093Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

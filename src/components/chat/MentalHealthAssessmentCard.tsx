@@ -35,7 +35,7 @@ export function MentalHealthAssessmentCard({
           )}
           <p className="mt-3 text-sm leading-6 text-[#4E342E]">
             {description ||
-              "This presentation falls outside Healio's home-care guidance. We strongly recommend speaking with a licensed mental health professional. Our AI cannot provide treatment or diagnostic advice for emotional health."}
+              "This presentation falls outside Arovia's home-care guidance. We strongly recommend speaking with a licensed mental health professional. Our AI cannot provide treatment or diagnostic advice for emotional health."}
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">

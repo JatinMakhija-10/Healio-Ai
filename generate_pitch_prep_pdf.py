@@ -31,7 +31,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages > 1)
         if self._pageNumber > 1:
-            self.drawString(54, 750, "HEALIO.AI — INCUBATOR BOARD PITCH & DEFENSE GUIDE")
+            self.drawString(54, 750, "AROVIA.AI — INCUBATOR BOARD PITCH & DEFENSE GUIDE")
             self.setStrokeColor(colors.HexColor("#E5E7EB"))
             self.setLineWidth(0.5)
             self.line(54, 744, 558, 744)
@@ -39,7 +39,7 @@ class NumberedCanvas(canvas.Canvas):
         # Footer
         footer_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(558, 36, footer_text)
-        self.drawString(54, 36, "CONFIDENTIAL — FOR HEALIO.AI FOUNDER PITCH PREPARATION")
+        self.drawString(54, 36, "CONFIDENTIAL — FOR AROVIA.AI FOUNDER PITCH PREPARATION")
         self.setStrokeColor(colors.HexColor("#E5E7EB"))
         self.setLineWidth(0.5)
         self.line(54, 48, 558, 48)
@@ -261,6 +261,6 @@ def build_pdf(md_file_path, output_pdf_path):
     print(f"PDF built successfully at: {output_pdf_path}")
 
 if __name__ == '__main__':
-    md_path = r"C:\Users\JATIN\.gemini\antigravity-ide\brain\5c525c2e-47e7-45b9-acff-f7a9a2e5e800\Healio_Incubator_Board_100_Question_Grilling_Master_Guide.md"
-    pdf_path = r"c:\Users\JATIN\Desktop\Healio.AI\Healio_Incubator_Board_Master_Prep_Guide.pdf"
+    md_path = r"C:\Users\JATIN\.gemini\antigravity-ide\brain\5c525c2e-47e7-45b9-acff-f7a9a2e5e800\Arovia_Incubator_Board_100_Question_Grilling_Master_Guide.md"
+    pdf_path = r"c:\Users\JATIN\Desktop\Arovia.AI\Arovia_Incubator_Board_Master_Prep_Guide.pdf"
     build_pdf(md_path, pdf_path)

@@ -1,4 +1,4 @@
-# Healio.AI Production Roadmap
+# Arovia.AI Production Roadmap
 ## From Prototype to FDA-Ready Medical Device
 
 Based on senior engineering review, prioritized by **impact × feasibility**.

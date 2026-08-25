@@ -266,7 +266,7 @@ export default function HistoryPage() {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `Healio-Report-${consultation.diagnosis.condition.replace(/\s+/g, '-')}-${new Date(consultation.created_at).toISOString().split('T')[0]}.pdf`;
+            link.download = `Arovia-Report-${consultation.diagnosis.condition.replace(/\s+/g, '-')}-${new Date(consultation.created_at).toISOString().split('T')[0]}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -305,7 +305,7 @@ export default function HistoryPage() {
             // Also check localStorage for local history (user-specific)
             if (user) {
                 try {
-                    const storageKey = `healio_consultation_history_${user.id}`;
+                    const storageKey = `arovia_consultation_history_${user.id}`;
                     const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
                     consultations = [...consultations, ...localHistory];
                     // Sort by date

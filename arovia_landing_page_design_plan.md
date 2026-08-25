@@ -1,4 +1,4 @@
-# Healio — Landing Page Design & Development Plan
+# Arovia — Landing Page Design & Development Plan
 ### RAG AI Health Chatbot · Indian Wellness Market
 **Document Type:** Senior UX/UI Design Blueprint  
 **Version:** 1.0  
@@ -29,9 +29,9 @@
 
 ## 1. Project Brief & Strategic Intent
 
-### What Healio Is (For the User, Not the Engineer)
+### What Arovia Is (For the User, Not the Engineer)
 
-Healio is a RAG-powered AI chatbot that takes symptom input from users and returns evidence-based wellness guidance, home care suggestions, and — critically — a clear signal about when to escalate to a real doctor. The underlying technology is sophisticated, but the user must never perceive it as a machine. They must perceive it as a knowledgeable, calm, trustworthy family health companion.
+Arovia is a RAG-powered AI chatbot that takes symptom input from users and returns evidence-based wellness guidance, home care suggestions, and — critically — a clear signal about when to escalate to a real doctor. The underlying technology is sophisticated, but the user must never perceive it as a machine. They must perceive it as a knowledgeable, calm, trustworthy family health companion.
 
 ### The Core Disguise Principle
 
@@ -70,7 +70,7 @@ Before a single wireframe is drawn, the following research must be completed or 
 
 **Existing data to gather:**
 - App store reviews of Practo, mfine, 1mg, and Lybrate (look for emotional language around trust, fear, data privacy, and language barriers)
-- NPS scores or feedback from any existing Healio beta users, specifically around first impressions
+- NPS scores or feedback from any existing Arovia beta users, specifically around first impressions
 - Drop-off analytics if a previous version of this page exists (which sections did users leave from?)
 
 **Primary research to conduct (if budget allows):**
@@ -89,7 +89,7 @@ The goal here is not to copy competitors, but to identify trust signals that Ind
 | Tata Health | Tata brand does a lot of heavy lifting | Can't rely on brand equity we don't have |
 | Niramai / SigTuple | Cutting-edge but very clinical | Alienates non-urban users entirely |
 
-**Key insight from audit:** No Indian health app has successfully positioned AI as a *home companion* rather than a *clinical tool*. Healio has a first-mover advantage in the warm, family-trusted wellness space. The design must own that positioning explicitly.
+**Key insight from audit:** No Indian health app has successfully positioned AI as a *home companion* rather than a *clinical tool*. Arovia has a first-mover advantage in the warm, family-trusted wellness space. The design must own that positioning explicitly.
 
 ### 2.3 Define Primary User Personas
 
@@ -98,13 +98,13 @@ These personas are not marketing archetypes — they are UX decision-making tool
 ---
 
 **Persona 1 — Priya, 38, Lucknow**  
-Mother of two, manages family health decisions, primary caregiver for in-laws. Uses WhatsApp extensively. Comfortable with Hindi. Has used Practo once to book a doctor but found the interface overwhelming. Primary fear: "What if the app tells me something wrong and I ignore a serious problem?" She needs reassurance that Healio will tell her when to see a real doctor. She will not read long text. She responds to illustrations of families that look like hers.
+Mother of two, manages family health decisions, primary caregiver for in-laws. Uses WhatsApp extensively. Comfortable with Hindi. Has used Practo once to book a doctor but found the interface overwhelming. Primary fear: "What if the app tells me something wrong and I ignore a serious problem?" She needs reassurance that Arovia will tell her when to see a real doctor. She will not read long text. She responds to illustrations of families that look like hers.
 
 **Persona 2 — Arjun, 26, Bengaluru**  
 Software engineer, health-conscious, uses apps for everything. Comfortable with English. Has used fitness apps (HealthifyMe, Cult.fit). Understands AI conceptually but is wary of health data privacy. Primary fear: "Where is my data going?" He will read the privacy section. He will check if there's a DPDP mention. He needs technical credibility and data transparency before trusting. He is the most likely to actually read the fine print.
 
 **Persona 3 — Suresh, 58, Ahmedabad**  
-Retired government employee. Manages diabetes and hypertension. Uses a smartphone but not always confidently. Primary language is Gujarati, uses Hindi comfortably. Primary fear: "This is a machine, it won't understand my situation." He needs human warmth in the copy, very large touch targets, a language he recognises, and a clear statement that Healio will recommend a real doctor when needed. He is the highest-value user (chronic condition management) but the hardest to onboard.
+Retired government employee. Manages diabetes and hypertension. Uses a smartphone but not always confidently. Primary language is Gujarati, uses Hindi comfortably. Primary fear: "This is a machine, it won't understand my situation." He needs human warmth in the copy, very large touch targets, a language he recognises, and a clear statement that Arovia will recommend a real doctor when needed. He is the highest-value user (chronic condition management) but the hardest to onboard.
 
 ---
 
@@ -235,7 +235,7 @@ Illustrations are the single most powerful cultural signal on this page. They ar
 **Character design rules:**
 - Skin tone: Fitzpatrick Scale 4–5 (medium brown to brown). This is the most common Indian skin tone and the most underrepresented in global health app illustrations.
 - Clothing: contextually specific — saree or salwar for women in home contexts, kurta or casual T-shirt for men, school uniform for children. Avoid western-default clothing (jeans and hoodies) for characters representing family/home scenarios.
-- Age diversity: include at least one illustration with an elderly character (reading glasses, grey hair, slightly hunched). This signals that Healio is designed for all ages, not just young urban professionals.
+- Age diversity: include at least one illustration with an elderly character (reading glasses, grey hair, slightly hunched). This signals that Arovia is designed for all ages, not just young urban professionals.
 - No white coats on characters in lifestyle illustrations. White coats belong only in the credibility/doctor endorsement section.
 
 **Scene types required:**
@@ -269,14 +269,14 @@ All icons must be accompanied by a visible text label. Never rely on icon-only c
 
 ### 5.1 S1 — Hero Section (Above the Fold)
 
-**Purpose:** The hero has a 3-second window to communicate three things: what Healio is, who it's for, and that it's safe. Nothing else happens in the hero. Feature lists, pricing, and technical details belong below the fold.
+**Purpose:** The hero has a 3-second window to communicate three things: what Arovia is, who it's for, and that it's safe. Nothing else happens in the hero. Feature lists, pricing, and technical details belong below the fold.
 
 **Layout (Mobile — primary design surface):**
 ```
 ┌─────────────────────────────────┐
 │  हिंदी  |  தமிழ்  |  বাংলা   [top-right language selector — 12px, teal link]
 │
-│  [Healio leaf logo — 52×52px rounded square, teal bg]
+│  [Arovia leaf logo — 52×52px rounded square, teal bg]
 │
 │  Apke ghar ka                    [40px, weight 700, dark navy]
 │  health guide.                   [40px, weight 700, teal #1D9E75]
@@ -306,7 +306,7 @@ All icons must be accompanied by a visible text label. Never rely on icon-only c
 - **Bilingual headline:** "Apke ghar ka" is Hindi for "your home's" — using a Hindi phrase in the headline immediately signals cultural specificity to the 500M+ Hindi-speaking population. The second line "health guide" in English keeps it accessible to urban bilingual users. This is not tokenistic multilingualism — it is a primary trust signal.
 - **Teal CTA instead of dark navy:** The existing design uses a dark navy pill for "Get Started." This is confident but cold. For a health companion, the primary action should be in the warm brand teal — it signals care, not commerce. Dark navy is used for secondary CTAs or footer elements.
 - **Language selector in the header (not in settings):** Indian users who are not primary English speakers abandon apps within 8 seconds if they do not see their language offered. The language selector must be visible without any scrolling or navigation. It is not a settings feature — it is a first-impression signal.
-- **"AYUSH reviewed" badge:** The Ministry of AYUSH (Ayurveda, Yoga, Unani, Siddha, Homeopathy) is a Government of India body that Indian users implicitly trust for health guidance. Its mention signals that Healio's content is aligned with both modern medicine and Indian traditional health systems — a powerful combination for the Indian market.
+- **"AYUSH reviewed" badge:** The Ministry of AYUSH (Ayurveda, Yoga, Unani, Siddha, Homeopathy) is a Government of India body that Indian users implicitly trust for health guidance. Its mention signals that Arovia's content is aligned with both modern medicine and Indian traditional health systems — a powerful combination for the Indian market.
 - **Removing "TRUSTED BY 10K+ PATIENTS" from between the two CTAs:** In the existing design, this micro-copy sits awkwardly as a visual divider between two buttons. It reads like a UI pattern, not a trust signal. Social proof belongs in its own dedicated section with context, names, and cities — not squeezed between two taps.
 
 **Desktop adaptation:** On screens above 768px, the hero layout shifts to a two-column structure: text/CTA on the left (max-width 540px), and the hero illustration (mother with child, phone in hand) on the right. The language selector moves to the top navigation bar.
@@ -328,23 +328,23 @@ All icons must be accompanied by a visible text label. Never rely on icon-only c
 │  [Thin teal divider line — 32px wide, left-aligned]
 │
 │  Short description               [14px, secondary gray]
-│  "Ask Healio what to do, what
+│  "Ask Arovia what to do, what
 │   to watch for, and when to
 │   call a doctor."
 │
-│  → What Healio does              [12px, teal, tappable — expands to demo]
+│  → What Arovia does              [12px, teal, tappable — expands to demo]
 └─────────────────────────────────┘
 ```
 
 **The four scenario cards (content):**
 
-1. **"Child has fever at midnight"** — the most universal Indian parenting anxiety. Healio asks about temperature, duration, other symptoms, and returns: home care steps, what to watch for, and a clear threshold ("if fever exceeds 103°F or lasts over 48 hours, visit a doctor").
+1. **"Child has fever at midnight"** — the most universal Indian parenting anxiety. Arovia asks about temperature, duration, other symptoms, and returns: home care steps, what to watch for, and a clear threshold ("if fever exceeds 103°F or lasts over 48 hours, visit a doctor").
 
-2. **"Amma's knee pain after monsoon"** — addresses the elderly family member use case. "Amma" is a widely understood term for mother/grandmother across multiple Indian languages. This card directly signals to persona 3 (Suresh, 58) that Healio understands his generation.
+2. **"Amma's knee pain after monsoon"** — addresses the elderly family member use case. "Amma" is a widely understood term for mother/grandmother across multiple Indian languages. This card directly signals to persona 3 (Suresh, 58) that Arovia understands his generation.
 
 3. **"Pre-Diwali sugar check reminder"** — the festive season is the highest-risk period for diabetic Indians due to mithai consumption. This card signals seasonal intelligence, chronic condition awareness, and Indian cultural specificity simultaneously.
 
-4. **"Pollution season — respiratory check"** — Delhi, Mumbai, and Bengaluru users experience severe air quality drops in winter. This is a daily anxiety for millions of users and a natural hook for Healio's symptom-check functionality.
+4. **"Pollution season — respiratory check"** — Delhi, Mumbai, and Bengaluru users experience severe air quality drops in winter. This is a daily anxiety for millions of users and a natural hook for Arovia's symptom-check functionality.
 
 **Why scenarios instead of features:** Indian health app users do not respond to feature lists ("AI-powered", "symptom checker", "real-time guidance"). They respond to situations they recognise. The brain's pattern-matching response to "that happened to me last week" is a faster trust-builder than any product copy. This is not a general UX principle — it is specifically validated by Indian health consumer research from Practo and 1mg's onboarding experiments.
 
@@ -363,10 +363,10 @@ User types: "मुझे सिरदर्द हो रहा है"
 Typewriter animation — 40ms per character
 
 Step 2 (1200ms pause):
-Healio typing indicator appears (3 dots)
+Arovia typing indicator appears (3 dots)
 
 Step 3 (1800ms):
-Healio responds: "कब से है? और क्या आपने आज पर्याप्त पानी पिया?"
+Arovia responds: "कब से है? और क्या आपने आज पर्याप्त पानी पिया?"
 [Hindi: "Since when? And did you drink enough water today?"]
 
 Step 4 (3000ms):
@@ -374,7 +374,7 @@ User responds: "3 ghante se. Pani kam piya aaj."
 [Hinglish: "For 3 hours. Drank less water today."]
 
 Step 5 (4200ms):
-Healio responds with a card:
+Arovia responds with a card:
 ┌──────────────────────────────┐
 │ 🌿 Try this at home          │
 │ • Drink 2 glasses of water   │
@@ -390,12 +390,12 @@ Healio responds with a card:
 
 **Key design decisions:**
 
-- **Hindi input in the demo:** This is not optional. Showing Hindi text in the chat demo is the single strongest signal that Healio genuinely supports Indian languages — not as an afterthought, but as a first-class experience. A Hinglish response (mixing Hindi and English in the reply) mirrors how urban Indians actually communicate and reinforces cultural authenticity.
+- **Hindi input in the demo:** This is not optional. Showing Hindi text in the chat demo is the single strongest signal that Arovia genuinely supports Indian languages — not as an afterthought, but as a first-class experience. A Hinglish response (mixing Hindi and English in the reply) mirrors how urban Indians actually communicate and reinforces cultural authenticity.
 - **Two-part response format (Home care + When to see a doctor):** Every single AI response in the demo must include both a home care suggestion AND an escalation signal. This is the design pattern that directly addresses the primary fear ("what if I miss something serious?"). The escalation section uses a warning icon and is visually distinct — it cannot be missed even on a fast scroll.
 - **No voice note feature in the demo:** The existing design has a voice note icon, which is technically interesting but visually complex and risks suggesting the app records audio. In the trust-building context of a landing page, this adds anxiety rather than delight. Voice input can be introduced as an in-app feature after trust is established.
 - **Loop behaviour:** The animation loops automatically after a 3-second pause on the final state. This ensures users who enter the section mid-scroll can still see the full demonstration. Loop speed can be reduced with a "Replay" button overlay.
 
-**Below the phone mockup:** A single line of copy: "Healio asks the right questions. Because what you describe is as important as what you feel." This bridges the demo into the trust section that follows.
+**Below the phone mockup:** A single line of copy: "Arovia asks the right questions. Because what you describe is as important as what you feel." This bridges the demo into the trust section that follows.
 
 ### 5.4 S4 — "We Are Not Your Doctor" Trust Block
 
@@ -407,7 +407,7 @@ Healio responds with a card:
 ```
 ┌─────────────────────────────────────────────────┐  [mint bg section]
 │
-│  "Healio is a guide, not a diagnosis."           [H2, dark navy, centred]
+│  "Arovia is a guide, not a diagnosis."           [H2, dark navy, centred]
 │
 │  We tell you what to try at home, what           [16px body, centred, max-width 560px]
 │  symptoms to watch for, and when to see          
@@ -443,7 +443,7 @@ The explicit naming of MBBS and BAMS (Bachelor of Ayurvedic Medicine) credential
 Generic testimonials ("This app is great!" — John, New York) have zero credibility in India. Indian users respond to:
 1. **Geographical specificity** — a user from Indore is more believable to a user from Indore than one from Delhi
 2. **Relationship context** — "I used it when my mother was ill" is more compelling than "I use it for myself"
-3. **Problem-resolution story** — even a short arc: "my child had a fever, I asked Healio, it told me to watch for these signs, and we ended up going to the doctor — and Healio was right"
+3. **Problem-resolution story** — even a short arc: "my child had a fever, I asked Arovia, it told me to watch for these signs, and we ended up going to the doctor — and Arovia was right"
 4. **Vernacular language in the quote** — a Hindi or Tamil quote with English translation reads as authentic; an English-only quote from an Indian user reads as marketing copy
 
 **Testimonial card design:**
@@ -475,7 +475,7 @@ Generic testimonials ("This app is great!" — John, New York) have zero credibi
 
 **Content structure:**
 - **Headline:** "Your symptoms stay with you."
-- **Sub-copy:** "Healio stores your data in India, under the Digital Personal Data Protection Act 2023. You can delete everything, anytime."
+- **Sub-copy:** "Arovia stores your data in India, under the Digital Personal Data Protection Act 2023. You can delete everything, anytime."
 - **Three-icon grid:**
   1. "Never sold or shared" — with a crossed-out sharing icon
   2. "Stored in India (AWS Mumbai)" — with an India map icon
@@ -491,10 +491,10 @@ Generic testimonials ("This app is great!" — John, New York) have zero credibi
 **Purpose:** Demonstrate intelligent, contextual awareness of Indian health patterns without revealing AI. This section changes based on the user's detected city (via IP geolocation, requires user permission prompt) and the current date relative to the Indian seasonal and festival calendar.
 
 **Example dynamic content:**
-- October–November (Delhi/NCR): "Smog season is here in Delhi. Ask Healio about protecting your family's lungs."
-- June–September (Pan-India): "Monsoon brings dengue and malaria risk. Healio can help you know the warning signs."
-- October–November (Pan-India): "Diwali is here — managing sugar intake during mithai season? Healio can help."
-- January–February (North India): "Cold and flu season. Healio knows the difference between a cold and something that needs a doctor."
+- October–November (Delhi/NCR): "Smog season is here in Delhi. Ask Arovia about protecting your family's lungs."
+- June–September (Pan-India): "Monsoon brings dengue and malaria risk. Arovia can help you know the warning signs."
+- October–November (Pan-India): "Diwali is here — managing sugar intake during mithai season? Arovia can help."
+- January–February (North India): "Cold and flu season. Arovia knows the difference between a cold and something that needs a doctor."
 
 **Implementation note:** This is a Phase 2 feature. It requires a geolocation microservice, a city-to-season-to-condition mapping database, and legal compliance around IP-based location use under DPDP Act. In Phase 1, a static fallback message ("It's health season, always.") is acceptable.
 
@@ -503,7 +503,7 @@ Generic testimonials ("This app is great!" — John, New York) have zero credibi
 **Purpose:** Convert users who have scrolled the full length of the page but have not yet tapped the hero CTA. These users have higher intent — they read more, which means they were evaluating more carefully. They need a final, confident, low-pressure invitation.
 
 **Final CTA block:**
-- Headline: "Ready to ask Healio your first question?"
+- Headline: "Ready to ask Arovia your first question?"
 - Sub-copy: "No sign-up required to start. Just tell us what's bothering you."
 - Primary CTA: "Start my health check" (teal, full-width on mobile)
 - App store badges: Google Play + App Store, side by side, 44px height, with Indian App Store ranking if available
@@ -514,7 +514,7 @@ Generic testimonials ("This app is great!" — John, New York) have zero credibi
 - **Grievance Officer:** Name, email, and phone number — this is legally mandatory under the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021 for platforms with more than 50 lakh users. Include it proactively even at launch.
 - WhatsApp support link (`https://wa.me/91XXXXXXXXXX`) — Indian users overwhelmingly prefer WhatsApp over email or ticketing systems for support. This is not a nice-to-have.
 - Privacy Policy, Terms of Service, Cookie Policy links
-- "Healio is for wellness guidance only and does not constitute medical diagnosis or treatment." — This legal disclaimer must be in the footer of every page.
+- "Arovia is for wellness guidance only and does not constitute medical diagnosis or treatment." — This legal disclaimer must be in the footer of every page.
 
 ---
 
@@ -555,9 +555,9 @@ Motion on this page serves one purpose: to make the interface feel alive and res
 
 **Chat Demo (S3):**
 - Scroll trigger at 40% viewport visibility — not 0% (prevents animation firing on fast scroll without the user actually seeing it)
-- Typewriter: 40ms per character for user messages, 30ms per character for Healio responses (slightly faster to feel smart)
+- Typewriter: 40ms per character for user messages, 30ms per character for Arovia responses (slightly faster to feel smart)
 - Typing indicator (3-dot bounce): dots animate at 400ms intervals with a `translateY(-4px)` bounce, eased
-- Message bubbles slide in from left (Healio) or right (user) with `translateX(±12px) opacity(0)` → rest position
+- Message bubbles slide in from left (Arovia) or right (user) with `translateX(±12px) opacity(0)` → rest position
 - The remedy card (final response) expands from 0 height with `scaleY(0)` → `scaleY(1)`, origin at top
 
 **Section Entrance Animations:**
@@ -579,9 +579,9 @@ Motion on this page serves one purpose: to make the interface feel alive and res
 
 ### 7.1 Copy Voice & Tone
 
-**The Healio voice is:** Calm, warm, knowledgeable, unpretentious. Think of the doctor in your family who doesn't use jargon. Who asks "how are you sleeping?" before prescribing anything. Who calls back to check if you're better.
+**The Arovia voice is:** Calm, warm, knowledgeable, unpretentious. Think of the doctor in your family who doesn't use jargon. Who asks "how are you sleeping?" before prescribing anything. Who calls back to check if you're better.
 
-**The Healio voice is not:** Clinical, authoritative, data-driven, startup-jargony, overly cheerful, dismissive of traditional medicine.
+**The Arovia voice is not:** Clinical, authoritative, data-driven, startup-jargony, overly cheerful, dismissive of traditional medicine.
 
 **Tone modifiers by section:**
 
@@ -694,13 +694,13 @@ On mobile screens, the primary CTA "Start my health check" must be available as 
 
 The existing design leads with "Get Started" which, in most Indian health apps, leads to a registration wall (email + password + OTP). This is the single biggest conversion drop-off point in Indian health apps. Practo reports 68% of users abandon at the email input step.
 
-Healio must adopt a **value-first, registration-second** model:
+Arovia must adopt a **value-first, registration-second** model:
 
 ```
 TAP CTA → LANGUAGE SELECT → FIRST MESSAGE (no gate) → RECEIVE VALUE → OPTIONAL SAVE
 ```
 
-The user must receive at least one complete, useful Healio response before any account creation is suggested. The save/register prompt appears only after value has been demonstrated.
+The user must receive at least one complete, useful Arovia response before any account creation is suggested. The save/register prompt appears only after value has been demonstrated.
 
 ### 9.2 Post-CTA Flow — Step by Step
 
@@ -712,7 +712,7 @@ Design note: This step is non-skippable. The language selection has an outsized 
 **Step 2 — First Symptom (Direct Chat):**
 The user lands directly in a chat interface. No "enter your name," no "create account," no form. The input field is pre-focused, the keyboard is open (mobile). Above the input field, a single soft prompt: "What's bothering you or someone in your family today?" — in the user's selected language.
 
-The chat interface shows Healio's avatar (the leaf logo) and a single opening message: "Tell me what you're experiencing. I'll ask a few simple questions." — in the selected language.
+The chat interface shows Arovia's avatar (the leaf logo) and a single opening message: "Tell me what you're experiencing. I'll ask a few simple questions." — in the selected language.
 
 **Step 3 — Conversation and Value Delivery:**
 The RAG AI runs its symptom-checking flow. From a landing page design perspective, the only requirement is that the first response always includes both a home care suggestion and an escalation signal. The response must never be longer than 3 short paragraphs or 2 bullet lists. Brevity signals respect for the user's time and literacy level.
@@ -746,7 +746,7 @@ This data is used to personalise the dynamic S7 section (seasonal nudges) and th
 
 ### 10.1 WCAG 2.1 AA Compliance — Minimum Standard
 
-| Criterion | Requirement | Healio-Specific Note |
+| Criterion | Requirement | Arovia-Specific Note |
 |---|---|---|
 | 1.1.1 Non-text content | All images have alt text | Illustrations need descriptive alt (not just "illustration") |
 | 1.4.3 Contrast (Minimum) | 4.5:1 for normal text, 3:1 for large | Verify teal on white (#1D9E75 on #F7F6F2 = 3.8:1 — must use darker teal for small text) |
@@ -834,7 +834,7 @@ This section documents specific decisions on the uploaded design screenshot.
 
 | Element | Rationale |
 |---|---|
-| Healio leaf logo on teal rounded-square | Teal leaf is the right visual language. Ayurvedic/nature association is strong in India. Well-executed. |
+| Arovia leaf logo on teal rounded-square | Teal leaf is the right visual language. Ayurvedic/nature association is strong in India. Well-executed. |
 | Off-white page background (`#F2F2F0` approx.) | Warm, non-clinical. Correct psychological choice for health context. |
 | Centered single-column layout | Appropriate for a wellness app. Medical authority reads better in centred, focused layouts than asymmetric editorial ones. |
 | Three trust icons at bottom (Evidence labels, DPDP, Wellness not diagnosis) | Correct content. Need visual upgrade but the three chosen trust signals are exactly right. |
@@ -870,7 +870,7 @@ This section documents specific decisions on the uploaded design screenshot.
 
 | Phrase | Why It Works |
 |---|---|
-| "Your family's health guide" | Positions Healio as an ongoing companion, not a one-time diagnostic tool. "Family" is the most important unit in Indian health decision-making. |
+| "Your family's health guide" | Positions Arovia as an ongoing companion, not a one-time diagnostic tool. "Family" is the most important unit in Indian health decision-making. |
 | "Home care that actually works" | "Actually works" signals that this is not vague advice — it is specific, practical guidance. The word "actually" does a lot of work here (it implies others don't work). |
 | "Ask anything, no judgment" | Addresses shame and embarrassment — a major barrier to health-seeking behaviour in India, particularly for sexual health, mental health, and addiction-adjacent questions. |
 | "Know when to see a doctor" | The most reassuring statement on the page. It says: "We will not let you miss something serious." |
@@ -921,6 +921,6 @@ This section documents specific decisions on the uploaded design screenshot.
 
 ---
 
-*Document version 1.0 · Healio Design Team · Confidential*  
+*Document version 1.0 · Arovia Design Team · Confidential*  
 *Review cycle: Every sprint (2 weeks) until launch, then quarterly post-launch*  
 *Owner: UX Design Lead*

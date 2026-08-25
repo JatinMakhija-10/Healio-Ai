@@ -86,7 +86,7 @@ export default function DoctorSignupPage() {
 
                 {/* Why Join Banner */}
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-white/10">
-                    <h3 className="text-white font-semibold mb-3 text-center">Why Join Healio.AI?</h3>
+                    <h3 className="text-white font-semibold mb-3 text-center">Why Join Arovia.AI?</h3>
                     <div className="grid grid-cols-3 gap-3">
                         <div className="text-center">
                             <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center mx-auto mb-2">

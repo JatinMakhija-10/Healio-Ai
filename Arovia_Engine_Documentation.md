@@ -1,6 +1,6 @@
-# Healio.AI — Comprehensive Engine Documentation
+# Arovia.AI — Comprehensive Engine Documentation
 
-This document outlines the end-to-end technical flow of how Healio.AI collects symptoms from users, processes them mathematically, runs them against validated medical decision rules, and generates highly individualized homeopathic medicine suggestions.
+This document outlines the end-to-end technical flow of how Arovia.AI collects symptoms from users, processes them mathematically, runs them against validated medical decision rules, and generates highly individualized homeopathic medicine suggestions.
 
 ---
 
@@ -9,7 +9,7 @@ This document outlines the end-to-end technical flow of how Healio.AI collects s
 ### 1. The Conversational Flow (Symptom Collection)
 **File:** `src/app/api/chat/route.ts`
 
-Healio uses an AI conversational assistant (powered by Groq / Llama-3) acting as a warm, empathetic doctor.
+Arovia uses an AI conversational assistant (powered by Groq / Llama-3) acting as a warm, empathetic doctor.
 
 #### Structured Questioning
 The AI is strictly prompted to collect data across 9 distinct clinical dimensions, one question at a time. It never asks generic "yes/no" questions for critical data.
@@ -47,19 +47,19 @@ If a red flag is detected, the system immediately ceases diagnosis, issues a hig
 ### 3. The Backend Diagnosis Pipeline (Symphony Knowledge Fusion)
 **File:** `src/app/api/diagnose/route.ts`
 
-If no red flags are found, the data is pushed to the advanced Diagnosis API. This pipeline is the brain of Healio, merging statistical math, classical homeopathy literature, and Generative AI. 
+If no red flags are found, the data is pushed to the advanced Diagnosis API. This pipeline is the brain of Arovia, merging statistical math, classical homeopathy literature, and Generative AI. 
 
 It executes in **five steps**:
 
 #### Step A: Bayesian MCMC Statistical Inference
 **File:** `src/lib/diagnosis/advanced/MCMCEngine.ts`
-Before asking the AI for an opinion, Healio runs a purely mathematical **Metropolis-Hastings algorithm** (Markov Chain Monte Carlo). 
+Before asking the AI for an opinion, Arovia runs a purely mathematical **Metropolis-Hastings algorithm** (Markov Chain Monte Carlo). 
 - It looks at the patient's symptoms and calculates the posterior probability of hundreds of conditions based on hardcoded *Sensitivity*, *Specificity*, and *Prevalence* metrics.
 - It detects symptom correlations (e.g., Right-sided pain + Nausea = High probability of Appendicitis or Gallbladder issues).
 - It outputs a ranked list of "Priors" (top condition candidates) along with a 95% Credible Interval (uncertainty metric) to prove mathematical confidence.
 
 #### Step B: Multi-Query RAG Retrieval (Boericke's Materia Medica)
-To ensure the AI doesn't hallucinate remedies, Healio searches a vector database containing **Boericke’s Materia Medica** (the foundational textbook of homeopathy).
+To ensure the AI doesn't hallucinate remedies, Arovia searches a vector database containing **Boericke’s Materia Medica** (the foundational textbook of homeopathy).
 - It embeds the patient's symptoms AND the top mathematical candidates (from Step A) using Gemini Embeddings.
 - It queries Supabase via semantic search (`match_boericke_embeddings`) to fetch the exact textbook paragraphs that match the patient's unique modalities (e.g., "headache worse from sunlight, better in a dark room").
 
@@ -76,7 +76,7 @@ The Enriched Prompt is sent to **Groq (Llama-3.3-70B)** (with **Gemini 2.5 Flash
 - The AI acts as the final judge, comparing the mathematical hypotheses against the textbook literature to produce the final JSON output.
 
 #### Step E: Smart Question Override (Information Gain)
-If the AI returns a diagnosis but its confidence is below 75%, Healio uses an **Entropy-Reduction Algorithm** (`InformationGainSelector`). 
+If the AI returns a diagnosis but its confidence is below 75%, Arovia uses an **Entropy-Reduction Algorithm** (`InformationGainSelector`). 
 Rather than guessing, it calculates which single medical question would mathematically divide the remaining condition probabilities in half, overrides the AI's diagnosis, and asks the user that specific follow-up question.
 
 ---
@@ -96,7 +96,7 @@ The actual selection of the 5 homeopathic medicines occurs during **Step D**. Th
 
 ## Part 2: Rule Engine & Logic Flow
 
-This section specifically explains the **decision-making brain** of Healio: how it knows when to ask questions, when to stop chatting, and how rigid clinical rules are applied to the conversational data.
+This section specifically explains the **decision-making brain** of Arovia: how it knows when to ask questions, when to stop chatting, and how rigid clinical rules are applied to the conversational data.
 
 ### 1. When to Ask Questions vs. When to Stop (The Chat Loop)
 The decision to chat vs. stop is primarily governed dynamically by the **Prompt Engine**, with a hard-coded mathematical override acting as a safety net.
@@ -128,7 +128,7 @@ If flagged, it surfaces these alerts at the very top of the diagnosis to ensure 
 
 #### B. Validated Clinical Decision Rules (The Rule Engine)
 **When it runs:** During the diagnosis phase, operating passively in the background (`ClinicalDecisionRules.ts`).
-**Logic Applied:** Healio implements real-world, peer-reviewed emergency medicine scoring algorithms. Instead of relying on an AI to "guess" if someone has Deep Vein Thrombosis, the system uses the exact formulas doctors use.
+**Logic Applied:** Arovia implements real-world, peer-reviewed emergency medicine scoring algorithms. Instead of relying on an AI to "guess" if someone has Deep Vein Thrombosis, the system uses the exact formulas doctors use.
 - **Wells Score (for DVT):** If the user mentions leg swelling, the engine applies the Wells Criteria (+1 for active cancer, +1 for bedridden, +1 for entire leg swollen, etc.). If the score is $\ge$ 3, it definitively flags "DVT Likely (High Probability) - Compression ultrasonography recommended."
 - **PERC Rule (for Pulmonary Embolism):** Evaluates 8 criteria. If all 8 are absent, it mathematically rules out a PE without needing clinical testing.
 - **HEART Score (for Cardiac Events):** Evaluates history, age, risk factors (hypertension, smoking, diabetes) to calculate the 6-week risk of a Major Adverse Cardiac Event.

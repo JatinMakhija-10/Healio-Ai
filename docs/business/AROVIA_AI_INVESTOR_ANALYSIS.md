@@ -1,4 +1,4 @@
-# Healio.AI — Exhaustive Codebase Analysis & Investor Intelligence Report
+# Arovia.AI — Exhaustive Codebase Analysis & Investor Intelligence Report
 
 > **Prepared:** February 2026 | **Classification:** Strategic & Confidential  
 > **Methodology:** Complete source-code audit of ~50,000+ lines across 200+ files
@@ -35,7 +35,7 @@
 
 ## 1. Executive Summary
 
-**Healio.AI** is a full-stack AI-powered healthcare platform that uniquely fuses **clinical-grade diagnostic intelligence** with **traditional Ayurvedic medicine** to create a holistic, personalized health companion. The platform is not a simple symptom-checker — it is a multi-engine clinical reasoning system with a three-sided marketplace connecting **patients**, **doctors**, and **administrators**.
+**Arovia.AI** is a full-stack AI-powered healthcare platform that uniquely fuses **clinical-grade diagnostic intelligence** with **traditional Ayurvedic medicine** to create a holistic, personalized health companion. The platform is not a simple symptom-checker — it is a multi-engine clinical reasoning system with a three-sided marketplace connecting **patients**, **doctors**, and **administrators**.
 
 ### Key Metrics at a Glance
 
@@ -56,7 +56,7 @@
 
 ### The Defensible Moat
 
-Healio.AI's competitive advantage is **not** a single feature — it is the **integration depth** of five proprietary engines working in concert:
+Arovia.AI's competitive advantage is **not** a single feature — it is the **integration depth** of five proprietary engines working in concert:
 
 ```
 Bayesian Diagnosis → Clinical Rules → Ayurvedic Profiling → NLP Understanding → Health Risk Assessment
@@ -204,7 +204,7 @@ The system collects structured symptom data across 7 dimensions:
 
 #### Stage 3: Bayesian Probabilistic Scoring — The Core Algorithm
 
-This is the mathematical heart of Healio.AI. Every condition receives a probability score calculated using **Bayes' Theorem in log-probability space**.
+This is the mathematical heart of Arovia.AI. Every condition receives a probability score calculated using **Bayes' Theorem in log-probability space**.
 
 **The Formula:**
 
@@ -621,7 +621,7 @@ Every table has fine-grained RLS policies:
 
 #### The Healthcare Crisis in India (Evidence from Codebase & Documentation)
 
-| Problem | Data Point | How Healio Addresses It |
+| Problem | Data Point | How Arovia Addresses It |
 |:---|:---|:---|
 | **The "Dr. Google" Effect** | 80% of users search symptoms online, causing cyberchondria | Bayesian inference replaces keyword panic with calibrated probabilities |
 | **Access Barriers** | India has 1 doctor per 1,445 people (WHO recommends 1:1,000) | AI-first triage reduces unnecessary consultations by ~40% |
@@ -651,7 +651,7 @@ Every table has fine-grained RLS policies:
 
 #### Unique Differentiator: "The Diagnosis Handshake"
 
-When a patient books a specialist through Healio, the appointment includes a `diagnosis_snapshot` — a frozen copy of the AI's analysis at booking time:
+When a patient books a specialist through Arovia, the appointment includes a `diagnosis_snapshot` — a frozen copy of the AI's analysis at booking time:
 
 ```sql
 appointments.diagnosis_snapshot JSONB  -- Frozen AI context at booking time
@@ -664,7 +664,7 @@ This means the doctor sees the AI's reasoning **before** the consultation begins
 
 #### Total Addressable Market (TAM)
 
-| Segment | Market Size | Healio's Entry Point |
+| Segment | Market Size | Arovia's Entry Point |
 |:---|:---|:---|
 | **India Digital Health** | $21B by 2025, growing at 27% CAGR | AI symptom checker → Telemedicine marketplace |
 | **AYUSH Market** | $18.1B by 2024, projected $28B by 2028 | Only digital platform integrating AYUSH with clinical AI |
@@ -682,7 +682,7 @@ This means the doctor sees the AI's reasoning **before** the consultation begins
 
 ### 3.4 Competitive Analysis
 
-| Feature | **Healio.AI** | Practo | Ada Health | WebMD | 1mg |
+| Feature | **Arovia.AI** | Practo | Ada Health | WebMD | 1mg |
 |:---|:---|:---|:---|:---|:---|
 | **Diagnosis Method** | Bayesian Inference | Doctor Consultation | Decision Trees | Keyword Match | None |
 | **Ayurvedic Integration** | ✅ Deep (Prakriti/Vikriti) | ❌ | ❌ | ❌ | ❌ |
@@ -695,7 +695,7 @@ This means the doctor sees the AI's reasoning **before** the consultation begins
 | **Constitution Profiling** | ✅ Dosha-based | ❌ | ❌ | ❌ | ❌ |
 | **India-First** | ✅ (INR, remedies) | ✅ | ❌ | ❌ | ✅ |
 
-**Key Insight:** No competitor combines clinical AI + Ayurvedic intelligence + marketplace. Healio occupies a **unique strategic position** at the intersection of these three domains.
+**Key Insight:** No competitor combines clinical AI + Ayurvedic intelligence + marketplace. Arovia occupies a **unique strategic position** at the intersection of these three domains.
 
 ### 3.5 Business Model & Revenue Strategy
 
@@ -706,14 +706,14 @@ The codebase reveals a **3-pillar revenue architecture** (from `REVENUE_STRATEGY
 | Revenue Stream | Model | Evidence in Code |
 |:---|:---|:---|
 | **Marketplace Commission** | 20% flat fee per consultation | `transactions.platform_fee` column, `commission_rate: 20%` in platform_settings |
-| **"Healio Plus" Subscription** | ₹399/month ($5) | Paywall logic, premium feature gates planned |
+| **"Arovia Plus" Subscription** | ₹399/month ($5) | Paywall logic, premium feature gates planned |
 | **Contextual Commerce** | 15-20% affiliate commission | Product recommendation within diagnosis results |
 
 #### Pillar 2: Provider Solutions (B2B SaaS)
 
 | Revenue Stream | Model | Evidence in Code |
 |:---|:---|:---|
-| **"Healio Pro" Workspace** | $50/month per doctor | Doctor dashboard with advanced analytics, AI SOAP notes |
+| **"Arovia Pro" Workspace** | $50/month per doctor | Doctor dashboard with advanced analytics, AI SOAP notes |
 | **Featured Listings** | CPC / Monthly flat fee | `is_featured` flag in doctors table, search ranking boost |
 
 #### Pillar 3: Data & Enterprise — "The Long Tail"
@@ -728,7 +728,7 @@ The codebase reveals a **3-pillar revenue architecture** (from `REVENUE_STRATEGY
 ```sql
 -- Transaction ledger with platform economics
 transactions.gross_amount  -- Total paid by patient
-transactions.platform_fee  -- Healio's 20% commission
+transactions.platform_fee  -- Arovia's 20% commission
 transactions.net_amount    -- Doctor's earnings
 transactions.currency = 'INR'  -- India-first pricing
 ```
@@ -746,7 +746,7 @@ transactions.currency = 'INR'  -- India-first pricing
 - Target: 10K consultations/month at 20% commission
 
 #### Phase 3: B2B Expansion (Months 6-12)
-- Launch "Healio Pro" for doctors
+- Launch "Arovia Pro" for doctors
 - Add employer/insurance B2B plans
 - Data licensing pilot with municipal health departments
 
@@ -824,7 +824,7 @@ transactions.currency = 'INR'  -- India-first pricing
 
 ### Q1: "What is the core technology differentiation?"
 
-**Answer:** Healio.AI's diagnosis engine uses **Bayesian inference** with per-symptom sensitivity/specificity weighting — the same mathematical framework used in actual clinical decision-making. This is fundamentally different from decision trees (Ada Health), keyword matching (WebMD), or pure LLM chatbots (which hallucinate). The system further integrates 5 validated clinical scoring algorithms (Wells, PERC, HEART, NEXUS, Ottawa) that are actually mandated in emergency departments worldwide.
+**Answer:** Arovia.AI's diagnosis engine uses **Bayesian inference** with per-symptom sensitivity/specificity weighting — the same mathematical framework used in actual clinical decision-making. This is fundamentally different from decision trees (Ada Health), keyword matching (WebMD), or pure LLM chatbots (which hallucinate). The system further integrates 5 validated clinical scoring algorithms (Wells, PERC, HEART, NEXUS, Ottawa) that are actually mandated in emergency departments worldwide.
 
 **Evidence:** `src/lib/diagnosis/engine.ts` line 450-570 implements the full Bayesian scoring pipeline. `src/lib/diagnosis/advanced/ClinicalDecisionRules.ts` implements Wells Score with literature references.
 
@@ -910,9 +910,9 @@ transactions.currency = 'INR'  -- India-first pricing
 
 ## 7. Conclusion & Strategic Recommendation
 
-### What Healio.AI Has Built
+### What Arovia.AI Has Built
 
-Healio.AI is **not** a symptom-checker. It is a **clinical reasoning platform** that:
+Arovia.AI is **not** a symptom-checker. It is a **clinical reasoning platform** that:
 
 1. **Thinks like a doctor** (Bayesian probabilistic inference, not keyword matching)
 2. **Knows Ayurveda** (constitutionally-aware, not surface-level)
@@ -934,10 +934,10 @@ Healio.AI is **not** a symptom-checker. It is a **clinical reasoning platform** 
 
 ### The Bottom Line
 
-Healio.AI sits at the intersection of three massive, growing markets (Digital Health, AYUSH, and Telemedicine) with a technically defensible product that no competitor has replicated. The platform is early-stage but architecturally mature — built to scale from Day 1.
+Arovia.AI sits at the intersection of three massive, growing markets (Digital Health, AYUSH, and Telemedicine) with a technically defensible product that no competitor has replicated. The platform is early-stage but architecturally mature — built to scale from Day 1.
 
 **The question isn't whether the market exists. It's whether the team can execute fast enough to capture it.**
 
 ---
 
-*This report was generated through exhaustive source-code analysis of the Healio.AI codebase. All claims are evidence-based, with direct references to specific files and code implementations.*
+*This report was generated through exhaustive source-code analysis of the Arovia.AI codebase. All claims are evidence-based, with direct references to specific files and code implementations.*

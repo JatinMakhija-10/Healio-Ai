@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Ingest Home Remedies into Supabase
+ * Arovia.AI — Ingest Home Remedies into Supabase
  * 
  * Reads data/home_remedies/nuskhe.json, generates Gemini embeddings for each
  * remedy, and inserts into the home_remedy_embeddings table.

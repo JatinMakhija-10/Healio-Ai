@@ -29,7 +29,7 @@ fever (40%) + cough (50%) + chest_pain (45%) = ambiguous
 ```
 
 ### Files
-- [`src/lib/diagnosis/advanced/SymptomCorrelations.ts`](file:///c:/Users/JATIN/Desktop/Healio.AI/src/lib/diagnosis/advanced/SymptomCorrelations.ts)
+- [`src/lib/diagnosis/advanced/SymptomCorrelations.ts`](file:///c:/Users/JATIN/Desktop/Arovia.AI/src/lib/diagnosis/advanced/SymptomCorrelations.ts)
 
 ---
 
@@ -63,7 +63,7 @@ Wells Score for DVT:
 - **High accuracy** (most have >95% negative predictive value)
 
 ### Files
-- [`src/lib/diagnosis/advanced/ClinicalDecisionRules.ts`](file:///c:/Users/JATIN/Desktop/Healio.AI/src/lib/diagnosis/advanced/ClinicalDecisionRules.ts)
+- [`src/lib/diagnosis/advanced/ClinicalDecisionRules.ts`](file:///c:/Users/JATIN/Desktop/Arovia.AI/src/lib/diagnosis/advanced/ClinicalDecisionRules.ts)
 
 ---
 
@@ -102,13 +102,13 @@ Honest uncertainty disclosure protects against liability by:
 - Being transparent about limitations
 
 ### Files
-- [`src/lib/diagnosis/advanced/UncertaintyQuantification.ts`](file:///c:/Users/JATIN/Desktop/Healio.AI/src/lib/diagnosis/advanced/UncertaintyQuantification.ts)
+- [`src/lib/diagnosis/advanced/UncertaintyQuantification.ts`](file:///c:/Users/JATIN/Desktop/Arovia.AI/src/lib/diagnosis/advanced/UncertaintyQuantification.ts)
 
 ---
 
 ## Remaining Improvements (Roadmap Created)
 
-See [`PRODUCTION_ROADMAP.md`](file:///c:/Users/JATIN/Desktop/Healio.AI/PRODUCTION_ROADMAP.md) for:
+See [`PRODUCTION_ROADMAP.md`](file:///c:/Users/JATIN/Desktop/Arovia.AI/PRODUCTION_ROADMAP.md) for:
 
 - ⏳ Temporal reasoning (disease progression)
 - ⏳ Formal state machine

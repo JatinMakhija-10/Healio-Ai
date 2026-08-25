@@ -1,8 +1,8 @@
-# HEALIO REDESIGN AUDIT
+# AROVIA REDESIGN AUDIT
 ## Design System Fragmentation + AI-Generic Pattern Checklist
 
 **Prepared for**: Freelance designer handoff  
-**Source**: Direct codebase audit — 100% verified across all 17 screen route handlers (`src/app/**/page.tsx`), `globals.css`, `tokens.css`, layout wrappers, and UI component definitions, cross-referenced with `Healio_AI_Comprehensive_Audit.docx` (August 2026).  
+**Source**: Direct codebase audit — 100% verified across all 17 screen route handlers (`src/app/**/page.tsx`), `globals.css`, `tokens.css`, layout wrappers, and UI component definitions, cross-referenced with `Arovia_AI_Comprehensive_Audit.docx` (August 2026).  
 **Brand Reference (ground truth)**: `src/app/page.tsx` (Landing Page) & `src/app/dashboard/consult/page.tsx` (Consultation/Chat)  
 **Screens covered**: 17 screens across 4 distinct application shells.
 
@@ -23,12 +23,12 @@
 | CTA shape | `rounded-full` | Pill buttons |
 | CTA size | `min-h-12` | Standardized touch targets |
 | Typeface | DM Serif Display (headings), DM Sans (body) | `var(--font-dm-serif)`, `var(--font-dm-sans)` |
-| Brand mark | `HealioMark` — 52×52px teal leaf icon at `rounded-[8px]` | Present on Landing Page |
+| Brand mark | `AroviaMark` — 52×52px teal leaf icon at `rounded-[8px]` | Present on Landing Page |
 | Tagline voice | "Apke ghar ka health guide." — Hindi-English bilingual, warmth-first | Core brand tone |
 
 ### Parallel Token Sets in Codebase (Fragmentation Evidence)
 
-1. **`tokens.css`**: Defines `--healio-brand-primary: #0F6E56` alongside `--color-confidence-high: #2E7D32` and `--healio-wellness-primary: #2D6A4F` in a single `:root` declaration.
+1. **`tokens.css`**: Defines `--arovia-brand-primary: #0F6E56` alongside `--color-confidence-high: #2E7D32` and `--arovia-wellness-primary: #2D6A4F` in a single `:root` declaration.
 2. **`globals.css`**: Defines `@theme inline` aliases (`--color-teal-base: #0F6E56`) alongside Tailwind defaults.
 3. **Sub-app Shell Drift**: Auth and Admin pages bypass `:root` variables completely and rely on standard Tailwind slate/purple/blue color utilities.
 
@@ -58,7 +58,7 @@
 
 #### 4. Patient Onboarding (`src/app/onboarding/page.tsx`)
 - **System**: **System B — Tailwind Slate + Teal (Wizard)**
-- **Details**: 8-step wizard. `bg-gradient-to-b from-slate-50 to-white`, `Progress` bar, `Card` border-slate-200. Text logo `healio.ai` with `text-teal-600 font-bold`.
+- **Details**: 8-step wizard. `bg-gradient-to-b from-slate-50 to-white`, `Progress` bar, `Card` border-slate-200. Text logo `arovia.ai` with `text-teal-600 font-bold`.
 - **Drift**: Uses slate cards and blue/purple/green medicine category pills instead of brand wellness tokens.
 - **Brand-Aligned?**: **Partial**
 
@@ -149,7 +149,7 @@
 | 1 — Landing | A (hex palette) | Y — Baseline | `#F7F6F2` canvas, DM Serif h1, 3 inline teal variants |
 | 2 — Login | B (slate+teal) | N — Brand-Absent | `{/* Header (No Logo) */}`, `bg-slate-900` button, `rounded-lg` |
 | 3 — Signup | B (slate+teal) | N — Brand-Absent | Pixel-identical to Login, no logo, no DM Serif |
-| 4 — Onboarding | B (slate+teal) | Partial | 8-step wizard, `from-slate-50 to-white`, `healio.ai` text logo |
+| 4 — Onboarding | B (slate+teal) | Partial | 8-step wizard, `from-slate-50 to-white`, `arovia.ai` text logo |
 | 5 — Patient Dashboard | C (mixed) | Partial | DM Serif greeting via inline style, `#111827` h1, `mockDuration` calculation |
 | 6 — Consultation/Chat | A (hex palette) | Y — Aligned | `bg-[#F7F6F2]`, DM Serif heading, `bg-[#1A1A2E]` buttons, `#E1F5EE` banner |
 | 7 — History | C (mixed) | Partial | Slate cards, `from-teal-600 to-teal-700` CTA gradient |
@@ -178,13 +178,13 @@ Evaluation of all 17 screens against the 8-point generic design criteria.
 - **Patient Dashboard (PR)**: DM Serif greeting adds personality, but 2-card metric layout matches standard SaaS dashboards.
 - **Consultation / Chat (NP)**: Warm off-white `#F7F6F2` canvas, custom medical cards (`MentalHealthAssessmentCard`, `SourcesDisclosure`), strong cultural personality.
 - **Admin Dashboard (P)**: "The Pulse" header, 4-stat grid, action queue — indistinguishable from a generic admin template.
-- **Fix Direction**: Introduce `HealioMark` and warm canvas `#F7F6F2` on auth screens; convert slate cards to warm-bordered cards (`#DAD7CF`).
+- **Fix Direction**: Introduce `AroviaMark` and warm canvas `#F7F6F2` on auth screens; convert slate cards to warm-bordered cards (`#DAD7CF`).
 
 ### 2. Aesthetic Gradients & AI Color Clichés
 - **Landing (NP)**: Flat color fills (`#F7F6F2`, `#E1F5EE`, `#1A1A2E`). No decorative gradients.
 - **Doctor Dashboard (P)**: 4 stat cards feature decorative top-right gradient quarter-circles (`from-teal-500/10`, `from-blue-500/10`, `from-green-500/10`, `from-purple-500/10`). Quick actions use `from-teal-600 to-teal-700` linear gradients.
 - **Admin Dashboard (P)**: 8 distinct gradient configurations (`from-blue-500 to-blue-600`, `from-emerald-500 to-teal-600`, `from-purple-500 to-purple-600`, `from-amber-500 to-orange-500`). Purple used prominently despite being absent from brand tokens.
-- **Fix Direction**: Remove 4 decorative gradient corner divs from Doctor Dashboard. Map Admin stat colors to semantic tokens (`--healio-brand-primary`, `--healio-severity-info`, etc.).
+- **Fix Direction**: Remove 4 decorative gradient corner divs from Doctor Dashboard. Map Admin stat colors to semantic tokens (`--arovia-brand-primary`, `--arovia-severity-info`, etc.).
 
 ### 3. Senseless Interactions
 - **Login / Signup (PR)**: `active:scale-[0.99]` on buttons — imperceptible on most displays.
@@ -226,7 +226,7 @@ Evaluation of all 17 screens against the 8-point generic design criteria.
 ## PRIORITY FIX LIST (Top 10 Highest-Impact Changes)
 
 1. **Brand-Absent Auth Screens (Login & Signup)**
-   - Add `<HealioMark />`, change canvas to `bg-[#F7F6F2]`, change CTA to `bg-[#1A1A2E] rounded-full hover:bg-[#0F6E56]`, apply DM Serif h1.
+   - Add `<AroviaMark />`, change canvas to `bg-[#F7F6F2]`, change CTA to `bg-[#1A1A2E] rounded-full hover:bg-[#0F6E56]`, apply DM Serif h1.
 2. **Typography Alignment on Doctor Dashboard**
    - Change Doctor Dashboard greeting to use `var(--font-dm-serif)` at weight 400 (`.text-display-condition`).
 3. **Eliminate Decorative Gradient Clichés**
@@ -234,9 +234,9 @@ Evaluation of all 17 screens against the 8-point generic design criteria.
 4. **Remove Emoji Labels from Admin Dashboard**
    - Replace `🗺️ Outbreak Radar`, `📊 Analytics`, `👥 Users` with Lucide `<Map />`, `<BarChart2 />`, `<Users />`.
 5. **Tokenize Admin Color Palette**
-   - Replace ad-hoc Tailwind gradient classes (`from-blue-500`, `from-purple-500`) with `--healio-*` semantic tokens.
+   - Replace ad-hoc Tailwind gradient classes (`from-blue-500`, `from-purple-500`) with `--arovia-*` semantic tokens.
 6. **Enable Hidden Ayurvedic Profile Section**
-   - Un-gate `{false && ayurvedicUi && ...}` in `src/app/dashboard/profile/page.tsx` and map to `--healio-wellness-*` tokens.
+   - Un-gate `{false && ayurvedicUi && ...}` in `src/app/dashboard/profile/page.tsx` and map to `--arovia-wellness-*` tokens.
 7. **Fix DM Serif Weight on Landing Page**
    - Change Landing h1 from `font-bold` (700) to `font-normal` (400) for authentic serif expression.
 8. **Remove Fabricated Session Durations**

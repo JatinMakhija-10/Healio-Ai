@@ -524,7 +524,7 @@ export default function BillingPage() {
                                             {isFree ? "Current Plan" : (
                                                 <>
                                                     <Sparkles className="h-3 w-3 mr-1" />
-                                                    Upgrade to {t.name.replace("Healio ", "")}
+                                                    Upgrade to {t.name.replace("Arovia ", "")}
                                                 </>
                                             )}
                                         </Button>

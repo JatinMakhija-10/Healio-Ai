@@ -1,7 +1,7 @@
 # Database Schema: Relational Architecture & Security
 
 ## 1. Core Philosophy
-Healio.AI uses a high-performance PostgreSQL schema hosted on Supabase. It prioritizes **Clinical Traceability** and **Data Isolation** via Row-Level Security (RLS).
+Arovia.AI uses a high-performance PostgreSQL schema hosted on Supabase. It prioritizes **Clinical Traceability** and **Data Isolation** via Row-Level Security (RLS).
 
 ## 2. Table Specifications
 ### A. `profiles`

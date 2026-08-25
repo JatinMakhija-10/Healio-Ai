@@ -99,21 +99,21 @@
     {
       "googleAgentId": "30f72e36-05bc-4c2b-89cd-245f89949a03",
       "trajectoryId": "59413de7-d1fa-448f-afa4-3484c3a338f3",
-      "summary": "Optimizing Healio RAG Performance",
+      "summary": "Optimizing Arovia RAG Performance",
       "lastStepIndex": 137,
       "lastModifiedTime": "2026-04-29T06:40:44.159Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

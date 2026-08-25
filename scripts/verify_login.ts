@@ -20,7 +20,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function debugAuth() {
-    const email = 'doctor_test@healio.ai';
+    const email = 'doctor_test@arovia.ai';
     const password = 'Doctor123!@#';
 
     console.log(`\n--- Debugging Auth for ${email} ---`);

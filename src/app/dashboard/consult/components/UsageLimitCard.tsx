@@ -40,7 +40,7 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
                     <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#E5F3F1] text-teal-700">
                         {isCooldown ? <Clock size={16} className="text-teal-600" /> : <Droplets size={16} className="fill-current text-teal-600" />}
                     </div>
-                    <span className="font-semibold text-[15px] opacity-90">Healio</span>
+                    <span className="font-semibold text-[15px] opacity-90">Arovia</span>
                 </div>
                 <div className={`rounded-full px-3 py-1 text-xs font-medium ${
                     isCooldown ? "bg-amber-900/40 text-amber-300" : "bg-[#FDECEA] text-[#C44635]"
@@ -52,7 +52,7 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
             {/* Usage Stats */}
             <div className="mb-6">
                 <div className="text-[11px] font-bold tracking-wider text-gray-400 mb-1 uppercase">
-                    {isCreditShort ? "Healio credits" : isCooldown ? "Please Wait" : "Consultations Used"}
+                    {isCreditShort ? "Arovia credits" : isCooldown ? "Please Wait" : "Consultations Used"}
                 </div>
                 {isCreditShort ? (
                     <p className="text-lg text-gray-300 leading-relaxed">
@@ -92,14 +92,14 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
 
             <div className="h-[1px] w-full bg-gray-700 mb-6" />
 
-            {/* Healio Plus CTA */}
+            {/* Arovia Plus CTA */}
             <div className="mb-6">
                 <div className="flex gap-4 items-start mb-5">
                     <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#E5F5EF]">
                         <Star className="text-teal-600 fill-teal-600 w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg mb-0.5 mt-0.5">Healio Plus</h3>
+                        <h3 className="font-bold text-lg mb-0.5 mt-0.5">Arovia Plus</h3>
                         <p className="text-[#A3A3A3] text-[13px] italic">Unlimited care, whenever you need it</p>
                     </div>
                 </div>
@@ -124,7 +124,7 @@ export function UsageLimitCard({ limit, resetsAt, code, cooldownRemaining, credi
                     onClick={onUpgradeClick}
                     className="w-full rounded-full border border-white/15 bg-white/10 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/15"
                 >
-                    Upgrade to Healio Plus
+                    Upgrade to Arovia Plus
                 </button>
                 <Link href="/dashboard/billing" className="block">
                     <button className="w-full rounded-full px-4 py-2.5 text-xs font-medium text-[#9FE1CB] transition-colors hover:text-white">

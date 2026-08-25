@@ -12,7 +12,7 @@ export function DisclaimerBanner() {
                 <div className="flex min-w-0 items-center gap-1.5">
                     <Info className="h-3.5 w-3.5 shrink-0 text-amber-600" />
                     <span className="truncate">
-                        <strong>Beta</strong> · Healio.AI is an AI tool, not a substitute for professional medical advice. Results may vary.
+                        <strong>Beta</strong> · Arovia.AI is an AI tool, not a substitute for professional medical advice. Results may vary.
                     </span>
                 </div>
                 <button
@@ -32,7 +32,7 @@ export function DisclaimerBanner() {
                         </p>
                     </div>
                     <p className="text-[11px] leading-relaxed text-amber-800/80">
-                        Healio.AI provides general health information and AI-assisted symptom analysis for educational purposes only.
+                        Arovia.AI provides general health information and AI-assisted symptom analysis for educational purposes only.
                         It does not provide medical diagnoses, treatment recommendations, or professional medical advice.
                         Always seek the guidance of a qualified healthcare provider with any questions you have regarding a medical condition.
                         Never disregard professional medical advice or delay in seeking it because of information provided by this application.

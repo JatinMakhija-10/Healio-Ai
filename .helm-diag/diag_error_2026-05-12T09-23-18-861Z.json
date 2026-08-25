@@ -36,8 +36,8 @@
     "2026-05-12 14:51:36.710 [info] I0512 14:51:36.685972 36076 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x755a382e490ced68",
     "2026-05-12 14:51:40.744 [info] I0512 14:51:40.734952 36076 planner_generator.go:283] Requesting planner with 102 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-12 14:51:44.065 [info] I0512 14:51:44.044485 36076 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xe85bf159a85a134a",
-    "2026-05-12 14:51:45.577 [info] I0512 14:51:45.551736 36076 planner_generator.go:198] Model output error: failed to read file: read c:/Users/JATIN/Desktop/CPP/Healio.AI/src/app/dashboard/profile: Incorrect function.",
-    "2026-05-12 14:51:45.577 [info] E0512 14:51:45.551736 36076 log.go:398] model output error: invalid tool call error (invalid_args) failed to read file: read c:/Users/JATIN/Desktop/CPP/Healio.AI/src/app/dashboard/profile: Incorrect function.",
+    "2026-05-12 14:51:45.577 [info] I0512 14:51:45.551736 36076 planner_generator.go:198] Model output error: failed to read file: read c:/Users/JATIN/Desktop/CPP/Arovia.AI/src/app/dashboard/profile: Incorrect function.",
+    "2026-05-12 14:51:45.577 [info] E0512 14:51:45.551736 36076 log.go:398] model output error: invalid tool call error (invalid_args) failed to read file: read c:/Users/JATIN/Desktop/CPP/Arovia.AI/src/app/dashboard/profile: Incorrect function.",
     "2026-05-12 14:51:45.870 [info] I0512 14:51:45.869382 36076 planner_generator.go:283] Requesting planner with 104 chat messages at model retry attempt 2 and API retry attempt 1",
     "2026-05-12 14:51:50.696 [info] I0512 14:51:50.692583 36076 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x28bb6722864b9116",
     "2026-05-12 14:51:54.700 [info] I0512 14:51:54.650125 36076 planner_generator.go:283] Requesting planner with 106 chat messages at model retry attempt 1 and API retry attempt 1",
@@ -231,7 +231,7 @@
     {
       "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
       "trajectoryId": "f3a8c84e-6913-4496-986e-c49c55a3282a",
-      "summary": "Healio Project Development Resumption",
+      "summary": "Arovia Project Development Resumption",
       "lastStepIndex": 888,
       "lastModifiedTime": "2026-05-12T09:23:17.693Z"
     },
@@ -245,21 +245,21 @@
     {
       "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
       "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
-      "summary": "Fixing Healio Notification System",
+      "summary": "Fixing Arovia Notification System",
       "lastStepIndex": 118,
       "lastModifiedTime": "2026-05-04T19:34:48.008Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

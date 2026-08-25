@@ -44,8 +44,8 @@
     "2026-04-29 12:11:12.598 [info] E0429 12:11:12.597485  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
     "2026-04-29 12:11:19.572 [info] I0429 12:11:19.571220  3884 planner_generator.go:283] Requesting planner with 59 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-04-29 12:11:23.914 [info] I0429 12:11:23.914137  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xdf5bb4ffe2102ed5",
-    "2026-04-29 12:11:53.139 [info] I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
-    "2026-04-29 12:11:53.139 [info] E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
+    "2026-04-29 12:11:53.139 [info] I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Arovia.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
+    "2026-04-29 12:11:53.139 [info] E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Arovia.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your code contents.  If you intend to overwrite the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.",
     "2026-04-29 12:11:53.154 [info] I0429 12:11:53.153744  3884 planner_generator.go:283] Requesting planner with 61 chat messages at model retry attempt 2 and API retry attempt 1",
     "2026-04-29 12:11:57.868 [info] I0429 12:11:57.868116  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc80328f73af743e7",
     "2026-04-29 12:11:58.634 [info] I0429 12:11:58.633740  3884 planner_generator.go:283] Requesting planner with 63 chat messages at model retry attempt 1 and API retry attempt 1",
@@ -121,8 +121,8 @@
       "E0429 12:11:12.597485  3884 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server\n",
       "I0429 12:11:19.571220  3884 planner_generator.go:283] Requesting planner with 59 chat messages at model retry attempt 1 and API retry attempt 1\n",
       "I0429 12:11:23.914137  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xdf5bb4ffe2102ed5\n",
-      "I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your co(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
-      "E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Healio.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
+      "I0429 12:11:53.139175  3884 planner_generator.go:198] Model output error: c:\\Users\\JATIN\\Desktop\\Arovia.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not overwritten with your co(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
+      "E0429 12:11:53.139175  3884 log.go:398] model output error: invalid tool call error (invalid_args) c:\\Users\\JATIN\\Desktop\\Arovia.AI\\src\\app\\api\\health\\route.ts already exists and its contents were not(truncated...)e the file, make the same call with Overwrite set to true. If you want to edit this file, please view its contents first then use a code edit tool. Otherwise, create a new file with a different name.\n",
       "I0429 12:11:53.153744  3884 planner_generator.go:283] Requesting planner with 61 chat messages at model retry attempt 2 and API retry attempt 1\n",
       "I0429 12:11:57.868116  3884 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc80328f73af743e7\n",
       "I0429 12:11:58.633740  3884 planner_generator.go:283] Requesting planner with 63 chat messages at model retry attempt 1 and API retry attempt 1\n",
@@ -143,21 +143,21 @@
     {
       "googleAgentId": "30f72e36-05bc-4c2b-89cd-245f89949a03",
       "trajectoryId": "59413de7-d1fa-448f-afa4-3484c3a338f3",
-      "summary": "Optimizing Healio RAG Performance",
+      "summary": "Optimizing Arovia RAG Performance",
       "lastStepIndex": 174,
       "lastModifiedTime": "2026-04-29T06:42:56.048Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

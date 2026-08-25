@@ -1,4 +1,4 @@
-# Healio.AI - Traditional Medicine Integration Strategy
+# Arovia.AI - Traditional Medicine Integration Strategy
 
 ## Comprehensive Plan for Ayurveda, Yoga, Siddha, Naturopathy & AYUSH Integration
 
@@ -34,15 +34,15 @@ India has the world's largest alternative medicine ecosystem under **AYUSH** (Ay
 
 ## 1.2 Strategic Goal
 
-Transform Healio.AI into the **world's most comprehensive digital platform** for traditional Indian medicine systems, while maintaining clinical safety standards.
+Transform Arovia.AI into the **world's most comprehensive digital platform** for traditional Indian medicine systems, while maintaining clinical safety standards.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                   HEALIO.AI TRADITIONAL MEDICINE VISION                      │
+│                   AROVIA.AI TRADITIONAL MEDICINE VISION                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │                         ┌───────────────┐                                    │
-│                         │   HEALIO.AI   │                                    │
+│                         │   AROVIA.AI   │                                    │
 │                         │  UNIFIED CORE │                                    │
 │                         └───────┬───────┘                                    │
 │                                 │                                            │
@@ -66,7 +66,7 @@ Transform Healio.AI into the **world's most comprehensive digital platform** for
 
 ## 1.3 Key Differentiators
 
-| Feature | Current Apps | Healio.AI Vision |
+| Feature | Current Apps | Arovia.AI Vision |
 |---------|--------------|------------------|
 | Diagnosis | Single system | Multi-system (Ayurveda + Siddha + Allopathy) |
 | Yoga | Generic videos | AI-personalized based on dosha/condition |
@@ -1281,7 +1281,7 @@ All traditional medicine content must be:
 
 ## Summary
 
-This document outlines a comprehensive strategy to transform Healio.AI into a **holistic health platform** that integrates:
+This document outlines a comprehensive strategy to transform Arovia.AI into a **holistic health platform** that integrates:
 
 1. **Ayurveda** - Deep Prakriti/Vikriti, herbs, Panchakarma, Dinacharya
 2. **Yoga** - 200+ asanas, pranayama, meditation with video library
@@ -1300,4 +1300,4 @@ This creates a truly **individualized** treatment experience that no other platf
 
 ---
 
-**© 2026 Healio.AI - All Rights Reserved**
+**© 2026 Arovia.AI - All Rights Reserved**

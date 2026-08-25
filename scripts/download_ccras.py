@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Download CCRAS E-Books & Monographs
+Arovia.AI -- Download CCRAS E-Books & Monographs
 ================================================
 Downloads Ayurvedic handbooks, monographs, and documents from CCRAS (Central
 Council for Research in Ayurvedic Sciences) — the official Government of India

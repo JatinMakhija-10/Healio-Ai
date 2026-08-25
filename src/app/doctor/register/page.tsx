@@ -170,7 +170,7 @@ export default function DoctorRegisterPage() {
                         <div className="space-y-2">
                             <h2 className="text-2xl font-bold text-slate-900">Application Submitted!</h2>
                             <p className="text-slate-600">
-                                Thank you for registering with Healio.AI. Our team will review your credentials and get back to you within 24-48 hours.
+                                Thank you for registering with Arovia.AI. Our team will review your credentials and get back to you within 24-48 hours.
                             </p>
                         </div>
                         <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600">
@@ -198,7 +198,7 @@ export default function DoctorRegisterPage() {
                         <Stethoscope className="h-4 w-4" />
                         Doctor Registration
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-900">Join Healio.AI</h1>
+                    <h1 className="text-3xl font-bold text-slate-900">Join Arovia.AI</h1>
                     <p className="text-slate-600">Complete your profile to start helping patients</p>
                 </div>
 

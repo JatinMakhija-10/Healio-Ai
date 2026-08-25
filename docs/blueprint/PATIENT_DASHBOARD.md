@@ -30,7 +30,7 @@ $$EstDuration = BaseDuration \times (1 + \text{ImbalanceFactor} - \text{AgniFact
   - **Backend**: Marking an action as complete updates the `pathway_adherence` table to calculate the "Wellness Score."
 
 ## 4. State Management (Persistence)
-- **Consultation History**: Uses `healio_consultation_history` in LocalStorage for sub-second dashboard loading, which is then synced with Supabase for cross-device access.
+- **Consultation History**: Uses `arovia_consultation_history` in LocalStorage for sub-second dashboard loading, which is then synced with Supabase for cross-device access.
 - **Real-time Sync**: The dashboard uses a "Heuristic ID" mapping for condition names to ensure the UI can render base pathways even if the database response is delayed.
 
 ## 5. Feature: Red Flag Visibility

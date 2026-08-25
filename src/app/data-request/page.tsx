@@ -30,7 +30,7 @@ export default function DataRequestPage() {
       details || "Not provided",
     ].join("\n");
 
-    return `mailto:privacy@healio.ai?subject=${encodeURIComponent(`Healio data request: ${requestType}`)}&body=${encodeURIComponent(body)}`;
+    return `mailto:privacy@arovia.ai?subject=${encodeURIComponent(`Arovia data request: ${requestType}`)}&body=${encodeURIComponent(body)}`;
   }, [contact, details, name, requestType]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -39,11 +39,11 @@ export default function DataRequestPage() {
   };
 
   return (
-    <main className="healio-public-page min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
+    <main className="arovia-public-page min-h-screen bg-[#F7F6F2] px-4 py-5 text-[#1C1C1E] sm:px-6">
       <div className="mx-auto max-w-4xl">
         <Link className="inline-flex min-h-12 items-center gap-2 text-sm font-bold text-[#0F6E56]" href="/">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Back to Healio
+          Back to Arovia
         </Link>
 
         <section className="grid gap-6 py-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
@@ -56,7 +56,7 @@ export default function DataRequestPage() {
               Data Request Form
             </h1>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Use this form to prepare a privacy request for access, correction, deletion, consent withdrawal, or export. Healio does not store this form in the browser; it prepares an email so the request can be sent from your own inbox.
+              Use this form to prepare a privacy request for access, correction, deletion, consent withdrawal, or export. Arovia does not store this form in the browser; it prepares an email so the request can be sent from your own inbox.
             </p>
             <div className="mt-6 rounded-[8px] border border-[#DAD7CF] bg-white p-4 text-sm leading-6 text-[#555555]">
               <p className="font-bold text-[#1A1A2E]">Before sending</p>
@@ -96,7 +96,7 @@ export default function DataRequestPage() {
               </label>
 
               <label className="grid gap-2 text-sm font-bold text-[#1A1A2E]" htmlFor="contact">
-                Email or phone linked to Healio
+                Email or phone linked to Arovia
                 <input
                   className="min-h-12 rounded-[8px] border border-[#DAD7CF] bg-[#FDFBF7] px-3 text-base text-[#1C1C1E] outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#9FE1CB]"
                   id="contact"
@@ -133,7 +133,7 @@ export default function DataRequestPage() {
                   <div>
                     <p className="font-bold text-[#1A1A2E]">Your request is ready to send.</p>
                     <p className="mt-1 text-sm leading-6 text-[#555555]">
-                      Open your email app and send this prepared request to Healio privacy support.
+                      Open your email app and send this prepared request to Arovia privacy support.
                     </p>
                     <a
                       className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-[#0F6E56] px-4 text-sm font-bold text-white"

@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (user) {
-            const storageKey = `healio_pending_profile_${user.id}`;
+            const storageKey = `arovia_pending_profile_${user.id}`;
             const storedProfile = localStorage.getItem(storageKey);
             if (storedProfile) {
                 try {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
             try {
                 const parsed = await api.getPatientConsultations(user.id);
                 setHistory(parsed as Consultation[]);
-                const historyKey = `healio_consultation_history_${user.id}`;
+                const historyKey = `arovia_consultation_history_${user.id}`;
                 localStorage.setItem(historyKey, JSON.stringify(parsed));
             } catch (e) {
                 console.error("Failed to load dashboard data", e);

@@ -1,4 +1,4 @@
-# Healio.AI - Complete Workflow Documentation
+# Arovia.AI - Complete Workflow Documentation
 
 ## Comprehensive Technical & Business Specification
 
@@ -31,13 +31,13 @@
 
 ## 1.1 Vision Statement
 
-Healio.AI is a **next-generation AI-powered healthcare platform** that uniquely bridges the gap between **modern clinical precision** and **ancient Ayurvedic wisdom**. Unlike standard symptom checkers that rely on static decision trees or keyword matching, Healio.AI employs a sophisticated **Bayesian Probabilistic Engine** to calculate condition probabilities with clinical-grade accuracy.
+Arovia.AI is a **next-generation AI-powered healthcare platform** that uniquely bridges the gap between **modern clinical precision** and **ancient Ayurvedic wisdom**. Unlike standard symptom checkers that rely on static decision trees or keyword matching, Arovia.AI employs a sophisticated **Bayesian Probabilistic Engine** to calculate condition probabilities with clinical-grade accuracy.
 
 **Mission**: To democratize access to high-quality, personalized healthcare that treats the individual, not just the symptom.
 
 ## 1.2 Key Differentiators
 
-| Feature | Traditional Apps | Healio.AI |
+| Feature | Traditional Apps | Arovia.AI |
 |---------|------------------|-----------|
 | Diagnosis Logic | IF/THEN Rules | Bayesian Inference |
 | Question Strategy | Static Tree | Information Gain (Akinator-style) |
@@ -49,7 +49,7 @@ Healio.AI is a **next-generation AI-powered healthcare platform** that uniquely 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        HEALIO.AI ECOSYSTEM                       │
+│                        AROVIA.AI ECOSYSTEM                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌────────────┐    ┌────────────┐    ┌────────────┐             │
@@ -208,7 +208,7 @@ src/
 
 **Location**: `src/lib/diagnosis/engine.ts`
 
-The diagnosis engine is the "brain" of Healio.AI. It uses a **multi-stage Bayesian inference system** that mimics how an experienced clinician thinks.
+The diagnosis engine is the "brain" of Arovia.AI. It uses a **multi-stage Bayesian inference system** that mimics how an experienced clinician thinks.
 
 ### Phase 1: Intelligent Intake
 
@@ -448,7 +448,7 @@ Severity = min(100, Deviation × 2)
 
 ## 4.4 Integration: How Prakriti Influences Diagnosis
 
-The unique power of Healio.AI is the **Ayurvedic Booster** system:
+The unique power of Arovia.AI is the **Ayurvedic Booster** system:
 
 ```typescript
 // If user's Prakriti is Vata-dominant:
@@ -473,7 +473,7 @@ This allows for personalized diagnosis that considers:
 
 **AYUSH** = Ministry of Ayurveda, Yoga & Naturopathy, Unani, Siddha, and Homeopathy
 
-Healio.AI integrates multiple traditional Indian medicine systems to provide truly holistic healthcare.
+Arovia.AI integrates multiple traditional Indian medicine systems to provide truly holistic healthcare.
 
 | System | Origin | Philosophy | Key Concept |
 |--------|--------|------------|-------------|
@@ -1204,7 +1204,7 @@ The AI asks strategic follow-up questions:
 ```
 
 ### Step 4: Holistic Remedies
-For each diagnosis, Healio provides multi-modal treatment suggestions:
+For each diagnosis, Arovia provides multi-modal treatment suggestions:
 
 | Category | Example (for Acid Reflux) |
 |----------|---------------------------|
@@ -1400,7 +1400,7 @@ Real-time monitoring for platform bypass attempts:
 
 ## 8.1 Overview
 
-The Admin Dashboard is the "Control Tower" for Healio.AI operations. It provides oversight on:
+The Admin Dashboard is the "Control Tower" for Arovia.AI operations. It provides oversight on:
 - Users & Doctors
 - Finances & Transactions
 - Clinical Quality
@@ -1681,7 +1681,7 @@ CREATE POLICY "admin_full_access" ON profiles
 
 ## 10.1 Security Architecture
 
-Healio.AI implements a **defense-in-depth** security model following OWASP best practices.
+Arovia.AI implements a **defense-in-depth** security model following OWASP best practices.
 
 ### Rate Limiting
 
@@ -1770,14 +1770,14 @@ All user inputs validated using Zod schemas:
 
 #### A. Marketplace Commission
 - **Model**: 20% flat fee on consultation bookings
-- **Mechanism**: Patient pays Healio → Consult happens → 80% to Doctor
+- **Mechanism**: Patient pays Arovia → Consult happens → 80% to Doctor
 
 #### B. Contextual Commerce ("Ayurvedic Amazon")
 - Products recommended inside diagnosis report
 - Revenue: 15-20% affiliate commission
 - Future: 60%+ margins on private label products
 
-#### C. "Healio Plus" Subscription ($5/month)
+#### C. "Arovia Plus" Subscription ($5/month)
 Features:
 - Unlimited deep scans (full Bayesian analysis)
 - Family profiles (up to 5 members)
@@ -1786,7 +1786,7 @@ Features:
 
 ### Pillar 2: Provider Solutions (B2B) - "The SaaS"
 
-#### A. "Healio Pro" Workspace ($50/month)
+#### A. "Arovia Pro" Workspace ($50/month)
 - AI Scribe (auto-generated SOAP notes)
 - Patient Analytics
 - Advanced scheduling
@@ -2101,7 +2101,7 @@ STRIPE_WEBHOOK_SECRET=whsec_xxx
 RATE_LIMIT_PER_MINUTE=100
 UPLOAD_RATE_LIMIT_PER_MINUTE=20
 MAX_UPLOAD_SIZE_MB=10
-ALLOWED_ORIGINS=http://localhost:3000,https://healio.ai
+ALLOWED_ORIGINS=http://localhost:3000,https://arovia.ai
 ```
 
 ## Appendix C: Glossary
@@ -2153,6 +2153,6 @@ ALLOWED_ORIGINS=http://localhost:3000,https://healio.ai
 
 ---
 
-**© 2026 Healio.AI - All Rights Reserved**
+**© 2026 Arovia.AI - All Rights Reserved**
 
 *This document is confidential and intended for internal use only.*

@@ -134,7 +134,7 @@ export function AdminSidebar() {
                 {!collapsed && (
                     <div className="flex flex-col">
                         <span className="text-lg font-bold text-white tracking-tight">
-                            Healio<span className="text-purple-400">.AI</span>
+                            Arovia<span className="text-purple-400">.AI</span>
                         </span>
                         <span className="text-[10px] text-purple-400/70 uppercase tracking-wider font-medium">
                             Admin Control

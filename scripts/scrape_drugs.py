@@ -1,5 +1,5 @@
 """
-Healio.AI — Drugs.com Medicine Index Scraper
+Arovia.AI — Drugs.com Medicine Index Scraper
 ==============================================
 Scrapes the A-Z list of all medicines from https://www.drugs.com/drug_information.html
 to build the all medicines database for the Persona page combobox.

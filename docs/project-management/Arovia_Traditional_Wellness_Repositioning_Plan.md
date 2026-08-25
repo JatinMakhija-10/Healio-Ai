@@ -1,21 +1,21 @@
-# Healio Traditional Wellness Repositioning Plan
+# Arovia Traditional Wellness Repositioning Plan
 
 **Date:** May 21, 2026  
-**Prepared for:** Healio product and design team  
+**Prepared for:** Arovia product and design team  
 **Input:** MOM dated May 20, 2026  
-**Purpose:** Convert the meeting direction into a researched UI/UX, branding, product, and compliance plan for repositioning Healio as a warmer, culturally relatable Indian wellness platform.
+**Purpose:** Convert the meeting direction into a researched UI/UX, branding, product, and compliance plan for repositioning Arovia as a warmer, culturally relatable Indian wellness platform.
 
 ---
 
 ## 1. Executive Direction
 
-Healio should move from a homeopathy-forward medical perception to a broader Indian preventive wellness companion. The new direction should make Healio feel like a calm daily guide for lifestyle, routines, home care, and culturally familiar wellness education, while still preserving safe escalation to qualified medical practitioners when risk appears.
+Arovia should move from a homeopathy-forward medical perception to a broader Indian preventive wellness companion. The new direction should make Arovia feel like a calm daily guide for lifestyle, routines, home care, and culturally familiar wellness education, while still preserving safe escalation to qualified medical practitioners when risk appears.
 
 The strongest positioning is:
 
-> **Healio helps Indian families understand everyday health concerns, build preventive routines, and choose safe next steps without panic.**
+> **Arovia helps Indian families understand everyday health concerns, build preventive routines, and choose safe next steps without panic.**
 
-This direction works because it keeps the existing Healio strengths - fast guidance, calming tone, privacy, and AI-assisted triage - but shifts the main promise away from disease treatment and toward:
+This direction works because it keeps the existing Arovia strengths - fast guidance, calming tone, privacy, and AI-assisted triage - but shifts the main promise away from disease treatment and toward:
 
 - Preventive wellness
 - Lifestyle routines
@@ -50,15 +50,15 @@ This plan is grounded in six research signals:
 
 ### Current Perception Risk
 
-Healio currently has strong homeopathy-oriented assets and doctor/patient workflows. That can create three risks:
+Arovia currently has strong homeopathy-oriented assets and doctor/patient workflows. That can create three risks:
 
-- Users may perceive Healio as a disease-treatment or prescribing platform.
+- Users may perceive Arovia as a disease-treatment or prescribing platform.
 - Marketing may drift into cure, prevention, or remedy claims that require careful substantiation.
 - The UI may feel like a medical tool instead of a daily wellness companion.
 
 ### New Brand Territory
 
-Healio should own the space between casual internet search and formal consultation:
+Arovia should own the space between casual internet search and formal consultation:
 
 | Old emphasis | New emphasis |
 |---|---|
@@ -70,7 +70,7 @@ Healio should own the space between casual internet search and formal consultati
 
 ### Recommended Brand Promise
 
-**Healio brings calm, culturally familiar wellness guidance to everyday health concerns, with clear safety boundaries.**
+**Arovia brings calm, culturally familiar wellness guidance to everyday health concerns, with clear safety boundaries.**
 
 ### Tagline Options
 
@@ -113,7 +113,7 @@ Avoid taglines that imply cure, diagnosis, guaranteed prevention, or medical rep
    - Quick concern entry
    - Saved routines
 
-2. **Ask Healio**
+2. **Ask Arovia**
    - Conversational wellness guidance
    - Red-flag screening
    - Evidence-labeled suggestions
@@ -229,7 +229,7 @@ Avoid:
 
 ## 7. Core Feature Restructure
 
-### 7.1 Ask Healio: From Symptom Checker to Wellness Navigator
+### 7.1 Ask Arovia: From Symptom Checker to Wellness Navigator
 
 **Goal:** Make the assistant safe, warm, and culturally relevant without acting like a diagnosing doctor.
 
@@ -450,7 +450,7 @@ Use Concept A as the emotional core, Concept B as the product system, and Concep
 
 ### 1. Home
 
-Purpose: Turn Healio into a daily wellness surface.
+Purpose: Turn Arovia into a daily wellness surface.
 
 Elements:
 
@@ -461,7 +461,7 @@ Elements:
 - Saved routines
 - Safety note link
 
-### 2. Ask Healio Flow
+### 2. Ask Arovia Flow
 
 Purpose: Guide users from concern to safe action.
 
@@ -525,7 +525,7 @@ Elements:
 ### Phase 2: UI/UX Revamp Prototype - 3 to 4 weeks
 
 - Design new visual system.
-- Build clickable prototype for Home, Ask Healio, Routine Builder, Remedy Detail, and Practitioner Escalation.
+- Build clickable prototype for Home, Ask Arovia, Routine Builder, Remedy Detail, and Practitioner Escalation.
 - Rewrite onboarding around wellness goals instead of medical diagnosis.
 - Add language preference and low-data personalization.
 - Test with 8 to 12 users across urban young adults and household decision-makers.
@@ -542,7 +542,7 @@ Elements:
 ### Phase 4: Product Implementation - 6 to 8 weeks
 
 - Implement new navigation.
-- Add redesigned Home and Ask Healio flow.
+- Add redesigned Home and Ask Arovia flow.
 - Build routine library and tracking.
 - Add safety labels and escalation logic.
 - Update practitioner profile pages.
@@ -562,7 +562,7 @@ Elements:
 ### Product Metrics
 
 - Home-to-action conversion
-- Ask Healio completion rate
+- Ask Arovia completion rate
 - Routine creation rate
 - 7-day routine retention
 - Practitioner escalation acceptance rate
@@ -601,7 +601,7 @@ Prepare the following for the next leadership/product meeting:
 
 3. **Five wireframes**
    - Home
-   - Ask Healio
+   - Ask Arovia
    - Routine Builder
    - Remedy/Routine Detail
    - Practitioner Escalation
@@ -664,7 +664,7 @@ Prepare the following for the next leadership/product meeting:
 
 ## 16. Team Decisions Needed
 
-1. Will Healio remain a medical workflow product with a wellness layer, or become wellness-first with medical escalation?
+1. Will Arovia remain a medical workflow product with a wellness layer, or become wellness-first with medical escalation?
 2. Which practitioner types will be supported and how will credentials be verified?
 3. What evidence-label vocabulary should be final?
 4. Which languages should be included in phase one?
@@ -678,11 +678,11 @@ Prepare the following for the next leadership/product meeting:
 
 Proceed with a wellness-first repositioning:
 
-**Healio should become a culturally Indian, preventive wellness companion with evidence-labeled traditional guidance and clear practitioner escalation.**
+**Arovia should become a culturally Indian, preventive wellness companion with evidence-labeled traditional guidance and clear practitioner escalation.**
 
-This gives Healio a broader audience than homeopathy-only, reduces treatment-claim risk, makes the UI warmer and more relatable, and keeps the safety posture required for a health-adjacent AI product.
+This gives Arovia a broader audience than homeopathy-only, reduces treatment-claim risk, makes the UI warmer and more relatable, and keeps the safety posture required for a health-adjacent AI product.
 
-The most important product change is not the color palette. It is the mental model: Healio should stop feeling like "tell me your disease and I will suggest a remedy" and start feeling like "tell me what is going on and I will help you choose a safe next step."
+The most important product change is not the color palette. It is the mental model: Arovia should stop feeling like "tell me your disease and I will suggest a remedy" and start feeling like "tell me what is going on and I will help you choose a safe next step."
 
 ---
 

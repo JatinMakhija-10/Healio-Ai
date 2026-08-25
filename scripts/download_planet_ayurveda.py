@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Download PlanetAyurveda Classical Texts (Free E-Books)
+Arovia.AI -- Download PlanetAyurveda Classical Texts (Free E-Books)
 ====================================================================
 Downloads classical Ayurvedic texts from planetayurveda.com/ayurveda-e-books/
 Saves PDFs to: data/ayurveda/raw/planet_ayurveda/

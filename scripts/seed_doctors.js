@@ -45,7 +45,7 @@ async function seedDoctors() {
     console.log("--- Seeding Doctors ---");
 
     for (const person of NAMES) {
-        const email = `${person.first.toLowerCase()}.${person.last.toLowerCase()}.${Math.floor(Math.random() * 1000)}@healio.test`;
+        const email = `${person.first.toLowerCase()}.${person.last.toLowerCase()}.${Math.floor(Math.random() * 1000)}@arovia.test`;
         const password = "password123";
         const fullName = `Dr. ${person.first} ${person.last}`;
         const specialization = SPECIALIZATIONS[Math.floor(Math.random() * SPECIALIZATIONS.length)];

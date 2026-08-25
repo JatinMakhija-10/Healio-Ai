@@ -1,5 +1,5 @@
 /**
- * Information Gain Selector for Healio.AI
+ * Information Gain Selector for Arovia.AI
  * 
  * Uses MCMC posteriors (or Bayesian scores) to select the next best question
  * by maximizing expected information gain (entropy reduction).

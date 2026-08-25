@@ -70,7 +70,7 @@ export default function ClinicalSandboxPage() {
                 </div>
                 <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 gap-1.5 px-3 py-1">
                     <Microscope className="h-3.5 w-3.5" />
-                    Healio Pro Feature
+                    Arovia Pro Feature
                 </Badge>
             </div>
 

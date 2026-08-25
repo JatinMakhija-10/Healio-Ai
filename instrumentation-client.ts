@@ -25,7 +25,7 @@ if (dsn) {
 
         integrations: [
             Sentry.replayIntegration({
-                // Healio.AI handles PHI — mask all text and media by default.
+                // Arovia.AI handles PHI — mask all text and media by default.
                 maskAllText: true,
                 blockAllMedia: true,
             }),

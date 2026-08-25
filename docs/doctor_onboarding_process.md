@@ -1,7 +1,7 @@
 # Doctor Onboarding & Verification Process
 
 ## Overview
-This document outlines the standardized process for onboarding new doctors to the Healio.AI platform. The goal is to ensure all medical practitioners are legitimate, verified, and legally authorized to practice before they can interact with patients.
+This document outlines the standardized process for onboarding new doctors to the Arovia.AI platform. The goal is to ensure all medical practitioners are legitimate, verified, and legally authorized to practice before they can interact with patients.
 
 ## 1. Registration Flow (Doctor Side)
 The onboarding process is a guided 4-step wizard designed to collect comprehensive credentials.

@@ -53,7 +53,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
 
         const recognition = new SpeechRecognitionAPI();
         // Read user's preferred language from Settings (user-specific), default to en-IN
-        const langKey = user?.id ? `healio_speech_lang_${user.id}` : "healio_speech_lang";
+        const langKey = user?.id ? `arovia_speech_lang_${user.id}` : "arovia_speech_lang";
         const preferredLang = typeof window !== "undefined"
             ? localStorage.getItem(langKey) || "en-IN"
             : "en-IN";

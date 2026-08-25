@@ -1,7 +1,7 @@
 /**
  * /api/rag/multi-query
  *
- * Multi-Query RAG endpoint for the Healio diagnosis pipeline.
+ * Multi-Query RAG endpoint for the Arovia diagnosis pipeline.
  */
 
 import { NextResponse } from "next/server";

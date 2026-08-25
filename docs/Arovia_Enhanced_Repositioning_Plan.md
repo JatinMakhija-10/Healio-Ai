@@ -1,14 +1,14 @@
-# Healio Traditional Wellness Repositioning Plan
+# Arovia Traditional Wellness Repositioning Plan
 **Enhanced & Evaluated Edition**
 
 | Field | Detail |
 |---|---|
 | Date | May 21, 2026 |
-| Prepared for | Healio Product & Design Team |
+| Prepared for | Arovia Product & Design Team |
 | Version | 2.0 — Enhanced with Evaluation & Clinical Utility Framework |
 | Status | Internal Planning Document |
 
-> **About this document:** This enhanced edition adds (1) a critical evaluation of the original plan, (2) a new Clinical Utility Framework defining how Healio can maximise genuine health value within honest, compliant boundaries, and (3) strengthened product, content, and governance guidance throughout.
+> **About this document:** This enhanced edition adds (1) a critical evaluation of the original plan, (2) a new Clinical Utility Framework defining how Arovia can maximise genuine health value within honest, compliant boundaries, and (3) strengthened product, content, and governance guidance throughout.
 
 ---
 
@@ -16,7 +16,7 @@
 
 ## 1. Critical Evaluation of the Original Plan
 
-The May 21 plan is a strong strategic document. It is well-researched, compliance-aware, and reflects a clear-eyed reading of where Healio's risks lie. The following evaluation identifies genuine strengths, gaps, and areas that need deeper development before the plan becomes actionable.
+The May 21 plan is a strong strategic document. It is well-researched, compliance-aware, and reflects a clear-eyed reading of where Arovia's risks lie. The following evaluation identifies genuine strengths, gaps, and areas that need deeper development before the plan becomes actionable.
 
 ### 1.1 Strengths
 
@@ -28,12 +28,12 @@ The May 21 plan is a strong strategic document. It is well-researched, complianc
 
 ### 1.2 Gaps That Need Addressing
 
-- **The plan does not define what Healio's AI can actually do clinically.** Saying "AI provides education and wellness navigation" is compliant language but leaves the product team without clear guidance on what value the AI creates beyond a well-written FAQ. This gap is filled in Section 3.
+- **The plan does not define what Arovia's AI can actually do clinically.** Saying "AI provides education and wellness navigation" is compliant language but leaves the product team without clear guidance on what value the AI creates beyond a well-written FAQ. This gap is filled in Section 3.
 - **Brand concepts lack differentiation logic.** Concepts A, B, and C overlap heavily. The "recommended blend" is vague. A clearer decision tree for choosing between them — based on target segment — is needed.
 - **Success metrics include outputs but no outcome metrics.** Did users make better decisions? Did escalations match appropriate cases? The plan should distinguish leading from lagging indicators.
-- **No competitor or benchmark analysis.** The plan positions Healio in the abstract; it does not situate it against 1mg, Practo, Ayurvedic app competitors, or general health-search alternatives.
+- **No competitor or benchmark analysis.** The plan positions Arovia in the abstract; it does not situate it against 1mg, Practo, Ayurvedic app competitors, or general health-search alternatives.
 - **Data architecture is underspecified.** Section 7.4 of the original mentions data-minimisation but does not specify what data is collected, how long it is retained, or how the consent flow is structured technically.
-- **Practitioner credentialing process is absent.** The plan mentions displaying qualifications but does not define how Healio verifies them — both a safety and regulatory matter.
+- **Practitioner credentialing process is absent.** The plan mentions displaying qualifications but does not define how Arovia verifies them — both a safety and regulatory matter.
 
 ### 1.3 Overall Assessment
 
@@ -45,19 +45,19 @@ The May 21 plan is a strong strategic document. It is well-researched, complianc
 
 ## 2. Executive Direction (Confirmed & Strengthened)
 
-> **Brand Promise:** Healio helps Indian families understand everyday health concerns, build preventive routines, and choose safe next steps — without panic, and without replacing professional care.
+> **Brand Promise:** Arovia helps Indian families understand everyday health concerns, build preventive routines, and choose safe next steps — without panic, and without replacing professional care.
 
-### 2.1 What Healio Is and Is Not
+### 2.1 What Arovia Is and Is Not
 
 | Category | Meaning |
 |---|---|
-| **Healio IS** | A wellness navigation layer that helps users understand concerns, sort self-manageable from serious, access culturally relevant routines, and reach qualified practitioners when needed |
-| **Healio IS** | An evidence-labelled library of traditional and modern wellness guidance |
-| **Healio IS** | A safe escalation engine that detects red flags and routes users appropriately |
-| **Healio IS NOT** | A diagnostic platform — it does not identify disease in a user |
-| **Healio IS NOT** | A prescribing platform — it does not issue treatment instructions |
-| **Healio IS NOT** | A replacement for registered medical practitioners |
-| **Healio IS NOT** | A platform that guarantees outcomes or certifies remedies as cures |
+| **Arovia IS** | A wellness navigation layer that helps users understand concerns, sort self-manageable from serious, access culturally relevant routines, and reach qualified practitioners when needed |
+| **Arovia IS** | An evidence-labelled library of traditional and modern wellness guidance |
+| **Arovia IS** | A safe escalation engine that detects red flags and routes users appropriately |
+| **Arovia IS NOT** | A diagnostic platform — it does not identify disease in a user |
+| **Arovia IS NOT** | A prescribing platform — it does not issue treatment instructions |
+| **Arovia IS NOT** | A replacement for registered medical practitioners |
+| **Arovia IS NOT** | A platform that guarantees outcomes or certifies remedies as cures |
 
 ### 2.2 The Mental Model Shift
 
@@ -75,13 +75,13 @@ The single most important product change is not visual. It is cognitive.
 
 ## 3. Clinical Utility Framework: Maximising Value Within Honest Boundaries
 
-This section directly addresses a gap in the original plan. It defines precisely how Healio's AI can create genuine, substantial clinical value for users — without making diagnostic claims, without legal risk, and without misleading users about what the product does.
+This section directly addresses a gap in the original plan. It defines precisely how Arovia's AI can create genuine, substantial clinical value for users — without making diagnostic claims, without legal risk, and without misleading users about what the product does.
 
 > **Important note:** The goal of this framework is not to find clever workarounds to compliance rules. It is to demonstrate that operating within honest, legal boundaries still enables an extremely useful product — one that meaningfully improves health decisions for millions of users.
 
 ### 3.1 The Space Between Search and Diagnosis
 
-There is a large, underserved space between a Google search result and a clinical consultation. Healio's value lives here. Consider what a trusted, medically literate friend can do when you describe a symptom:
+There is a large, underserved space between a Google search result and a clinical consultation. Arovia's value lives here. Consider what a trusted, medically literate friend can do when you describe a symptom:
 
 - Tell you the range of common, everyday causes of that symptom pattern
 - Tell you which features of your situation are reassuring and which are concerning
@@ -91,24 +91,24 @@ There is a large, underserved space between a Google search result and a clinica
 - Recommend you see a professional today versus tomorrow versus next week
 - Explain what a practitioner told you in plain language
 
-None of the above is diagnosis. All of it is enormously valuable. **This is exactly what Healio's AI should do.**
+None of the above is diagnosis. All of it is enormously valuable. **This is exactly what Arovia's AI should do.**
 
-### 3.2 What Healio's AI Can Legitimately Do
+### 3.2 What Arovia's AI Can Legitimately Do
 
-| Capability | What Healio Does | Design Constraint |
+| Capability | What Arovia Does | Design Constraint |
 |---|---|---|
 | **Symptom pattern education** | Explain what conditions commonly present with this symptom combination in general population terms | Always present as population-level possibilities, never as the user's diagnosis. Use "many people with this pattern have…" not "you have…" |
 | **Temporal guidance** | Advise on how long a symptom is typically self-limiting before professional review is warranted | Frame as general guidance, not a personalised prognosis. "Most uncomplicated cases resolve within X days; if not, see a practitioner." |
 | **Red-flag detection** | Identify features in the user's description that indicate potential urgency | The highest-value capability. Do it aggressively and conservatively — always better to escalate when uncertain. |
 | **Self-care guidance** | Recommend evidence-supported or traditionally accepted self-care appropriate to the concern | Label evidence level. Include contraindications. Emphasise monitoring. |
-| **Practitioner preparation** | Help users know what information to bring, what questions to ask, what examination to expect | Positions Healio as complement to professional care, not substitute. Increases consultation quality. |
+| **Practitioner preparation** | Help users know what information to bring, what questions to ask, what examination to expect | Positions Arovia as complement to professional care, not substitute. Increases consultation quality. |
 | **Medication context education** | Explain how common OTC medications or traditional preparations work in general terms | Never suggest dosing for prescription medications. Always recommend reading labels and consulting a pharmacist or doctor. |
 | **Care pathway navigation** | Guide users toward the right type of practitioner for their concern | A key service gap — many users do not know whether to see a GP, specialist, AYUSH practitioner, or emergency care. |
 | **Post-consultation support** | Help users understand what a practitioner told them, follow-up timelines, lifestyle adjustments | Does not modify or second-guess the practitioner's advice; amplifies adherence and understanding. |
 
 ### 3.3 The Honest Warning Framework
 
-The original plan proposes warnings as a compliance layer. This framework treats them as a core UX feature. A well-designed warning system makes Healio more useful, not less.
+The original plan proposes warnings as a compliance layer. This framework treats them as a core UX feature. A well-designed warning system makes Arovia more useful, not less.
 
 - **Warnings must be proximate.** They appear next to the relevant content, not on a separate legal page nobody reads.
 - **Warnings must be specific.** "Consult a doctor" is useless. "This should not be used if you are pregnant, have kidney disease, or take blood thinners — ask your doctor or pharmacist first" is useful.
@@ -132,7 +132,7 @@ The original plan provides a safe/risky language table. This framework goes furt
 
 Every user pathway must route through an escalation ladder. This is both a safety feature and a product differentiator.
 
-| Level | Trigger Criteria | Healio Response |
+| Level | Trigger Criteria | Arovia Response |
 |---|---|---|
 | **Level 1 — Routine Self-Care** | Symptom is common, mild, temporally limited, no danger signs | Self-care guidance with monitoring instructions and a clear "return here if X, Y, or Z" trigger |
 | **Level 2 — Watchful Waiting** | Symptom is not immediately dangerous but warrants monitoring | Home care plus a specific time threshold: "If this continues beyond 48 hours, or worsens before then, see a practitioner" |
@@ -140,7 +140,7 @@ Every user pathway must route through an escalation ladder. This is both a safet
 | **Level 4 — Urgent Consult** | Symptom pattern warrants same-day professional attention | "Please see a doctor today. Here is what to tell them. Do not self-treat while waiting." |
 | **Level 5 — Emergency** | Danger signs present | "This needs emergency care. Call emergency services or go to the nearest emergency department now. Do not delay." |
 
-### 3.6 What Healio Should Never Do
+### 3.6 What Arovia Should Never Do
 
 - Never name a specific disease as the user's diagnosis, even with caveats. "You likely have X" is a diagnosis regardless of the qualifier.
 - Never suggest stopping, modifying, or substituting a prescription medication.
@@ -160,11 +160,11 @@ Every user pathway must route through an escalation ladder. This is both a safet
 
 ### 4.1 Current Perception Risk
 
-Healio's existing homeopathy-forward assets create three compounding risks:
+Arovia's existing homeopathy-forward assets create three compounding risks:
 
-1. Users may perceive Healio as a treatment or prescribing platform, creating misaligned expectations and potential liability.
-2. Marketing copy may drift into cure or prevention claims that require substantiation Healio cannot provide.
-3. The clinical dashboard aesthetic positions Healio as a medical tool rather than a daily wellness companion, limiting retention and broadening.
+1. Users may perceive Arovia as a treatment or prescribing platform, creating misaligned expectations and potential liability.
+2. Marketing copy may drift into cure or prevention claims that require substantiation Arovia cannot provide.
+3. The clinical dashboard aesthetic positions Arovia as a medical tool rather than a daily wellness companion, limiting retention and broadening.
 
 ### 4.2 New Brand Territory
 
@@ -215,7 +215,7 @@ Healio's existing homeopathy-forward assets create three compounding risks:
 | Section | Content | Design Note |
 |---|---|---|
 | **1. Home** | Daily check-in, seasonal prompt, quick concern entry, saved routines | Must not ask users to diagnose themselves |
-| **2. Ask Healio** | Conversational guidance, red-flag screening, evidence-labeled suggestions, escalation | Governed by Clinical Utility Framework |
+| **2. Ask Arovia** | Conversational guidance, red-flag screening, evidence-labeled suggestions, escalation | Governed by Clinical Utility Framework |
 | **3. Remedies & Routines** | Kitchen care, sleep, digestion, cough/cold, skin, women's wellness, child-safe, elder care | No content without evidence tag |
 | **4. My Wellness** | Routine tracker, hydration/sleep/movement/food/stress, cycle/seasonal notes | Primary retention driver |
 | **5. Practitioners** | Qualified profiles, scope labels, qualifications, appointment/chat | Credentialing required |
@@ -271,7 +271,7 @@ Warm, clean, household-familiar. Calm for anxious users. More tactile than a gen
 
 ## 8. Core Feature Restructure
 
-### 8.1 Ask Healio: Wellness Navigator
+### 8.1 Ask Arovia: Wellness Navigator
 
 New response structure for every concern entry:
 
@@ -434,7 +434,7 @@ Strict separation between wellness guidance and consultation. Practitioner profi
 
 ### 12.3 Telemedicine Compliance
 
-> Telemedicine Practice Guidelines (MoHFW, 2020) govern what practitioners can do remotely. Key constraints: certain medications cannot be prescribed via teleconsultation; informed consent must be obtained; patient records must be maintained. Healio's practitioner layer must comply with these guidelines.
+> Telemedicine Practice Guidelines (MoHFW, 2020) govern what practitioners can do remotely. Key constraints: certain medications cannot be prescribed via teleconsultation; informed consent must be obtained; patient records must be maintained. Arovia's practitioner layer must comply with these guidelines.
 
 ---
 
@@ -443,7 +443,7 @@ Strict separation between wellness guidance and consultation. Practitioner profi
 ### 13.1 Leading Indicators (Process)
 
 - Home-to-action conversion rate
-- Ask Healio completion rate
+- Ask Arovia completion rate
 - Routine creation rate
 - 7-day routine retention rate
 - Practitioner escalation acceptance rate
@@ -451,7 +451,7 @@ Strict separation between wellness guidance and consultation. Practitioner profi
 
 ### 13.2 Lagging Indicators (Outcomes — New)
 
-- User self-reported: "I made a better decision because of Healio" (post-session survey)
+- User self-reported: "I made a better decision because of Arovia" (post-session survey)
 - Escalation accuracy: did Level 4/5 escalations match cases that genuinely needed urgent care? (sample audit)
 - Practitioner feedback: are users arriving better prepared for consultations?
 - Suppression accuracy: were remedies correctly withheld for contraindicated users?
@@ -483,7 +483,7 @@ Strict separation between wellness guidance and consultation. Practitioner profi
 | **Phase 1** | Direction & Safety Foundation — 2 weeks | Approve positioning. Freeze risky language. Create evidence taxonomy. Audit existing content. Define red-flag rules. Draft first wireframes. |
 | **Phase 2** | UI/UX Revamp Prototype — 3–4 weeks | New visual system. Clickable prototype. Revised onboarding. Language and low-data personalisation. User testing (8–12 participants). |
 | **Phase 3** | Content & Compliance System — 4 weeks | Content card template. Review top 50 topics. Evidence labels and contraindications. Advertising claim checklist. DPDP-aligned consent copy. Reviewer workflow. |
-| **Phase 4** | Product Implementation — 6–8 weeks | New navigation. Redesigned Home and Ask Healio. Routine library. Safety labels and escalation logic. Practitioner profiles. Updated app-store copy. |
+| **Phase 4** | Product Implementation — 6–8 weeks | New navigation. Redesigned Home and Ask Arovia. Routine library. Safety labels and escalation logic. Practitioner profiles. Updated app-store copy. |
 | **Phase 5** | Launch & Measurement — 2 weeks | Soft launch. Track activation, routine creation, escalations, complaints. Comprehension testing. Compliance review before wider launch. |
 
 ---
@@ -519,7 +519,7 @@ Chest pain · Severe breathing difficulty · Stroke-like symptoms · Severe alle
 
 | # | Area | Detail |
 |---|---|---|
-| 1 | Product scope | Will Healio remain a medical workflow product with a wellness layer, or become wellness-first with medical escalation? (Recommendation: wellness-first) |
+| 1 | Product scope | Will Arovia remain a medical workflow product with a wellness layer, or become wellness-first with medical escalation? (Recommendation: wellness-first) |
 | 2 | Practitioner types | Which systems of practice will be supported, and what is the credential verification process? |
 | 3 | Evidence vocabulary | Which final evidence label terms will be used — and who approves the classification of each topic? |
 | 4 | Language rollout | Which languages in Phase 1? (At minimum: Hindi, English, one South Indian language) |
@@ -532,7 +532,7 @@ Chest pain · Severe breathing difficulty · Stroke-like symptoms · Severe alle
 
 ## 17. Recommended Decision
 
-> **Proceed with wellness-first repositioning.** Healio should become a culturally Indian, preventive wellness companion with evidence-labelled traditional guidance, a clear clinical utility model, and safe practitioner escalation. This reduces treatment-claim risk, widens the addressable audience beyond homeopathy users, and creates a genuinely useful product — not merely a compliant one.
+> **Proceed with wellness-first repositioning.** Arovia should become a culturally Indian, preventive wellness companion with evidence-labelled traditional guidance, a clear clinical utility model, and safe practitioner escalation. This reduces treatment-claim risk, widens the addressable audience beyond homeopathy users, and creates a genuinely useful product — not merely a compliant one.
 
 The most important product change is the mental model: stop being *"tell me your disease and I will suggest a remedy"* and start being *"tell me what is going on and I will help you understand it, manage what you safely can, and reach the right person for what you cannot."*
 

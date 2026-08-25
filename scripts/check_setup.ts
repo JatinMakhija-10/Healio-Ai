@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-console.log("=== HEALIO.AI SETUP DIAGNOSTIC ===\n");
+console.log("=== AROVIA.AI SETUP DIAGNOSTIC ===\n");
 
 const cwd = process.cwd();
 const files = ['.env.local', '.env'];

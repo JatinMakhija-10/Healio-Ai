@@ -5,7 +5,7 @@ import { Users, Share2 } from "lucide-react";
 export function FamilyInviteCard({ className = "" }: { className?: string }) {
   const handleInviteWhatsApp = () => {
     const text = encodeURIComponent(
-      "I've been using Healio.AI for family health advice — join my family circle so we can share summaries and get care guidance: https://healio.ai/signup?ref=family"
+      "I've been using Arovia.AI for family health advice — join my family circle so we can share summaries and get care guidance: https://arovia.ai/signup?ref=family"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -23,7 +23,7 @@ export function FamilyInviteCard({ className = "" }: { className?: string }) {
             Keep track of your whole family's health
           </h4>
           <p className="mt-0.5 text-xs leading-5 text-[#33594D]">
-            Invite family members to join your Healio circle so you can share consultation summaries and coordinate care easily.
+            Invite family members to join your Arovia circle so you can share consultation summaries and coordinate care easily.
           </p>
           <div className="mt-3 flex items-center gap-3">
             <button
