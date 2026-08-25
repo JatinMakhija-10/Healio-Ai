@@ -25,25 +25,31 @@ export async function getJinaEmbedding(text: string): Promise<number[]> {
         return [];
     }
 
-    const response = await fetch('https://api.jina.ai/v1/embeddings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jinaKey}`,
-        },
-        body: JSON.stringify({
-            model: 'jina-embeddings-v5',
-            input: [text],
-            dimensions: 768,
-        }),
-    });
+    try {
+        const response = await fetch('https://api.jina.ai/v1/embeddings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jinaKey}`,
+            },
+            body: JSON.stringify({
+                model: 'jina-embeddings-v3',
+                input: [text],
+                dimensions: 768,
+            }),
+        });
 
-    if (!response.ok) {
-        throw new Error(`Jina API Error: ${response.statusText} (${response.status})`);
+        if (!response.ok) {
+            console.warn(`[jina] API error ${response.status}: ${response.statusText}`);
+            return [];
+        }
+
+        const data = await response.json();
+        return data.data[0].embedding;
+    } catch (e) {
+        console.warn('[jina] Embedding request failed:', e);
+        return [];
     }
-
-    const data = await response.json();
-    return data.data[0].embedding;
 }
 
 // ── Gemini 768-dim — for Ayurvedic Knowledge Base ────────────────────────────
