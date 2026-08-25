@@ -31,6 +31,7 @@ const FIELD_ALIAS_BY_SCHEMA_KEY: Record<string, IntakeFieldKey[]> = {
     'dizziness.duration': ['duration'],
     'fatigue.duration': ['duration'],
     'mental_health.duration': ['duration'],
+    'eye_problem.duration': ['duration'],
     'body_pain.duration': ['duration'],
 };
 

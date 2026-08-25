@@ -448,7 +448,7 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
 
     const isNonLocalizedSymptom =
         /\b(nausea|nauseous|nauseated|vomiting|vomit|diarrhea|loose motion|dast|ulti|fever|bukhar|fatigue|weakness|thakan|kamzori|dizziness|chakkar|cold|cough|khansi|rash|acidity|gas|indigestion|queasy)\b/i.test(userText) ||
-        ['fever', 'vomiting_diarrhea', 'cough_cold', 'dizziness', 'fatigue', 'skin_rash', 'mental_health'].includes(activeSchema.id);
+        ['fever', 'vomiting_diarrhea', 'cough_cold', 'dizziness', 'fatigue', 'skin_rash', 'mental_health', 'eye_problem'].includes(activeSchema.id);
 
     const pendingQueue = fieldDefinitions
         .filter((definition) => {
