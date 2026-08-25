@@ -2511,7 +2511,9 @@ UI HINT OUTPUT SAFETY:
         }
 
         const groqData = await groqResponse.json();
-        const groqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        let groqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        // Strip internal <think>...</think> reasoning blocks from reasoning models
+        groqText = groqText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
         const groqFinishReason = groqData.choices?.[0]?.finish_reason || '';
 
         if (!groqText) {

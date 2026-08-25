@@ -11,8 +11,8 @@ export const AI_PHASE_CONFIG = {
 
     // Model Selection
     models: {
-        groq: 'groq/compound',                     // used ONLY for final diagnosis JSON
-        groqFast: 'groq/compound-mini',                // used for conversational Q&A turns (fast & precise)
+        groq: 'openai/gpt-oss-120b',              // used ONLY for final diagnosis JSON
+        groqFast: 'qwen/qwen3.6-27b',              // used for conversational Q&A turns (fast & highly accurate)
         gemini: 'gemini-2.5-flash',
         geminiLite: 'gemini-2.5-flash-lite',
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
