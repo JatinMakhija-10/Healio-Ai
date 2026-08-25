@@ -1642,6 +1642,7 @@ export async function POST(req: NextRequest) {
     );
 
     const processRequest = async (): Promise<Response> => {
+        let reservationId: string | undefined;
         try {
         // ── Rate limit: 20 req / 60 s per IP ─────────────────────────────────────
         const limited = rateLimitCheck(req, 'chat', 20, 60_000);
@@ -1970,7 +1971,7 @@ export async function POST(req: NextRequest) {
         const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched) as AroviaCreditAction;
         const creditReserve = await reserveCreditsBeforeAi(userId, creditAction);
         if (creditReserve.response) return creditReserve.response;
-        const reservationId = creditReserve.reservationId;
+        reservationId = creditReserve.reservationId;
 
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
