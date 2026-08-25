@@ -11,8 +11,8 @@ export const AI_PHASE_CONFIG = {
 
     // Model Selection
     models: {
-        groq: 'llama-3.3-70b-versatile',          // used ONLY for final diagnosis JSON
-        groqFast: 'llama-3.1-8b-instant',          // used for conversational Q&A turns (fast!)
+        groq: 'openai/gpt-oss-120b',              // used ONLY for final diagnosis JSON
+        groqFast: 'openai/gpt-oss-20b',            // used for conversational Q&A turns (fast!)
         gemini: 'gemini-2.5-flash',
         geminiLite: 'gemini-2.5-flash-lite',
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
@@ -58,7 +58,7 @@ export const AI_PHASE_CONFIG = {
     generation: {
         temperature: 0.15,          // Low temp → deterministic, medically appropriate
         maxRetries: 2,             // Retry twice before fallback
-        timeoutMs: 15000,          // Complete-response timeout; avoids saving half-streamed answers
+        timeoutMs: 20000,          // Increased timeout for reasoning models (gpt-oss adds thinking tokens)
         maxTokens: 1500,           // Max output tokens per response
         retryDelayMs: 500,         // Wait 500ms before retry (fast key rotation)
     },
