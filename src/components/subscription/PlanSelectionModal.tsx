@@ -47,41 +47,45 @@ export function PlanSelectionModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-[#EDE8DD] border border-[#C9C2B2] text-[#2A2924] shadow-none rounded-lg">
+            <DialogContent className="max-w-4xl p-0 overflow-hidden bg-slate-50">
                 <div className="grid md:grid-cols-2">
-                    <div className="bg-[#2A2924] p-8 text-[#EDE8DD] flex flex-col justify-center relative overflow-hidden">
+                    <div className="bg-slate-900 p-8 text-white flex flex-col justify-center relative overflow-hidden">
+                        <div className="absolute top-[-20%] right-[-20%] w-64 h-64 bg-teal-500/20 rounded-full blur-3xl" />
+                        <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
+
                         <div className="relative z-10 space-y-6">
-                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded border border-[#3E5641] bg-[#3E5641]/20 font-serif text-xs text-[#EDE8DD] tracking-[0.02em]">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold border border-teal-500/30">
                                 {featureLocked ? `Unlock ${featureLocked}` : "Upgrade Your Health"}
                             </div>
 
                             <div>
-                                <h2 className="font-serif text-2xl font-normal tracking-[0.02em] mb-2 leading-tight">
-                                    Go Beyond Basic Care
+                                <h2 className="text-3xl font-bold tracking-tight mb-2">
+                                    Go Beyond <br />
+                                    <span className={cn(isPro ? "text-purple-300" : "text-teal-400")}>
+                                        Basic Care
+                                    </span>
                                 </h2>
-                                <p className="text-xs text-[#EDE8DD]/70 font-sans leading-relaxed">
+                                <p className="text-slate-400 leading-relaxed">
                                     {isPro
                                         ? "Unlock doctor-grade analytics, clinical sandbox access, AI-assisted SOAP notes, and zero platform fees."
-                                        : "Get unlimited access to advanced AI diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family."}
+                                        : "Get unlimited access to advanced diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family."}
                                 </p>
                             </div>
 
-                            <div className="space-y-3 font-sans text-xs border-t border-[#C9C2B2]/30 pt-4">
-                                <div className="flex items-center gap-2.5">
-                                    <span className="font-bold text-[#3E5641] font-mono">✓</span>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
                                     <div>
-                                        <p className="font-medium">{isPro ? "Practice Growth" : "Comprehensive Protection"}</p>
-                                        <p className="text-[11px] text-[#EDE8DD]/60">
+                                        <p className="font-semibold">{isPro ? "Practice Growth" : "Comprehensive Protection"}</p>
+                                        <p className="text-xs text-slate-400">
                                             {isPro ? "0% platform fee and Pro doctor tools" : "Family coverage up to 5 members"}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2.5">
-                                    <span className="font-bold text-[#3E5641] font-mono">✓</span>
+                                <div className="flex items-center gap-3">
                                     <div>
-                                        <p className="font-medium">{isPro ? "Clinical Intelligence" : "Faster Answers"}</p>
-                                        <p className="text-[11px] text-[#EDE8DD]/60">
-                                            {isPro ? "Sandbox analysis and AI-enhanced notes" : "Instant report generation and priority support"}
+                                        <p className="font-semibold">{isPro ? "Clinical Intelligence" : "Faster Answers"}</p>
+                                        <p className="text-xs text-slate-400">
+                                            {isPro ? "Sandbox analysis and doctor-enhanced notes" : "Instant report generation and priority support"}
                                         </p>
                                     </div>
                                 </div>
@@ -89,39 +93,54 @@ export function PlanSelectionModal({
                         </div>
                     </div>
 
-                    <div className="p-8 flex flex-col bg-[#EDE8DD]">
+                    <div className="p-8 flex flex-col">
                         <DialogHeader>
-                            <DialogTitle className="font-serif text-xl font-normal text-[#2A2924] tracking-[0.02em]">Choose your plan</DialogTitle>
-                            <DialogDescription className="text-xs font-sans text-[#2A2924]/70">Cancel anytime. No questions asked.</DialogDescription>
+                            <DialogTitle className="text-xl text-slate-900">Choose your plan</DialogTitle>
+                            <DialogDescription>Cancel anytime. No questions asked.</DialogDescription>
                         </DialogHeader>
 
                         <div className="mt-6 space-y-4 flex-1">
-                            <div className="p-5 rounded-md border border-[#3E5641] bg-[#3E5641]/5">
-                                <span className="font-mono text-[9px] font-semibold text-[#3E5641] uppercase tracking-wider border border-[#3E5641]/30 px-2 py-0.5 rounded block w-max mb-2">
+                            <div
+                                className={cn(
+                                    "relative p-5 rounded-xl border-2 bg-white shadow-lg",
+                                    isPro
+                                        ? "border-purple-500 shadow-purple-500/10"
+                                        : "border-teal-500 shadow-teal-500/10"
+                                )}
+                            >
+                                <div
+                                    className={cn(
+                                        "absolute -top-3 left-1/2 -translate-x-1/2 text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                                        isPro ? "bg-purple-600" : "bg-teal-500"
+                                    )}
+                                >
                                     {isPro ? "For Doctors" : "Most Popular"}
-                                </span>
-                                <div className="flex justify-between items-start mb-3 border-b border-[#C9C2B2] pb-3">
+                                </div>
+                                <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <h3 className="font-serif text-base font-normal text-[#2A2924]">{plan.name}</h3>
-                                        <p className="text-xs font-sans text-[#2A2924]/70">
+                                        <h3 className="font-bold text-lg text-slate-900">{plan.name}</h3>
+                                        <p className="text-xs text-slate-500">
                                             {isPro ? "For verified practitioners" : "For health-conscious individuals"}
                                         </p>
                                     </div>
-                                    <div className="text-right font-mono">
-                                        <p className="text-xl font-semibold text-[#2A2924]">INR {plan.price}</p>
-                                        <p className="text-xs text-[#2A2924]/60">/{plan.interval}</p>
+                                    <div className="text-right">
+                                        <p className="text-2xl font-bold text-slate-900">INR {plan.price}</p>
+                                        <p className="text-xs text-slate-500">/{plan.interval}</p>
                                     </div>
                                 </div>
-                                <ul className="space-y-1.5 mb-6">
+                                <ul className="space-y-2 mb-6">
                                     {plan.features.map((feature, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-xs font-sans text-[#2A2924]">
-                                            <span className="font-bold text-[#3E5641] shrink-0">✓</span>
+                                        <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Check className="h-4 w-4 text-teal-500 shrink-0" />
                                             {feature}
                                         </li>
                                     ))}
                                 </ul>
                                 <Button
-                                    className="w-full h-10 bg-[#3E5641] hover:bg-[#2F4232] text-[#EDE8DD] font-sans text-xs font-semibold rounded-md shadow-none"
+                                    className={cn(
+                                        "w-full h-11",
+                                        isPro ? "bg-purple-600 hover:bg-purple-700" : "bg-teal-600 hover:bg-teal-700"
+                                    )}
                                     onClick={() => handleUpgrade(targetPlan)}
                                     disabled={loading === targetPlan}
                                 >
@@ -138,7 +157,7 @@ export function PlanSelectionModal({
 
                             <div className="text-center pt-2">
                                 <button
-                                    className="text-xs font-sans text-[#2A2924]/70 hover:text-[#2A2924] underline decoration-[#C9C2B2] underline-offset-4"
+                                    className="text-sm text-slate-500 hover:text-slate-800 underline decoration-slate-300 underline-offset-4"
                                     onClick={() => {
                                         localStorage.setItem("paywall_dismissed_at", new Date().toISOString());
                                         onOpenChange(false);
