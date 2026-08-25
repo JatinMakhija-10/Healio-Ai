@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
+import { reserveCredits, captureCredits, releaseCredits, type AroviaCreditAction } from '@/lib/credits/server';
 import { getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
@@ -855,45 +856,27 @@ function creditActionForTurn(intent: AroviaIntentResult, userTurns: number, isFi
     return 'standard_chat';
 }
 
-async function consumeCreditsBeforeAi(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serviceClient: any,
+async function reserveCreditsBeforeAi(
     userId: string,
-    action: string
-): Promise<Response | null> {
-    const { data, error } = await serviceClient.rpc('consume_arovia_credits', {
-        p_user_id: userId,
-        p_action: action,
-    });
+    action: AroviaCreditAction
+): Promise<{ reservationId?: string; response?: Response }> {
+    const result = await reserveCredits(userId, action);
 
-    if (error) {
-        const message = String(error.message || '');
-        if (/consume_arovia_credits|function .* does not exist|schema cache/i.test(message)) {
-            console.warn('[credits] consume_arovia_credits is not available yet; falling back to legacy usage gate.');
-            return null;
-        }
-
-        console.error('[credits] consume_arovia_credits failed:', message);
-        return new Response(JSON.stringify({ error: 'credits_check_failed' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+    if (!result.success && result.error === 'insufficient_credits') {
+        return {
+            response: new Response(JSON.stringify({
+                error: 'insufficient_credits',
+                balance: result.balance ?? 0,
+                required: result.required ?? 1,
+                plan: result.plan ?? 'free',
+            }), {
+                status: 402,
+                headers: { 'Content-Type': 'application/json' },
+            })
+        };
     }
 
-    const result = typeof data === 'string' ? JSON.parse(data) : data;
-    if (result?.success === false || result?.error === 'insufficient_credits') {
-        return new Response(JSON.stringify({
-            error: 'insufficient_credits',
-            balance: result?.balance ?? result?.available ?? 0,
-            required: result?.required ?? 1,
-            plan: result?.plan ?? 'free',
-        }), {
-            status: 402,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    return null;
+    return { reservationId: result.reservation_id };
 }
 
 async function logLlmRequest(
@@ -1984,9 +1967,10 @@ export async function POST(req: NextRequest) {
             /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
                 .test(lastUserMsg)
         );
-        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched);
-        const creditGateResponse = await consumeCreditsBeforeAi(serviceClient, userId, creditAction);
-        if (creditGateResponse) return creditGateResponse;
+        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched) as AroviaCreditAction;
+        const creditReserve = await reserveCreditsBeforeAi(userId, creditAction);
+        if (creditReserve.response) return creditReserve.response;
+        const reservationId = creditReserve.reservationId;
 
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
@@ -2492,6 +2476,10 @@ UI HINT OUTPUT SAFETY:
                 latencyMs: Date.now() - requestStart,
             });
 
+            if (reservationId) {
+                await captureCredits(reservationId);
+            }
+
             return streamTextResponse(safeGeminiText, {
                 'X-Provider': 'gemini',
                 'X-Model': geminiModelUsed,
@@ -2504,6 +2492,9 @@ UI HINT OUTPUT SAFETY:
 
         if (!groqText) {
             console.error('[Groq] Empty completion payload:', JSON.stringify(groqData).slice(0, 500));
+            if (reservationId) {
+                await releaseCredits(reservationId, 'empty_payload');
+            }
             return streamTextResponse("I'm having trouble forming a complete reply right now. Please send that once more and I will continue carefully.", {
                 'X-Provider': 'groq',
                 'X-Model': groqModel,
@@ -2513,6 +2504,9 @@ UI HINT OUTPUT SAFETY:
 
         if (groqFinishReason === 'length') {
             console.warn('[Groq] Completion hit token limit; returning retry-safe message.');
+            if (reservationId) {
+                await captureCredits(reservationId);
+            }
             if (isFinalTurn) {
                 return streamTextResponse(
                     ensureFinalDiagnosisPayload('', true, conversationIntakeState),
@@ -2544,6 +2538,10 @@ UI HINT OUTPUT SAFETY:
             latencyMs: totalMs,
         });
 
+        if (reservationId) {
+            await captureCredits(reservationId);
+        }
+
         const safeGroqText = ensureFinalDiagnosisPayload(
             groqText,
             isFinalTurn,
@@ -2560,6 +2558,9 @@ UI HINT OUTPUT SAFETY:
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (innerError: any) {
             console.error('[chat/route] Inner error:', innerError);
+            if (reservationId) {
+                await releaseCredits(reservationId, 'inner_error').catch(() => null);
+            }
             return streamTextResponse("Something went wrong on my end. Please try again in a moment. 🙏");
         }
     };

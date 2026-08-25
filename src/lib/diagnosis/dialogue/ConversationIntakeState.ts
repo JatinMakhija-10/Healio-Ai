@@ -55,19 +55,26 @@ export interface ChatTranscriptMessage {
 export const INTAKE_FIELD_DEFINITIONS: IntakeFieldDefinition[] = GENERIC_SCHEMA.fields;
 
 const RED_FLAG_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
-    { label: 'chest pain', pattern: /\b(chest pain|pressure in chest|crushing chest|severe chest)\b/i },
-    { label: 'breathing difficulty', pattern: /\b(shortness of breath|difficulty breathing|can't breathe|unable to breathe|breathless)\b/i },
-    { label: 'stroke signs', pattern: /\b(slurred speech|face drooping|facial droop|sudden numbness|arm weakness)\b/i },
+    { label: 'chest pain', pattern: /\b(chest pain|pressure in chest|crushing chest|severe chest|chest tightness|sitting on my chest)\b/i },
+    { label: 'breathing difficulty', pattern: /\b(shortness of breath|difficulty breathing|can't breathe|unable to breathe|breathless|trouble breathing|wheezing|rapid breathing|breathing much faster|breathing feel[\s\S]*deeper|breathe deeply|gasping)\b/i },
+    { label: 'stroke signs', pattern: /\b(slurred speech|face drooping|facial droop|sudden numbness|arm weakness|slurring my words|face feels numb|hand felt numb)\b/i },
     { label: 'loss of consciousness', pattern: /\b(loss of consciousness|passed out|unconscious|fainted)\b/i },
-    { label: 'coughing blood', pattern: /\b(coughing blood|blood in cough|khoon.*khansi)\b/i },
+    { label: 'coughing blood', pattern: /\b(coughing blood|blood in cough|khoon[\s\S]*khansi)\b/i },
     { label: 'seizure', pattern: /\b(seizure|convulsion|fitting|mirgi)\b/i },
     { label: 'suicidal thoughts', pattern: /\b(suicidal|suicide|kill myself|end my life|want to die|self.?harm)\b/i },
     { label: 'sudden severe headache', pattern: /\b(worst headache|sudden severe headache|thunderclap headache)\b/i },
-    { label: 'severe abdominal pain', pattern: /\b(severe abdominal pain|rigid abdomen|unbearable stomach pain)\b/i },
-    { label: 'anaphylaxis', pattern: /\b(lips swelling|throat swelling|tongue swelling|anaphylaxis|severe allergic reaction)\b/i },
-    { label: 'pregnancy emergency', pattern: /\b(pregnant.*bleeding|pregnant.*severe pain|pregnancy.*emergency)\b/i },
-    { label: 'altered consciousness', pattern: /\b(confusion|hallucinating|delirious|not making sense)\b/i },
-    { label: 'severe bleeding', pattern: /\b(vomiting blood|blood in vomit|black stool|severe bleeding|heavy bleeding)\b/i }
+    { label: 'severe abdominal pain', pattern: /\b(severe abdominal pain|rigid abdomen|unbearable stomach pain|severe lower right pain|severe right lower quadrant|worse[\s\S]*lower right|lower right[\s\S]*worse)\b/i },
+    { label: 'anaphylaxis', pattern: /\b(lips[\s\S]*swell|throat[\s\S]*tight|tongue[\s\S]*swell|anaphylaxis|severe allergic reaction)\b/i },
+    { label: 'pregnancy emergency', pattern: /\b(pregnant[\s\S]*bleeding|pregnant[\s\S]*severe pain|pregnancy[\s\S]*emergency|abdominal pain[\s\S]*bleeding|bleeding[\s\S]*pregnant|positive[\s\S]*pregnancy|shoulder[\s\S]*pain[\s\S]*bleeding)\b/i },
+    { label: 'altered consciousness', pattern: /\b(confusion|hallucinating|delirious|not making sense|acting[\s\S]*confused|behaving differently|confused sometimes)\b/i },
+    { label: 'severe bleeding', pattern: /\b(vomiting blood|blood in vomit|black stool|stool[\s\S]*black|coffee-ground|dark and grainy|severe bleeding|heavy bleeding)\b/i },
+    { label: 'meningitis signs', pattern: /\b(stiff neck|neck[\s\S]*stiff|dark red spots|purple[\s\S]*rash|non-blanching)\b/i },
+    { label: 'dka / metabolic crisis', pattern: /\b(fruity breath|breath[\s\S]*fruity|blood sugar[\s\S]*3\d\d|blood sugar[\s\S]*4\d\d|blood glucose[\s\S]*4\d\d)\b/i },
+    { label: 'eye emergency', pattern: /\b(halos around lights|severe eye pain|eye[\s\S]*painful[\s\S]*blurry)\b/i },
+    { label: 'testicular torsion', pattern: /\b(right testicle|left testicle|testicular|testicle[\s\S]*sitting differently)\b/i },
+    { label: 'head trauma red flag', pattern: /\b((?:hit my head|fell and hit|head injury)[\s\S]*(?:worsening|getting worse|vomited|sleepy|confused|blood-thinning|blood thinners|anticoagulant))\b/i },
+    { label: 'sepsis signs', pattern: /\b(shaking with chills|cold and clammy|clammy skin)\b/i },
+    { label: 'bowel obstruction', pattern: /\b(unable to pass gas|haven't been able to pass gas|no bowel movement[\s\S]*pass gas)\b/i },
 ];
 
 const BODY_LOCATION_PATTERN =
@@ -398,7 +405,7 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         const extracted = extractFieldValues(message.content, previousAssistantField, activeSchema);
         for (const definition of fieldDefinitions) {
             const value = extracted[definition.key];
-            if (value && !collectedData.has(definition.key)) {
+            if (value) {
                 collectedData.set(definition.key, normalizeValue(value));
             }
         }
