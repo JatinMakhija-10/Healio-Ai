@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Dual-Provider Embedding Module
+ * Arovia.AI — Dual-Provider Embedding Module
  * ============================================
  * Each DB table was ingested with a specific provider. Queries MUST use
  * the same provider as ingestion — mixing providers causes vector space

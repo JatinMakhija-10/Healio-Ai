@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/ai/config";
-import { getAuthedUserId, normalizeRpcJson, type HealioCreditAction, unauthorized } from "@/lib/credits/server";
+import { getAuthedUserId, normalizeRpcJson, type AroviaCreditAction, unauthorized } from "@/lib/credits/server";
 
 type ConsumeResult = {
     success?: boolean;
@@ -11,7 +11,7 @@ type ConsumeResult = {
     plan?: string;
 };
 
-const VALID_ACTIONS = new Set<HealioCreditAction>([
+const VALID_ACTIONS = new Set<AroviaCreditAction>([
     "standard_chat",
     "rag_query",
     "lab_report_analysis",
@@ -24,14 +24,14 @@ export async function POST(req: NextRequest) {
     if (!userId) return unauthorized();
 
     const body = await req.json().catch(() => null);
-    const action = body?.action as HealioCreditAction | undefined;
+    const action = body?.action as AroviaCreditAction | undefined;
     if (!action || !VALID_ACTIONS.has(action)) {
         return NextResponse.json({ error: "Invalid credit action" }, { status: 400 });
     }
 
     const supabase = getSupabaseAdmin();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc("consume_healio_credits", {
+    const { data, error } = await (supabase as any).rpc("consume_arovia_credits", {
         p_user_id: userId,
         p_action: action,
     });

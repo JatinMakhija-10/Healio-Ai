@@ -101,7 +101,7 @@ export function DoctorSidebar() {
                 {!collapsed && (
                     <div className="flex flex-col">
                         <span className="text-lg font-bold text-white tracking-tight">
-                            Healio<span className="text-teal-400">.AI</span>
+                            Arovia<span className="text-teal-400">.AI</span>
                         </span>
                         <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
                             {isPro ? "Doctor Portal Pro" : "Doctor Portal"}
@@ -196,7 +196,7 @@ export function DoctorSidebar() {
                                 {user?.user_metadata?.full_name || "Doctor"}
                             </p>
                             <p className="text-[10px] text-slate-500 truncate">
-                                {isPro ? "Healio Pro" : user?.email}
+                                {isPro ? "Arovia Pro" : user?.email}
                             </p>
                         </div>
                     )}

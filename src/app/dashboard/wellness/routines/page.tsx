@@ -55,7 +55,7 @@ interface CustomHabitForm {
   category: RoutineCategory;
 }
 
-const STORAGE_KEY = "healio_daily_routine_v2";
+const STORAGE_KEY = "arovia_daily_routine_v2";
 
 const SLOT_LABELS: Record<RoutineSlot, { label: string; helper: string; icon: ReactNode }> = {
   morning: { label: "Morning", helper: "Start grounded", icon: <Sun className="h-4 w-4 text-amber-500" /> },
@@ -382,7 +382,7 @@ export default function RoutineBuilderPage() {
 
       <div className="grid sm:grid-cols-3 gap-3">
         <Link href="/dashboard/wellness/library" className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-600 hover:border-emerald-200 hover:text-emerald-700 transition-colors flex items-center gap-2"><Apple className="h-4 w-4" />Remedies Library</Link>
-        <Link href="/dashboard/consult" className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-600 hover:border-emerald-200 hover:text-emerald-700 transition-colors flex items-center gap-2"><Wind className="h-4 w-4" />Ask Healio</Link>
+        <Link href="/dashboard/consult" className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-600 hover:border-emerald-200 hover:text-emerald-700 transition-colors flex items-center gap-2"><Wind className="h-4 w-4" />Ask Arovia</Link>
         <Link href="/dashboard/wellness" className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-600 hover:border-emerald-200 hover:text-emerald-700 transition-colors flex items-center gap-2"><Leaf className="h-4 w-4" />Wellness Home</Link>
       </div>
     </div>

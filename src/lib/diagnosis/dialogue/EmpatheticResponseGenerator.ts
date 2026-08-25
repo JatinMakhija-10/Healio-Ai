@@ -1,5 +1,5 @@
 /**
- * Empathetic Response Generator for Healio.AI
+ * Empathetic Response Generator for Arovia.AI
  * 
  * Context-aware response generation with:
  * - Empathy injection based on emotional state

@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
  */
 
 describe("DisclaimerBanner", () => {
-    const EXPECTED_SHORT_TEXT = "Healio.AI is an AI tool, not a substitute for professional medical advice.";
+    const EXPECTED_SHORT_TEXT = "Arovia.AI is an AI tool, not a substitute for professional medical advice.";
     const EXPECTED_LONG_TEXT_FRAGMENT = "Always seek the guidance of a qualified healthcare provider";
 
     it("short disclaimer text is non-empty and informative", () => {
@@ -40,7 +40,7 @@ describe("EmergencyRedirect", () => {
 });
 
 describe("DiagnosisResultCard disclaimer rendering", () => {
-    const DEFAULT_DISCLAIMER = "Healio is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment.";
+    const DEFAULT_DISCLAIMER = "Arovia is an AI health assistant for informational purposes only. This is not a medical diagnosis. Please consult a qualified healthcare professional for treatment.";
     
     it("default disclaimer is present and informative", () => {
         expect(DEFAULT_DISCLAIMER).toContain("not a medical diagnosis");

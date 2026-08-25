@@ -72,7 +72,7 @@ limiter = Limiter(key_func=get_remote_address)
 root_path = "/api/py" if os.getenv("VERCEL") else ""
 
 app = FastAPI(
-    title="Healio.AI Backend API", 
+    title="Arovia.AI Backend API", 
     version="1.0.0",
     root_path=root_path
 )
@@ -184,7 +184,7 @@ async def read_root(request: Request):
     Rate limit: Configurable via environment (default: 100/minute)
     """
     return {
-        "message": "Healio.AI Backend API is running",
+        "message": "Arovia.AI Backend API is running",
         "version": "1.0.0",
         "status": "healthy"
     }

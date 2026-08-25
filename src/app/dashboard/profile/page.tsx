@@ -37,7 +37,7 @@ export default function ProfilePage() {
         let cancelled = false;
 
         // 1. Pending onboarding blob (merged in resolveHealthPersona; server medical wins when authoritative)
-        const pendingKey = `healio_pending_profile_${user.id}`;
+        const pendingKey = `arovia_pending_profile_${user.id}`;
         const pending = localStorage.getItem(pendingKey);
         Promise.resolve().then(() => {
             if (cancelled) return;
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
             // From LocalStorage (user-specific)
             try {
-                const storageKey = `healio_consultation_history_${user.id}`;
+                const storageKey = `arovia_consultation_history_${user.id}`;
                 const localHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
                 if (localHistory.length > 0) {
                     consultations = [...consultations, ...localHistory];

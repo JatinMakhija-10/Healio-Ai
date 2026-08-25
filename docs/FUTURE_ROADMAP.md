@@ -1,4 +1,4 @@
-# Healio.AI Master Roadmap & Strategic Vision
+# Arovia.AI Master Roadmap & Strategic Vision
 
 ## **CRITICAL EXECUTION PATH: The "Funding-Ready" MVP**
 
@@ -380,7 +380,7 @@ CREATE TABLE chat_sessions (
 
 ## 5. The Ayurvedic & Yoga Centric Pivot: "Holistic Health"
 
-**Goal**: Transform Healio.AI into the world's most sophisticated Ayurvedic diagnostic and Yoga-based remediation platform.
+**Goal**: Transform Arovia.AI into the world's most sophisticated Ayurvedic diagnostic and Yoga-based remediation platform.
 
 ### A. Ayurvedic Centering (AI Core Alignment)
 *   **5.1. Dosha-First Diagnostics**: Re-align the AI engine to prioritize Ayurvedic assessments (Dosha, Dhatu, Mala) alongside standard clinical differentials.

@@ -1,9 +1,9 @@
-# HEALIO.AI — PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# AROVIA.AI — PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
 **Document Version:** 1.0  
 **Date:** March 2, 2026  
 **Classification:** Confidential — Internal Use Only  
-**Owner:** Product Team, Healio.AI  
+**Owner:** Product Team, Arovia.AI  
 
 ---
 
@@ -61,20 +61,20 @@
 
 ## 1.1 Product Vision
 
-**Healio.AI** is India's first clinical-grade AI health intelligence platform that unifies modern Bayesian diagnostic precision with ancient Ayurvedic and Homeopathic wisdom into a single, seamless healthcare experience.
+**Arovia.AI** is India's first clinical-grade AI health intelligence platform that unifies modern Bayesian diagnostic precision with ancient Ayurvedic and Homeopathic wisdom into a single, seamless healthcare experience.
 
 The vision is not to build another symptom checker. It is to build the **intelligent front door to healthcare in India** — a product that is as trusted as a family doctor, as personalized as a holistic medicine practitioner, and as fast as a Google search.
 
 > **Vision Statement:**  
 > *"To be the world's most trusted and personalized AI health companion — where medical precision meets holistic wisdom, and where every Indian — regardless of income, language, or location — gets access to healthcare that treats the individual, not just the symptom."*
 
-Healio.AI operates across three interconnected portals:
+Arovia.AI operates across three interconnected portals:
 
 | Portal | Who It Serves | Core Value |
 |--------|--------------|------------|
 | **Patient Portal** | Consumers, patients, families | Instant, empathetic, personalized health guidance |
 | **Doctor Portal** | Verified Ayurvedic, Homeopathic & Allopathic physicians | AI-augmented workflows, smart scheduling, clinical tools |
-| **Admin Portal** | Healio internal operations | Platform governance, safety, revenue management |
+| **Admin Portal** | Arovia internal operations | Platform governance, safety, revenue management |
 
 ---
 
@@ -107,7 +107,7 @@ None of these options respect the user's intelligence, body type, language, cult
 
 > *"To democratize access to high-quality, personalized healthcare that treats the individual, not just the symptom — by reducing the burden on healthcare systems while improving patient outcomes through math-backed AI and holistic integration."*
 
-Healio.AI solves the problem at four levels:
+Arovia.AI solves the problem at four levels:
 
 1. **Cognitive** — An empathetic AI that thinks like a doctor (Bayesian reasoning, not keyword matching).
 2. **Cultural** — The first digital health platform where Ayurveda and Homeopathy are first-class citizens, not afterthoughts.
@@ -118,7 +118,7 @@ Healio.AI solves the problem at four levels:
 
 ## 1.3 Solution Overview
 
-Healio.AI solves these problems through a **five-layer integrated platform**:
+Arovia.AI solves these problems through a **five-layer integrated platform**:
 
 ### Layer 1 — The AI Consultation Engine
 A conversational AI that conducts a structured, empathetic symptom intake using the **Akinator strategy** (Information Gain questioning). It asks one question at a time, adapts its language to the user's tone, detects emotional distress, and identifies emergencies in under 100ms.
@@ -160,7 +160,7 @@ An operational platform that governs the entire ecosystem: doctor verification, 
 |--------|--------|
 | Monthly Active Users (MAU) | 10,000 by Month 6 |
 | Registered Doctors (Phase 2) | 500 verified doctors by Month 9 |
-| Paid Subscribers (Healio Plus) | 1,000 by Month 12 |
+| Paid Subscribers (Arovia Plus) | 1,000 by Month 12 |
 | Consultations Facilitated | 2,000/month by Month 12 |
 | Platform GMV | ₹20 Lakhs/month by Month 12 |
 
@@ -178,12 +178,12 @@ An operational platform that governs the entire ecosystem: doctor verification, 
 
 ### Scope
 
-This PRD covers the complete product specification for Healio.AI across three phases of development:
+This PRD covers the complete product specification for Arovia.AI across three phases of development:
 
 | Phase | Timeline | Scope Summary |
 |-------|----------|---------------|
 | **Phase 1 — Core MVP** | Q1–Q2 2026 | AI consultation, Bayesian diagnosis, Homeopathy module, Patient dashboard, Admin portal (basic) |
-| **Phase 2 — Marketplace** | Q3–Q4 2026 | Doctor marketplace, video consultations, Ayurveda module, Doctor dashboard, Payments, Healio Plus/Pro subscriptions |
+| **Phase 2 — Marketplace** | Q3–Q4 2026 | Doctor marketplace, video consultations, Ayurveda module, Doctor dashboard, Payments, Arovia Plus/Pro subscriptions |
 | **Phase 3 — Ecosystem** | Q1–Q2 2027 | Contextual commerce, language expansion, advanced analytics, regulatory filings, enterprise/B2B |
 
 ### Out of Scope for this Document
@@ -225,7 +225,7 @@ Each section in this PRD annotates features with their MoSCoW priority and targe
 
 ## 2.1 Phase Overview
 
-Healio.AI is delivered across three distinct product phases. Each phase has a defined **goal statement**, **primary audience**, **core feature set**, and **exit criteria** (the measurable conditions that must be met before work on the next phase is prioritized). Phases may run in parallel for different workstreams (e.g. backend infrastructure for Phase 2 may be built during Phase 1), but **user-facing features are gated by phase**.
+Arovia.AI is delivered across three distinct product phases. Each phase has a defined **goal statement**, **primary audience**, **core feature set**, and **exit criteria** (the measurable conditions that must be met before work on the next phase is prioritized). Phases may run in parallel for different workstreams (e.g. backend infrastructure for Phase 2 may be built during Phase 1), but **user-facing features are gated by phase**.
 
 ### Phase Philosophy
 
@@ -289,12 +289,12 @@ Healio.AI is delivered across three distinct product phases. Each phase has a de
 | Appointment Booking Flow | Slot selection, booking confirmation, pre-consult reminders | Must Have |
 | Video Consultation (WebRTC) | 1-on-1 video call between patient and doctor in-platform | Must Have |
 | Smart SOAP Notes (AI-Assisted) | Auto-generated SOAP note draft for doctor to review/edit | Must Have |
-| Payment Gateway (Razorpay) | Patient payment → Healio escrow → Doctor payout | Must Have |
+| Payment Gateway (Razorpay) | Patient payment → Arovia escrow → Doctor payout | Must Have |
 | Commission Model (20% Fee) | Automated commission deduction on every consultation | Must Have |
-| Healio Plus Subscription (₹199/mo) | Premium patient tier: unlimited deep scans, family profiles, reports | Must Have |
-| Healio Pro Subscription (₹999/mo) | Doctor SaaS tier: AI Scribe, advanced analytics, sponsored listing | Must Have |
+| Arovia Plus Subscription (₹199/mo) | Premium patient tier: unlimited deep scans, family profiles, reports | Must Have |
+| Arovia Pro Subscription (₹999/mo) | Doctor SaaS tier: AI Scribe, advanced analytics, sponsored listing | Must Have |
 | Doctor Dashboard | Schedule view, active consultation room, AI summary panel, inbox | Must Have |
-| Family Health Profiles | Up to 5 family members under one Healio Plus account | Must Have |
+| Family Health Profiles | Up to 5 family members under one Arovia Plus account | Must Have |
 | Ayurveda Module | Prakriti assessment, Vikriti tracking, Dosha-weighted diagnosis | Must Have |
 | Post-Consult Ratings & Feedback | Patient rates doctor 1–5 stars with written review | Should Have |
 | Async Chat (Doctor ↔ Patient) | Follow-up chat thread visible for 72h post-consultation | Should Have |
@@ -313,7 +313,7 @@ Healio.AI is delivered across three distinct product phases. Each phase has a de
 
 ### Phase 3 — "Ecosystem" (Q1–Q2 2027)
 
-**Goal:** Transform Healio.AI from a healthcare app into a closed-loop health ecosystem — where the platform earns from diagnosis, consultations, product recommendations, and enterprise data licensing simultaneously.
+**Goal:** Transform Arovia.AI from a healthcare app into a closed-loop health ecosystem — where the platform earns from diagnosis, consultations, product recommendations, and enterprise data licensing simultaneously.
 
 **Core Features Delivered:**
 
@@ -376,7 +376,7 @@ The following table provides an explicit scope boundary per phase to prevent sco
 
 ## 2.3 Feature Flag Strategy
 
-Healio.AI uses a **feature flag system** to control the rollout of new functionality without requiring code deployments. Feature flags are essential for:
+Arovia.AI uses a **feature flag system** to control the rollout of new functionality without requiring code deployments. Feature flags are essential for:
 
 1. **Phased rollouts** — Releasing to 10% of users before 100%
 2. **A/B testing** — Testing two versions of a feature simultaneously
@@ -419,7 +419,7 @@ feature_flags table:
 | `VIDEO_CALL_ENABLED` | OFF → Beta | WebRTC video consultation room |
 | `PAYMENTS_ENABLED` | OFF → Beta | Real Razorpay integration (test vs. live key) |
 | `AYURVEDA_MODULE_FULL` | OFF → ON | Full Prakriti/Vikriti assessment and Ayurvedic diagnosis |
-| `HEALIO_PLUS_PAYWALL` | OFF → ON | Subscription gate on premium features |
+| `AROVIA_PLUS_PAYWALL` | OFF → ON | Subscription gate on premium features |
 | `DARK_MODE` | OFF | UI dark mode toggle |
 | `SOAP_AI_DRAFT` | ON (Doctors only) | AI-generated SOAP note draft in consultation room |
 
@@ -446,7 +446,7 @@ When multiple criteria apply to a user, flags are evaluated in this priority ord
 
 ## 2.4 Milestone Timeline
 
-The following milestone timeline represents the **planned delivery schedule** for Healio.AI across all three phases. Dates are target dates; individual sprint plans are maintained separately in the project management tool.
+The following milestone timeline represents the **planned delivery schedule** for Arovia.AI across all three phases. Dates are target dates; individual sprint plans are maintained separately in the project management tool.
 
 ### Phase 1 Milestones
 
@@ -466,7 +466,7 @@ The following milestone timeline represents the **planned delivery schedule** fo
 | **M2.2 — Marketplace Beta** | July 31, 2026 | Patient-facing search, booking flow, AI context handoff | 10 successful test bookings end-to-end |
 | **M2.3 — Payments Live** | August 15, 2026 | Razorpay integration, escrow flow, payout management | First real ₹ transaction processed correctly |
 | **M2.4 — Video Consultation** | August 31, 2026 | WebRTC call room, async chat, SOAP notes | 25 test video consultations without drop |
-| **M2.5 — Subscriptions Live** | September 15, 2026 | Healio Plus, Healio Pro billing, paywall gating | First 50 paid subscribers |
+| **M2.5 — Subscriptions Live** | September 15, 2026 | Arovia Plus, Arovia Pro billing, paywall gating | First 50 paid subscribers |
 | **M2.6 — Ayurveda Module** | September 30, 2026 | Full Prakriti/Vikriti, dosha diagnosis, herbal remedies, Yoga | Ayurvedic physician review of 50 outputs |
 | **M2.7 — Phase 2 GA** | October 31, 2026 | All Phase 2 exit criteria, 100+ doctors, 500+ consultations | All Phase 2 exit criteria met (see §2.1) |
 
@@ -510,7 +510,7 @@ Apr+        [Scale: Enterprise, Clinical Trials, International]
 
 ## 3.1 Primary Personas
 
-Understanding who we are building for is the most important design constraint in this document. Healio.AI's product decisions — from the tone of the AI's responses, to the languages it supports, to the order of features on the dashboard — must all trace back to a clear, evidence-based picture of the people using it. We have identified three primary patient personas based on qualitative research, existing codebase behavioral signals (session completion patterns, language selection, query types), and secondary research on digital health usage in India.
+Understanding who we are building for is the most important design constraint in this document. Arovia.AI's product decisions — from the tone of the AI's responses, to the languages it supports, to the order of features on the dashboard — must all trace back to a clear, evidence-based picture of the people using it. We have identified three primary patient personas based on qualitative research, existing codebase behavioral signals (session completion patterns, language selection, query types), and secondary research on digital health usage in India.
 
 ---
 
@@ -522,8 +522,8 @@ Priya is a software engineer living in a Bangalore PG. She earns ₹70,000 per m
 **Her health behaviours:**
 Priya's health anxiety is not irrational — it is the natural result of a system failure. The alternatives available to her are terrible. She can take a half day off work, pay ₹800–1,200 for a walk-in appointment, wait 90 minutes, and be told in 4 minutes by a distracted doctor that she "probably slept wrong." Or she can stay home, Google more, and feel worse. Neither option respects her intelligence or her time. She googles symptoms at least 2–3 times per month. She has uninstalled two health apps because they "just gave me a list of 20 diseases and told me to see a doctor."
 
-**What she needs from Healio:**
-Priya needs two things above all else: **reassurance that is backed by something real** (not just "it could be anything"), and **a fast, decisive answer** that tells her whether this is worth worrying about. She does not need the platform to treat her. She needs it to triage her anxiety intelligently and give her a clear recommended action. When Healio's AI asks her four precise follow-up questions, assesses her symptom pattern, and tells her with 82% confidence that this is muscular tension — with a reasoning trace she can actually read — that is the product moment that earns her trust and daily-use habit.
+**What she needs from Arovia:**
+Priya needs two things above all else: **reassurance that is backed by something real** (not just "it could be anything"), and **a fast, decisive answer** that tells her whether this is worth worrying about. She does not need the platform to treat her. She needs it to triage her anxiety intelligently and give her a clear recommended action. When Arovia's AI asks her four precise follow-up questions, assesses her symptom pattern, and tells her with 82% confidence that this is muscular tension — with a reasoning trace she can actually read — that is the product moment that earns her trust and daily-use habit.
 
 **Jobs-To-Be-Done:**
 - "When I notice a new symptom, I want to know immediately whether it's serious or benign — so I can stop spiralling and get back to my day."
@@ -543,8 +543,8 @@ Arjun is a marketing manager, married with one child. He has been "into wellness
 **His health behaviours:**
 Arjun is not anti-allopathy. He is pro-choice. He wants access to both systems, with context for when to use which. He reads ingredient labels. He spends ₹2,000–4,000 per month on wellness products. He is the person the Ayurvedic and Homeopathic product industry is trying to reach on Instagram. He will pay for a platform that treats him as an intelligent adult who wants evidence-based holistic guidance — not one that treats wellness as a vague buzzword.
 
-**What he needs from Healio:**
-Arjun needs Healio to be the first digital platform that takes Ayurveda seriously as a medical system — not as a branding exercise. When his Prakriti is assessed and his diagnosis output includes a Vata-specific dietary suggestion, a relevant home remedy, and a specific yoga pose for his condition, alongside the standard clinical view, Arjun is not just satisfied — he tells his yoga group about it. He is a natural referral engine and a willing Healio Plus subscriber.
+**What he needs from Arovia:**
+Arjun needs Arovia to be the first digital platform that takes Ayurveda seriously as a medical system — not as a branding exercise. When his Prakriti is assessed and his diagnosis output includes a Vata-specific dietary suggestion, a relevant home remedy, and a specific yoga pose for his condition, alongside the standard clinical view, Arjun is not just satisfied — he tells his yoga group about it. He is a natural referral engine and a willing Arovia Plus subscriber.
 
 **Jobs-To-Be-Done:**
 - "When I describe my symptoms, I want to understand not just what is wrong, but *why it's wrong for my body specifically* — given my constitution and lifestyle."
@@ -564,7 +564,7 @@ Meena has been managing Type 2 Diabetes for 8 years and was diagnosed with mild 
 **Her health behaviours:**
 Meena's primary barrier is not trust — it's complexity. She will not use a product that is designed for a 26-year-old tech professional. She needs large, readable text, simple language, a voice input option (typing a full symptom description is slow for her), and a completely frictionless onboarding. She prefers Hindi. She has tried to use one health tracker her son installed, but gave up after the app asked her to "scan a barcode" during setup.
 
-**What she needs from Healio:**
+**What she needs from Arovia:**
 Meena needs something that fits naturally into a conversation she would have with a trusted neighbourhood doctor. The AI should feel like it speaks her language — literally (Hindi/Hinglish) and culturally. It must not overwhelm her with clinical terms without explanation. When she describes her morning headache and slightly blurred vision, the system must immediately flag this as a potential hypertensive episode and escalate with care and clarity — not alarm. Over time, Meena's consultation history needs to build into a longitudinal health record that her visiting physician can actually use.
 
 **Jobs-To-Be-Done:**
@@ -581,19 +581,19 @@ Voice input (Hindi hi-IN) is not a nice-to-have for Meena — it is table stakes
 
 ### Doctors (Supply Side)
 
-The doctors on Healio's marketplace are not passive participants — they are paying customers of **Healio Pro** and critical partners whose trust and satisfaction determine whether the supply side of the marketplace functions. Two sub-types of doctor are relevant in Phase 2:
+The doctors on Arovia's marketplace are not passive participants — they are paying customers of **Arovia Pro** and critical partners whose trust and satisfaction determine whether the supply side of the marketplace functions. Two sub-types of doctor are relevant in Phase 2:
 
-**Type A — The Digitally Native Young Practitioner:** An Ayurvedic or Homeopathic doctor in their 30s, practicing in a Tier-2 city, who already knows that their patients are searching for them online but doesn't know how to reach them without paying for Justdial listings. They are highly motivated to join Healio, sceptical of technology overhead, and willing to pay ₹999/month if the platform demonstrably fills their consultation schedule. For this user, the Doctor Dashboard must be fast, clean, and not require extensive training. The AI Summary Panel (which auto-generates a patient context brief before the consultation begins) is the single biggest value-add that will drive Pro subscriptions from this group.
+**Type A — The Digitally Native Young Practitioner:** An Ayurvedic or Homeopathic doctor in their 30s, practicing in a Tier-2 city, who already knows that their patients are searching for them online but doesn't know how to reach them without paying for Justdial listings. They are highly motivated to join Arovia, sceptical of technology overhead, and willing to pay ₹999/month if the platform demonstrably fills their consultation schedule. For this user, the Doctor Dashboard must be fast, clean, and not require extensive training. The AI Summary Panel (which auto-generates a patient context brief before the consultation begins) is the single biggest value-add that will drive Pro subscriptions from this group.
 
-**Type B — The Established Specialist:** A senior allopathic physician with an existing patient base who is evaluating Healio as a secondary channel for virtual consultations. They are not looking for a full-time digital practice — they want 10–15 additional online consultations per week that don't add administrative burden. For this user, the AI Scribe (speech-to-text SOAP notes), seamless payout management, and professional-grade consultation room are the deciding factors.
+**Type B — The Established Specialist:** A senior allopathic physician with an existing patient base who is evaluating Arovia as a secondary channel for virtual consultations. They are not looking for a full-time digital practice — they want 10–15 additional online consultations per week that don't add administrative burden. For this user, the AI Scribe (speech-to-text SOAP notes), seamless payout management, and professional-grade consultation room are the deciding factors.
 
 ### Admins (Internal Operations)
 
-The Admin user is a Healio internal operations team member responsible for platform governance. Their needs are different in nature from the patient or doctor — they need **complete information visibility with intervention capability**. An admin can verify or reject a doctor application, flag and freeze a suspicious AI session, override a payout for a dispute, and view a real-time epidemic heatmap of symptom cluster activity across geographies. The Admin Portal is covered in full in Section 18.
+The Admin user is a Arovia internal operations team member responsible for platform governance. Their needs are different in nature from the patient or doctor — they need **complete information visibility with intervention capability**. An admin can verify or reject a doctor application, flag and freeze a suspicious AI session, override a payout for a dispute, and view a real-time epidemic heatmap of symptom cluster activity across geographies. The Admin Portal is covered in full in Section 18.
 
 ### Enterprise / B2B (Phase 3)
 
-Phase 3 enterprise users — health insurers, pharmaceutical companies, government health bodies — access Healio's anonymized, aggregated population health data through a licensed API. Their interaction with the platform is asynchronous and data-driven rather than product-facing, and is covered in the Revenue Model section (Section 32).
+Phase 3 enterprise users — health insurers, pharmaceutical companies, government health bodies — access Arovia's anonymized, aggregated population health data through a licensed API. Their interaction with the platform is asynchronous and data-driven rather than product-facing, and is covered in the Revenue Model section (Section 32).
 
 ---
 
@@ -601,9 +601,9 @@ Phase 3 enterprise users — health insurers, pharmaceutical companies, governme
 
 ### Journey Map: The Worried Well (Priya) — AI Consultation
 
-The following describes the complete emotional and functional journey Priya takes from first symptom to resolved anxiety — and the specific Healio touchpoints that create or destroy trust at each stage.
+The following describes the complete emotional and functional journey Priya takes from first symptom to resolved anxiety — and the specific Arovia touchpoints that create or destroy trust at each stage.
 
-**Stage 1 — Trigger (Off-Platform):** Priya wakes up, feels her wrist aching, and immediately reaches for her phone. She has two options: Google, or Healio. If she has used Healio successfully before, she goes directly to the app. If she has not, she likely starts with Google, hits a wall of terrifying results, and then either opens Healio (if she's already heard of it) or continues suffering in the Google doom loop. This means Healio's most important acquisition channel for Priya is word-of-mouth from a trusted peer who has had a good experience. SEO for symptom-specific queries is also critical (covered in Section 31).
+**Stage 1 — Trigger (Off-Platform):** Priya wakes up, feels her wrist aching, and immediately reaches for her phone. She has two options: Google, or Arovia. If she has used Arovia successfully before, she goes directly to the app. If she has not, she likely starts with Google, hits a wall of terrifying results, and then either opens Arovia (if she's already heard of it) or continues suffering in the Google doom loop. This means Arovia's most important acquisition channel for Priya is word-of-mouth from a trusted peer who has had a good experience. SEO for symptom-specific queries is also critical (covered in Section 31).
 
 **Stage 2 — Arrival & Trust Establishment (On-Platform):** Priya opens the app. The first screen she sees tells her immediately that this is not just another symptom checker — the copy, the design, and the first AI message all signal intelligence and empathy. She clicks "Start Consultation." The AI's opening message is not "Please describe your symptoms" — it's something warmer and more contextual. From her profile, the AI already knows her age and gender. This small detail — being addressed as a known person, not a blank form — is the first trust signal.
 
@@ -617,13 +617,13 @@ The following describes the complete emotional and functional journey Priya take
 
 ### Journey Map: The Chronic Patient (Meena) — Hindi Voice Consultation
 
-Meena opens the Healio app her son set up on her phone. She presses the microphone icon on the consultation screen and speaks in Hindi: *"Mujhe subah se sar dard hai aur aankhein thodi budhbudi lagti hain."* The AI transcribes her speech in real time (shown on screen so she can verify it was captured correctly). The AI responds in Hindi: *"Meena ji, aapki baat samjhi. Kya yeh sar dard pehle bhi hua hai, ya aaj pehli baar hua hai?"* The voice-first, Hindi-first, respectful-tone interaction is entirely different from what any other health app offers her. The system detects that her described symptoms (morning headache + visual disturbance) combined with her existing hypertension profile (from her Health Profile which she filled in with her son's help) cross a clinical threshold — and the AI gently but clearly tells her: *"Aapke symptoms ko dekhte hue, aaj apne doctor se milna zaroori lag raha hai."* This is not a false alarm. This is exactly correct. Meena calls her physician. Crisis averted.
+Meena opens the Arovia app her son set up on her phone. She presses the microphone icon on the consultation screen and speaks in Hindi: *"Mujhe subah se sar dard hai aur aankhein thodi budhbudi lagti hain."* The AI transcribes her speech in real time (shown on screen so she can verify it was captured correctly). The AI responds in Hindi: *"Meena ji, aapki baat samjhi. Kya yeh sar dard pehle bhi hua hai, ya aaj pehli baar hua hai?"* The voice-first, Hindi-first, respectful-tone interaction is entirely different from what any other health app offers her. The system detects that her described symptoms (morning headache + visual disturbance) combined with her existing hypertension profile (from her Health Profile which she filled in with her son's help) cross a clinical threshold — and the AI gently but clearly tells her: *"Aapke symptoms ko dekhte hue, aaj apne doctor se milna zaroori lag raha hai."* This is not a false alarm. This is exactly correct. Meena calls her physician. Crisis averted.
 
 ---
 
 ## 3.4 Jobs To Be Done (JTBD)
 
-The JTBD framework separates what users *say* they want from what they are actually *hiring* a product to do. It asks: "When a user opens Healio, what job are they firing their previous solution for, and what does success look like to them?"
+The JTBD framework separates what users *say* they want from what they are actually *hiring* a product to do. It asks: "When a user opens Arovia, what job are they firing their previous solution for, and what does success look like to them?"
 
 ### Patient JTBD
 
@@ -655,36 +655,36 @@ The JTBD framework separates what users *say* they want from what they are actua
 
 ## 4.1 TAM / SAM / SOM
 
-To build and fund Healio intelligently, we need a rigorous and honest assessment of the market opportunity — not a hand-wavy "healthcare is a $10 trillion industry" claim that every health startup makes. The numbers below are bottom-up estimates grounded in India-specific data.
+To build and fund Arovia intelligently, we need a rigorous and honest assessment of the market opportunity — not a hand-wavy "healthcare is a $10 trillion industry" claim that every health startup makes. The numbers below are bottom-up estimates grounded in India-specific data.
 
 **Total Addressable Market (TAM):**
-The TAM for Healio.AI spans the intersection of digital health (symptom checking, teleconsultation, health monitoring) and the AYUSH wellness sector in India. India's digital health market was valued at approximately $4 billion in 2024 and is projected to reach $10–11 billion by 2030, growing at a CAGR of ~18%. The AYUSH sector alone was valued at ₹1,00,000 Crore ($12B+) in 2024, with the government actively promoting it as a parallel healthcare system. Combined, the TAM for a platform that straddles both clinical digital health and traditional medicine in India comfortably exceeds $15 billion by 2028. This is the full universe of healthcare spending that Healio's category of product could, in theory, capture a portion of.
+The TAM for Arovia.AI spans the intersection of digital health (symptom checking, teleconsultation, health monitoring) and the AYUSH wellness sector in India. India's digital health market was valued at approximately $4 billion in 2024 and is projected to reach $10–11 billion by 2030, growing at a CAGR of ~18%. The AYUSH sector alone was valued at ₹1,00,000 Crore ($12B+) in 2024, with the government actively promoting it as a parallel healthcare system. Combined, the TAM for a platform that straddles both clinical digital health and traditional medicine in India comfortably exceeds $15 billion by 2028. This is the full universe of healthcare spending that Arovia's category of product could, in theory, capture a portion of.
 
 **Serviceable Addressable Market (SAM):**
-Healio's SAM is the subset of the TAM that is actually reachable given its product category, geography, and technology requirements. Two constraints define the SAM:
+Arovia's SAM is the subset of the TAM that is actually reachable given its product category, geography, and technology requirements. Two constraints define the SAM:
 
-First, Healio requires a smartphone and a data connection. India currently has approximately 700 million smartphone users, with the number growing at 6–8% per year. However, not all of them are in segments that use or trust digital health tools. The realistic health-app-eligible population — people aged 18–60, with smartphones, who search symptoms online or have used a health-adjacent digital service — is approximately 150–200 million people.
+First, Arovia requires a smartphone and a data connection. India currently has approximately 700 million smartphone users, with the number growing at 6–8% per year. However, not all of them are in segments that use or trust digital health tools. The realistic health-app-eligible population — people aged 18–60, with smartphones, who search symptoms online or have used a health-adjacent digital service — is approximately 150–200 million people.
 
-Second, Healio's core services require a willingness to engage with an AI-mediated health consultation rather than walking into a physical clinic. Current digital health adoption data (from platforms like Practo, 1mg, and Apollo Health) suggests approximately 30–40 million Indians have completed at least one teleconsultation or AI health interaction. This is the current SAM — growing rapidly as digital health trust compounds after COVID-19.
+Second, Arovia's core services require a willingness to engage with an AI-mediated health consultation rather than walking into a physical clinic. Current digital health adoption data (from platforms like Practo, 1mg, and Apollo Health) suggests approximately 30–40 million Indians have completed at least one teleconsultation or AI health interaction. This is the current SAM — growing rapidly as digital health trust compounds after COVID-19.
 
 In INR terms, if each active SAM user generates ₹200–500 per year through a combination of subscriptions, consultation fees, and product commissions, the SAM is approximately ₹6,000–15,000 Crore per year.
 
 **Serviceable Obtainable Market (SOM):**
-The SOM is what Healio can realistically capture in a 3-year window given its resources, team, and competitive positioning. We are targeting 1 million MAU by end of Year 3. If 10% convert to Healio Plus at ₹199/month, and 2% complete a paid doctor consultation per month at an average ₹600 GMV (Healio retains 20%), and we drive ₹50/user/year in affiliate commerce revenue — this yields an annual revenue run-rate of approximately ₹25–35 Crore in Year 3. This represents a fraction of a percent of the SAM — which is exactly where a well-funded early-stage platform should be. SOM is not the ceiling; it is the 3-year beachhead.
+The SOM is what Arovia can realistically capture in a 3-year window given its resources, team, and competitive positioning. We are targeting 1 million MAU by end of Year 3. If 10% convert to Arovia Plus at ₹199/month, and 2% complete a paid doctor consultation per month at an average ₹600 GMV (Arovia retains 20%), and we drive ₹50/user/year in affiliate commerce revenue — this yields an annual revenue run-rate of approximately ₹25–35 Crore in Year 3. This represents a fraction of a percent of the SAM — which is exactly where a well-funded early-stage platform should be. SOM is not the ceiling; it is the 3-year beachhead.
 
 ---
 
 ## 4.2 Competitor Matrix
 
-The competitive landscape for Healio is best understood by separating it into three categories: direct symptom-checking competitors, teleconsultation platforms, and traditional medicine apps.
+The competitive landscape for Arovia is best understood by separating it into three categories: direct symptom-checking competitors, teleconsultation platforms, and traditional medicine apps.
 
-**Practo** is the most established health platform in India with a strong presence in doctor discovery and appointment booking. Its strengths are its depth of doctor supply, its existing patient trust, and its EHR capabilities for physicians. Its weaknesses are significant: the symptom checking experience is rudimentary (keyword-based, not probabilistic), there is no Ayurvedic or Homeopathic intelligence layer, and the patient experience is transactional rather than empathetic. Patients go to Practo to book appointments they have already decided to make — Healio's value proposition starts *before* that decision, at the moment of symptom onset.
+**Practo** is the most established health platform in India with a strong presence in doctor discovery and appointment booking. Its strengths are its depth of doctor supply, its existing patient trust, and its EHR capabilities for physicians. Its weaknesses are significant: the symptom checking experience is rudimentary (keyword-based, not probabilistic), there is no Ayurvedic or Homeopathic intelligence layer, and the patient experience is transactional rather than empathetic. Patients go to Practo to book appointments they have already decided to make — Arovia's value proposition starts *before* that decision, at the moment of symptom onset.
 
-**Ada Health** is the closest global analogy to Healio's AI engine — a Bayesian symptom checker with strong clinical credibility. Ada is well-regarded in the UK and Europe and has a solid medical evidence base. However, Ada suffers from two critical limitations for the Indian market: it has no multilingual support for Hindi or Indian vernacular languages, it has zero integration with traditional Indian medicine (Ayurveda, Homeopathy), and it has no doctor marketplace in India. For a Tier-2 Indian user who prefers to communicate in Hindi and trusts Ayurvedic remedies, Ada is functionally inaccessible.
+**Ada Health** is the closest global analogy to Arovia's AI engine — a Bayesian symptom checker with strong clinical credibility. Ada is well-regarded in the UK and Europe and has a solid medical evidence base. However, Ada suffers from two critical limitations for the Indian market: it has no multilingual support for Hindi or Indian vernacular languages, it has zero integration with traditional Indian medicine (Ayurveda, Homeopathy), and it has no doctor marketplace in India. For a Tier-2 Indian user who prefers to communicate in Hindi and trusts Ayurvedic remedies, Ada is functionally inaccessible.
 
 **1mg** has built a strong pharmacy and lab test vertical and has recently added teleconsultation. It has significant brand recognition and a large active user base from its pharmacy business. The weakness is that 1mg's consultation product is a conversion funnel bolted onto a pharmacy — the AI layer is thin, and the experience is explicitly designed to end in a medicine purchase or doctor booking rather than genuine clinical reasoning. The Ayurveda section exists, but it is merchandising-led (product catalogues), not intelligence-led.
 
-**WebMD / Healthline** are US-centric content platforms with significant SEO traffic globally, including India. They function as reference libraries, not diagnostic tools. They create Dr. Google anxiety precisely because they surface comprehensive lists of every condition that could possibly correlate with a symptom, without any probabilistic ranking or personalisation. They are one of the primary sources of the problem that Healio is solving.
+**WebMD / Healthline** are US-centric content platforms with significant SEO traffic globally, including India. They function as reference libraries, not diagnostic tools. They create Dr. Google anxiety precisely because they surface comprehensive lists of every condition that could possibly correlate with a symptom, without any probabilistic ranking or personalisation. They are one of the primary sources of the problem that Arovia is solving.
 
 **Nirogam / AyurCentral / similar AYUSH apps** are single-vertical traditional medicine apps, typically built as fronts for product sales. They do not have clinical-grade diagnostic logic, safety layers, or emergency detection. They have a loyal but small audience and no integration with modern clinical pathways.
 
@@ -692,15 +692,15 @@ The competitive landscape for Healio is best understood by separating it into th
 
 ## 4.3 Differentiators & Moats
 
-Healio's competitive advantage is not a single feature — it is a compound moat built from four reinforcing layers:
+Arovia's competitive advantage is not a single feature — it is a compound moat built from four reinforcing layers:
 
-**Moat 1 — The Clinical AI Engine.** Healio's Bayesian Probabilistic Engine is not a commodity. It has been built with 265+ conditions, clinical decision rules (Wells, HEART, PERC, NEXUS, Ottawa), sub-100ms emergency detection, NER-based entity extraction, and uncertainty quantification with confidence intervals. This level of clinical rigour is not present in any India-focused competitor. It takes 18–24 months for a well-funded competitor to replicate, by which time Healio's RLHF loop (Phase 3) will have made the engine self-improving through real clinical feedback.
+**Moat 1 — The Clinical AI Engine.** Arovia's Bayesian Probabilistic Engine is not a commodity. It has been built with 265+ conditions, clinical decision rules (Wells, HEART, PERC, NEXUS, Ottawa), sub-100ms emergency detection, NER-based entity extraction, and uncertainty quantification with confidence intervals. This level of clinical rigour is not present in any India-focused competitor. It takes 18–24 months for a well-funded competitor to replicate, by which time Arovia's RLHF loop (Phase 3) will have made the engine self-improving through real clinical feedback.
 
-**Moat 2 — Holistic Intelligence Integration.** Healio is the only platform that combines clinical-grade diagnosis with first-class Ayurvedic and Homeopathic intelligence. The Prakriti Engine, Vikriti tracking, and dosha-aware remedy recommendation system represent a genuinely unique data and logic asset. The source databases (Boericke's Materia Medica, OpenHomeopath, a 45,000-byte Ayurvedic condition database built in-house) are proprietary or carefully licensed, not something that can be imported from a public API.
+**Moat 2 — Holistic Intelligence Integration.** Arovia is the only platform that combines clinical-grade diagnosis with first-class Ayurvedic and Homeopathic intelligence. The Prakriti Engine, Vikriti tracking, and dosha-aware remedy recommendation system represent a genuinely unique data and logic asset. The source databases (Boericke's Materia Medica, OpenHomeopath, a 45,000-byte Ayurvedic condition database built in-house) are proprietary or carefully licensed, not something that can be imported from a public API.
 
-**Moat 3 — The Cold Start Advantage of Data.** Every AI diagnosis session generates training signal. As Healio accumulates sessions — especially in the post-Phase 3 RLHF loop where doctors grade AI outputs — the engine's accuracy improves in a way that new entrants cannot replicate from a standing start. This is the classic ML data flywheel: more users → more sessions → better accuracy → more user trust → more users.
+**Moat 3 — The Cold Start Advantage of Data.** Every AI diagnosis session generates training signal. As Arovia accumulates sessions — especially in the post-Phase 3 RLHF loop where doctors grade AI outputs — the engine's accuracy improves in a way that new entrants cannot replicate from a standing start. This is the classic ML data flywheel: more users → more sessions → better accuracy → more user trust → more users.
 
-**Moat 4 — Cultural Depth.** Language is not a feature — it is infrastructure. Healio's native support for Hindi, Hinglish, and planned regional language expansion represents a cultural bet that every English-first health platform has failed to make. In India, the doctor-patient relationship is conducted in the patient's mother tongue. Building an AI that can do the same, at scale, is a multi-year ethnographic and engineering investment that Healio is making now. It cannot be replicated quickly by a foreign health platform.
+**Moat 4 — Cultural Depth.** Language is not a feature — it is infrastructure. Arovia's native support for Hindi, Hinglish, and planned regional language expansion represents a cultural bet that every English-first health platform has failed to make. In India, the doctor-patient relationship is conducted in the patient's mother tongue. Building an AI that can do the same, at scale, is a multi-year ethnographic and engineering investment that Arovia is making now. It cannot be replicated quickly by a foreign health platform.
 
 ---
 
@@ -708,15 +708,15 @@ Healio's competitive advantage is not a single feature — it is a compound moat
 
 Any health platform built for India must operate with a clear-eyed view of the structural peculiarities of the Indian healthcare market, because many global product assumptions do not hold here.
 
-**The Doctor-Patient Trust Gap:** In India, the trusted healthcare resource is often not the formal medical system — it is the family elder, the local chemist, or the WhatsApp group. This is not because Indians don't trust doctors; it is because access to a doctor they trust is difficult, expensive, and time-consuming. Healio's design must respect this reality: the AI should not position itself as a replacement for the family elder's counsel, but as a smarter, safer version of that counsel — one that won't recommend something dangerous.
+**The Doctor-Patient Trust Gap:** In India, the trusted healthcare resource is often not the formal medical system — it is the family elder, the local chemist, or the WhatsApp group. This is not because Indians don't trust doctors; it is because access to a doctor they trust is difficult, expensive, and time-consuming. Arovia's design must respect this reality: the AI should not position itself as a replacement for the family elder's counsel, but as a smarter, safer version of that counsel — one that won't recommend something dangerous.
 
 **The AYUSH Mainstream:** Unlike in Western markets where alternative medicine is niche, in India, Ayurveda and Homeopathy are mainstream healthcare systems used by hundreds of millions of people. Government-licensed AYUSH practitioners outnumber allopathic doctors in many states. A health platform that ignores this is ignoring the primary healthcare paradigm for at least half its users.
 
-**The Price Sensitivity Gradient:** India's health consumer market is extremely price-sensitive, but this is not uniform. A Tier-1 professional will pay ₹199/month for a premium health subscription without much deliberation. A Tier-2 user may view the same price as a significant commitment. The free tier of Healio must therefore be genuinely useful — not crippled — so that the product can grow across all income segments. The monetisation strategy must extract value from the top of the pyramid without cutting off the base.
+**The Price Sensitivity Gradient:** India's health consumer market is extremely price-sensitive, but this is not uniform. A Tier-1 professional will pay ₹199/month for a premium health subscription without much deliberation. A Tier-2 user may view the same price as a significant commitment. The free tier of Arovia must therefore be genuinely useful — not crippled — so that the product can grow across all income segments. The monetisation strategy must extract value from the top of the pyramid without cutting off the base.
 
-**The Low-Bandwidth Reality:** In 2026, 4G penetration in India is strong in urban areas but patchy in semi-urban and rural zones. A meaningful portion of Healio's users will access the platform on 2G-equivalent speeds at some point. The application must be designed with a low-bandwidth fallback mode — progressive image loading, text-first UI, reduced animation — because a loading spinner is the most effective acquisition-killer possible for a user in a low-connectivity area who is already anxious about a health concern.
+**The Low-Bandwidth Reality:** In 2026, 4G penetration in India is strong in urban areas but patchy in semi-urban and rural zones. A meaningful portion of Arovia's users will access the platform on 2G-equivalent speeds at some point. The application must be designed with a low-bandwidth fallback mode — progressive image loading, text-first UI, reduced animation — because a loading spinner is the most effective acquisition-killer possible for a user in a low-connectivity area who is already anxious about a health concern.
 
-**Regulatory Environment:** India's Telemedicine Practice Guidelines (2020), the DPDPA (Digital Personal Data Protection Act, 2023), and the CDSCO's classification framework for health software all directly govern what Healio can and cannot do on the platform. These are not afterthoughts — they shape core product decisions including consent flows, data retention policies, how the platform frames its diagnostic outputs, and which features require a licensed medical professional to be "in the loop." Section 30 covers regulatory compliance in full.
+**Regulatory Environment:** India's Telemedicine Practice Guidelines (2020), the DPDPA (Digital Personal Data Protection Act, 2023), and the CDSCO's classification framework for health software all directly govern what Arovia can and cannot do on the platform. These are not afterthoughts — they shape core product decisions including consent flows, data retention policies, how the platform frames its diagnostic outputs, and which features require a licensed medical professional to be "in the loop." Section 30 covers regulatory compliance in full.
 
 ---
 

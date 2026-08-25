@@ -1,4 +1,4 @@
-# MCMC Bayesian Inference Engine — Healio.AI
+# MCMC Bayesian Inference Engine — Arovia.AI
 
 > **Version 3.0** — Math-First Architecture
 > Last updated: 2026-04-05
@@ -6,7 +6,7 @@
 
 ## Architecture Overview
 
-The Healio MCMC Bayesian Engine provides clinically-safe probabilistic diagnosis through an authoritative 11-checkpoint pipeline. Every diagnosis passes through multi-chain Markov Chain Monte Carlo inference. The Large Language Model is strictly relegated to Natural Language Formatting—it cannot invent or calculate diagnoses.
+The Arovia MCMC Bayesian Engine provides clinically-safe probabilistic diagnosis through an authoritative 11-checkpoint pipeline. Every diagnosis passes through multi-chain Markov Chain Monte Carlo inference. The Large Language Model is strictly relegated to Natural Language Formatting—it cannot invent or calculate diagnoses.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐

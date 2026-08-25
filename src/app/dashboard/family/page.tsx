@@ -321,7 +321,7 @@ export default function FamilyPage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Family Profiles</h1>
           <p className="text-gray-500 mt-1 max-w-2xl">
-            Save minimal health context for loved ones so Healio can personalize guidance more safely.
+            Save minimal health context for loved ones so Arovia can personalize guidance more safely.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ export default function FamilyPage() {
       <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-start gap-3">
         <Info className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
         <p className="text-xs leading-relaxed text-blue-700">
-          <strong>DPDP notice:</strong> Add family health context only with consent. Healio stores age bands instead of exact birth dates, supports deletion at any time, and uses this data only for personalized wellness and safety guidance.
+          <strong>DPDP notice:</strong> Add family health context only with consent. Arovia stores age bands instead of exact birth dates, supports deletion at any time, and uses this data only for personalized wellness and safety guidance.
         </p>
       </div>
 
@@ -501,7 +501,7 @@ export default function FamilyPage() {
             <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 cursor-pointer">
               <Checkbox checked={consentAccepted} onCheckedChange={value => setConsentAccepted(Boolean(value))} className="mt-0.5" />
               <span className="text-xs text-slate-600 leading-relaxed">
-                I confirm I have consent to store this family member&apos;s health context in Healio for personalized wellness and safety guidance.
+                I confirm I have consent to store this family member&apos;s health context in Arovia for personalized wellness and safety guidance.
               </span>
             </label>
           </div>

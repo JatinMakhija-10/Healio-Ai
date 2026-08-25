@@ -1,10 +1,10 @@
-# Healio.AI Documentation Bundle
+# Arovia.AI Documentation Bundle
 ## Phase 1 & Phase 2
 
 ---
 
 **Generated on:** 10 Feb 2026
-**Project:** Healio.AI
+**Project:** Arovia.AI
 **Includes:**
 1. Phase 1: Authentication Flow
 2. Phase 2: Admin Dashboard
@@ -16,10 +16,10 @@
 
 ---
 
-## 🌐 1. HEALIO.IN (Landing Page - `/`)
+## 🌐 1. AROVIA.IN (Landing Page - `/`)
 
 ### **Overview**
-- **URL**: `healio.in` or `localhost:3000/`
+- **URL**: `arovia.in` or `localhost:3000/`
 - **Purpose**: First touchpoint for all users
 - **Design**: Minimal, professional, clinical-grade aesthetic
 - **File**: `src/app/page.tsx`
@@ -29,7 +29,7 @@
 #### **A. Hero Section**
 ```
 ┌─────────────────────────────────────┐
-│   🩺 HEALIO.AI LOGO (Stethoscope)   │
+│   🩺 AROVIA.AI LOGO (Stethoscope)   │
 │                                     │
 │   "Understand your pain.            │
 │    Safely."                         │
@@ -49,7 +49,7 @@
 - ℹ️ Educational Use Only (Medical disclaimer)
 
 #### **D. Legal Disclaimer**
-> "By continuing, you agree that Healio.AI is an informational tool and does not provide medical diagnosis or treatment advice."
+> "By continuing, you agree that Arovia.AI is an informational tool and does not provide medical diagnosis or treatment advice."
 
 **Key Insight**: The landing page is intentionally simple to reduce cognitive load and build trust before signup.
 
@@ -402,7 +402,7 @@ IF rejected:
 
 **Admin Access**:
 - Manually granted via database
-- Typically for internal Healio.AI team
+- Typically for internal Arovia.AI team
 - Has override access to all dashboards
 
 ---
@@ -413,12 +413,12 @@ IF rejected:
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                          HEALIO.AI                                 │
+│                          AROVIA.AI                                 │
 │                     Authentication System                          │
 └───────────────────────────────────────────────────────────────────┘
 
      ┌─────────────────────────────────────────────────────────────┐
-     │ 1. LANDING PAGE (healio.in)                                 │
+     │ 1. LANDING PAGE (arovia.in)                                 │
      │    • "Get Started" button                                   │
      │    • "Login" link                                           │
      └─────────────┬───────────────────────────────────────────────┘
@@ -557,7 +557,7 @@ LOGIN  → Dashboard (profile already exists)
 1. **✅ Approve**:
    - Update `doctors` table: `verification_status = 'approved'`
    - Update `profiles` metadata: `is_verified = true`
-   - Trigger email: "You are live on Healio!"
+   - Trigger email: "You are live on Arovia!"
    
 2. **❓ Request Info**:
    - Update `status = 'more_info_required'`

@@ -1,12 +1,12 @@
-# Healio.AI — Audit Response & Hardened Design
+# Arovia.AI — Audit Response & Hardened Design
 
-> **Response to**: Healio.AI audit brief + prior audit documents (personalization/memory pipeline, gender-gating root-cause analysis)
+> **Response to**: Arovia.AI audit brief + prior audit documents (personalization/memory pipeline, gender-gating root-cause analysis)
 > **Date**: August 2, 2026
 > **Scope**: Reproductive-risk gating bug, RAG content safety, a right-sized priority list, and current regulatory framing
 
 ## Scope and caveats
 
-I don't have the actual Healio.AI repo — just what's quoted and described across the audit brief and the two prior audit documents. So the specific line numbers, file paths, and code snippets referenced below should be treated as reported by whatever produced those documents, not independently verified.
+I don't have the actual Arovia.AI repo — just what's quoted and described across the audit brief and the two prior audit documents. So the specific line numbers, file paths, and code snippets referenced below should be treated as reported by whatever produced those documents, not independently verified.
 
 One thing worth flagging about that source material itself: the 45% / 30% / 15% / 10% root-cause breakdown in the audit doc is presented with a precision that implies it was measured (log analysis, incident counts) rather than estimated. If it's actually a judgment call dressed up as data, that's worth knowing — it's exactly the kind of unsupported claim a rigorous audit is supposed to catch, including from itself.
 
@@ -161,7 +161,7 @@ This doesn't necessarily mean removing the content — plenty of health platform
 
 Worth knowing before scaling this: FDA replaced its clinical decision support guidance on January 6, 2026 with an updated final version, and the update backs away from FDA's earlier stance that non-device CDS had to present multiple options to a clinician rather than one specific recommendation — a real loosening. But that update is scoped entirely to clinician-facing tools; it doesn't extend any new enforcement discretion to consumer-facing products like health chatbots or symptom checkers, and the softer treatment it does offer depends on a health care provider being able to independently review the basis for a recommendation rather than relying on it outright — not a patient doing so.
 
-A direct-to-patient tool making diagnosis-adjacent claims doesn't inherit the benefit of the easier 2026 rules just because they exist; a patient-facing tool with no clinician in the loop to catch an error arguably sits in a *higher*-risk category, not a lower one. (Not a lawyer, not a substitute for one — get real regulatory counsel before finalizing what Healio claims to do.)
+A direct-to-patient tool making diagnosis-adjacent claims doesn't inherit the benefit of the easier 2026 rules just because they exist; a patient-facing tool with no clinician in the loop to catch an error arguably sits in a *higher*-risk category, not a lower one. (Not a lawyer, not a substitute for one — get real regulatory counsel before finalizing what Arovia claims to do.)
 
 The practical version of this: whether the product is called an "AI doctor," a "symptom checker," or a "triage assistant" isn't just marketing language — it's the thing that determines which regulatory bucket it lands in.
 

@@ -210,25 +210,25 @@ function RemedyCard({
         home: {
             Icon: House,
             label: "Simple home care",
-            className: "border-[#B8DED0] bg-[#F1FBF6] text-[var(--healio-wellness-charcoal)]",
-            accent: "text-[var(--healio-wellness-primary)]",
-            source: "border-[#B8DED0] bg-white text-[var(--healio-wellness-primary)]",
+            className: "border-[#B8DED0] bg-[#F1FBF6] text-[var(--arovia-wellness-charcoal)]",
+            accent: "text-[var(--arovia-wellness-primary)]",
+            source: "border-[#B8DED0] bg-white text-[var(--arovia-wellness-primary)]",
             howTo: "How to use",
         },
         ayurveda: {
             Icon: Leaf,
             label: "Traditional Ayurvedic",
-            className: "border-[var(--healio-evidence-established)] bg-[var(--healio-evidence-established-bg)] text-[var(--healio-wellness-charcoal)]",
-            accent: "text-[var(--healio-wellness-primary-dark)]",
-            source: "border-[var(--healio-evidence-established)] bg-white text-[var(--healio-wellness-primary-dark)]",
+            className: "border-[var(--arovia-evidence-established)] bg-[var(--arovia-evidence-established-bg)] text-[var(--arovia-wellness-charcoal)]",
+            accent: "text-[var(--arovia-wellness-primary-dark)]",
+            source: "border-[var(--arovia-evidence-established)] bg-white text-[var(--arovia-wellness-primary-dark)]",
             howTo: "Preparation",
         },
         homeopathy: {
             Icon: FlaskConical,
             label: "Homeopathic - consult first",
-            className: "border-[var(--healio-evidence-traditional)] bg-[var(--healio-evidence-traditional-bg)] text-[var(--healio-wellness-charcoal)]",
-            accent: "text-[var(--healio-wellness-accent)]",
-            source: "border-[var(--healio-evidence-traditional)] bg-white text-[var(--healio-wellness-accent)]",
+            className: "border-[var(--arovia-evidence-traditional)] bg-[var(--arovia-evidence-traditional-bg)] text-[var(--arovia-wellness-charcoal)]",
+            accent: "text-[var(--arovia-wellness-accent)]",
+            source: "border-[var(--arovia-evidence-traditional)] bg-white text-[var(--arovia-wellness-accent)]",
             howTo: "How to take",
         },
     }[resolvedKind];
@@ -594,7 +594,7 @@ export function DiagnosisResultCard({
 
     // ── Copy button handler with 2s success feedback ──────────────────────────
     const handleCopy = () => {
-        const text = `Condition: ${condition.name}\nDescription: ${condition.description}\n\nDisclaimer: Healio is an AI health assistant for informational purposes only.`;
+        const text = `Condition: ${condition.name}\nDescription: ${condition.description}\n\nDisclaimer: Arovia is an AI health assistant for informational purposes only.`;
         navigator.clipboard
             .writeText(text)
             .catch(() => {/* silent fail — still show feedback */})
@@ -656,7 +656,7 @@ export function DiagnosisResultCard({
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `Healio-Preview-${condition.name.replace(/\s+/g, "-")}.pdf`;
+                link.download = `Arovia-Preview-${condition.name.replace(/\s+/g, "-")}.pdf`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -692,7 +692,7 @@ export function DiagnosisResultCard({
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `Healio-Report-${condition.name.replace(/\s+/g, "-")}.pdf`;
+            link.download = `Arovia-Report-${condition.name.replace(/\s+/g, "-")}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1078,7 +1078,7 @@ export function DiagnosisResultCard({
                                             </div>
                                         </div>
                                         <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                                            Healio combines reported symptoms, duration, severity, safety flags, profile context, and available source-backed guidance. This score is a triage aid, not a confirmed medical diagnosis.
+                                            Arovia combines reported symptoms, duration, severity, safety flags, profile context, and available source-backed guidance. This score is a triage aid, not a confirmed medical diagnosis.
                                         </p>
                                     </div>
                                 )}
@@ -1160,7 +1160,7 @@ export function DiagnosisResultCard({
 
                                         {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && (
                                             <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-                                                Detailed calculation data was not returned for this answer. Healio is still showing the available match score and safety guidance from this chat turn.
+                                                Detailed calculation data was not returned for this answer. Arovia is still showing the available match score and safety guidance from this chat turn.
                                             </p>
                                         )}
                                     </div>
@@ -1217,7 +1217,7 @@ export function DiagnosisResultCard({
 
                             {activeCareTab === "homeopathy" && (
                                 <div id="care-panel-homeopathy" role="tabpanel" aria-labelledby="care-tab-homeopathy" className="space-y-3">
-                                    <div className="rounded-lg border border-[var(--healio-evidence-traditional)] bg-[var(--healio-evidence-traditional-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--healio-wellness-accent)]">
+                                    <div className="rounded-lg border border-[var(--arovia-evidence-traditional)] bg-[var(--arovia-evidence-traditional-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--arovia-wellness-accent)]">
                                         Experimental suggestions. Consult a qualified homeopathic or medical practitioner before use.
                                     </div>
                                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1295,7 +1295,7 @@ export function DiagnosisResultCard({
                             {(condition as any).disclaimer
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 ? (condition as any).disclaimer
-                                : "Healio is an AI health assistant for informational and educational purposes only. This is not a medical diagnosis. AI analysis is experimental and may be inaccurate. Homeopathic, Ayurvedic, and home remedy suggestions are provided for awareness only — they have not been evaluated by a regulatory authority. Please consult a qualified healthcare professional before taking any medicine or altering any existing treatment."}
+                                : "Arovia is an AI health assistant for informational and educational purposes only. This is not a medical diagnosis. AI analysis is experimental and may be inaccurate. Homeopathic, Ayurvedic, and home remedy suggestions are provided for awareness only — they have not been evaluated by a regulatory authority. Please consult a qualified healthcare professional before taking any medicine or altering any existing treatment."}
                         </p>
                         <p className="text-[11px] text-amber-700 font-medium">
                             Always seek advice from a licensed doctor, especially before taking any medicine.

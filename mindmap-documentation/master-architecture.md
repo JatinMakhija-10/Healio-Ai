@@ -1,4 +1,4 @@
-# Healio.AI Mindmap - Master Architecture
+# Arovia.AI Mindmap - Master Architecture
 ## System Overview & Data Flow
 
 ---

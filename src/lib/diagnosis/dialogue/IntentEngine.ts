@@ -1,5 +1,5 @@
 /**
- * Intent Classification Engine for Healio.AI
+ * Intent Classification Engine for Arovia.AI
  * 
  * Fast-path rule-based intent classification with fallback hierarchy.
  * Designed for <50ms response time on emergency detection.

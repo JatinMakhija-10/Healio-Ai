@@ -6,7 +6,7 @@ import { Leaf } from "lucide-react";
 export function TypingIndicator() {
     return (
         <div className="flex items-start gap-3 px-4">
-            {/* Healio Avatar */}
+            {/* Arovia Avatar */}
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm">
                 <Leaf className="h-5 w-5" strokeWidth={2.3} aria-hidden="true" />
             </div>

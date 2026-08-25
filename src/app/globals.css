@@ -125,45 +125,45 @@
   --sidebar-ring: oklch(0.705 0.015 290.61);
 }
 
-/* ── Healio Wellness Palette (Plan §7.2) ─────────────────────────────────────
+/* ── Arovia Wellness Palette (Plan §7.2) ─────────────────────────────────────
  * These tokens drive all wellness UI: ContentCard, EscalationAlert,
- * EvidenceLabelBadge, RoutineCard, AskHealioResponseRenderer.
+ * EvidenceLabelBadge, RoutineCard, AskAroviaResponseRenderer.
  * Do NOT use these on the clinical/doctor-portal UI.
  * ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Primary — Tulsi green */
-  --healio-wellness-primary:        #2D6A4F;
-  --healio-wellness-primary-hover:  #1E4D38;
-  --healio-wellness-primary-bg:     #EAF4EF;
+  --arovia-wellness-primary:        #2D6A4F;
+  --arovia-wellness-primary-hover:  #1E4D38;
+  --arovia-wellness-primary-bg:     #EAF4EF;
 
   /* Secondary — Marigold */
-  --healio-wellness-marigold:       #E9A21A;
-  --healio-wellness-marigold-bg:    #FEF6E0;
+  --arovia-wellness-marigold:       #E9A21A;
+  --arovia-wellness-marigold-bg:    #FEF6E0;
 
   /* Accent — Indigo (trust / learning / practitioners) */
-  --healio-wellness-indigo:         #3D405B;
-  --healio-wellness-indigo-bg:      #EEEEF5;
+  --arovia-wellness-indigo:         #3D405B;
+  --arovia-wellness-indigo-bg:      #EEEEF5;
 
   /* Soft support — Rose clay (alerts / women's wellness / family) */
-  --healio-wellness-rose:           #C9675A;
-  --healio-wellness-rose-bg:        #FAEAE8;
+  --arovia-wellness-rose:           #C9675A;
+  --arovia-wellness-rose-bg:        #FAEAE8;
 
   /* Surface — Warm ivory */
-  --healio-wellness-ivory:          #FDFAF6;
+  --arovia-wellness-ivory:          #FDFAF6;
 
   /* Text — Deep charcoal */
-  --healio-wellness-charcoal:       #1C1C1E;
+  --arovia-wellness-charcoal:       #1C1C1E;
 
   /* Safety — used ONLY for red-flags and L4/L5 escalations */
-  --healio-wellness-danger:         #D62828;
-  --healio-wellness-caution:        #C9700A;
+  --arovia-wellness-danger:         #D62828;
+  --arovia-wellness-caution:        #C9700A;
 
   /* Evidence label palette (matches evidenceLabels.ts) */
-  --healio-evidence-established:    #1A7A4A;
-  --healio-evidence-selfcare:       #2D6A4F;
-  --healio-evidence-traditional:    #6B4F12;
-  --healio-evidence-emerging:       #5C5FA3;
-  --healio-evidence-avoid:          #C9675A;
+  --arovia-evidence-established:    #1A7A4A;
+  --arovia-evidence-selfcare:       #2D6A4F;
+  --arovia-evidence-traditional:    #6B4F12;
+  --arovia-evidence-emerging:       #5C5FA3;
+  --arovia-evidence-avoid:          #C9675A;
 }
 
 @layer base {
@@ -183,7 +183,7 @@
 
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--healio-brand-primary, #0F6E56), 0 0 0 4px #FFFFFF;
+    box-shadow: 0 0 0 2px var(--arovia-brand-primary, #0F6E56), 0 0 0 4px #FFFFFF;
     border-radius: var(--radius-sm, 6px);
   }
 }
@@ -239,7 +239,7 @@
   line-height: 1.2;
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--healio-text-primary);
+  color: var(--arovia-text-primary);
 }
 
 @media (min-width: 640px) {
@@ -262,10 +262,10 @@
   animation: marquee 20s linear infinite;
 }
 
-/* Dark mode tokens (Opt-in via data-healio-theme="dark" or .dark) */
-:root[data-healio-theme="dark"],
+/* Dark mode tokens (Opt-in via data-arovia-theme="dark" or .dark) */
+:root[data-arovia-theme="dark"],
 .dark,
-.healio-theme-dark {
+.arovia-theme-dark {
   --background: oklch(0.18 0.01 240);
   --foreground: oklch(0.96 0.005 240);
   --card: oklch(0.22 0.01 240);

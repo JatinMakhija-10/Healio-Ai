@@ -1,5 +1,5 @@
 /**
- * Medical Named Entity Recognition (NER) for Healio.AI
+ * Medical Named Entity Recognition (NER) for Arovia.AI
  * 
  * Enhanced entity extraction with:
  * - 200+ synonym mappings (layman → medical terms)

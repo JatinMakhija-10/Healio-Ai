@@ -1,5 +1,5 @@
 """
-MIMIC-IV Ingestion Pipeline for Healio.AI
+MIMIC-IV Ingestion Pipeline for Arovia.AI
 ==========================================
 
 Prerequisites:
@@ -49,8 +49,8 @@ load_dotenv()
 SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-# ─── ICD-10 → Healio condition_id mapping ─────────────────────────────────────
-# Maps MIMIC-IV ICD codes to Healio.AI internal condition IDs
+# ─── ICD-10 → Arovia condition_id mapping ─────────────────────────────────────
+# Maps MIMIC-IV ICD codes to Arovia.AI internal condition IDs
 
 ICD_TO_CONDITION = {
     # Cardiac
@@ -131,7 +131,7 @@ def load_mimic_data(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.Data
 
 
 def map_icd_to_condition(icd_code: str) -> str | None:
-    """Map an ICD code to a Healio condition_id."""
+    """Map an ICD code to a Arovia condition_id."""
     icd_prefix = str(icd_code)[:3].upper()
     return ICD_TO_CONDITION.get(icd_prefix)
 
@@ -273,7 +273,7 @@ def push_to_supabase(cohorts: list[dict]) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Ingest MIMIC-IV data into Healio.AI")
+    parser = argparse.ArgumentParser(description="Ingest MIMIC-IV data into Arovia.AI")
     parser.add_argument("--data-dir", required=True, help="Path to MIMIC-IV hosp directory")
     parser.add_argument("--output-json", default="data/datasets/mimic_case_patterns.json",
                         help="Output path for case patterns JSON")

@@ -8,7 +8,7 @@
  * The 5-card "What do you need help with today?" entry surface.
  * Sits at the top of the dashboard home screen.
  * Each card routes to the appropriate pathway:
- *   - Everyday care (Ask Healio)
+ *   - Everyday care (Ask Arovia)
  *   - Traditional wellness (Library)
  *   - Medical escalation (Consult)
  */

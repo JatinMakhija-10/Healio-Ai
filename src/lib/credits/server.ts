@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/ai/config";
 
-export type HealioCreditAction =
+export type AroviaCreditAction =
     | "standard_chat"
     | "rag_query"
     | "lab_report_analysis"

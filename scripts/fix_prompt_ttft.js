@@ -24,7 +24,7 @@ const newDef = basePrompt + '`;\n\nconst FINAL_DIAGNOSIS_RULES = `\n' + finalDia
 c = c.replace(oldDef, newDef);
 
 const oldUsage = `        let finalSystemPrompt = ragContext
-            ? \`=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
+            ? \`=== AROVIA MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
 the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.
 Do NOT ignore this data. Do NOT hallucinate remedies that contradict this data.
@@ -41,7 +41,7 @@ Do NOT ignore this data. Do NOT hallucinate remedies that contradict this data.
         }`;
 
 const newUsage = `        let finalSystemPrompt = ragContext
-            ? \`=== HEALIO MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
+            ? \`=== AROVIA MEDICAL KNOWLEDGE BASE (Sourced from Supabase) ===
 The following data was retrieved from our verified databases. You MUST use this data to populate
 the homeopathic_remedies, ayurvedic_remedies, and home_remedies sections in your final JSON output.
 Do NOT ignore this data. Do NOT hallucinate remedies that contradict this data.

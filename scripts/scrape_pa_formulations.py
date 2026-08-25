@@ -1,5 +1,5 @@
 """
-Healio.AI — Planet Ayurveda Classical Formulations Stealth Scraper
+Arovia.AI — Planet Ayurveda Classical Formulations Stealth Scraper
 ===================================================================
 Scrapes all classical formulation pages from:
     https://www.planetayurveda.com/classical-ayurvedic-formulations/

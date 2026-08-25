@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Admin Seed Script
+ * Arovia.AI — Admin Seed Script
  * Creates an admin account in Supabase Auth + ensures profile has role=admin
  * 
  * Usage: npx ts-node scripts/create_admin.ts
@@ -10,9 +10,9 @@ dotenv.config({ path: '.env.local' });
 
 import { createClient } from '@supabase/supabase-js';
 
-const ADMIN_EMAIL    = 'admin@healio.ai';
-const ADMIN_PASSWORD = 'HealioAdmin@2024';
-const ADMIN_NAME     = 'Healio Admin';
+const ADMIN_EMAIL    = 'admin@arovia.ai';
+const ADMIN_PASSWORD = 'AroviaAdmin@2024';
+const ADMIN_NAME     = 'Arovia Admin';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +21,7 @@ const supabase = createClient(
 );
 
 async function main() {
-    console.log('\n🔐 Healio.AI — Admin Account Setup\n');
+    console.log('\n🔐 Arovia.AI — Admin Account Setup\n');
 
     // 1. Try to create the auth user
     const { data: createData, error: createError } = await supabase.auth.admin.createUser({

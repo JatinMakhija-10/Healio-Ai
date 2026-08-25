@@ -1,7 +1,7 @@
 # Doctor Dashboard & Consultation System Specification
 
 ## 1. High-Level Architecture
-The Doctor Dashboard is a "Provider-Facing" React application (or a dedicated route within the main app) that acts as the command center for medical professionals. It tightly integrates with the core `Healio.AI` diagnosis engine.
+The Doctor Dashboard is a "Provider-Facing" React application (or a dedicated route within the main app) that acts as the command center for medical professionals. It tightly integrates with the core `Arovia.AI` diagnosis engine.
 
 ### Core Philosophy
 *   **"AI as Copilot, Not Autopilot"**: The dashboard never overrides the doctor; it augments them with data.

@@ -1,5 +1,5 @@
 """
-Healio.AI — Download BhashaBench-Ayur from HuggingFace
+Arovia.AI — Download BhashaBench-Ayur from HuggingFace
 =======================================================
 Dataset: bharatgenai/BhashaBench-Ayur
 14,963 validated Ayurvedic Q&A questions from 50+ govt exams (English + Hindi)

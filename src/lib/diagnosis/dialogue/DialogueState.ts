@@ -1,5 +1,5 @@
 /**
- * Dialogue State Management for Healio.AI Conversation Engine
+ * Dialogue State Management for Arovia.AI Conversation Engine
  * 
  * This module defines rich dialogue state types for context-aware
  * conversation management, emotional state tracking, and strategic

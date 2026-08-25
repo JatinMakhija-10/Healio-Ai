@@ -241,7 +241,7 @@ export default function InboxPage() {
                         specialty: ["General Practice"],
                         qualification: "MBBS",
                         experienceYears: 1,
-                        bio: "Healio Doctor",
+                        bio: "Arovia Doctor",
                         licenseNumber: "PENDING",
                         consultationFee: 50,
                         availability: {},

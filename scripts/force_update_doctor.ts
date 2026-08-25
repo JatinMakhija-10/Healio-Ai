@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseKey) process.exit(1);
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function forceUpdate() {
-    const email = 'doctor_test@healio.ai';
+    const email = 'doctor_test@arovia.ai';
     const password = 'Doctor123!@#';
 
     console.log(`Force updating user: ${email}`);

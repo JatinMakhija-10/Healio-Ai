@@ -65,7 +65,7 @@ export function ProFeatureGate({
                         </div>
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wide text-purple-700 mb-2">
-                                Healio Pro
+                                Arovia Pro
                             </p>
                             <h1 className="text-2xl font-bold text-slate-900">{featureName}</h1>
                             <p className="text-slate-500 mt-2 leading-relaxed">{description}</p>
@@ -75,7 +75,7 @@ export function ProFeatureGate({
                             onClick={() => setShowUpgradeModal(true)}
                         >
                             <Sparkles className="h-4 w-4" />
-                            Upgrade to Healio Pro
+                            Upgrade to Arovia Pro
                         </Button>
                     </CardContent>
                 </Card>

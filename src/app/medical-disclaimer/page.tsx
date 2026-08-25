@@ -40,14 +40,14 @@ export default function MedicalDisclaimer() {
                 🧪 Beta Product — Results May Vary
               </h2>
               <p className="text-sm text-amber-800 mt-0 mb-0">
-                Healio.AI is currently in <strong>Beta</strong>. All features — including AI-assisted symptom analysis, diagnosis suggestions, and homeopathic/Ayurvedic remedy recommendations — are <strong>experimental</strong>. Outputs may be inaccurate, incomplete, or inappropriate for your specific health situation. Do not rely solely on this application for any health decision. Results will vary from person to person.
+                Arovia.AI is currently in <strong>Beta</strong>. All features — including AI-assisted symptom analysis, diagnosis suggestions, and homeopathic/Ayurvedic remedy recommendations — are <strong>experimental</strong>. Outputs may be inaccurate, incomplete, or inappropriate for your specific health situation. Do not rely solely on this application for any health decision. Results will vary from person to person.
               </p>
             </div>
 
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">1. Not Medical Advice (Telemedicine Practice Guidelines)</h2>
               <p>
-                The information, text, graphics, images, and other material contained on Healio.AI (the "Service") are for informational and educational purposes only. The Service is <strong>not intended to be a substitute for professional medical advice, diagnosis, or treatment by a Registered Medical Practitioner (RMP)</strong> as defined by the National Medical Commission (NMC).
+                The information, text, graphics, images, and other material contained on Arovia.AI (the "Service") are for informational and educational purposes only. The Service is <strong>not intended to be a substitute for professional medical advice, diagnosis, or treatment by a Registered Medical Practitioner (RMP)</strong> as defined by the National Medical Commission (NMC).
               </p>
               <p>
                 Always seek the advice of your physician or other qualified health provider within your jurisdiction with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read on or through the Service. Wait times or recommendations should not replace immediate consultation at the nearest hospital/clinic.
@@ -57,13 +57,13 @@ export default function MedicalDisclaimer() {
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">2. Chatbot AI Limitations and Hallucinations</h2>
               <p>
-                The Healio.AI chatbot utilizes large language models (LLMs) to converse, process information, and provide suggestions related to pain management and general wellness. <strong>The AI is a machine, not a doctor.</strong> It cannot make clinical diagnoses, prescribe medication, or order tests.
+                The Arovia.AI chatbot utilizes large language models (LLMs) to converse, process information, and provide suggestions related to pain management and general wellness. <strong>The AI is a machine, not a doctor.</strong> It cannot make clinical diagnoses, prescribe medication, or order tests.
               </p>
               <p>
                 Due to the nature of generative AI, the chatbot may occasionally "hallucinate"—meaning it could generate responses that sound highly convincing and professional but are factually incorrect, incomplete, or medically unsafe. 
               </p>
               <p>
-                Any suggestions, differential insights, or relief techniques provided by the Healio.AI chatbot should be thoroughly discussed with a licensed healthcare professional before taking action or altering any existing treatment plan.
+                Any suggestions, differential insights, or relief techniques provided by the Arovia.AI chatbot should be thoroughly discussed with a licensed healthcare professional before taking action or altering any existing treatment plan.
               </p>
             </section>
 
@@ -72,7 +72,7 @@ export default function MedicalDisclaimer() {
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
                 <p className="text-sm font-semibold text-purple-800 mt-0 mb-1">⚠️ Important: Please read before using homeopathic suggestions.</p>
                 <p className="text-sm text-purple-700 mb-0">
-                  Homeopathic and Ayurvedic remedy suggestions displayed by Healio.AI are <strong>AI-generated, experimental, and for informational purposes only</strong>. They have <strong>not</strong> been evaluated by any drug regulatory authority (e.g., CDSCO, FDA).
+                  Homeopathic and Ayurvedic remedy suggestions displayed by Arovia.AI are <strong>AI-generated, experimental, and for informational purposes only</strong>. They have <strong>not</strong> been evaluated by any drug regulatory authority (e.g., CDSCO, FDA).
                 </p>
               </div>
               <ul className="list-disc pl-5 space-y-2 text-sm">
@@ -80,21 +80,21 @@ export default function MedicalDisclaimer() {
                 <li>Homeopathy is not universally accepted by mainstream medical science and its efficacy for many conditions has not been established through randomised controlled trials.</li>
                 <li>Some herbal or homeopathic preparations can interact with prescription medications. Always disclose all supplements and alternative medicines to your primary care physician.</li>
                 <li>Results displayed by the AI are generated based on pattern matching — they <strong>will vary significantly</strong> based on your specific constitution, medical history, and other factors only a practitioner can assess.</li>
-                <li>Healio.AI makes <strong>no promises or guarantees</strong> about the effectiveness of any remedy shown.</li>
+                <li>Arovia.AI makes <strong>no promises or guarantees</strong> about the effectiveness of any remedy shown.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">4. No Doctor-Patient Relationship</h2>
               <p>
-                Chatting with the Healio.AI assistant does not create a doctor-patient, therapist-client, or any other professional healthcare relationship. Your interactions with the bot are strictly at your own risk.
+                Chatting with the Arovia.AI assistant does not create a doctor-patient, therapist-client, or any other professional healthcare relationship. Your interactions with the bot are strictly at your own risk.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold mt-8 mb-4">5. Assumption of Risk</h2>
               <p>
-                Reliance on any information provided by Healio.AI, its employees, others appearing on the Service at the invitation of Healio.AI, or other visitors to the Service is solely at your own risk. We disclaim any liability for any decisions made based on the information provided by our AI systems.
+                Reliance on any information provided by Arovia.AI, its employees, others appearing on the Service at the invitation of Arovia.AI, or other visitors to the Service is solely at your own risk. We disclaim any liability for any decisions made based on the information provided by our AI systems.
               </p>
             </section>
           </div>

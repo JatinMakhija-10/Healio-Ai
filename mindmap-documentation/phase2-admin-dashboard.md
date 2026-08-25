@@ -1,4 +1,4 @@
-# Healio.AI Mindmap - Phase 2: Admin Dashboard (Detailed)
+# Arovia.AI Mindmap - Phase 2: Admin Dashboard (Detailed)
 ## Central Command & Control System
 
 ---
@@ -92,7 +92,7 @@
 1. **✅ Approve**:
    - Update `doctors` table: `verification_status = 'approved'`
    - Update `profiles` metadata: `is_verified = true`
-   - Trigger email: "You are live on Healio!"
+   - Trigger email: "You are live on Arovia!"
    
 2. **❓ Request Info**:
    - Update `status = 'more_info_required'`

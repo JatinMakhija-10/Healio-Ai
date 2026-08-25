@@ -1,12 +1,12 @@
-# Healio.AI: Project Overview & Blueprint
+# Arovia.AI: Project Overview & Blueprint
 
 ## Executive Summary
-Healio.AI is a next-generation healthcare platform that fuses ancient Ayurvedic wisdom with modern clinical intelligence. At its core, it aims to provide personalized health insights by understanding an individual's unique biological constitution (Prakriti) and current imbalances (Vikriti), while using an advanced Bayesian Diagnosis Engine to identify potential medical conditions.
+Arovia.AI is a next-generation healthcare platform that fuses ancient Ayurvedic wisdom with modern clinical intelligence. At its core, it aims to provide personalized health insights by understanding an individual's unique biological constitution (Prakriti) and current imbalances (Vikriti), while using an advanced Bayesian Diagnosis Engine to identify potential medical conditions.
 
 ---
 
 ## 1. System Architecture
-Healio.AI uses a decoupled, event-driven architecture designed for high throughput and clinical safety.
+Arovia.AI uses a decoupled, event-driven architecture designed for high throughput and clinical safety.
 
 ### High-Level Architecture
 (Refer to Mermaid diagram above)
@@ -35,7 +35,7 @@ Healio.AI uses a decoupled, event-driven architecture designed for high throughp
 5. **Persistence**: Structured results stored in PostgreSQL.
 
 ## 2. The "What"
-**What is Healio.AI?**
+**What is Arovia.AI?**
 It is a comprehensive health management ecosystem consisting of:
 - **Prakriti Engine**: Assesses your fundamental genetic/birth constitution.
 - **Vikriti Calculation**: Tracks dynamic physiological and psychological imbalances.
@@ -49,7 +49,7 @@ It is a comprehensive health management ecosystem consisting of:
 - **Calculations**: Pure TypeScript engines in `src/lib/` for deterministic, testable logic.
 
 ## 4. Senior Architect Review: System Scalability & Safety
-As Healio.AI moves from blueprint to production, the following architectural guardrails ensure clinical safety and system robustness.
+As Arovia.AI moves from blueprint to production, the following architectural guardrails ensure clinical safety and system robustness.
 
 ### A. Clinical Safety Guardrails
 - **Deterministic First**: Unlike LLMs, our core engines are pure TypeScript functions. This ensures the *exact* same input always yields the *exact* same diagnosis, critical for medical FDA/HIPAA compliance.
@@ -66,11 +66,11 @@ As Healio.AI moves from blueprint to production, the following architectural gua
 ---
 
 ### Navigation
-- [DATABASE_SCHEMA.md](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/DATABASE_SCHEMA.md)
-- [CLINICAL_DECISION_RULES.md](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/CLINICAL_DECISION_RULES.md)
-- [CARE_PATHWAY_LIBRARY.md](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/CARE_PATHWAY_LIBRARY.md)
-- [Prakriti Engine](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/PRAKRITI_ENGINE.md)
-- [Vikriti Calculation](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/VIKRITI_CALCULATION.md)
-- [Diagnosis Engine](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/DIAGNOSIS_ENGINE.md)
-- [Agni (Digestive Fire)](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/AGNI_ENGINE.md)
-- [Health Risk Calculator](file:///c:/Users/JATIN/Desktop/Healio.AI/docs/blueprint/HEALTH_RISK_CALCULATOR.md)
+- [DATABASE_SCHEMA.md](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/DATABASE_SCHEMA.md)
+- [CLINICAL_DECISION_RULES.md](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/CLINICAL_DECISION_RULES.md)
+- [CARE_PATHWAY_LIBRARY.md](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/CARE_PATHWAY_LIBRARY.md)
+- [Prakriti Engine](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/PRAKRITI_ENGINE.md)
+- [Vikriti Calculation](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/VIKRITI_CALCULATION.md)
+- [Diagnosis Engine](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/DIAGNOSIS_ENGINE.md)
+- [Agni (Digestive Fire)](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/AGNI_ENGINE.md)
+- [Health Risk Calculator](file:///c:/Users/JATIN/Desktop/Arovia.AI/docs/blueprint/HEALTH_RISK_CALCULATOR.md)

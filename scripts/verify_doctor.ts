@@ -17,7 +17,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function verifyDoctor() {
-    const email = 'doctor@healio_test';
+    const email = 'doctor@arovia_test';
     console.log(`Looking for user with email: ${email}`);
 
     // 1. Get User ID
@@ -77,7 +77,7 @@ async function verifyDoctor() {
                 consultation_fee: 500,
                 experience_years: 5,
                 qualification: 'MBBS',
-                bio: 'Verified by Healio Admin',
+                bio: 'Verified by Arovia Admin',
                 updated_at: new Date().toISOString()
             });
         error = insertError;

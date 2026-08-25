@@ -142,7 +142,7 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive,
                     </h1>
 
                     <p className="text-[15px] leading-relaxed text-slate-500">
-                        I am Healio, your homeopathic health assistant.
+                        I am Arovia, your homeopathic health assistant.
                     </p>
                     <p className="mb-7 mt-1.5 text-[14px] text-slate-400">
                         Respond in Hindi, English, or Hinglish - your choice.

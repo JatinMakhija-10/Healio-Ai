@@ -93,7 +93,7 @@ export function InputBar({
         ? "Select an option above or type here..."
         : followUpMode
             ? "Share an update or ask a follow-up..."
-        : "Tell Healio what you are feeling...";
+        : "Tell Arovia what you are feeling...";
 
     return (
         <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">

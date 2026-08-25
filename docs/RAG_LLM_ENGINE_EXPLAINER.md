@@ -1,6 +1,6 @@
-# Healio.AI — RAG + LLM Retrieval Engine: Complete Teaching Guide
+# Arovia.AI — RAG + LLM Retrieval Engine: Complete Teaching Guide
 
-> **Goal:** Explain how Healio figures out what remedies to suggest — in plain English.  
+> **Goal:** Explain how Arovia figures out what remedies to suggest — in plain English.  
 > **Audience:** Anyone. No coding background needed.
 
 ---
@@ -11,12 +11,12 @@
 2. [The Three Knowledge Libraries](#2-the-three-knowledge-libraries)
 3. [How "Understanding" Works — Embeddings Explained](#3-how-understanding-works--embeddings-explained)
 4. [The Database — Where Knowledge is Stored](#4-the-database--where-knowledge-is-stored)
-5. [The Search Function — How Healio Finds Relevant Info](#5-the-search-function--how-healio-finds-relevant-info)
+5. [The Search Function — How Arovia Finds Relevant Info](#5-the-search-function--how-arovia-finds-relevant-info)
 6. [The Full Journey — Step by Step](#6-the-full-journey--step-by-step)
 7. [Multi-Query RAG — Casting a Wider Net](#7-multi-query-rag--casting-a-wider-net)
 8. [The LLM — The Doctor Brain](#8-the-llm--the-doctor-brain)
-9. [The Cache — Healio's Short-Term Memory](#9-the-cache--healios-short-term-memory)
-10. [Similarity Scores — How Sure is Healio?](#10-similarity-scores--how-sure-is-healio)
+9. [The Cache — Arovia's Short-Term Memory](#9-the-cache--arovias-short-term-memory)
+10. [Similarity Scores — How Sure is Arovia?](#10-similarity-scores--how-sure-is-arovia)
 11. [Fallback Chain — What if Something Breaks?](#11-fallback-chain--what-if-something-breaks)
 12. [Key Numbers at a Glance](#12-key-numbers-at-a-glance)
 13. [Q&A — Every Common Question Answered](#13-qa--every-common-question-answered)
@@ -32,17 +32,17 @@ Imagine you asked a doctor a question. There are two types of doctors:
 | Type | How they answer |
 |------|----------------|
 | **Plain LLM (no RAG)** | Answers entirely from what they memorized in medical school. Good, but can hallucinate, be outdated, or miss specific regional remedies. |
-| **RAG-powered (Healio)** | Before answering, quickly looks up the most relevant pages from a medical textbook, then gives you an answer based on both their knowledge AND those pages. |
+| **RAG-powered (Arovia)** | Before answering, quickly looks up the most relevant pages from a medical textbook, then gives you an answer based on both their knowledge AND those pages. |
 
-Healio uses RAG so that **every response is grounded in actual medical/Ayurvedic/homeopathic source texts**, not just guessed from training data.
+Arovia uses RAG so that **every response is grounded in actual medical/Ayurvedic/homeopathic source texts**, not just guessed from training data.
 
-**In one sentence:** User describes symptoms → Healio searches its medical libraries → injects the most relevant passages into the AI's context → AI answers using those real sources.
+**In one sentence:** User describes symptoms → Arovia searches its medical libraries → injects the most relevant passages into the AI's context → AI answers using those real sources.
 
 ---
 
 ## 2. The Three Knowledge Libraries
 
-Healio has **three separate knowledge libraries** stored in its database:
+Arovia has **three separate knowledge libraries** stored in its database:
 
 ### Library A — Boericke's Materia Medica (Homeopathic)
 - **What it is:** The most authoritative homeopathic reference book ever written (by Dr. William Boericke).
@@ -84,8 +84,8 @@ Think of it like GPS coordinates, but for meaning:
 - "migraine with aura" → `[0.21, -0.09, 0.85, ...]` (very similar numbers!)
 - "broken leg" → `[-0.45, 0.67, -0.12, ...]` (very different numbers)
 
-### Healio's Embedding Models
-Healio uses **Google Gemini** to generate embeddings. Two different models are used for different libraries:
+### Arovia's Embedding Models
+Arovia uses **Google Gemini** to generate embeddings. Two different models are used for different libraries:
 
 | Model | Dimensions | Used for |
 |-------|-----------|---------|
@@ -105,7 +105,7 @@ If Gemini is slow, these timeouts prevent the entire consultation from hanging.
 
 ## 4. The Database — Where Knowledge is Stored
 
-Healio uses **Supabase** (a cloud database) with the **pgvector** extension.
+Arovia uses **Supabase** (a cloud database) with the **pgvector** extension.
 
 ### What is pgvector?
 pgvector is a plugin for PostgreSQL (the database) that lets you store vectors (lists of numbers) and search for the *closest* ones. Think of it as adding GPS-distance-search capability to a regular database.
@@ -170,15 +170,15 @@ HNSW stands for **Hierarchical Navigable Small World**. It's a type of index tha
 
 **Analogy:** Imagine finding a specific face in a city of 26,000 people. Without a system, you'd check every face (slow). With HNSW, it's like a structured social network — you jump to the "neighborhood" that looks right, then zoom in. Much faster.
 
-The Ayurvedic table uses a special **halfvec** HNSW index. Since pgvector can only index vectors up to 2,000 dimensions normally, and Ayurvedic vectors are 3,072-dimensional, Healio casts them to `halfvec` (half-precision) before indexing — cutting memory in half while keeping search accurate.
+The Ayurvedic table uses a special **halfvec** HNSW index. Since pgvector can only index vectors up to 2,000 dimensions normally, and Ayurvedic vectors are 3,072-dimensional, Arovia casts them to `halfvec` (half-precision) before indexing — cutting memory in half while keeping search accurate.
 
 ---
 
-## 5. The Search Function — How Healio Finds Relevant Info
+## 5. The Search Function — How Arovia Finds Relevant Info
 
 ### The RPC Functions (Remote Procedure Calls)
 
-Instead of running SQL directly from the app, Healio calls **stored functions** inside the database. These are called RPCs. Each library has one:
+Instead of running SQL directly from the app, Arovia calls **stored functions** inside the database. These are called RPCs. Each library has one:
 
 #### `match_boericke_embeddings`
 ```
@@ -232,7 +232,7 @@ It's a number between 0.0 and 1.0 that measures how similar two vectors are:
 - **0.3** = barely related
 - **0.0** = completely unrelated
 
-Healio's thresholds by library:
+Arovia's thresholds by library:
 - Boericke: **0.72** (strict — homeopathic matching must be precise)
 - Ayurvedic: **0.60** (slightly looser — Ayurvedic language is more descriptive)
 - Home Remedies: **0.58** (loosest — folk remedies described in varied ways)
@@ -242,10 +242,10 @@ Healio's thresholds by library:
 
 ## 6. The Full Journey — Step by Step
 
-Here is exactly what happens when you type "I have a severe headache on the right side with nausea and sensitivity to light" into Healio:
+Here is exactly what happens when you type "I have a severe headache on the right side with nausea and sensitivity to light" into Arovia:
 
 ### Step 1: Message arrives at `/api/chat`
-The user's message hits the chat API. Healio checks:
+The user's message hits the chat API. Arovia checks:
 - Is this a short follow-up message (< 40 characters)? → Skip RAG (saves time)
 - Is it the final diagnosis turn? → Always do RAG
 - Is it a mid-conversation symptom message? → Do RAG
@@ -271,7 +271,7 @@ Embedding 2 → match_home_remedy_embeddings (threshold 0.58, up to 8 chunks)
 All three run at the same time — total wait = slowest of the three, not sum of all three.
 
 ### Step 4: Deduplication
-Results come back. Some remedies might appear in multiple chunks. Healio keeps only the **highest-scoring chunk per remedy**:
+Results come back. Some remedies might appear in multiple chunks. Arovia keeps only the **highest-scoring chunk per remedy**:
 - If Belladonna appears 3 times with similarities 0.81, 0.76, 0.74 → keep only 0.81
 - If Ashwagandha appears in 2 Ayurvedic chunks → keep the better match
 
@@ -296,7 +296,7 @@ Throbbing headache, right-sided...
 ```
 
 ### Step 6: Context injected into LLM prompt
-The assembled context + the system prompt (Healio's doctor persona) + the conversation history are combined into a single prompt for the LLM:
+The assembled context + the system prompt (Arovia's doctor persona) + the conversation history are combined into a single prompt for the LLM:
 
 ```
 === KNOWLEDGE BASE START ===
@@ -306,7 +306,7 @@ The assembled context + the system prompt (Healio's doctor persona) + the conver
 === END OF KNOWLEDGE BASE ===
 
 [ROLE IDENTITY]
-You are Healio — a senior holistic physician...
+You are Arovia — a senior holistic physician...
 ```
 
 ### Step 7: LLM generates the answer
@@ -316,13 +316,13 @@ The LLM receives the full prompt and generates a streaming response. The RAG con
 
 ## 7. Multi-Query RAG — Casting a Wider Net
 
-For the `/api/diagnose` route (structured diagnosis endpoint), Healio uses **Multi-Query RAG**.
+For the `/api/diagnose` route (structured diagnosis endpoint), Arovia uses **Multi-Query RAG**.
 
 ### The Problem with Single-Query RAG
 If the user says "my head hurts really bad on the right", the embedding captures the symptom description but might miss remedy-specific passages that use more formal language.
 
 ### The Solution: Two Queries
-Healio builds **two queries simultaneously**:
+Arovia builds **two queries simultaneously**:
 
 1. **Raw symptom text:** `"severe headache on the right side with nausea and sensitivity to light"`
 2. **Condition-specific query:** `"Migraine headache light sensitivity homeopathy remedy symptoms indications"`
@@ -355,9 +355,9 @@ Response: {
 
 ## 8. The LLM — The Doctor Brain
 
-### What LLM Does Healio Use?
+### What LLM Does Arovia Use?
 
-Healio runs on a **two-model system** with automatic fallback:
+Arovia runs on a **two-model system** with automatic fallback:
 
 | Role | Model | Provider | When used |
 |------|-------|----------|-----------|
@@ -370,18 +370,18 @@ Healio runs on a **two-model system** with automatic fallback:
 - **70B model** (70 billion parameters) → slower, more capable, used only when generating the final diagnosis JSON with remedies, dosages, red flags — where precision matters most
 
 ### The Temperature Setting
-Healio uses `temperature: 0.15` — extremely low.
+Arovia uses `temperature: 0.15` — extremely low.
 
 Temperature controls how "creative" or "random" the AI is:
 - `0.0` = completely deterministic (same input → same output every time)
 - `0.5` = somewhat creative
 - `1.0` = very creative / unpredictable
 
-**0.15 is near-deterministic on purpose.** Medical advice should NOT be creative or unpredictable. Healio wants consistent, clinically grounded answers.
+**0.15 is near-deterministic on purpose.** Medical advice should NOT be creative or unpredictable. Arovia wants consistent, clinically grounded answers.
 
 ### The System Prompt
-Every conversation starts with Healio's persona injected as a system prompt:
-> "You are Healio — a senior holistic physician with deep expertise in homeopathy, Ayurveda, and integrative medicine. You speak with clinical authority and deep human warmth, like a trusted family doctor who has studied classical medicine for 30 years. Never break this persona."
+Every conversation starts with Arovia's persona injected as a system prompt:
+> "You are Arovia — a senior holistic physician with deep expertise in homeopathy, Ayurveda, and integrative medicine. You speak with clinical authority and deep human warmth, like a trusted family doctor who has studied classical medicine for 30 years. Never break this persona."
 
 When RAG context is available, it's injected **before** this system prompt so it carries maximum weight in the model's attention.
 
@@ -393,7 +393,7 @@ When RAG context is available, it's injected **before** this system prompt so it
 
 ---
 
-## 9. The Cache — Healio's Short-Term Memory
+## 9. The Cache — Arovia's Short-Term Memory
 
 ### Why Cache?
 Generating embeddings + querying the database takes 500ms–2s. If two users describe the same symptoms within minutes of each other, it's wasteful to repeat all that work.
@@ -415,7 +415,7 @@ The `/api/chat` route has its own separate RAG cache:
 - TTL: **5 minutes**
 
 ### How Eviction Works
-When the cache hits 200 entries, Healio removes the **oldest entry** (JavaScript Map preserves insertion order, so the first key inserted is the first to be evicted — FIFO policy).
+When the cache hits 200 entries, Arovia removes the **oldest entry** (JavaScript Map preserves insertion order, so the first key inserted is the first to be evicted — FIFO policy).
 
 ### What Gets Cached
 ```
@@ -435,7 +435,7 @@ This means: zero embedding API calls + zero database queries for that request.
 
 ---
 
-## 10. Similarity Scores — How Sure is Healio?
+## 10. Similarity Scores — How Sure is Arovia?
 
 Every chunk retrieved from the database comes with a **similarity score**. This is displayed to the LLM in the context:
 
@@ -467,7 +467,7 @@ The LLM is instructed to use these relevance numbers to weigh how strongly to re
 
 ## 11. Fallback Chain — What if Something Breaks?
 
-Healio is designed so that **no single failure kills the response**. Every stage has a graceful fallback:
+Arovia is designed so that **no single failure kills the response**. Every stage has a graceful fallback:
 
 ```
 User submits symptoms
@@ -544,13 +544,13 @@ Single-query RAG (just the raw symptom text)
 
 ---
 
-**Q: What is RAG and why does Healio use it?**
+**Q: What is RAG and why does Arovia use it?**
 
-RAG is a technique where the AI looks up relevant information from a database BEFORE answering. Healio uses it because a generic AI doesn't have Boericke's Materia Medica or traditional Indian nuskhe memorized with precision. By fetching exact text passages and feeding them to the AI, every answer is grounded in real medical sources.
+RAG is a technique where the AI looks up relevant information from a database BEFORE answering. Arovia uses it because a generic AI doesn't have Boericke's Materia Medica or traditional Indian nuskhe memorized with precision. By fetching exact text passages and feeding them to the AI, every answer is grounded in real medical sources.
 
 ---
 
-**Q: Where does Healio's medical knowledge come from?**
+**Q: Where does Arovia's medical knowledge come from?**
 
 Three sources:
 1. **Boericke's Materia Medica** — the gold standard homeopathic reference (637 indexed passages)
@@ -565,15 +565,15 @@ An embedding is a list of 3,072 numbers that represents the "meaning" of a text.
 
 ---
 
-**Q: How does Healio decide which remedies are relevant?**
+**Q: How does Arovia decide which remedies are relevant?**
 
-It uses **cosine similarity** — a math formula that measures the angle between two vectors (lists of numbers). The closer the angle to 0°, the more similar the meanings. Healio filters out anything below a similarity threshold (0.58–0.72 depending on the library) to avoid suggesting irrelevant remedies.
+It uses **cosine similarity** — a math formula that measures the angle between two vectors (lists of numbers). The closer the angle to 0°, the more similar the meanings. Arovia filters out anything below a similarity threshold (0.58–0.72 depending on the library) to avoid suggesting irrelevant remedies.
 
 ---
 
 **Q: What is the HNSW index and why does only the Ayurvedic table have it?**
 
-HNSW (Hierarchical Navigable Small World) is a fast search algorithm for large vector databases. With 637 rows (Boericke) or 1,051 rows (Home Remedies), a simple full-table scan takes milliseconds — no index needed. But with 26,000 Ayurvedic rows, a full scan takes 8+ seconds (too slow). The HNSW index lets Healio find the nearest neighbors in milliseconds even with 26,000 rows.
+HNSW (Hierarchical Navigable Small World) is a fast search algorithm for large vector databases. With 637 rows (Boericke) or 1,051 rows (Home Remedies), a simple full-table scan takes milliseconds — no index needed. But with 26,000 Ayurvedic rows, a full scan takes 8+ seconds (too slow). The HNSW index lets Arovia find the nearest neighbors in milliseconds even with 26,000 rows.
 
 ---
 
@@ -587,7 +587,7 @@ The AI is explicitly told in its prompt which section maps to which output field
 
 ---
 
-**Q: Why does Healio use two different LLMs (8B and 70B)?**
+**Q: Why does Arovia use two different LLMs (8B and 70B)?**
 
 Speed vs. quality tradeoff:
 - During a conversation (asking follow-up questions), the **8B model** (llama-3.1-8b-instant) responds in under 1 second. It's fast and cheap — perfect for "where exactly is the pain?" type questions.
@@ -619,14 +619,14 @@ The system tries Groq once, waits 1 second, tries once more. If both attempts fa
 
 ---
 
-**Q: Can Healio suggest the wrong remedy?**
+**Q: Can Arovia suggest the wrong remedy?**
 
 Yes, it's possible. RAG reduces hallucinations but doesn't eliminate them. Reasons a wrong suggestion could happen:
 1. The similarity score was borderline (e.g. 0.73) and the chunk was tangentially related
 2. The LLM creatively combined valid chunks in an invalid way
 3. The user's symptom description was ambiguous
 
-This is why Healio always includes red flags ("seek immediate care if...") and recommends consulting a real doctor for serious conditions.
+This is why Arovia always includes red flags ("seek immediate care if...") and recommends consulting a real doctor for serious conditions.
 
 ---
 
@@ -638,7 +638,7 @@ Ayurvedic texts were written in Sanskrit or formal Hindi and translated — the 
 
 **Q: What is Multi-Query RAG and when does it kick in?**
 
-Multi-Query RAG is used in the `/api/diagnose` structured diagnosis flow. Instead of one database search with the raw symptom text, Healio generates two queries:
+Multi-Query RAG is used in the `/api/diagnose` structured diagnosis flow. Instead of one database search with the raw symptom text, Arovia generates two queries:
 1. The raw symptom description
 2. A formatted medical query: "Migraine headache light sensitivity homeopathy remedy symptoms"
 
@@ -653,7 +653,7 @@ Both queries search the database independently, then results are merged. This ca
 - **CUPCase:** 3,562 unusual/rare case reports from BMC Open Access journals
 - **MultiCaRe:** 96,000 cases from multiple PubMed Central collections
 
-These are used by the `PatientSimilarityEngine` — when you describe symptoms, Healio finds real historical patient cases with similar presentations and uses them to validate or strengthen the diagnosis. "A 35-year-old with similar symptoms was diagnosed with X in 45 similar historical cases."
+These are used by the `PatientSimilarityEngine` — when you describe symptoms, Arovia finds real historical patient cases with similar presentations and uses them to validate or strengthen the diagnosis. "A 35-year-old with similar symptoms was diagnosed with X in 45 similar historical cases."
 
 ---
 
@@ -663,4 +663,4 @@ Because the source data (`nuskhe.json`) contains both. The `ailment_hindi` and `
 
 ---
 
-*Last updated: May 2026 | Based on codebase at `c:\Users\JATIN\Desktop\Healio.AI`*
+*Last updated: May 2026 | Based on codebase at `c:\Users\JATIN\Desktop\Arovia.AI`*

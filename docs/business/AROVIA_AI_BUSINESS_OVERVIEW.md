@@ -1,7 +1,7 @@
-# Healio.AI: The Future of Personalized, Integrated Healthcare
+# Arovia.AI: The Future of Personalized, Integrated Healthcare
 
 ## 1. Executive Summary
-Healio.AI is a next-generation healthcare platform that bridges the gap between modern clinical precision and ancient Ayurvedic wisdom. By leveraging a proprietary Bayesian diagnostic engine and a holistic approach to wellness, Healio.AI serves as the "intelligent front door" to healthcare, providing instant triage, personalized care pathways, and seamless connections to medical professionals.
+Arovia.AI is a next-generation healthcare platform that bridges the gap between modern clinical precision and ancient Ayurvedic wisdom. By leveraging a proprietary Bayesian diagnostic engine and a holistic approach to wellness, Arovia.AI serves as the "intelligent front door" to healthcare, providing instant triage, personalized care pathways, and seamless connections to medical professionals.
 
 **Vision**: To democratize access to high-quality, personalized healthcare that treats the individual, not just the symptom.
 **Mission**: To reduce the burden on healthcare systems while improving patient outcomes through math-backed AI and holistic integration.
@@ -28,7 +28,7 @@ Healio.AI is a next-generation healthcare platform that bridges the gap between 
 
 ## 3. Core Provider Features (Doctors/Practitioners)
 
-### 🖥️ Healio Pro Dashboard
+### 🖥️ Arovia Pro Dashboard
 *   **AI-Assisted Intake**: View AI-generated summaries of patient symptoms and history before the consultation starts, saving up to 2 hours of documentation daily.
 *   **Patient Analytics**: Track patient recovery trends and lifestyle adherence through visual charts and data.
 *   **Practice Management**: Integrated booking, virtual consultation tools, and automated payout management.
@@ -51,13 +51,13 @@ Healio.AI is a next-generation healthcare platform that bridges the gap between 
 ---
 
 ## 5. Business & Revenue Model
-Healio.AI operates on a multi-pillar "Ecosystem Economy" model:
+Arovia.AI operates on a multi-pillar "Ecosystem Economy" model:
 
 1.  **Direct-to-Consumer (DTC)**:
     *   **Contextual Commerce**: Recommending curated Ayurvedic products and wellness tools directly within diagnosis reports (Affiliate & Private Label).
-    *   **Healio Plus Subscription**: Premium features like unlimited deep scans, family profiles, and downloadable medical-grade reports.
+    *   **Arovia Plus Subscription**: Premium features like unlimited deep scans, family profiles, and downloadable medical-grade reports.
 2.  **Provider SaaS (B2B)**:
-    *   **Healio Pro Workspace**: A subscription-based advanced dashboard for doctors with AI note-taking and analytics.
+    *   **Arovia Pro Workspace**: A subscription-based advanced dashboard for doctors with AI note-taking and analytics.
     *   **Sponsored Listings**: Cost-Per-Click or flat-fee advertising for medical practices.
 3.  **Marketplace Economy**:
     *   **Consultation Commissions**: A flat 20% platform fee on all virtual and in-person bookings.
@@ -74,4 +74,4 @@ Healio.AI operates on a multi-pillar "Ecosystem Economy" model:
 
 ---
 
-**Healio.AI: Smarter Diagnosis. Older Wisdom. Better Health.**
+**Arovia.AI: Smarter Diagnosis. Older Wisdom. Better Health.**

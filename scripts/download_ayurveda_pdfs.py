@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Download PlanetAyurveda + CCRAS Classical Texts
+Arovia.AI -- Download PlanetAyurveda + CCRAS Classical Texts
 =============================================================
 Downloads all 58 PlanetAyurveda PDFs and 17 CCRAS government PDFs.
 URLs discovered via browser scraping of:

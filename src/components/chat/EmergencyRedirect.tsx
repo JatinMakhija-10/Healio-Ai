@@ -67,7 +67,7 @@ export function EmergencyRedirect({ detectedSymptoms }: EmergencyRedirectProps) 
             {/* Warning text */}
             <div className="text-center">
                 <p className="text-xs text-red-700 font-medium">
-                    Healio.AI cannot assist with potential emergencies. Please do not delay seeking care.
+                    Arovia.AI cannot assist with potential emergencies. Please do not delay seeking care.
                 </p>
             </div>
         </div>

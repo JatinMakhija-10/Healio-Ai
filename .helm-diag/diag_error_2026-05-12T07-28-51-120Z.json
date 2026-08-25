@@ -318,7 +318,7 @@
     {
       "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
       "trajectoryId": "e3680f5a-63aa-4b1c-a9dd-41a4f43cf0c8",
-      "summary": "Healio Project Development Resumption",
+      "summary": "Arovia Project Development Resumption",
       "lastStepIndex": 740,
       "lastModifiedTime": "2026-05-12T07:28:48.793Z"
     },
@@ -332,21 +332,21 @@
     {
       "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
       "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
-      "summary": "Fixing Healio Notification System",
+      "summary": "Fixing Arovia Notification System",
       "lastStepIndex": 118,
       "lastModifiedTime": "2026-05-04T19:34:48.008Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

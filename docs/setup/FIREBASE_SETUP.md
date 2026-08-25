@@ -3,7 +3,7 @@
 The app is crashing because it doesn't have your Firebase configuration keys. It's currently using "mock" keys which are invalid.
 
 ## Step 1: Create the Environment File
-Create a new file named `.env.local` in the root of your project (`c:\Users\JATIN\Desktop\Healio.AI\.env.local`).
+Create a new file named `.env.local` in the root of your project (`c:\Users\JATIN\Desktop\Arovia.AI\.env.local`).
 
 ## Step 2: Add Your Keys
 Copy the following content into that file, replacing the placeholder values with your actual Firebase project settings:

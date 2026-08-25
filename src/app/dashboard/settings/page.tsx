@@ -27,20 +27,20 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-function getLocalHealioKeys(userId: string) {
+function getLocalAroviaKeys(userId: string) {
     const suffix = `_${userId}`;
     const explicitKeys = [
-        `healio_history${suffix}`,
-        `healio_consultation_history${suffix}`,
-        `healio_user_profile${suffix}`,
-        `healio_pending_profile${suffix}`,
-        `healio_pref_ayurvedic${suffix}`,
-        `healio_pref_uncertainty${suffix}`,
-        `healio_pref_detailed${suffix}`,
-        `healio_emergency_contact${suffix}`,
+        `arovia_history${suffix}`,
+        `arovia_consultation_history${suffix}`,
+        `arovia_user_profile${suffix}`,
+        `arovia_pending_profile${suffix}`,
+        `arovia_pref_ayurvedic${suffix}`,
+        `arovia_pref_uncertainty${suffix}`,
+        `arovia_pref_detailed${suffix}`,
+        `arovia_emergency_contact${suffix}`,
         `settings_email_notif${suffix}`,
         `settings_push_notif${suffix}`,
-        `healio_speech_lang${suffix}`,
+        `arovia_speech_lang${suffix}`,
     ];
 
     const discoveredKeys: string[] = [];
@@ -49,9 +49,9 @@ function getLocalHealioKeys(userId: string) {
         if (!key) continue;
         if (
             key.includes(userId) ||
-            key.startsWith("healio_consultation_history") ||
-            key.startsWith("healio_chat_session") ||
-            key.startsWith("healio_history")
+            key.startsWith("arovia_consultation_history") ||
+            key.startsWith("arovia_chat_session") ||
+            key.startsWith("arovia_history")
         ) {
             discoveredKeys.push(key);
         }
@@ -62,7 +62,7 @@ function getLocalHealioKeys(userId: string) {
 
 function collectLocalData(userId: string) {
     const data: Record<string, unknown> = {};
-    for (const key of getLocalHealioKeys(userId)) {
+    for (const key of getLocalAroviaKeys(userId)) {
         const value = localStorage.getItem(key);
         if (value === null) continue;
         try {
@@ -76,7 +76,7 @@ function collectLocalData(userId: string) {
     for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
         if (!key) continue;
-        if (!key.includes(userId) && !key.startsWith("healio_chat_session")) continue;
+        if (!key.includes(userId) && !key.startsWith("arovia_chat_session")) continue;
         const value = sessionStorage.getItem(key);
         if (value === null) continue;
         try {
@@ -89,14 +89,14 @@ function collectLocalData(userId: string) {
     return { localStorage: data, sessionStorage: sessionData };
 }
 
-function clearLocalHealioData(userId: string) {
-    getLocalHealioKeys(userId).forEach((key) => localStorage.removeItem(key));
+function clearLocalAroviaData(userId: string) {
+    getLocalAroviaKeys(userId).forEach((key) => localStorage.removeItem(key));
 
     const sessionKeys: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
         if (!key) continue;
-        if (key.includes(userId) || key.startsWith("healio_chat_session")) {
+        if (key.includes(userId) || key.startsWith("arovia_chat_session")) {
             sessionKeys.push(key);
         }
     }
@@ -168,20 +168,20 @@ export default function SettingsPage() {
         if (savedEmail !== null) setEmailNotif(savedEmail === "true");
         if (savedPush !== null) setPushNotif(savedPush === "true");
 
-        const savedAyurvedic = localStorage.getItem(`healio_pref_ayurvedic${keySuffix}`);
-        const savedUncertainty = localStorage.getItem(`healio_pref_uncertainty${keySuffix}`);
-        const savedDetailed = localStorage.getItem(`healio_pref_detailed${keySuffix}`);
+        const savedAyurvedic = localStorage.getItem(`arovia_pref_ayurvedic${keySuffix}`);
+        const savedUncertainty = localStorage.getItem(`arovia_pref_uncertainty${keySuffix}`);
+        const savedDetailed = localStorage.getItem(`arovia_pref_detailed${keySuffix}`);
 
         if (savedAyurvedic !== null) setAyurvedicMode(savedAyurvedic === "true");
         if (savedUncertainty !== null) setShowUncertainty(savedUncertainty === "true");
         if (savedDetailed !== null) setDetailedExplanations(savedDetailed === "true");
 
-        const savedEmergency = localStorage.getItem(`healio_emergency_contact${keySuffix}`);
+        const savedEmergency = localStorage.getItem(`arovia_emergency_contact${keySuffix}`);
         if (savedEmergency) {
             setEmergencyContact(JSON.parse(savedEmergency));
         }
 
-        const savedSpeechLang = localStorage.getItem(`healio_speech_lang${keySuffix}`);
+        const savedSpeechLang = localStorage.getItem(`arovia_speech_lang${keySuffix}`);
         if (savedSpeechLang) setSpeechLang(savedSpeechLang);
     }, [profile, user]);
 
@@ -210,7 +210,7 @@ export default function SettingsPage() {
 
     const handleSaveEmergency = () => {
         if (!user) return;
-        localStorage.setItem(`healio_emergency_contact_${user.id}`, JSON.stringify(emergencyContact));
+        localStorage.setItem(`arovia_emergency_contact_${user.id}`, JSON.stringify(emergencyContact));
         toast.success("Emergency contact saved.");
     };
 
@@ -232,35 +232,35 @@ export default function SettingsPage() {
         if (!user) return;
         const newVal = !ayurvedicMode;
         setAyurvedicMode(newVal);
-        localStorage.setItem(`healio_pref_ayurvedic_${user.id}`, String(newVal));
+        localStorage.setItem(`arovia_pref_ayurvedic_${user.id}`, String(newVal));
     };
 
     const toggleUncertainty = () => {
         if (!user) return;
         const newVal = !showUncertainty;
         setShowUncertainty(newVal);
-        localStorage.setItem(`healio_pref_uncertainty_${user.id}`, String(newVal));
+        localStorage.setItem(`arovia_pref_uncertainty_${user.id}`, String(newVal));
     };
 
     const toggleDetailed = () => {
         if (!user) return;
         const newVal = !detailedExplanations;
         setDetailedExplanations(newVal);
-        localStorage.setItem(`healio_pref_detailed_${user.id}`, String(newVal));
+        localStorage.setItem(`arovia_pref_detailed_${user.id}`, String(newVal));
     };
 
     const handleClearLocalHistory = () => {
         if (!user) return;
         const confirmed = confirm(
-            "Clear all Healio consultation history, chat sessions, preferences, and saved profile data from this device?\n\nYour cloud account is not deleted."
+            "Clear all Arovia consultation history, chat sessions, preferences, and saved profile data from this device?\n\nYour cloud account is not deleted."
         );
         if (!confirmed) return;
 
         setIsClearingLocalData(true);
         try {
-            clearLocalHealioData(user.id);
+            clearLocalAroviaData(user.id);
             window.dispatchEvent(new Event("storage"));
-            toast.success("Local Healio history has been cleared from this device.");
+            toast.success("Local Arovia history has been cleared from this device.");
         } catch (error) {
             console.error("Error clearing data:", error);
             toast.error("Failed to clear local data. Please try again.");
@@ -294,9 +294,9 @@ export default function SettingsPage() {
                     email: user.email ?? null,
                 },
                 device_data: collectLocalData(user.id),
-                export_note: "This JSON includes cloud records plus Healio data stored on this device.",
+                export_note: "This JSON includes cloud records plus Arovia data stored on this device.",
             };
-            const filename = `healio-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+            const filename = `arovia-data-export-${new Date().toISOString().slice(0, 10)}.json`;
             const blob = new Blob([JSON.stringify(payload, null, 2)], {
                 type: "application/json;charset=utf-8",
             });
@@ -309,7 +309,7 @@ export default function SettingsPage() {
             anchor.remove();
             URL.revokeObjectURL(url);
 
-            toast.success(`Your Healio data export is ready. File: ${filename}`);
+            toast.success(`Your Arovia data export is ready. File: ${filename}`);
         } catch (error) {
             console.error("Export error:", error);
             toast.error(`Failed to export data. ${error instanceof Error ? error.message : "Please try again."}`);
@@ -321,7 +321,7 @@ export default function SettingsPage() {
     const handlePermanentAccountDelete = async () => {
         if (deletionConfirm !== "DELETE" || !user) return;
         const confirmed = confirm(
-            "This will permanently delete your Healio account, health history, family profiles, and local device history. This cannot be undone.\n\nContinue?"
+            "This will permanently delete your Arovia account, health history, family profiles, and local device history. This cannot be undone.\n\nContinue?"
         );
         if (!confirmed) return;
 
@@ -346,10 +346,10 @@ export default function SettingsPage() {
                 throw new Error(result.error || result.message || "Failed to delete account data.");
             }
 
-            clearLocalHealioData(user.id);
+            clearLocalAroviaData(user.id);
             toast.success(
                 result.auth_deleted
-                    ? "Your Healio account and health data have been deleted."
+                    ? "Your Arovia account and health data have been deleted."
                     : `Your health data was deleted, but login deletion needs support follow-up. ${result.warning || ""}`.trim()
             );
             await logout();
@@ -504,7 +504,7 @@ export default function SettingsPage() {
                                 if (!user) return;
                                 const val = e.target.value;
                                 setSpeechLang(val);
-                                localStorage.setItem(`healio_speech_lang_${user.id}`, val);
+                                localStorage.setItem(`arovia_speech_lang_${user.id}`, val);
                             }}
                             className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
@@ -660,7 +660,7 @@ export default function SettingsPage() {
                             <div className="pl-7 pb-4 space-y-3 text-sm text-slate-600 animate-in slide-in-from-top-2 duration-200">
                                 <div className="flex items-center gap-2">
                                     <Mail className="h-3.5 w-3.5 text-teal-600" />
-                                    <span>support@healio.ai</span>
+                                    <span>support@arovia.ai</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Phone className="h-3.5 w-3.5 text-teal-600" />
@@ -699,7 +699,7 @@ export default function SettingsPage() {
                                 <div className="space-y-1">
                                     <h4 className="font-medium text-slate-900 text-sm">How accurate is the AI diagnosis?</h4>
                                     <p className="text-sm text-slate-500 leading-relaxed">
-                                        Healio.AI uses advanced algorithms to analyze your symptoms against a vast medical database. However, it is an informational tool and <span className="font-semibold">not</span> a substitute for professional medical advice. Always consult a doctor for a definitive diagnosis.
+                                        Arovia.AI uses advanced algorithms to analyze your symptoms against a vast medical database. However, it is an informational tool and <span className="font-semibold">not</span> a substitute for professional medical advice. Always consult a doctor for a definitive diagnosis.
                                     </p>
                                 </div>
                                 <div className="space-y-1">
@@ -715,7 +715,7 @@ export default function SettingsPage() {
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className="font-medium text-slate-900 text-sm">Can I use Healio.AI in emergencies?</h4>
+                                    <h4 className="font-medium text-slate-900 text-sm">Can I use Arovia.AI in emergencies?</h4>
                                     <p className="text-sm text-slate-500 leading-relaxed">
                                         <span className="font-semibold text-red-600">No.</span> If you are experiencing a medical emergency (e.g., chest pain, severe bleeding, difficulty breathing), please call emergency services immediately.
                                     </p>

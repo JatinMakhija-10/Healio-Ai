@@ -88,7 +88,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2] py-12 px-4 overflow-y-auto">
             {/* Card */}
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg shadow-[#1A1A2E]/8 p-8 border border-[#DAD7CF]">
-                {/* HealioMark + Brand Header */}
+                {/* AroviaMark + Brand Header */}
                 <div className="flex flex-col items-center text-center mb-8">
                     <div className="relative mb-4">
                         <div className="absolute inset-0 rounded-[8px] bg-[#C8E7DA] opacity-50" />
@@ -100,7 +100,7 @@ export default function LoginPage() {
                         </div>
                     </div>
                     <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontWeight: 400 }} className="text-2xl text-[#1A1A2E] tracking-tight">Welcome back</h1>
-                    <p className="text-[#6B6B6B] mt-1.5 text-sm">Sign in to your Healio account</p>
+                    <p className="text-[#6B6B6B] mt-1.5 text-sm">Sign in to your Arovia account</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">

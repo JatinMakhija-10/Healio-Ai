@@ -1,4 +1,4 @@
-# Healio Content Audit Report
+# Arovia Content Audit Report
 **Phase 1 Deliverable — Plan ref: Part III Phase 1 / Part IV §4.9**
 **Date:** May 24, 2026  
 **Scope:** `src/lib/ayurveda/`, `src/lib/diagnosis/`, all user-facing dashboard and app copy
@@ -46,9 +46,9 @@ Searched all `.ts` / `.tsx` files under `src/` for:
 "Looking to get diagnosed?"
 ```
 
-**Risk:** Implies Healio is a diagnosis platform. Directly conflicts with the repositioning mental model ("wellness navigation, not diagnosis").
+**Risk:** Implies Arovia is a diagnosis platform. Directly conflicts with the repositioning mental model ("wellness navigation, not diagnosis").
 
-**Plan reference:** Part II §2.1 — "Healio IS NOT a diagnostic platform — it does not identify disease in a user."
+**Plan reference:** Part II §2.1 — "Arovia IS NOT a diagnostic platform — it does not identify disease in a user."
 
 **Options:**
 1. Change to "Looking for wellness guidance?" or "Want to understand your health concerns?"
@@ -65,7 +65,7 @@ Searched all `.ts` / `.tsx` files under `src/` for:
 "A clinical-grade assistant to help you make sense of your symptoms before seeing a doctor."
 ```
 
-**Risk:** "clinical-grade" implies medical/clinical positioning. "symptoms before seeing a doctor" frames Healio as a pre-consultation diagnosis tool rather than a daily wellness companion.
+**Risk:** "clinical-grade" implies medical/clinical positioning. "symptoms before seeing a doctor" frames Arovia as a pre-consultation diagnosis tool rather than a daily wellness companion.
 
 **Plan reference:** Part II §4.2 — old emphasis: "AI can answer health questions" → new emphasis: "AI helps you understand and act safely."
 

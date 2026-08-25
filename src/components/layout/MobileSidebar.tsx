@@ -116,13 +116,13 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                     >
                         {/* Header */}
                         <div className="p-6 flex items-center justify-between border-b border-slate-100">
-                            <Link href="/" onClick={onClose} className="flex items-center gap-2 hover:opacity-90 transition-opacity" aria-label="Healio home">
+                            <Link href="/" onClick={onClose} className="flex items-center gap-2 hover:opacity-90 transition-opacity" aria-label="Arovia home">
                                 <div className="bg-teal-600 text-white p-1.5 rounded-lg">
                                     <Leaf size={20} strokeWidth={2.5} />
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
-                                        Healio.AI
+                                        Arovia.AI
                                     </span>
                                     <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
                                         WHERE SCIENCE MEETS SOUL

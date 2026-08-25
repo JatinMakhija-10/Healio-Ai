@@ -1,4 +1,4 @@
-// Healio.AI Service Worker for Push Notifications
+// Arovia.AI Service Worker for Push Notifications
 // Handles push events and displays notifications
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -17,10 +17,10 @@ self.addEventListener('push', (event) => {
     console.log('📬 Push notification received');
 
     let data = {
-        title: 'Healio.AI Notification',
+        title: 'Arovia.AI Notification',
         body: 'You have a new health update',
-        icon: '/healio-icon-192.png',
-        badge: '/healio-badge-72.png',
+        icon: '/arovia-icon-192.png',
+        badge: '/arovia-badge-72.png',
         data: {
             url: '/dashboard'
         }
@@ -36,7 +36,7 @@ self.addEventListener('push', (event) => {
                 icon: payload.icon || data.icon,
                 badge: payload.badge || data.badge,
                 data: payload.data || data.data,
-                tag: payload.tag || 'healio-notification',
+                tag: payload.tag || 'arovia-notification',
                 requireInteraction: payload.requireInteraction || false,
             };
         } catch (e) {

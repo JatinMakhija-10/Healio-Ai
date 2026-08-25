@@ -1,4 +1,4 @@
-# Healio.AI — Forensic Engineering Audit & Remediation Plan
+# Arovia.AI — Forensic Engineering Audit & Remediation Plan
 
 > **Document type**: Principal Engineer sign-off review of the prior "Personalization, Memory & AI Safety Audit"
 > **Status**: NOT PRODUCTION READY — see Section 15

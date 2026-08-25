@@ -1,6 +1,6 @@
 
 
-# Healio.AI Workflow Analysis & Enhancement Report
+# Arovia.AI Workflow Analysis & Enhancement Report
 
 **Version:** 1.0.0  
 **Date:** 2026-02-08  
@@ -12,11 +12,11 @@
 
 ### 1.1 Current Platform Position
 
-Healio.AI has established itself as a **technically differentiated player** in the digital health ecosystem, operating at the intersection of clinical-grade AI diagnostics and traditional Ayurvedic wellness. As of February 2026, the platform delivers **41 distinct features** across three integrated dashboards—14 patient-facing capabilities, 14 provider portal functions, and 13 administrative controls—supported by a modern technology stack centered on **Next.js 15**, **React 19**, **TypeScript**, and **Supabase PostgreSQL with Row-Level Security**.
+Arovia.AI has established itself as a **technically differentiated player** in the digital health ecosystem, operating at the intersection of clinical-grade AI diagnostics and traditional Ayurvedic wellness. As of February 2026, the platform delivers **41 distinct features** across three integrated dashboards—14 patient-facing capabilities, 14 provider portal functions, and 13 administrative controls—supported by a modern technology stack centered on **Next.js 15**, **React 19**, **TypeScript**, and **Supabase PostgreSQL with Row-Level Security**.
 
 The platform's core technical achievement lies in its **six-phase Bayesian diagnosis pipeline**, which departs fundamentally from the static decision trees and keyword matching that dominate the symptom checker market. This architecture enables **dynamic probability updating** based on sensitivity and specificity-weighted symptom evidence, **entropy-optimized question selection** that typically converges in 5-7 questions versus 15-20 for conventional approaches, and **explicit reasoning trace generation** that supports clinical transparency and user trust.
 
-Performance metrics demonstrate **substantial target exceedance** in critical dimensions: emergency detection operates at **0.50ms** against a **<200ms target** (400× margin), diagnosis inference completes in **~1200ms** against **<2500ms** (52% margin), API responses maintain **~100ms P95** against **<150ms** (33% margin), and database queries achieve **~30ms P95** against **<50ms** (40% margin). These characteristics position Healio.AI favorably for responsiveness-critical healthcare applications where user patience is limited and perceived system quality directly impacts engagement and trust.
+Performance metrics demonstrate **substantial target exceedance** in critical dimensions: emergency detection operates at **0.50ms** against a **<200ms target** (400× margin), diagnosis inference completes in **~1200ms** against **<2500ms** (52% margin), API responses maintain **~100ms P95** against **<150ms** (33% margin), and database queries achieve **~30ms P95** against **<50ms** (40% margin). These characteristics position Arovia.AI favorably for responsiveness-critical healthcare applications where user patience is limited and perceived system quality directly impacts engagement and trust.
 
 The **AYUSH integration**—spanning Ayurveda, Yoga, Unani, Siddha, Naturopathy, and Homeopathy—creates genuine market differentiation in an Indian traditional medicine market valued at approximately **₹1,00,000 Crore ($12 billion+)** with **765,000+ registered practitioners**. The Prakriti-Vikriti constitutional framework enables personalization that no major competitor replicates, with 500+ herb database entries, 200+ yoga posture mappings, and dynamic dosha-based diagnostic weighting.
 
@@ -24,19 +24,19 @@ However, **accuracy validation remains preliminary** at **87.5% from limited tes
 
 ### 1.2 Report Objectives
 
-This analysis pursues four interconnected objectives designed to guide Healio.AI's technical and commercial evolution through 2026 and beyond.
+This analysis pursues four interconnected objectives designed to guide Arovia.AI's technical and commercial evolution through 2026 and beyond.
 
 **First**, the report conducts **rigorous architectural assessment** of current workflow implementations, examining the six-phase diagnosis pipeline, Bayesian inference simplifications, information gain optimization, and Ayurvedic integration mechanisms. This assessment identifies specific enhancement opportunities with quantified impact projections and implementation complexity estimates.
 
-**Second**, the analysis establishes **detailed comparative frameworks** positioning Healio.AI against conventional symptom checkers (WebMD, Mayo Clinic, Babylon Health), emerging AI diagnostic platforms (K Health, Ada Health, Infermedica), and regulatory benchmarks including FDA Class II medical device requirements. These comparisons examine logic core methodologies, question strategy efficiency, emergency detection capabilities, personalization depth, and privacy architecture sophistication.
+**Second**, the analysis establishes **detailed comparative frameworks** positioning Arovia.AI against conventional symptom checkers (WebMD, Mayo Clinic, Babylon Health), emerging AI diagnostic platforms (K Health, Ada Health, Infermedica), and regulatory benchmarks including FDA Class II medical device requirements. These comparisons examine logic core methodologies, question strategy efficiency, emergency detection capabilities, personalization depth, and privacy architecture sophistication.
 
 **Third**, the report develops **actionable enhancement recommendations** spanning AI engine improvements (full Bayesian networks, clinical decision rules, uncertainty quantification, syndrome recognition), performance optimization (inverted indexing, Redis caching, pre-computation, edge deployment), data architecture evolution (FHIR standards, wearable integration, streaming architecture, multi-region replication), advanced features (AI Scribe, contactless monitoring, epidemic intelligence, RLHF), security and compliance upgrades (zero trust, HIPAA/GDPR enhancements, FDA preparation), and revenue workflow optimization (marketplace automation, contextual commerce, enterprise data monetization).
 
-**Fourth**, the analysis constructs a **phased implementation roadmap** balancing technical ambition with operational constraints, recognizing that Healio.AI must simultaneously maintain platform stability, achieve regulatory compliance, and capture market opportunities in a competitive landscape. The roadmap integrates dependencies across engineering, clinical validation, regulatory affairs, and commercial functions.
+**Fourth**, the analysis constructs a **phased implementation roadmap** balancing technical ambition with operational constraints, recognizing that Arovia.AI must simultaneously maintain platform stability, achieve regulatory compliance, and capture market opportunities in a competitive landscape. The roadmap integrates dependencies across engineering, clinical validation, regulatory affairs, and commercial functions.
 
 ### 1.3 Key Findings Overview
 
-Seven critical findings shape Healio.AI's strategic trajectory and resource allocation priorities.
+Seven critical findings shape Arovia.AI's strategic trajectory and resource allocation priorities.
 
 | Finding | Current State | Enhancement Opportunity | Impact | Priority |
 |:---|:---|:---|:---|:---|
@@ -56,7 +56,7 @@ Seven critical findings shape Healio.AI's strategic trajectory and resource allo
 
 #### 2.1.1 Frontend: Next.js 15 + React 19 + TypeScript
 
-Healio.AI's frontend architecture represents **deliberate selection of cutting-edge web technologies** optimized for performance, developer experience, and healthcare application requirements. The **Next.js 15 App Router** foundation delivers server-side rendering capabilities, automatic code splitting, and optimized image handling that collectively achieve **~1.2s First Contentful Paint** against a **<1.5s target**—a performance characteristic particularly critical for healthcare applications where search engine visibility directly impacts patient acquisition and user patience is severely limited by anxiety or discomfort.
+Arovia.AI's frontend architecture represents **deliberate selection of cutting-edge web technologies** optimized for performance, developer experience, and healthcare application requirements. The **Next.js 15 App Router** foundation delivers server-side rendering capabilities, automatic code splitting, and optimized image handling that collectively achieve **~1.2s First Contentful Paint** against a **<1.5s target**—a performance characteristic particularly critical for healthcare applications where search engine visibility directly impacts patient acquisition and user patience is severely limited by anxiety or discomfort.
 
 The **React 19** foundation provides **concurrent rendering features** that enable responsive user interfaces even during computationally intensive Bayesian probability calculations. This capability manifests in the diagnosis interface where symptom selection triggers immediate visual feedback while background processing proceeds, maintaining perceived system responsiveness. The **TypeScript strict mode** implementation delivers compile-time type safety that reduces runtime errors—a crucial consideration for medical applications where malfunction consequences extend beyond inconvenience to potential health impacts and liability exposure.
 
@@ -94,9 +94,9 @@ The **edge function implementation** using **Deno runtime** enables serverless e
 
 #### 2.1.3 State Management: React Context + LocalStorage + Zustand
 
-Healio.AI implements a **hybrid state management architecture** that balances performance, persistence, and complexity considerations across different data categories. **React Context** provides global state for authentication session management, with the `AuthContext` implementation handling session persistence and role-specific redirection logic. This approach avoids prop drilling for user identity information required throughout the component tree while maintaining reasonable re-render performance through selective context splitting that prevents excessive component updates.
+Arovia.AI implements a **hybrid state management architecture** that balances performance, persistence, and complexity considerations across different data categories. **React Context** provides global state for authentication session management, with the `AuthContext` implementation handling session persistence and role-specific redirection logic. This approach avoids prop drilling for user identity information required throughout the component tree while maintaining reasonable re-render performance through selective context splitting that prevents excessive component updates.
 
-**LocalStorage** serves **dual purposes** that create genuine differentiation: enabling **guest user diagnosis without account creation**—reducing friction for initial experience evaluation—and providing **sub-second dashboard loading** through `healio_consultation_history` caching with subsequent Supabase synchronization. The "Heuristic ID" mapping for condition names enables UI rendering of base pathways even during database response delays, demonstrating **sophisticated optimistic UI patterns** that prioritize perceived performance over strict consistency.
+**LocalStorage** serves **dual purposes** that create genuine differentiation: enabling **guest user diagnosis without account creation**—reducing friction for initial experience evaluation—and providing **sub-second dashboard loading** through `arovia_consultation_history` caching with subsequent Supabase synchronization. The "Heuristic ID" mapping for condition names enables UI rendering of base pathways even during database response delays, demonstrating **sophisticated optimistic UI patterns** that prioritize perceived performance over strict consistency.
 
 **Zustand stores** manage complex state scenarios including multi-step diagnosis flows, appointment scheduling wizards, and administrative filtering interfaces. Zustand's **minimal API surface** and absence of provider wrapper requirements reduce boilerplate compared to Redux alternatives, while TypeScript integration maintains type safety across store boundaries. The global state reset triggered by "New Consultation" button activation—initializing fresh `DiagnosticDialogue` state—prevents cross-contamination between unrelated consultations, demonstrating appropriate state isolation.
 
@@ -148,9 +148,9 @@ Consider a concrete example: **chest pain and shortness of breath** individually
 
 **Full Bayesian network implementation** with **directed acyclic graph structure** would capture these dependencies through explicit edges between symptom nodes and condition nodes, enabling more accurate probability estimation. Structure learning from clinical data would identify symptom-disease relationships and symptom-symptom dependencies that manual curation might miss, while structure constraints from medical knowledge would ensure clinically interpretable networks preventing biologically implausible dependencies.
 
-**MCMC sampling** via **Gibbs sampling** or **Metropolis-Hastings algorithms** would enable inference in networks where exact computation is intractable. For Healio.AI's **500+ condition target**, MCMC provides **scalable approximation with controllable accuracy-computation tradeoff** through sample count adjustment. Implementation via probabilistic programming frameworks (**Stan**, **PyMC**, **TensorFlow Probability**) would accelerate development while ensuring mathematical correctness that custom implementation might compromise.
+**MCMC sampling** via **Gibbs sampling** or **Metropolis-Hastings algorithms** would enable inference in networks where exact computation is intractable. For Arovia.AI's **500+ condition target**, MCMC provides **scalable approximation with controllable accuracy-computation tradeoff** through sample count adjustment. Implementation via probabilistic programming frameworks (**Stan**, **PyMC**, **TensorFlow Probability**) would accelerate development while ensuring mathematical correctness that custom implementation might compromise.
 
-The **accuracy improvement from dependency modeling is substantial**: simulation studies suggest **15-25% error reduction** for multi-symptom presentations where conditional dependencies are strong. For Healio.AI's current **87.5% estimated accuracy**, this improvement could achieve **95%+ target** without additional condition expansion or parameter refinement, representing the **single highest-impact technical investment available**.
+The **accuracy improvement from dependency modeling is substantial**: simulation studies suggest **15-25% error reduction** for multi-symptom presentations where conditional dependencies are strong. For Arovia.AI's current **87.5% estimated accuracy**, this improvement could achieve **95%+ target** without additional condition expansion or parameter refinement, representing the **single highest-impact technical investment available**.
 
 | Approach | Complexity | Accuracy | Computation | Implementation |
 |:---|:---|:---|:---|:---|
@@ -293,15 +293,15 @@ The **administrative control tower** provides **operational oversight** through 
 
 #### 3.1.1 Logic Core: Bayesian vs. Decision Trees
 
-The **diagnostic logic core** represents Healio.AI's **most substantial differentiation** from conventional symptom checkers. Industry-standard implementations—including **WebMD Symptom Checker**, **Mayo Clinic Symptom Checker**, and **Babylon Health's initial releases**—predominantly employ **decision tree architectures** where symptom inputs traverse predetermined branching paths to reach diagnostic conclusions. These approaches offer **implementation simplicity and execution predictability** but suffer fundamental limitations that Bayesian methods address.
+The **diagnostic logic core** represents Arovia.AI's **most substantial differentiation** from conventional symptom checkers. Industry-standard implementations—including **WebMD Symptom Checker**, **Mayo Clinic Symptom Checker**, and **Babylon Health's initial releases**—predominantly employ **decision tree architectures** where symptom inputs traverse predetermined branching paths to reach diagnostic conclusions. These approaches offer **implementation simplicity and execution predictability** but suffer fundamental limitations that Bayesian methods address.
 
 **Decision trees implement deterministic logic** where identical symptom presentations always yield identical diagnostic outputs, ignoring: **prevalence variation** across populations, seasons, and geographic regions; **new epidemiological intelligence** that would require manual tree restructuring for incorporation; and most critically, **confidence quantification** that enables appropriate uncertainty communication. The binary diagnostic conclusions without probability distributions prevent appropriate user expectation management and clinical utility through ranked differential diagnosis.
 
-**Healio.AI's Bayesian implementation** provides **explicit uncertainty representation through probability distributions** rather than point estimates, supporting both appropriate user expectation management (through confidence-tiered language) and clinical utility (through ranked differential diagnosis with probability weighting). The **transparency of reasoning trace generation**—showing prior contribution, location weighting, symptom specificity boosts, and sensitivity penalty applications—builds trust through explainability that black-box decision trees cannot match.
+**Arovia.AI's Bayesian implementation** provides **explicit uncertainty representation through probability distributions** rather than point estimates, supporting both appropriate user expectation management (through confidence-tiered language) and clinical utility (through ranked differential diagnosis with probability weighting). The **transparency of reasoning trace generation**—showing prior contribution, location weighting, symptom specificity boosts, and sensitivity penalty applications—builds trust through explainability that black-box decision trees cannot match.
 
 However, **current implementation simplifications limit full Bayesian network capabilities**. The **independent symptom assumption** underlying likelihood multiplication ignores conditional dependencies where symptom combinations provide information beyond individual contributions. Full Bayesian networks with directed acyclic graph structure would capture these dependencies, enabling more accurate probability estimation for complex multi-symptom presentations.
 
-| Dimension | Decision Trees (WebMD, Mayo) | Naive Bayes (Healio.AI Current) | Full Bayesian Network (Target) |
+| Dimension | Decision Trees (WebMD, Mayo) | Naive Bayes (Arovia.AI Current) | Full Bayesian Network (Target) |
 |:---|:---|:---|:---|
 | **Probability Foundation** | None (deterministic paths) | Prior × Independent likelihoods | Prior × Conditional dependencies |
 | **Confidence Output** | None | Point estimate + tier | Distribution + credible intervals |
@@ -314,39 +314,39 @@ However, **current implementation simplifications limit full Bayesian network ca
 
 **Question selection strategy** dramatically impacts **diagnostic efficiency and user experience**. Static questionnaires—employed by most symptom checkers—present **predetermined question sequences regardless of previous responses**, often collecting irrelevant information while missing critical differentiating features. Typical implementations require **15-25 questions for diagnostic convergence**, with substantial user abandonment before completion—industry data suggests **40-60% abandonment** for questionnaires exceeding 10 questions.
 
-**Healio.AI's information gain questioning** reduces typical question count to **5-7 through entropy-optimized selection** that maximizes expected probability divergence. The mathematical formulation calculates, for each candidate question, the **expected information value across possible responses**, selecting questions that most effectively "split the field" of remaining diagnostic possibilities. This adaptive approach ensures **each question provides maximal diagnostic value given current uncertainty state**.
+**Arovia.AI's information gain questioning** reduces typical question count to **5-7 through entropy-optimized selection** that maximizes expected probability divergence. The mathematical formulation calculates, for each candidate question, the **expected information value across possible responses**, selecting questions that most effectively "split the field" of remaining diagnostic possibilities. This adaptive approach ensures **each question provides maximal diagnostic value given current uncertainty state**.
 
-**Comparison with emerging AI diagnostic platforms** reveals additional optimization opportunities. **K Health** incorporates **user-specific question history adaptation**, adjusting question complexity and terminology based on demonstrated comprehension patterns. **Ada Health** employs **multi-modal questioning** integrating free-text elaboration with structured responses, capturing nuanced information that binary choices cannot represent. **Infermedica** implements **confidence-based termination** that dynamically adjusts convergence thresholds based on presentation urgency indicators. These advanced strategies represent enhancement opportunities for Healio.AI's questioning workflow.
+**Comparison with emerging AI diagnostic platforms** reveals additional optimization opportunities. **K Health** incorporates **user-specific question history adaptation**, adjusting question complexity and terminology based on demonstrated comprehension patterns. **Ada Health** employs **multi-modal questioning** integrating free-text elaboration with structured responses, capturing nuanced information that binary choices cannot represent. **Infermedica** implements **confidence-based termination** that dynamically adjusts convergence thresholds based on presentation urgency indicators. These advanced strategies represent enhancement opportunities for Arovia.AI's questioning workflow.
 
 | Platform | Question Strategy | Typical Questions | Adaptation | Completion Rate |
 |:---|:---|:---|:---|:---|
 | WebMD/Mayo | Static tree | 15-25 | None | 40-60% |
 | Babylon (initial) | Static with limited branching | 12-18 | Demographic only | 50-65% |
-| **Healio.AI (current)** | **Information gain (entropy)** | **5-7** | **Real-time probability** | **75-85%** |
+| **Arovia.AI (current)** | **Information gain (entropy)** | **5-7** | **Real-time probability** | **75-85%** |
 | K Health | Information gain + user history | 6-10 | Comprehension-based | 70-80% |
 | Ada Health | Information gain + free-text | 5-8 | Multi-modal | 75-85% |
-| **Healio.AI (enhanced)** | **Information gain + user model + multi-modal** | **4-6** | **Full adaptation** | **85-90%** |
+| **Arovia.AI (enhanced)** | **Information gain + user model + multi-modal** | **4-6** | **Full adaptation** | **85-90%** |
 
 #### 3.1.3 Emergency Detection: <1ms vs. Basic Keywords
 
 **Emergency detection capabilities** reveal **dramatic capability variation across platforms**. Basic keyword implementations—common in consumer symptom checkers—employ **simple pattern matching for explicit emergency terminology without contextual interpretation**, generating both **false negatives** (missed emergencies described without recognized keywords) and **false positives** (non-urgent presentations containing emergency-adjacent terminology). Industry assessments suggest **15-25% false negative rates** for basic keyword approaches, representing substantial safety risk.
 
-**Healio.AI's 0.50ms emergency detection** substantially exceeds the <200ms target, creating **performance headroom for pattern sophistication expansion**. The current **20+ pattern coverage** including cardiac, neurological, respiratory, anaphylaxis, and mental health emergencies demonstrates comprehensive scope, though expansion to include **pediatric-specific patterns**, **pregnancy-related emergencies**, and **immunocompromised presentations** would further enhance safety.
+**Arovia.AI's 0.50ms emergency detection** substantially exceeds the <200ms target, creating **performance headroom for pattern sophistication expansion**. The current **20+ pattern coverage** including cardiac, neurological, respiratory, anaphylaxis, and mental health emergencies demonstrates comprehensive scope, though expansion to include **pediatric-specific patterns**, **pregnancy-related emergencies**, and **immunocompromised presentations** would further enhance safety.
 
 **Advanced implementations in clinical-grade systems** incorporate additional safety layers: **temporal pattern analysis** detecting symptom progression velocity; **comparative analysis against user baseline** identifying deviation from normal patterns; and **integration with emergency service dispatch** for immediate response coordination. The planned **clinical decision rules integration** (Wells, HEART, NEXUS, Ottawa scores) would add **structured risk stratification** that complements current pattern-based detection with validated clinical instruments.
 
 | Approach | Latency | Pattern Complexity | False Negative Rate | Regulatory Suitability |
 |:---|:---|:---|:---|:---|
 | Basic keywords | <10ms | Low (single terms) | 15-25% | Consumer only |
-| Pattern matching (Healio.AI) | **0.50ms** | **Medium (combinations)** | **5-10%** | **Clinical support** |
+| Pattern matching (Arovia.AI) | **0.50ms** | **Medium (combinations)** | **5-10%** | **Clinical support** |
 | ML classification | 50-200ms | High (semantic) | 3-8% | Clinical support |
 | **Clinical rules + patterns (target)** | **<100ms** | **Very high (validated scores)** | **<3%** | **FDA Class II** |
 
 #### 3.1.4 Personalization: Constitution-Based vs. None
 
-**Personalization depth** represents Healio.AI's **genuine market differentiation**, with **no major competitor implementing comparable constitutional assessment and diagnostic weighting**. The **Prakriti-Vikriti framework** enables personalization across multiple dimensions: diagnostic probability adjustment, remedy selection prioritization, lifestyle recommendation tailoring, and care pathway customization.
+**Personalization depth** represents Arovia.AI's **genuine market differentiation**, with **no major competitor implementing comparable constitutional assessment and diagnostic weighting**. The **Prakriti-Vikriti framework** enables personalization across multiple dimensions: diagnostic probability adjustment, remedy selection prioritization, lifestyle recommendation tailoring, and care pathway customization.
 
-**Competitor personalization approaches remain superficial by comparison**. **Babylon Health** incorporates **basic demographic adjustment** (age, sex) for prevalence modification. **K Health** integrates **limited medical history** for chronic condition recognition. **Ada Health** employs **user feedback** for recommendation refinement. None implement **physiological constitution assessment with diagnostic influence**—a gap that reflects both technical complexity and cultural knowledge requirements that Healio.AI's AYUSH integration addresses.
+**Competitor personalization approaches remain superficial by comparison**. **Babylon Health** incorporates **basic demographic adjustment** (age, sex) for prevalence modification. **K Health** integrates **limited medical history** for chronic condition recognition. **Ada Health** employs **user feedback** for recommendation refinement. None implement **physiological constitution assessment with diagnostic influence**—a gap that reflects both technical complexity and cultural knowledge requirements that Arovia.AI's AYUSH integration addresses.
 
 The **Ayurvedic integration's comprehensiveness**—spanning 50+ assessment factors, 500+ herb database, 200+ yoga posture mappings, seasonal routine adaptation, and detoxification therapy guidance—creates **substantial content moat** that would require significant investment to replicate. However, **content volume must be balanced with evidence quality**, and the platform would benefit from **explicit evidence grading** for traditional medicine recommendations to support informed user decision-making and regulatory positioning.
 
@@ -356,7 +356,7 @@ The **Ayurvedic integration's comprehensiveness**—spanning 50+ assessment fact
 | Babylon | Demographics, limited history | Low | None | Medium |
 | K Health | History, feedback | Medium | None | Medium |
 | Ada Health | Feedback, preferences | Medium | None | Medium |
-| **Healio.AI** | **Constitution, imbalance, season, condition** | **Very high** | **AYUSH comprehensive** | **Developing** |
+| **Arovia.AI** | **Constitution, imbalance, season, condition** | **Very high** | **AYUSH comprehensive** | **Developing** |
 
 ### 3.2 Performance Benchmarks
 
@@ -425,7 +425,7 @@ The **information gain questioning strategy's efficiency**—converging in 5-7 q
 
 #### 3.3.3 FDA Validation Goal: >95%
 
-**FDA Class II medical device clearance for software as a medical device (SaMD)** requires **substantial validation evidence exceeding current capabilities**. The **95% accuracy target aligns with regulatory expectations** for diagnostic support tools, though specific requirements vary by intended use and risk classification. **Healio.AI's positioning as "clinical-grade" and "Type 2 AI Medical Device" in roadmap documentation** implies this regulatory ambition.
+**FDA Class II medical device clearance for software as a medical device (SaMD)** requires **substantial validation evidence exceeding current capabilities**. The **95% accuracy target aligns with regulatory expectations** for diagnostic support tools, though specific requirements vary by intended use and risk classification. **Arovia.AI's positioning as "clinical-grade" and "Type 2 AI Medical Device" in roadmap documentation** implies this regulatory ambition.
 
 **Validation study design must address**: **prospective data collection** from intended use population; **appropriate reference standard definition** (typically expert panel consensus or definitive diagnostic testing); **pre-specified primary endpoint and success criteria**; **sample size calculation for statistical power**; and **bias mitigation through blinding and independent adjudication**. The planned **NIH dataset validation provides retrospective foundation**, but **prospective clinical studies will be required for regulatory submission**.
 
@@ -453,9 +453,9 @@ The **current Bayesian implementation's independent symptom assumption limits ac
 
 **Bayesian network structure learning** from clinical data would identify symptom-disease relationships and symptom-symptom dependencies that manual curation might miss. **Structure constraints from medical knowledge**—preventing biologically implausible dependencies—would ensure clinically interpretable networks. **Parameter estimation through expectation-maximization or Bayesian methods** would populate conditional probability tables from available data.
 
-**MCMC sampling via Gibbs sampling or Metropolis-Hastings algorithms** would enable inference in networks where exact computation is intractable. For Healio.AI's **500+ condition target**, MCMC provides **scalable approximation with controllable accuracy-computation tradeoff** through sample count adjustment. Implementation via **probabilistic programming frameworks (Stan, PyMC, TensorFlow Probability)** would accelerate development while ensuring mathematical correctness.
+**MCMC sampling via Gibbs sampling or Metropolis-Hastings algorithms** would enable inference in networks where exact computation is intractable. For Arovia.AI's **500+ condition target**, MCMC provides **scalable approximation with controllable accuracy-computation tradeoff** through sample count adjustment. Implementation via **probabilistic programming frameworks (Stan, PyMC, TensorFlow Probability)** would accelerate development while ensuring mathematical correctness.
 
-The **accuracy improvement from dependency modeling is substantial**: simulation studies suggest **15-25% error reduction** for multi-symptom presentations where conditional dependencies are strong. For Healio.AI's current **87.5% estimated accuracy**, this improvement could achieve **95%+ target without additional condition expansion or parameter refinement**.
+The **accuracy improvement from dependency modeling is substantial**: simulation studies suggest **15-25% error reduction** for multi-symptom presentations where conditional dependencies are strong. For Arovia.AI's current **87.5% estimated accuracy**, this improvement could achieve **95%+ target without additional condition expansion or parameter refinement**.
 
 | Enhancement | Current | Target | Accuracy Impact | Complexity |
 |:---|:---|:---|:---|:---|
@@ -549,9 +549,9 @@ The **accuracy improvement from dependency modeling is substantial**: simulation
 
 **Current proprietary data models limit integration with external healthcare systems**, constraining ecosystem expansion and data liquidity. **FHIR (Fast Healthcare Interoperability Resources) standard adoption** would enable seamless EHR integration, provider network expansion, and regulatory positioning.
 
-**FHIR resource mapping** would translate Healio.AI's domain models to standard resources: **Patient**, **Observation** (symptoms, vitals), **Condition** (diagnoses), **CarePlan** (pathways), **Appointment**, **Encounter**. **Profile constraints** would ensure data quality while enabling standard-compliant exchange.
+**FHIR resource mapping** would translate Arovia.AI's domain models to standard resources: **Patient**, **Observation** (symptoms, vitals), **Condition** (diagnoses), **CarePlan** (pathways), **Appointment**, **Encounter**. **Profile constraints** would ensure data quality while enabling standard-compliant exchange.
 
-| Resource | Healio.AI Equivalent | Mapping Complexity | Priority |
+| Resource | Arovia.AI Equivalent | Mapping Complexity | Priority |
 |:---|:---|:---|:---|
 | Patient | profiles | Low | High |
 | Observation | symptoms, vitals | Medium | High |
@@ -903,7 +903,7 @@ The **accuracy improvement from dependency modeling is substantial**: simulation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         CURRENT HEALIO.AI ARCHITECTURE                       │
+│                         CURRENT AROVIA.AI ARCHITECTURE                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
@@ -948,7 +948,7 @@ The **accuracy improvement from dependency modeling is substantial**: simulation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      ENHANCED HEALIO.AI ARCHITECTURE                         │
+│                      ENHANCED AROVIA.AI ARCHITECTURE                         │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐  │

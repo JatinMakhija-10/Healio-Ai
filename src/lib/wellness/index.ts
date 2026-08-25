@@ -7,6 +7,6 @@ export * from './evidenceLabels';
 export * from './contentTypes';
 export * from './escalationEngine';
 export * from './routineTypes';
-export * from './askHealioResponse';
+export * from './askAroviaResponse';
 export * from './escalationOnlyTopics';
 export * from './sampleContent';

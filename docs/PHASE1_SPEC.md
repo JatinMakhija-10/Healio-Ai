@@ -1,7 +1,7 @@
-# Healio Phase 1 Product Requirements Document (PRD)
+# Arovia Phase 1 Product Requirements Document (PRD)
 
 ## 🎯 Project Context
-**Healio** is an AI-driven digital health platform. This document outlines the scope strictly for **Phase 1**. Anything outside this scope is explicitly forbidden to keep the project simple, clean, and focused.
+**Arovia** is an AI-driven digital health platform. This document outlines the scope strictly for **Phase 1**. Anything outside this scope is explicitly forbidden to keep the project simple, clean, and focused.
 
 ---
 
@@ -75,7 +75,7 @@ Step-by-step guided flow when starting a new consultation:
 **Technical Implementation:**
 - Use **Claude API (claude-sonnet-4-6)** via Anthropic API.
 - **System Prompt Instructions:**
-  - "You are a compassionate homeopathic health assistant named Healio."
+  - "You are a compassionate homeopathic health assistant named Arovia."
   - "Only discuss homeopathy. Do not recommend allopathic drugs or Ayurvedic treatments."
   - "Never make a definitive medical diagnosis."
   - "Always include a disclaimer at the end."

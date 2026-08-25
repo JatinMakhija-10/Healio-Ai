@@ -269,7 +269,7 @@ async function runTests() {
     console.log(`🚀 Starting Aggressive RAG Quality Testing Engine...`);
     console.log(`📋 Total test cases: ${TEST_CASES.length}\n`);
 
-    let markdownOutput = `# Healio.AI RAG Detection Quality Report\n\n`;
+    let markdownOutput = `# Arovia.AI RAG Detection Quality Report\n\n`;
     markdownOutput += `*Generated automatically by parsing core symptoms through the Vector Brain.*\n\n`;
     markdownOutput += `**Total Test Cases:** ${TEST_CASES.length}\n\n`;
     markdownOutput += `---\n\n`;

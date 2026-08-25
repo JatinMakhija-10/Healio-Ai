@@ -4,7 +4,7 @@
  * Plan ref: Enhanced Plan §15.3 + §9.3 (Required Guardrails)
  *
  * These topics MUST NEVER receive home-care content.
- * Any Ask Healio response matching these topics goes straight to
+ * Any Ask Arovia response matching these topics goes straight to
  * Level 4 / Level 5 escalation (plan §3.5 Escalation Ladder).
  *
  * RULE: If `isEscalationOnlyTopic()` returns true, the response renderer

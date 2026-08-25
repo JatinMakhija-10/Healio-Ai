@@ -345,7 +345,7 @@ export default function LearnPage() {
           </div>
           <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 flex items-center justify-between gap-3">
             <p className="text-sm text-teal-800">
-              See how Healio labels evidence across our full remedy library.
+              See how Arovia labels evidence across our full remedy library.
             </p>
             <Link href="/dashboard/wellness/library" className="text-xs font-semibold text-teal-700 underline underline-offset-2 whitespace-nowrap shrink-0">
               Browse Library <ArrowRight className="size-3 inline" />
@@ -357,7 +357,7 @@ export default function LearnPage() {
       {activeTab === "evidence" && (
         <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-200">
           <p className="text-sm text-gray-500">
-            Every remedy and routine in Healio carries one of these five evidence labels. Here is what each means.
+            Every remedy and routine in Arovia carries one of these five evidence labels. Here is what each means.
           </p>
           <div className="space-y-3">
             {EVIDENCE_TIERS.map((tier) => (
@@ -386,7 +386,7 @@ export default function LearnPage() {
             ))}
           </div>
           <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-500 text-center">
-            All Healio library entries are reviewed before publishing and carry explicit evidence labels. Content marked &quot;Seek Help&quot; is never paired with self-care instructions.
+            All Arovia library entries are reviewed before publishing and carry explicit evidence labels. Content marked &quot;Seek Help&quot; is never paired with self-care instructions.
           </div>
         </div>
       )}
@@ -481,12 +481,12 @@ export default function LearnPage() {
             ))}
           </div>
           <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3">
-            <p className="text-sm text-teal-800 font-medium mb-0.5">When in doubt, ask Healio</p>
+            <p className="text-sm text-teal-800 font-medium mb-0.5">When in doubt, ask Arovia</p>
             <p className="text-xs text-teal-700">
-              Describe your symptoms and current medications. Healio will flag potential concerns and tell you when to escalate to a practitioner.
+              Describe your symptoms and current medications. Arovia will flag potential concerns and tell you when to escalate to a practitioner.
             </p>
             <Link href="/dashboard/consult" className="mt-2 inline-block text-xs font-semibold text-teal-700 underline underline-offset-2">
-              Open Ask Healio <ArrowRight className="size-3 inline" />
+              Open Ask Arovia <ArrowRight className="size-3 inline" />
             </Link>
           </div>
         </div>

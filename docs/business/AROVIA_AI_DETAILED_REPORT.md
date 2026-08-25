@@ -1,4 +1,4 @@
-# Healio.AI — Deep Technical & Strategic Report
+# Arovia.AI — Deep Technical & Strategic Report
 
 > **Date:** February 2026 | **Classification:** Confidential — For Investors & Stakeholders  
 > **Methodology:** Exhaustive source-code audit of **50,000+ lines** across **200+ files**  
@@ -31,7 +31,7 @@
 
 ## 1. Executive Summary
 
-**Healio.AI** is a full-stack health intelligence platform that fuses **clinical-grade AI diagnosis** with **ancient Ayurvedic wisdom** — a combination no competitor has achieved. The platform operates through a **three-sided marketplace** connecting patients, doctors, and administrators.
+**Arovia.AI** is a full-stack health intelligence platform that fuses **clinical-grade AI diagnosis** with **ancient Ayurvedic wisdom** — a combination no competitor has achieved. The platform operates through a **three-sided marketplace** connecting patients, doctors, and administrators.
 
 ### Key Metrics at a Glance
 
@@ -77,7 +77,7 @@ graph LR
 
 The codebase's `EmpatheticResponseGenerator.ts` directly addresses these pain points:
 
-| Problem | How Healio Solves It | Code Evidence |
+| Problem | How Arovia Solves It | Code Evidence |
 |---|---|---|
 | **Dr. Google Anxiety** | Empathy-aware responses that detect anxious users and adapt tone | `EMPATHY_PREFIXES` with 6 anxiety-specific prefixes |
 | **Generic Symptom Checkers** | Bayesian engine with 265+ conditions and clinical pattern matching | `diagnosisEngine.ts` — 1,158 lines |
@@ -869,7 +869,7 @@ CREATE POLICY "clinical_notes_doctor_only" ON clinical_notes
 
 ```python
 # From main.py
-app = FastAPI(title="Healio.AI Backend")
+app = FastAPI(title="Arovia.AI Backend")
 
 # Rate limiting
 limiter = Limiter(key_func=get_remote_address)
@@ -972,7 +972,7 @@ Custom `EmailService` class with Resend API integration for:
 
 ### 13.2 Competitive Matrix
 
-| Feature | Healio.AI | Practo | Ada Health | WebMD | 1mg |
+| Feature | Arovia.AI | Practo | Ada Health | WebMD | 1mg |
 |---|---|---|---|---|---|
 | **AI Diagnosis** | ✅ Bayesian + NLU | ❌ | ✅ (LLM-based) | ❌ Basic checker | ❌ |
 | **Ayurvedic Integration** | ✅ Deep (Prakriti/Vikriti) | ❌ | ❌ | ❌ | ❌ |
@@ -986,7 +986,7 @@ Custom `EmailService` class with Resend API integration for:
 | **Admin Portal** | ✅ Full analytics | ✅ | ❌ | ❌ | ✅ |
 
 > [!TIP]
-> **Unique Positioning**: Healio.AI is the **only** platform that combines clinical-grade AI diagnosis with Ayurvedic intelligence. Ada Health has strong AI but no Ayurveda; Practo has doctors but no AI; 1mg has pharmacy but no diagnosis.
+> **Unique Positioning**: Arovia.AI is the **only** platform that combines clinical-grade AI diagnosis with Ayurvedic intelligence. Ada Health has strong AI but no Ayurveda; Practo has doctors but no AI; 1mg has pharmacy but no diagnosis.
 
 ### 13.3 Defensibility Analysis
 
@@ -1056,7 +1056,7 @@ CREATE TABLE transactions (
     amount DECIMAL(10,2) NOT NULL,
     status TEXT DEFAULT 'pending',  -- pending|completed|refunded
     payment_method TEXT,
-    platform_fee DECIMAL(10,2),     -- Healio's cut
+    platform_fee DECIMAL(10,2),     -- Arovia's cut
     doctor_payout DECIMAL(10,2),    -- Doctor's earnings
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -1120,11 +1120,11 @@ CREATE TABLE transactions (
 
 ### Q1: What stops Google/Practo from copying this?
 
-Healio.AI's moat is built on three layers that are exceptionally hard to replicate together. The 265+ condition database with dual modern-Ayurvedic mappings represents over six months of expert medical curation, the five-stage Bayesian pipeline (NLU, inference, correlation, uncertainty, clinical rules) creates deep architectural complexity, and the Ayurvedic integration requires domain expertise that pure-tech competitors simply do not have. We estimate a replication effort of 12 to 18 months for a five-person team of both medical and engineering professionals.
+Arovia.AI's moat is built on three layers that are exceptionally hard to replicate together. The 265+ condition database with dual modern-Ayurvedic mappings represents over six months of expert medical curation, the five-stage Bayesian pipeline (NLU, inference, correlation, uncertainty, clinical rules) creates deep architectural complexity, and the Ayurvedic integration requires domain expertise that pure-tech competitors simply do not have. We estimate a replication effort of 12 to 18 months for a five-person team of both medical and engineering professionals.
 
 ### Q2: Is this a medical device requiring FDA/CDSCO approval?
 
-Healio.AI is positioned as a health information platform, not a medical diagnostic device. Every output carries a disclaimer, confidence intervals are always shown to prevent overreliance, emergencies are redirected to 911, and the doctor marketplace ensures a human-in-the-loop for all serious cases. A formal regulatory review will be conducted before commercial scale-up to align with India's CDSCO guidelines.
+Arovia.AI is positioned as a health information platform, not a medical diagnostic device. Every output carries a disclaimer, confidence intervals are always shown to prevent overreliance, emergencies are redirected to 911, and the doctor marketplace ensures a human-in-the-loop for all serious cases. A formal regulatory review will be conducted before commercial scale-up to align with India's CDSCO guidelines.
 
 ### Q3: How accurate is the AI diagnosis?
 
@@ -1144,7 +1144,7 @@ Every condition maps Sanskrit names to modern medical terms (e.g., "Amlapitta" �
 
 ### Q7: What is the technology risk and why not use GPT/Claude?
 
-Technology risk is low because the core AI runs client-side in TypeScript with zero dependency on external APIs — no OpenAI, no vendor lock-in, no per-query costs. At one million monthly queries, an LLM approach would cost $10K–$100K/month; Healio's engine costs $0. The custom Bayesian approach also delivers deterministic reproducibility, full reasoning-trace explainability, zero hallucination risk, and offline capability — advantages no LLM can match while still meeting regulatory expectations.
+Technology risk is low because the core AI runs client-side in TypeScript with zero dependency on external APIs — no OpenAI, no vendor lock-in, no per-query costs. At one million monthly queries, an LLM approach would cost $10K–$100K/month; Arovia's engine costs $0. The custom Bayesian approach also delivers deterministic reproducibility, full reasoning-trace explainability, zero hallucination risk, and offline capability — advantages no LLM can match while still meeting regulatory expectations.
 
 ### Q8: How do you acquire and retain doctors?
 
@@ -1152,7 +1152,7 @@ The platform has a built-in multi-step onboarding flow capturing registration nu
 
 ### Q9: What data do you collect and how is it protected?
 
-Healio.AI collects user profiles, diagnosis sessions (symptoms, AI results, reasoning traces), and doctor credentials. Protection is multi-layered: PostgreSQL Row-Level Security ensures patients see only their own data and doctors only their assigned patients, RBAC middleware validates roles on every request, and the FastAPI backend adds rate limiting and upload validation. The key gap before scale is a formal DPDPA compliance audit and explicit consent management implementation.
+Arovia.AI collects user profiles, diagnosis sessions (symptoms, AI results, reasoning traces), and doctor credentials. Protection is multi-layered: PostgreSQL Row-Level Security ensures patients see only their own data and doctors only their assigned patients, RBAC middleware validates roles on every request, and the FastAPI backend adds rate limiting and upload validation. The key gap before scale is a formal DPDPA compliance audit and explicit consent management implementation.
 
 ---
 
@@ -1191,7 +1191,7 @@ Healio.AI collects user profiles, diagnosis sessions (symptoms, AI results, reas
 
 ---
 
-> **This report was generated through exhaustive source-code analysis of 200+ files. Every claim traces back to specific implementations in the Healio.AI codebase.**
+> **This report was generated through exhaustive source-code analysis of 200+ files. Every claim traces back to specific implementations in the Arovia.AI codebase.**
 
 ---
 

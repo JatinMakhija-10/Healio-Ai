@@ -1,6 +1,6 @@
 # Homeopathic Knowledge Base & Reference Framework
 
-This document serves as the foundational reference framework for any AI agents providing homeopathic answers within the Healio.ai ecosystem. Instead of a single specific dataset, answers are drawn from a standard set of well-known classical texts and modern references used by practitioners.
+This document serves as the foundational reference framework for any AI agents providing homeopathic answers within the Arovia.ai ecosystem. Instead of a single specific dataset, answers are drawn from a standard set of well-known classical texts and modern references used by practitioners.
 
 ---
 
@@ -42,8 +42,8 @@ AI Agents **must** strictly understand and integrate this reality check when int
 *   These sources are **traditional, not evidence-based medicine**.
 *   Modern science (WHO, NHS, etc.) generally states that there is **no strong proof beyond placebo**, and the mechanism is **not scientifically established**.
 
-## 🎯 7. What This Means for Healio.ai
-When an AI agent provides a homeopathic suggestion on Healio.ai:
+## 🎯 7. What This Means for Arovia.ai
+When an AI agent provides a homeopathic suggestion on Arovia.ai:
 *   It is based on **pattern matching from the classical texts listed above**.
 *   It is **NOT** based on clinical trials or FDA/ICMR guidelines.
 

@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Supabase Storage Cleanup Script
+ * Arovia.AI — Supabase Storage Cleanup Script
  * ============================================
  * Analyzes and cleans up storage buckets to free space.
  * 
@@ -188,7 +188,7 @@ async function cleanOldFiles(bucketName: string, daysOld: number) {
 
 async function main() {
   console.log('╔══════════════════════════════════════════════════════╗');
-  console.log('║   Healio.AI Storage Cleanup Script                  ║');
+  console.log('║   Arovia.AI Storage Cleanup Script                  ║');
   console.log('╚══════════════════════════════════════════════════════╝\n');
   
   const buckets = ['chat-attachments', 'wellness-videos'];

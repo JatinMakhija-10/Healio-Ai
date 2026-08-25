@@ -6,8 +6,8 @@ import { DiagnosisResultCard } from "@/components/chat/DiagnosisResultCard";
 import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
 import type { RuleResult, UncertaintyEstimate } from "@/lib/diagnosis/advanced";
 import { UsageLimitCard } from "./UsageLimitCard";
-import { AskHealioResponseRenderer } from "@/components/wellness/AskHealioResponseRenderer";
-import type { AskHealioResponse } from "@/lib/wellness/askHealioResponse";
+import { AskAroviaResponseRenderer } from "@/components/wellness/AskAroviaResponseRenderer";
+import type { AskAroviaResponse } from "@/lib/wellness/askAroviaResponse";
 import { EscalationAlert } from "@/components/wellness/EscalationAlert";
 import type { EscalationLevel } from "@/components/wellness/EscalationAlert";
 import { Leaf } from "lucide-react";
@@ -68,11 +68,11 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
     let jsonParseFailed = false;
 
     // Wellness 7-block response detection
-    let wellnessResponse: AskHealioResponse | null = null;
+    let wellnessResponse: AskAroviaResponse | null = null;
     if (message.content.startsWith("___WELLNESS_RESPONSE___\n")) {
         try {
             const jsonText = message.content.replace("___WELLNESS_RESPONSE___\n", "");
-            wellnessResponse = JSON.parse(jsonText) as AskHealioResponse;
+            wellnessResponse = JSON.parse(jsonText) as AskAroviaResponse;
             displayText = "";
         } catch (e) {
             console.error("[MessageBubble] Failed to parse wellness response:", e);
@@ -216,7 +216,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
                             cooldownRemaining={usageLimitData.cooldown_remaining}
                             creditsBalance={usageLimitData.credits_balance}
                             onUpgradeClick={() => {
-                                window.dispatchEvent(new CustomEvent("healio:open-upgrade", {
+                                window.dispatchEvent(new CustomEvent("arovia:open-upgrade", {
                                     detail: {
                                         featureLocked: "Unlimited Consultations",
                                         targetPlan: "plus",
@@ -242,7 +242,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
                 {/* Wellness 7-block response */}
                 {wellnessResponse && (
                     <div className="mt-1 w-full">
-                        <AskHealioResponseRenderer response={wellnessResponse} />
+                        <AskAroviaResponseRenderer response={wellnessResponse} />
                     </div>
                 )}
 
@@ -290,7 +290,7 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
 
                 {jsonParseFailed && !parsedCondition && (
                     <div className="mt-2 rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
-                        The diagnosis card did not finish rendering. Please send <span className="font-semibold">show diagnosis card</span> and Healio will rebuild it from this chat.
+                        The diagnosis card did not finish rendering. Please send <span className="font-semibold">show diagnosis card</span> and Arovia will rebuild it from this chat.
                     </div>
                 )}
 

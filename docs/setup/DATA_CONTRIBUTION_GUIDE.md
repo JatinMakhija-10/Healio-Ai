@@ -1,12 +1,12 @@
-# Healio.AI Data Contribution Guide
+# Arovia.AI Data Contribution Guide
 
-This guide explains how to manually expand the Healio.AI medical dataset by generating content with ChatGPT, validating it with medical professionals, and integrating it into the codebase.
+This guide explains how to manually expand the Arovia.AI medical dataset by generating content with ChatGPT, validating it with medical professionals, and integrating it into the codebase.
 
 ---
 
 ## Prerequisite: Understanding the Data Structure
 
-Each medical condition in Healio.AI is a TypeScript object with the following structure:
+Each medical condition in Arovia.AI is a TypeScript object with the following structure:
 
 ```typescript
 interface Condition {

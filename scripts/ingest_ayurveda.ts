@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Ingest Ayurvedic Herbs into Supabase
+ * Arovia.AI — Ingest Ayurvedic Herbs into Supabase
  * 
  * Reads data/ayurvedic/herbs.json, generates Gemini embeddings for each
  * herb entry, and inserts into the ayurvedic_embeddings table.

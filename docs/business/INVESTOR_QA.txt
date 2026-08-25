@@ -1,15 +1,15 @@
-HEALIO.AI — INVESTOR Q&A
+AROVIA.AI — INVESTOR Q&A
 =========================
 
 
 Q1: What stops Google/Practo from copying this?
 
-Healio.AI's moat is built on three layers that are exceptionally hard to replicate together. The 265+ condition database with dual modern-Ayurvedic mappings represents over six months of expert medical curation, the five-stage Bayesian pipeline (NLU, inference, correlation, uncertainty, clinical rules) creates deep architectural complexity, and the Ayurvedic integration requires domain expertise that pure-tech competitors simply do not have. We estimate a replication effort of 12 to 18 months for a five-person team of both medical and engineering professionals.
+Arovia.AI's moat is built on three layers that are exceptionally hard to replicate together. The 265+ condition database with dual modern-Ayurvedic mappings represents over six months of expert medical curation, the five-stage Bayesian pipeline (NLU, inference, correlation, uncertainty, clinical rules) creates deep architectural complexity, and the Ayurvedic integration requires domain expertise that pure-tech competitors simply do not have. We estimate a replication effort of 12 to 18 months for a five-person team of both medical and engineering professionals.
 
 
 Q2: Is this a medical device requiring FDA/CDSCO approval?
 
-Healio.AI is positioned as a health information platform, not a medical diagnostic device. Every output carries a disclaimer, confidence intervals are always shown to prevent overreliance, emergencies are redirected to 911, and the doctor marketplace ensures a human-in-the-loop for all serious cases. A formal regulatory review will be conducted before commercial scale-up to align with India's CDSCO guidelines.
+Arovia.AI is positioned as a health information platform, not a medical diagnostic device. Every output carries a disclaimer, confidence intervals are always shown to prevent overreliance, emergencies are redirected to 911, and the doctor marketplace ensures a human-in-the-loop for all serious cases. A formal regulatory review will be conducted before commercial scale-up to align with India's CDSCO guidelines.
 
 
 Q3: How accurate is the AI diagnosis?
@@ -34,7 +34,7 @@ Every condition maps Sanskrit names to modern medical terms (e.g., "Amlapitta" t
 
 Q7: What is the technology risk and why not use GPT/Claude?
 
-Technology risk is low because the core AI runs client-side in TypeScript with zero dependency on external APIs — no OpenAI, no vendor lock-in, no per-query costs. At one million monthly queries, an LLM approach would cost $10K-$100K/month; Healio's engine costs $0. The custom Bayesian approach also delivers deterministic reproducibility, full reasoning-trace explainability, zero hallucination risk, and offline capability — advantages no LLM can match while still meeting regulatory expectations.
+Technology risk is low because the core AI runs client-side in TypeScript with zero dependency on external APIs — no OpenAI, no vendor lock-in, no per-query costs. At one million monthly queries, an LLM approach would cost $10K-$100K/month; Arovia's engine costs $0. The custom Bayesian approach also delivers deterministic reproducibility, full reasoning-trace explainability, zero hallucination risk, and offline capability — advantages no LLM can match while still meeting regulatory expectations.
 
 
 Q8: How do you acquire and retain doctors?

@@ -1,7 +1,7 @@
 # Admin Dashboard & "God Mode" Specification
 
 ## 1. High-Level Overview
-The Admin Dashboard is the "Control Tower" for Healio.AI operations. It is restricted to internal super-admins and provides oversight on Users, Doctors, Finances, Clinical Quality, and Platform Integrity.
+The Admin Dashboard is the "Control Tower" for Arovia.AI operations. It is restricted to internal super-admins and provides oversight on Users, Doctors, Finances, Clinical Quality, and Platform Integrity.
 
 ## 2. Core Modules & UI Architecture
 

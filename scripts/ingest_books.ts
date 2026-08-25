@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Ingest Ayurvedic Books into Supabase
+ * Arovia.AI — Ingest Ayurvedic Books into Supabase
  * ========================================================
  * Reads pre-processed `.jsonl` chunks from data/ayurveda/processed/
  * Generates Gemini embeddings and inserts into ayurvedic_knowledge_embeddings

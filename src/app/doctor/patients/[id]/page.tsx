@@ -208,7 +208,7 @@ export default function PatientProfilePage() {
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
                                                     <h4 className="font-semibold text-slate-900">AI Symptom Check</h4>
-                                                    <p className="text-sm text-slate-500">Healio AI • Self-Check</p>
+                                                    <p className="text-sm text-slate-500">Arovia AI • Self-Check</p>
                                                 </div>
                                                 <span className="text-xs text-slate-400">1 week ago</span>
                                             </div>

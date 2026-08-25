@@ -1,5 +1,5 @@
 /**
- * Language Detector for Healio.AI Conversation Engine
+ * Language Detector for Arovia.AI Conversation Engine
  * 
  * Auto-detects English, Hindi, and Hinglish based on script analysis
  * and keyword heuristics to provide a localized experience without

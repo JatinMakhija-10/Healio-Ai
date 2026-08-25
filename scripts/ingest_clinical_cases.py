@@ -1,5 +1,5 @@
 """
-Healio.AI — Clinical Cases Ingestion Pipeline
+Arovia.AI — Clinical Cases Ingestion Pipeline
 ==============================================
 
 Downloads, normalizes, embeds, and uploads 4 free datasets into Supabase:
@@ -504,7 +504,7 @@ def download_mimic_demo(force: bool = False) -> Path:
     demo_dir = DATA_DIR / "mimic_demo"
     demo_dir.mkdir(exist_ok=True)
 
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; HealioAI/1.0; +https://healio.ai)"}
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; AroviaAI/1.0; +https://arovia.ai)"}
 
     for name in MIMIC_DEMO_FILES:
         dest = demo_dir / f"{name}.csv.gz"
@@ -872,7 +872,7 @@ def ingest_multicare(limit: int | None = None, dry_run: bool = False) -> int:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Ingest free clinical datasets into Healio.AI Supabase"
+        description="Ingest free clinical datasets into Arovia.AI Supabase"
     )
     parser.add_argument("--all",      action="store_true", help="Run all sources")
     parser.add_argument("--source",   choices=["pmc_patients", "mimic_demo", "cupcase", "multicare"])

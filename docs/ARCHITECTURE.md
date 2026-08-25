@@ -1,4 +1,4 @@
-# Healio.AI — Frontend Architecture Report
+# Arovia.AI — Frontend Architecture Report
 
 > Revised after gap-analysis fixes (March 2026)
 
@@ -37,7 +37,7 @@ src/
 ├── app/
 │   ├── layout.tsx                      # Root: <script> FOIT fix → QueryProvider → AuthProvider
 │   ├── globals.css                     # @import tokens.css → tailwindcss → tw-animate
-│   ├── tokens.css                      # 30+ semantic --healio-* tokens + utility classes
+│   ├── tokens.css                      # 30+ semantic --arovia-* tokens + utility classes
 │   ├── api/
 │   │   ├── chat/route.ts               # Auth guard → Groq streaming + Gemini fallback
 │   │   ├── diagnose/route.ts           # Auth guard → 5-stage Bayesian + RAG + LLM pipeline
@@ -283,7 +283,7 @@ The legacy chat system is not just `@deprecated` -- it is actively blocked by ES
 ```
 tokens.css (CSS custom properties — single source of truth)
     │
-    ├── --healio-* custom properties (30+ tokens)
+    ├── --arovia-* custom properties (30+ tokens)
     ├── Utility classes: .text-severity-*, .bg-severity-*, .text-status-*, .text-confidence-*
     │
     ├── Consumed by severity.ts → className strings (not inline styles)
@@ -295,12 +295,12 @@ tokens.css (CSS custom properties — single source of truth)
 
 | Category | Prefix | Count | Purpose |
 |----------|--------|-------|---------|
-| Brand | `--healio-brand-*` | 4 | Primary teal, light/dark variants, secondary blue |
-| Severity | `--healio-severity-*` | 10 | Info / mild / moderate / severe / critical + background fills |
-| Status | `--healio-status-*` | 4 | Success, warning, error, info |
-| Surface | `--healio-surface-*` | 3 | Elevated, sunken, overlay |
-| Text | `--healio-text-*` | 4 | Primary, secondary, muted, on-brand |
-| Confidence | `--healio-confidence-*` | 3 | High (>80%), medium (50-80%), low (<50%) |
+| Brand | `--arovia-brand-*` | 4 | Primary teal, light/dark variants, secondary blue |
+| Severity | `--arovia-severity-*` | 10 | Info / mild / moderate / severe / critical + background fills |
+| Status | `--arovia-status-*` | 4 | Success, warning, error, info |
+| Surface | `--arovia-surface-*` | 3 | Elevated, sunken, overlay |
+| Text | `--arovia-text-*` | 4 | Primary, secondary, muted, on-brand |
+| Confidence | `--arovia-confidence-*` | 3 | High (>80%), medium (50-80%), low (<50%) |
 
 ### Utility Classes (New)
 
@@ -308,22 +308,22 @@ tokens.css (CSS custom properties — single source of truth)
 
 ```css
 /* Severity text */
-.text-severity-info      { color: var(--healio-severity-info); }
-.text-severity-mild      { color: var(--healio-severity-mild); }
-.text-severity-moderate  { color: var(--healio-severity-moderate); }
-.text-severity-severe    { color: var(--healio-severity-severe); }
-.text-severity-critical  { color: var(--healio-severity-critical); }
+.text-severity-info      { color: var(--arovia-severity-info); }
+.text-severity-mild      { color: var(--arovia-severity-mild); }
+.text-severity-moderate  { color: var(--arovia-severity-moderate); }
+.text-severity-severe    { color: var(--arovia-severity-severe); }
+.text-severity-critical  { color: var(--arovia-severity-critical); }
 
 /* Severity backgrounds */
-.bg-severity-info        { background-color: var(--healio-severity-info-bg); }
-.bg-severity-mild        { background-color: var(--healio-severity-mild-bg); }
-.bg-severity-moderate    { background-color: var(--healio-severity-moderate-bg); }
-.bg-severity-severe      { background-color: var(--healio-severity-severe-bg); }
-.bg-severity-critical    { background-color: var(--healio-severity-critical-bg); }
+.bg-severity-info        { background-color: var(--arovia-severity-info-bg); }
+.bg-severity-mild        { background-color: var(--arovia-severity-mild-bg); }
+.bg-severity-moderate    { background-color: var(--arovia-severity-moderate-bg); }
+.bg-severity-severe      { background-color: var(--arovia-severity-severe-bg); }
+.bg-severity-critical    { background-color: var(--arovia-severity-critical-bg); }
 
 /* Status + Confidence */
-.text-status-success     { color: var(--healio-status-success); }
-.text-confidence-high    { color: var(--healio-confidence-high); }
+.text-status-success     { color: var(--arovia-status-success); }
+.text-confidence-high    { color: var(--arovia-confidence-high); }
 /* ... etc */
 ```
 
@@ -449,7 +449,7 @@ A blocking inline `<script>` in the `<head>` of the root layout (`src/app/layout
 (function(){
     try {
         var d = document.documentElement;
-        var t = localStorage.getItem('healio-theme');
+        var t = localStorage.getItem('arovia-theme');
         if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
             d.classList.add('dark');
         } else {
@@ -461,7 +461,7 @@ A blocking inline `<script>` in the `<head>` of the root layout (`src/app/layout
 
 ### Priority Order
 
-1. `localStorage('healio-theme')` -- explicit user preference (highest priority)
+1. `localStorage('arovia-theme')` -- explicit user preference (highest priority)
 2. `prefers-color-scheme: dark` media query -- OS/browser setting (fallback)
 3. Light mode -- default if neither is set
 

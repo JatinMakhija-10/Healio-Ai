@@ -1,5 +1,5 @@
 """
-Healio.AI — Planet Ayurveda Disease Stealth Scraper
+Arovia.AI — Planet Ayurveda Disease Stealth Scraper
 =====================================================
 Scrapes all diseases from https://www.planetayurveda.com/diseases-a-to-z/
 Uses Playwright (headless Chromium) to:

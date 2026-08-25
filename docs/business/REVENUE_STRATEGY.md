@@ -1,7 +1,7 @@
-# Healio.AI Comprehensive Revenue Strategy & Implementation Guide
+# Arovia.AI Comprehensive Revenue Strategy & Implementation Guide
 
 ## Executive Summary
-This document redefines Healio.AI's business model, moving from a simple "Consultation Fee" model to a diversified **Ecosystem Economy**. We categorize revenue into three pillars: **Consumer (DTC)**, **Provider (B2B)**, and **Data/Enterprise**.
+This document redefines Arovia.AI's business model, moving from a simple "Consultation Fee" model to a diversified **Ecosystem Economy**. We categorize revenue into three pillars: **Consumer (DTC)**, **Provider (B2B)**, and **Data/Enterprise**.
 
 ---
 
@@ -12,13 +12,13 @@ This document redefines Healio.AI's business model, moving from a simple "Consul
 *   **The Product**: Curated Ayurvedic herbs, supplements, and wellness tools (e.g., Copper bottles, Yoga mats).
 *   **Revenue Model**: 
     *   **Dropshipping/Affiliate**: 15-20% commission on every sale.
-    *   **Private Label (Future)**: 60%+ margins on "Healio Branded" Ashwagandha.
+    *   **Private Label (Future)**: 60%+ margins on "Arovia Branded" Ashwagandha.
 *   **Implementation**:
     1.  **Tagging**: Map every `DiagnosisID` to `RecommendedProductIDs` in the database.
     2.  **UI**: "Add to Cart" button directly in the *Diagnosis Result Card*.
     3.  **Partner API**: Integrate with Shopify/Woocommerce of trusted vendors.
 
-### 1.2. The "Healio Plus" Subscription (Freemium)
+### 1.2. The "Arovia Plus" Subscription (Freemium)
 *   **Concept**: Basic diagnosis is free. Deep health management is paid.
 *   **Features for Subscribers ($5/month)**:
     *   **Unlimited Deep Scans**: Full Bayesian analysis + Vikriti tracking.
@@ -32,14 +32,14 @@ This document redefines Healio.AI's business model, moving from a simple "Consul
 *   **Concept**: We take a cut for connecting the patient to the *right* doctor.
 *   **Revenue Model**: 20% flat fee on every consultation ticket.
 *   **Implementation**:
-    1.  **Escrow System**: Patient pays Healio -> Consult happens -> Healio keeps 20%, transfers 80% to Doctor.
+    1.  **Escrow System**: Patient pays Arovia -> Consult happens -> Arovia keeps 20%, transfers 80% to Doctor.
     2.  **No-Show Protection**: Patient forfeits fee if they don't join (Revenue retention).
 
 ---
 
 ## Pillar 2: Provider Solutions (B2B) - "The SaaS"
 
-### 2.1. "Healio Pro" Workspace Subscription
+### 2.1. "Arovia Pro" Workspace Subscription
 *   **Concept**: Doctors pay for the advanced AI dashboard that saves them time.
 *   **Value Prop**: "Our AI Scribe saves you 2 hours of typing notes per day."
 *   **Revenue Model**: Free Tier (Basic) vs. **Pro Tier ($50/month)**.
@@ -81,7 +81,7 @@ This document redefines Healio.AI's business model, moving from a simple "Consul
 | Phase | Stream | Technical Requirement | Est. Time |
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | Marketplace Commission | Payment Gateway (Stripe/Razorpay) | Weeks 1-2 |
-| **Phase 1** | "Healio Plus" Sub | User Roles & Paywall UI | Weeks 3-4 |
+| **Phase 1** | "Arovia Plus" Sub | User Roles & Paywall UI | Weeks 3-4 |
 | **Phase 2** | Contextual Commerce | Product DB & Recommendation Engine | Weeks 5-8 |
-| **Phase 2** | Healio Pro (SaaS) | Doctor Dashboard Advanced Features | Weeks 8-12 |
+| **Phase 2** | Arovia Pro (SaaS) | Doctor Dashboard Advanced Features | Weeks 8-12 |
 | **Phase 3** | Data Licensing | Aggregation Pipelines & Legal Clearance | Post-Series A |

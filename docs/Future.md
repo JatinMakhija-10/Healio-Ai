@@ -1,12 +1,12 @@
-I'll create a comprehensive future scope document for Healio.AI. Let me compile this based on the technical specifications and roadmap details from your uploaded files.
+I'll create a comprehensive future scope document for Arovia.AI. Let me compile this based on the technical specifications and roadmap details from your uploaded files.
 
 ---
 
-# Healio.AI — Future Scope & Strategic Roadmap
+# Arovia.AI — Future Scope & Strategic Roadmap
 
 ## Executive Summary
 
-Healio.AI stands at the intersection of clinical-grade AI diagnostics and traditional medicine, with a production-ready platform that has demonstrated technical superiority (87.5% accuracy, 0.50ms emergency detection) and genuine market differentiation through AYUSH integration. This document outlines the strategic evolution from current capabilities to a comprehensive global health ecosystem over 24 months.
+Arovia.AI stands at the intersection of clinical-grade AI diagnostics and traditional medicine, with a production-ready platform that has demonstrated technical superiority (87.5% accuracy, 0.50ms emergency detection) and genuine market differentiation through AYUSH integration. This document outlines the strategic evolution from current capabilities to a comprehensive global health ecosystem over 24 months.
 
 ---
 
@@ -97,7 +97,7 @@ Healio.AI stands at the intersection of clinical-grade AI diagnostics and tradit
 | 510(k) submission | Month 12 | Filing |
 
 ### Enterprise Expansion
-- **B2B SaaS**: "Healio Pro" workspace for doctors ($50/month)
+- **B2B SaaS**: "Arovia Pro" workspace for doctors ($50/month)
 - **Clinical trial matching**: $500-$2,000 per successful recruit
 - **Data monetization**: Anonymized trend APIs for pharma/public health
 
@@ -206,7 +206,7 @@ Healio.AI stands at the intersection of clinical-grade AI diagnostics and tradit
 
 ## Conclusion
 
-Healio.AI's future scope transforms a technically superior diagnostic platform into a comprehensive global health ecosystem. The path from 87.5% to 95%+ accuracy, from 265 to 1,000+ conditions, and from ₹0 to ₹18 Cr revenue is defined by disciplined execution across five phases: Foundation, Marketplace, Deep Tech, Regulatory, and Global Ecosystem.
+Arovia.AI's future scope transforms a technically superior diagnostic platform into a comprehensive global health ecosystem. The path from 87.5% to 95%+ accuracy, from 265 to 1,000+ conditions, and from ₹0 to ₹18 Cr revenue is defined by disciplined execution across five phases: Foundation, Marketplace, Deep Tech, Regulatory, and Global Ecosystem.
 
 The platform's unique position—clinical-grade AI + AYUSH integration + three-sided marketplace—creates sustainable competitive advantage in a $120B global traditional medicine market. Success requires maintaining technical excellence while navigating regulatory complexity and scaling operational infrastructure.
 

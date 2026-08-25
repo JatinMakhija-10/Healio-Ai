@@ -2,7 +2,7 @@
 
 ## Overview
 
-Healio.AI has been hardened with comprehensive security measures following OWASP best practices. This document outlines all security features, configuration options, and maintenance procedures.
+Arovia.AI has been hardened with comprehensive security measures following OWASP best practices. This document outlines all security features, configuration options, and maintenance procedures.
 
 ## Security Features Implemented
 

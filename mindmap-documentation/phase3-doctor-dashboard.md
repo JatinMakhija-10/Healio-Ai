@@ -1,4 +1,4 @@
-# Healio.AI Mindmap - Phase 3: Doctor Dashboard (Detailed)
+# Arovia.AI Mindmap - Phase 3: Doctor Dashboard (Detailed)
 ## Clinical Workspace & Practice Management
 
 ---
@@ -16,7 +16,7 @@
 ## 🧭 2. NAVIGATION STRUCTURE (`DoctorSidebar`)
 **Visual Framework**:
 - **Sidebar**: Dark Gradient (`from-slate-900 to-slate-950`).
-- **Brand**: "Healio.AI" + Stethoscope Icon (Teal).
+- **Brand**: "Arovia.AI" + Stethoscope Icon (Teal).
 - **Profile**: Bottom-anchored user card with Avatar and Logout.
 
 ### **Sidebar Menu Items**

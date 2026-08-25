@@ -308,7 +308,7 @@ export default function PersonaBuilderPage() {
         try {
             await updateUserMetadata({ medical_profile: medicalProfile });
             if (user) {
-                try { localStorage.removeItem(`healio_pending_profile_${user.id}`); } catch { /* ignore */ }
+                try { localStorage.removeItem(`arovia_pending_profile_${user.id}`); } catch { /* ignore */ }
             }
         } catch (err) {
             console.error("Error saving persona:", err);
@@ -677,7 +677,7 @@ export default function PersonaBuilderPage() {
                                 <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-100">
                                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                                     <p className="text-[11px] text-amber-700 leading-relaxed">
-                                        <strong>Not medical advice.</strong> Healio.AI is an AI tool for general wellness guidance only. Always consult a qualified doctor before making health decisions. In an emergency, call <strong>112</strong>.
+                                        <strong>Not medical advice.</strong> Arovia.AI is an AI tool for general wellness guidance only. Always consult a qualified doctor before making health decisions. In an emergency, call <strong>112</strong>.
                                     </p>
                                 </div>
                             </div>

@@ -18,7 +18,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function inspectUser() {
-    const email = 'doctor_test@healio.ai';
+    const email = 'doctor_test@arovia.ai';
     const password = 'Doctor123!@#';
 
     console.log(`Inspecting user: ${email}`);

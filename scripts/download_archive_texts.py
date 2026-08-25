@@ -3,7 +3,7 @@ import sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 """
-Healio.AI -- Download Classical Ayurveda Texts from Internet Archive
+Arovia.AI -- Download Classical Ayurveda Texts from Internet Archive
 ====================================================================
 Downloads the primary classical Ayurvedic texts (Charaka Samhita,
 Sushruta Samhita, Ashtanga Hridayam, etc.) from archive.org which
@@ -26,7 +26,7 @@ except ImportError:
 OUT_DIR = Path(__file__).parent.parent / "data" / "ayurveda" / "raw" / "classical_texts"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-HEADERS = {"User-Agent": "Mozilla/5.0 Healio-AI-Research/1.0 (educational use)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 Arovia-AI-Research/1.0 (educational use)"}
 
 # All are public domain texts on Internet Archive
 # Format: (filename, archive_identifier, preferred_file_pattern)
@@ -131,7 +131,7 @@ def download_from_archive(name: str, identifier: str, ext: str) -> bool:
 
 
 def main():
-    print("Archive.org Classical Ayurveda Text Downloader -- Healio.AI\n")
+    print("Archive.org Classical Ayurveda Text Downloader -- Arovia.AI\n")
     print(f"[DIR] Saving to: {OUT_DIR}\n")
 
     ok = fail = 0

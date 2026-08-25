@@ -28,7 +28,7 @@
     "2026-05-11 20:17:27.416 [info] I0511 20:17:26.095367 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels Trace: 0xda53d7b5dc8c0b88",
     "2026-05-11 20:17:39.927 [info] I0511 20:17:39.925829 21044 planner_generator.go:283] Requesting planner with 109 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-11 20:17:43.622 [info] I0511 20:17:43.622296 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xc42b0890cce5f0e1",
-    "2026-05-11 20:17:48.679 [info] (Antigravity) 2026-05-11 20:17:48.679 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-11 20:17:48.679 [info] (Antigravity) 2026-05-11 20:17:48.679 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-11 20:17:49.839 [info] (Antigravity) 2026-05-11 20:17:49.838 [INFO]: [Terminal] Command completed: git log --oneline -10 exit code 0",
     "2026-05-11 20:17:49.897 [info] I0511 20:17:49.896859 21044 planner_generator.go:283] Requesting planner with 111 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-11 20:17:55.042 [info] I0511 20:17:55.042329 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xf15326c8430420ee",
@@ -40,7 +40,7 @@
     "2026-05-11 20:18:16.387 [info] E0511 20:18:16.387307 21044 log.go:398] agent executor error: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server: UNAVAILABLE (code 503): No capacity available for model claude-sonnet-4-6 on the server",
     "2026-05-11 20:18:23.833 [info] I0511 20:18:23.832856 21044 planner_generator.go:283] Requesting planner with 119 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-11 20:18:27.906 [info] I0511 20:18:27.905767 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0x6ff2e70005699db7",
-    "2026-05-11 20:19:26.137 [info] (Antigravity) 2026-05-11 20:19:26.137 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Healio.AI' exit code 0",
+    "2026-05-11 20:19:26.137 [info] (Antigravity) 2026-05-11 20:19:26.137 [INFO]: [Terminal] Command completed: cd 'c:\\Users\\JATIN\\Desktop\\CPP\\Arovia.AI' exit code 0",
     "2026-05-11 20:19:27.251 [info] (Antigravity) 2026-05-11 20:19:27.250 [INFO]: [Terminal] Command completed: Get-ChildItem -Path src\\app\\api -Recurse -Filter \"route.ts\" | Select-Object FullName exit code 0",
     "2026-05-11 20:19:27.292 [info] I0511 20:19:27.291631 21044 planner_generator.go:283] Requesting planner with 121 chat messages at model retry attempt 1 and API retry attempt 1",
     "2026-05-11 20:19:29.982 [info] I0511 20:19:29.982186 21044 http_helpers.go:123] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse Trace: 0xb8cda4349d986347",
@@ -168,28 +168,28 @@
     {
       "googleAgentId": "6d3a4778-7040-4778-9522-52800f62219c",
       "trajectoryId": "2e16d902-65f3-4ccb-8fae-791bba2cade0",
-      "summary": "Fixing Healio Notification System",
+      "summary": "Fixing Arovia Notification System",
       "lastStepIndex": 118,
       "lastModifiedTime": "2026-05-04T19:34:48.008Z"
     },
     {
       "googleAgentId": "fd98aae0-d04e-4394-b18a-14ceaaa6b999",
       "trajectoryId": "4d9a93b2-fd33-4a01-8849-dab5a44e4355",
-      "summary": "Healio Project Development Resumption",
+      "summary": "Arovia Project Development Resumption",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-05-04T19:23:00.933Z"
     },
     {
       "googleAgentId": "1d3836d0-1da0-420d-b351-2bc99cfc8f3e",
       "trajectoryId": "548cb164-967d-44a1-906f-d9026774003f",
-      "summary": "Healio Project Maintenance and Optimization",
+      "summary": "Arovia Project Maintenance and Optimization",
       "lastStepIndex": 6,
       "lastModifiedTime": "2026-04-29T06:39:04.369Z"
     },
     {
       "googleAgentId": "af02619b-56c3-410c-954e-3839bbfe83ca",
       "trajectoryId": "b1704712-9855-4aa2-9760-0b78b27c79c2",
-      "summary": "Healio UI Audit Remediation",
+      "summary": "Arovia UI Audit Remediation",
       "lastStepIndex": 17,
       "lastModifiedTime": "2026-04-28T19:17:47.266Z"
     },

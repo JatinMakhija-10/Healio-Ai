@@ -1,6 +1,6 @@
-# Healio.AI Project Management Setup
+# Arovia.AI Project Management Setup
 
-Use these files to create a simple command center for the Healio launch.
+Use these files to create a simple command center for the Arovia launch.
 
 ## Recommended Tools
 
@@ -10,7 +10,7 @@ Use these files to create a simple command center for the Healio launch.
 
 ## Import Order For Notion
 
-1. Create a Notion page named `Healio Command Center`.
+1. Create a Notion page named `Arovia Command Center`.
 2. Import `marketing_launch_board.csv` as a database.
 3. Import `tech_product_board.csv` as a database.
 4. Import `doctor_onboarding_crm.csv` as a database.

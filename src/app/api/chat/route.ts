@@ -730,7 +730,7 @@ function languageDirectiveForPrompt(detectedLang: 'english' | 'hinglish' | 'hind
     return '';
 }
 
-type HealioIntent =
+type AroviaIntent =
     | 'symptom_query'
     | 'medication_query'
     | 'lab_result_query'
@@ -738,8 +738,8 @@ type HealioIntent =
     | 'general_health_question'
     | 'out_of_scope';
 
-interface HealioIntentResult {
-    intent: HealioIntent;
+interface AroviaIntentResult {
+    intent: AroviaIntent;
     confidence: number;
     evidence: string[];
 }
@@ -787,11 +787,11 @@ function formatDiagnosticPreferencesForPrompt(preferences: DiagnosticPreferences
     ].join('\n');
 }
 
-function classifyHealioIntent(text: string): HealioIntentResult {
+function classifyAroviaIntent(text: string): AroviaIntentResult {
     const input = text.toLowerCase().trim();
     const matches = (patterns: RegExp[]) => patterns.filter((pattern) => pattern.test(input)).length;
 
-    const scores: Record<HealioIntent, number> = {
+    const scores: Record<AroviaIntent, number> = {
         symptom_query: matches([
             /\b(fever|cough|cold|headache|pain|ache|rash|vomit|nausea|diarrhea|loose motion|dizziness|fatigue|weakness|swelling|itching|burning|acidity|gas|bukhar|khansi|dard|ulti|dast|chakkar|thakan|jalan|khujli)\b/i,
             /\b(i have|i am feeling|feeling|suffering|symptom|since|for \d+|my child|my mother|my father)\b/i,
@@ -815,7 +815,7 @@ function classifyHealioIntent(text: string): HealioIntentResult {
     };
 
     const ranked = Object.entries(scores)
-        .sort((a, b) => b[1] - a[1]) as Array<[HealioIntent, number]>;
+        .sort((a, b) => b[1] - a[1]) as Array<[AroviaIntent, number]>;
     const [intent, score] = ranked[0];
 
     if (!input) return { intent: 'out_of_scope', confidence: 0.2, evidence: ['empty message'] };
@@ -832,7 +832,7 @@ function classifyHealioIntent(text: string): HealioIntentResult {
     };
 }
 
-function formatIntentForPrompt(intent: HealioIntentResult): string {
+function formatIntentForPrompt(intent: AroviaIntentResult): string {
     return [
         '\n\n=== INTENT ROUTING ===',
         `intent: ${intent.intent}`,
@@ -844,12 +844,12 @@ function formatIntentForPrompt(intent: HealioIntentResult): string {
         '- If intent is lab_result_query, ask for the exact value/unit/range if not provided; do not guess lab interpretation.',
         '- If intent is appointment_action, help with next-step guidance and route to booking language; do not run symptom intake unless symptoms are also present.',
         '- If intent is general_health_question, answer directly with safe educational guidance and doctor signals.',
-        '- If intent is out_of_scope, briefly say Healio can help with health and wellness questions only.',
+        '- If intent is out_of_scope, briefly say Arovia can help with health and wellness questions only.',
         '=== END INTENT ROUTING ===',
     ].join('\n');
 }
 
-function creditActionForTurn(intent: HealioIntentResult, userTurns: number, isFinalTurn: boolean, ragWillBeFetched: boolean): string {
+function creditActionForTurn(intent: AroviaIntentResult, userTurns: number, isFinalTurn: boolean, ragWillBeFetched: boolean): string {
     if (intent.intent === 'lab_result_query') return 'lab_report_analysis';
     if (isFinalTurn || (ragWillBeFetched && userTurns >= 2) || (ragWillBeFetched && intent.intent === 'medication_query')) return 'rag_query';
     return 'standard_chat';
@@ -861,19 +861,19 @@ async function consumeCreditsBeforeAi(
     userId: string,
     action: string
 ): Promise<Response | null> {
-    const { data, error } = await serviceClient.rpc('consume_healio_credits', {
+    const { data, error } = await serviceClient.rpc('consume_arovia_credits', {
         p_user_id: userId,
         p_action: action,
     });
 
     if (error) {
         const message = String(error.message || '');
-        if (/consume_healio_credits|function .* does not exist|schema cache/i.test(message)) {
-            console.warn('[credits] consume_healio_credits is not available yet; falling back to legacy usage gate.');
+        if (/consume_arovia_credits|function .* does not exist|schema cache/i.test(message)) {
+            console.warn('[credits] consume_arovia_credits is not available yet; falling back to legacy usage gate.');
             return null;
         }
 
-        console.error('[credits] consume_healio_credits failed:', message);
+        console.error('[credits] consume_arovia_credits failed:', message);
         return new Response(JSON.stringify({ error: 'credits_check_failed' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
@@ -1026,15 +1026,15 @@ FALLBACK: If NEXT FIELD CHIPS is non-empty and no rule above matches, use it as 
 
 FEW-SHOT EXAMPLE (headache patient):
 User: "I have a headache."
-Healio: "I'm sorry you're dealing with this — headaches can be very disruptive. How long have you been experiencing it?
+Arovia: "I'm sorry you're dealing with this — headaches can be very disruptive. How long have you been experiencing it?
 {\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Today\", \"1-3 days\", \"4-7 days\", \"1-2 weeks\", \"Recurring\", \"Other - I'll type it\"], \"question_type\": \"duration\"}}"
 
 User: "Since yesterday."
-Healio: "Understood — starting yesterday. How would you rate the intensity of the headache right now, on a scale of 1 to 10?
+Arovia: "Understood — starting yesterday. How would you rate the intensity of the headache right now, on a scale of 1 to 10?
 {\"ui_hint\": {\"type\": \"slider\", \"min\": 1, \"max\": 10, \"question_type\": \"severity\"}}"
 
 User: "Around a 6."
-Healio: "A 6 means it is clearly bothering you. What does the discomfort feel like? Choose the closest option, or describe it in your own words.
+Arovia: "A 6 means it is clearly bothering you. What does the discomfort feel like? Choose the closest option, or describe it in your own words.
 {\"ui_hint\": {\"type\": \"chips\", \"options\": [\"Throbbing/pulsing\", \"Pressure/tightness\", \"Sharp/stabbing\", \"Dull/aching\", \"One-sided\", \"Behind eyes\", \"Other - I'll type it\"], \"question_type\": \"sensation\"}}"
 
 [PERSONALISATION RULES — USE PATIENT PROFILE & HISTORY]
@@ -1863,7 +1863,7 @@ export async function POST(req: NextRequest) {
         const lastUserMsg = (processedMessages as { role: string; content: string }[])
             .filter(m => m.role === 'user')
             .pop()?.content ?? '';
-        const intentResult = classifyHealioIntent(lastUserMsg);
+        const intentResult = classifyAroviaIntent(lastUserMsg);
 
         if (userTurns === 1 && !isFollowUpMode && intentResult.confidence < 0.75) {
             return streamTextResponse(

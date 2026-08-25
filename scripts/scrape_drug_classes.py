@@ -1,5 +1,5 @@
 """
-Healio.AI — Drugs.com Drug Classes Scraper
+Arovia.AI — Drugs.com Drug Classes Scraper
 ==============================================
 Scrapes all drug classes from https://www.drugs.com/drug-classes.html
 and dynamically extracts the medicines inside each class hyperlink.

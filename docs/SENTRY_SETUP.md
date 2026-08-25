@@ -1,6 +1,6 @@
 # Sentry Error Monitoring Setup
 
-Healio.AI uses [Sentry](https://sentry.io) for error monitoring and performance
+Arovia.AI uses [Sentry](https://sentry.io) for error monitoring and performance
 tracing across both the **Next.js app** and the **FastAPI backend**.
 
 The integration is **opt-in via env vars** — without `SENTRY_DSN` set, the SDK
@@ -12,8 +12,8 @@ is a no-op and adds no runtime overhead. This keeps local dev frictionless.
 
 1. Sign up at <https://sentry.io> (free tier covers ~5k errors/month).
 2. Create **two projects**:
-   - `healio-web` → platform **Next.js**
-   - `healio-api` → platform **Python / FastAPI**
+   - `arovia-web` → platform **Next.js**
+   - `arovia-api` → platform **Python / FastAPI**
 3. Copy the **DSN** for each project (Settings → Projects → Client Keys).
 4. Create an **auth token** with `project:releases` and `project:write` scope
    (Settings → Auth Tokens). Needed for source-map upload during `next build`.
@@ -26,16 +26,16 @@ Copy values into `.env.local` (frontend) and `backend/.env` (backend):
 
 ```env
 # Frontend (Next.js)
-NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/healio-web
-SENTRY_DSN=https://...@sentry.io/healio-web
+NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/arovia-web
+SENTRY_DSN=https://...@sentry.io/arovia-web
 SENTRY_ORG=your-org-slug
-SENTRY_PROJECT=healio-web
+SENTRY_PROJECT=arovia-web
 SENTRY_AUTH_TOKEN=sntrys_...
 SENTRY_ENVIRONMENT=production    # optional — defaults to NODE_ENV
 SENTRY_RELEASE=v1.2.3            # optional — set by CI on deploy
 
 # Backend (FastAPI)
-SENTRY_DSN=https://...@sentry.io/healio-api
+SENTRY_DSN=https://...@sentry.io/arovia-api
 SENTRY_TRACES_SAMPLE_RATE=0.1
 ```
 
@@ -81,7 +81,7 @@ Initialized at the top of `backend/main.py` before app creation. Uses
 
 ## 5. PHI / PII safety (clinical-grade)
 
-Healio.AI handles symptom data and partial PHI. Defaults are conservative:
+Arovia.AI handles symptom data and partial PHI. Defaults are conservative:
 
 - `sendDefaultPii: false` on **all** runtimes — no IPs, cookies, or auth headers.
 - Replay integration uses `maskAllText: true` and `blockAllMedia: true`.

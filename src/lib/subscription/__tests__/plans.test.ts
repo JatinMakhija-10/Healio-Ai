@@ -33,10 +33,10 @@ import {
     normalizeSubscriptionPlan,
 } from "../plans";
 
-describe("Healio subscription tier rules", () => {
+describe("Arovia subscription tier rules", () => {
     it("defines Basic, Plus, and Pro plans (all patient-facing in v2)", () => {
         expect(Object.keys(PLANS)).toEqual(["free", "plus", "pro"]);
-        expect(PLANS.pro.name).toBe("Healio Pro");
+        expect(PLANS.pro.name).toBe("Arovia Pro");
         expect(PLANS.pro.audience).toBe("patient");
         expect(PLANS.plus.audience).toBe("patient");
         expect(PLANS.free.audience).toBe("patient");
