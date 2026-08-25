@@ -1972,8 +1972,8 @@ export async function POST(req: NextRequest) {
             (intentResult.intent === 'symptom_query' && userTurns >= 3);
 
         const groqModel = needsBalancedModel
-            ? AI_PHASE_CONFIG.models.groq        // openai/gpt-oss-120b — rich diagnosis
-            : AI_PHASE_CONFIG.models.groqFast;   // openai/gpt-oss-20b — fast Q&A
+            ? AI_PHASE_CONFIG.models.groq        // groq/compound — rich diagnosis
+            : AI_PHASE_CONFIG.models.groqFast;   // groq/compound-mini — fast & precise Q&A
 
         const maxTokensForTurn = isFinalTurn ? 4096 : 1500;
 
