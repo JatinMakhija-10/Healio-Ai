@@ -127,7 +127,7 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
     // Requires "stiff neck" or "neck stiffness" as a phrase — "neck" + "severe" alone is too common
     // (e.g. severe neck pain from muscle strain would otherwise trigger this)
     const hasStiffNeck = allText.includes("stiff neck") || allText.includes("neck stiffness") || allText.includes("cannot bend neck") || allText.includes("can't bend neck");
-    if (allText.includes("fever") && allText.includes("headache") && hasStiffNeck) {
+    if ((allText.includes("fever") || allText.includes("headache")) && hasStiffNeck) {
         alerts.push("🚨 MENINGITIS RISK: Potential meningitis. Seek emergency care immediately.");
     }
 

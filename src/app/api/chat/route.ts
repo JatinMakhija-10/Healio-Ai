@@ -43,13 +43,19 @@ const EMERGENCY_PATTERNS: RegExp[] = [
     /\bchest\s*(?:pain|pressure|tightness)\b/i,
     /\bshort(?:ness)?\s+of\s+breath\b/i,
     /\bdifficulty\s+breathing\b/i,
-    /\bsudden\s+(?:severe\s+)?headache\b/i,
+    // "sudden headache" alone is too common (exercise, sneezing, etc.).
+    // Require thunderclap/worst-ever qualifier for a true subarachnoid emergency.
+    /\b(?:worst|thunderclap|sudden\s+severe|sudden\s+extreme)\s+headache\b/i,
     /\bloss\s+of\s+consciousness\b/i,
-    /\bfaint(?:ed|ing)?\b/i,
+    // Fainting alone is common (dehydration, heat, anxiety). Require a cardiac/
+    // respiratory co-occurring term in the same message for hard escalation.
+    /\b(?:faint(?:ed|ing)?|passed\s+out)\b.{0,80}\b(?:chest|heart|breath|pulse|palpitat|arm|jaw)\b/i,
+    /\b(?:chest|heart|breath|pulse|palpitat|arm|jaw)\b.{0,80}\b(?:faint(?:ed|ing)?|passed\s+out)\b/i,
     /\bcough(?:ing)?\s+blood\b/i,
     /\bslurred?\s+speech\b/i,
     /\bfacial?\s+droop(?:ing)?\b/i,
-    /\bsevere\s+abdominal\s+pain\b/i,
+    // "severe abdominal pain" requires a true compound qualifier
+    /\b(?:unbearable|excruciating|worst)\s+(?:abdominal|stomach|belly)\s+pain\b/i,
     /\b(?:baby|infant|newborn).{0,40}\b(?:high\s+)?fever\b/i,
     /\b(?:suicidal|suicide|kill myself|end my life)\b/i,
     /\bseizure\b/i,
