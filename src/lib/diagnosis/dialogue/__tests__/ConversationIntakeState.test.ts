@@ -111,4 +111,19 @@ describe('ConversationIntakeState', () => {
         expect(state.answeredFields.has('fever.temp_value')).toBe(true);
         expect(state.collectedData.get('fever.temp_value')).toBe('101F');
     });
+
+    it('correctly maps nausea to vomiting_diarrhea schema and suppresses body location and pain sensation questions', () => {
+        const schema = selectSymptomQuestionSchema('i feel nauseous since morning');
+        expect(schema.id).toBe('vomiting_diarrhea');
+
+        const state = buildConversationIntakeState([
+            { role: 'user', content: 'i feel nauseous since morning' },
+        ]);
+
+        expect(state.activeSchemaId).toBe('vomiting_diarrhea');
+        // Ensure body location ("Where in your body") is NOT queued for nausea/vomiting
+        expect(state.pendingQueue.some((field) => field.key === 'location')).toBe(false);
+        // Ensure generic pain sensation is NOT queued
+        expect(state.pendingQueue.some((field) => field.key === 'sensation')).toBe(false);
+    });
 });

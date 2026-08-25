@@ -423,8 +423,19 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         }
     }
 
+    const isNonLocalizedSymptom =
+        /\b(nausea|nauseous|nauseated|vomiting|vomit|diarrhea|loose motion|dast|ulti|fever|bukhar|fatigue|weakness|thakan|kamzori|dizziness|chakkar|cold|cough|khansi|rash|acidity|gas|indigestion|queasy)\b/i.test(userText) ||
+        ['fever', 'vomiting_diarrhea', 'cough_cold', 'dizziness', 'fatigue', 'skin_rash', 'mental_health'].includes(activeSchema.id);
+
     const pendingQueue = fieldDefinitions
-        .filter((definition) => !answeredFields.has(definition.key) && !definition.key.endsWith('_red_flag_trigger'))
+        .filter((definition) => {
+            if (answeredFields.has(definition.key) || definition.key.endsWith('_red_flag_trigger')) return false;
+            // Suppress body location ("Where in your body") for non-localized / systemic / GI symptoms
+            if (isNonLocalizedSymptom && definition.key === 'location') return false;
+            // Suppress generic sensation (if asking for sharp/stabbing/throbbing pain quality) for non-pain systemic symptoms
+            if (isNonLocalizedSymptom && definition.key === 'sensation' && activeSchema.id === 'generic') return false;
+            return true;
+        })
         .sort((a, b) => a.priority - b.priority);
 
     const lastAssistantField = [...messages]

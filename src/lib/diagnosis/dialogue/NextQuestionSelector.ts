@@ -26,6 +26,7 @@ const FIELD_ALIAS_BY_SCHEMA_KEY: Record<string, IntakeFieldKey[]> = {
     'abdominal_pain.duration': ['duration'],
     'cough_cold.duration': ['duration'],
     'vomiting_diarrhea.duration': ['duration'],
+    'vomiting_diarrhea.severity': ['severity'],
     'skin_rash.duration': ['duration'],
     'dizziness.duration': ['duration'],
     'fatigue.duration': ['duration'],
