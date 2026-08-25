@@ -146,6 +146,11 @@ function isInvalidGeminiKeyError(error: unknown): boolean {
            text.includes('key is invalid');
 }
 
+function cleanLlmText(text: string): string {
+    if (!text) return '';
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
+
 // ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
 // Deduplicates by remedy_name — keeps only the highest-similarity chunk per remedy
 async function fetchBoerickeContext(embedding: number[]): Promise<string> {
@@ -2402,7 +2407,8 @@ UI HINT OUTPUT SAFETY:
 
                         if (geminiResponse.ok) {
                             const geminiData = await geminiResponse.json();
-                            geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            const rawGeminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            geminiText = cleanLlmText(rawGeminiText);
                             geminiSucceeded = true;
                             geminiModelUsed = model;
                             break;
@@ -2456,7 +2462,8 @@ UI HINT OUTPUT SAFETY:
 
                         if (rescueResponse.ok) {
                             const rescueData = await rescueResponse.json();
-                            const rescueText = rescueData.choices?.[0]?.message?.content || '';
+                            const rawRescueText = rescueData.choices?.[0]?.message?.content || '';
+                            const rescueText = cleanLlmText(rawRescueText);
                             if (rescueText) {
                                 const safeRescueText = ensureFinalDiagnosisPayload(
                                     rescueText,
@@ -2511,9 +2518,8 @@ UI HINT OUTPUT SAFETY:
         }
 
         const groqData = await groqResponse.json();
-        let groqText = groqData.choices?.[0]?.message?.content?.trim() || '';
-        // Strip internal <think>...</think> reasoning blocks from reasoning models
-        groqText = groqText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        const rawGroqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        const groqText = cleanLlmText(rawGroqText);
         const groqFinishReason = groqData.choices?.[0]?.finish_reason || '';
 
         if (!groqText) {
