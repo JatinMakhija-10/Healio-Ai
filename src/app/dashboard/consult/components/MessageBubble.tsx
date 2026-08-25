@@ -304,13 +304,21 @@ export function MessageBubble({ message, diagnosticPreferences }: MessageBubbleP
 
 /**
  * Renders message content with basic markdown-like formatting:
- * **bold**, emojis, and line breaks
+ * **bold**, emojis, and line breaks.
+ *
+ * Also strips internal system tokens ([L1]–[L5]) that the LLM
+ * may accidentally output in conversational turns. These codes
+ * belong only in the structured JSON card, never in plain text.
  */
 function renderContent(text: string) {
     if (!text) return null;
 
+    // Remove any escalation-level bracket tokens the model may have leaked
+    // e.g. "[L4]", "[L3]", "[L5]", " [L2]", etc.
+    const cleaned = text.replace(/\s*\[L[1-5]\]/gi, '').trim();
+
     // Split into segments preserving **bold** markers
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    const parts = cleaned.split(/(\*\*[^*]+\*\*)/g);
 
     return parts.map((part, i) => {
         if (part.startsWith("**") && part.endsWith("**")) {

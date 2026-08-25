@@ -470,10 +470,17 @@ export class SafetyGuardEnhancer {
         const hasCritical = alerts.some(a => a.severity === 'critical');
         const warningCount = alerts.filter(a => a.severity === 'warning').length;
 
+        // 'emergency' requires an explicitly critical alert (e.g. FAST stroke, STEMI pattern)
         if (hasCritical) return 'emergency';
-        if (forceSeekHelp || warningCount >= 3) return 'danger';
+
+        // 'danger' (L4) requires BOTH forceSeekHelp from a critical-tier rule AND multiple warnings,
+        // OR 4+ independent warning signals. This prevents 3 soft informational warnings on a
+        // routine case (e.g. conjunctivitis) from escalating to same-day urgent care.
+        if (forceSeekHelp && warningCount >= 2) return 'danger';
+        if (warningCount >= 4) return 'danger';
+
         if (warningCount >= 2) return 'warning';
-        if (warningCount >= 1) return 'caution';
+        if (warningCount >= 1 || forceSeekHelp) return 'caution';
         return 'safe';
     }
 }

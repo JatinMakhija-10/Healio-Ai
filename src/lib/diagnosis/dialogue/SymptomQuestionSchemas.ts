@@ -200,7 +200,23 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'eye_problem.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long has the eye problem been present?' },
             { key: 'eye_problem.severity', aliases: ['severity'], priority: 1, required: true, responseType: 'number', question: 'How severe is it on a scale of 1 to 10?' },
-            { key: 'eye_problem.danger_signs', priority: 1, required: true, responseType: 'boolean', question: 'Is the eye very red, is your vision suddenly blurred or reduced, are you seeing halos around lights, is there severe eye pain, sensitivity to light, nausea, or vomiting?', redFlagFn: (v) => v === 'yes' },
+            {
+                // IMPORTANT: Do NOT include "red eye" or "blurry vision" here — those are the
+                // presenting complaints that selected this schema. Asking if the eye is "very red"
+                // when the user just said "my eye is very red" guarantees a yes → false emergency.
+                //
+                // True glaucoma/retinal emergency discriminators are:
+                //   1. Halos around lights (pathognomonic for acute angle-closure glaucoma)
+                //   2. Sudden, significant vision loss (not mild blurring from discharge)
+                //   3. SEVERE eye pain (not discomfort — pressure-like, 7+/10)
+                //   4. Nausea or vomiting WITH eye pain (classic glaucoma constellation)
+                key: 'eye_problem.danger_signs',
+                priority: 1,
+                required: true,
+                responseType: 'boolean',
+                question: 'Are you seeing coloured halos or rainbow rings around lights, or is there very severe eye pain (not just discomfort), or sudden loss of vision, or nausea and vomiting along with the eye problem?',
+                redFlagFn: (v) => v === 'yes',
+            },
             { key: 'eye_problem.laterality', priority: 2, required: false, responseType: 'text', question: 'Is one eye or both eyes affected?' },
             { key: 'eye_problem.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'What does the eye problem feel like (e.g. burning, gritty, itchy, pressure, sharp)?' },
             { key: 'eye_problem.associated', aliases: ['associated'], priority: 2, required: false, responseType: 'multi_select', question: 'Any headache, sensitivity to light, discharge, tearing, or swelling around the eye?' },

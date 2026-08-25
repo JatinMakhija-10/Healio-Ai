@@ -1075,6 +1075,7 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - Never ask a question whose answer was already given earlier in the conversation.
 - Never ask about information already present in the PATIENT PROFILE (age, gender, conditions, medications, allergies).
 - Never respond in Hindi or Hinglish when the user wrote in English. This is the most critical language rule.
+- Never write escalation-level codes like [L1], [L2], [L3], [L4], or [L5] in conversational text. These codes belong ONLY inside the structured JSON block. If they appear in plain text the user will see them literally as "[L4]" — this is forbidden.
 
 [STATIC RULES (ALWAYS IN SYSTEM PROMPT)]
 - Ask exactly one question per turn. Never bundle two questions in one reply.
@@ -1535,18 +1536,30 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
     const collectedSummary = formatCollectedSummary(state);
     const summaryForUser = collectedSummary || `Main concern: ${concern}`;
     const hasRedFlags = state.redFlagsFound.length > 0;
-    const severity = hasRedFlags ? 'severe' : inferFallbackSeverity(state);
+    const severity = inferFallbackSeverity(state);
+    // L4 requires BOTH confirmed red flags AND severity at severe/high level.
+    // A mild-severity presentation with a caution flag gets L3 (doctor within days),
+    // not L4 (same-day urgent care). This prevents conjunctivitis and similar
+    // common conditions from being escalated to the emergency tier.
+    const escalationLevel = (hasRedFlags && severity === 'severe') ? 'L4'
+        : hasRedFlags ? 'L3'
+        : severity === 'severe' ? 'L3'
+        : 'L2';
+    const isUrgent = escalationLevel === 'L4';
+    const needsConsult = escalationLevel === 'L3' || isUrgent;
     const confidence = Math.max(55, Math.min(78, 45 + state.answeredFields.size * 5));
     const schemaLabel = state.activeSchemaLabel || 'symptom';
-    const safeSelfCare = !hasRedFlags && severity !== 'severe';
+    const safeSelfCare = !isUrgent && severity !== 'severe';
 
     return {
         id: `fallback-${state.activeSchemaId}`,
         concern_summary: `Based on what you shared, this fits a ${schemaLabel.toLowerCase()} pattern that should be monitored carefully. This is cautious guidance, not a confirmed diagnosis.`,
-        escalation_level: hasRedFlags || severity === 'severe' ? 'L4' : 'L2',
-        escalation_action: hasRedFlags || severity === 'severe'
+        escalation_level: escalationLevel,
+        escalation_action: isUrgent
             ? 'Please seek same-day medical care, especially if symptoms worsen or any danger sign appears.'
-            : '',
+            : needsConsult
+                ? 'Please see a doctor within the next 1-2 days to confirm the diagnosis and rule out other causes.'
+                : '',
         name: `Likely ${schemaLabel.toLowerCase()} pattern`,
         description: `Key details considered: ${summaryForUser}. This assessment uses only the information collected in this chat and should be confirmed by a qualified practitioner if symptoms persist or worsen.`,
         severity,
@@ -1579,13 +1592,17 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
                 evidence_label: 'Common self-care',
             },
         ] : [],
-        care_plan: hasRedFlags || severity === 'severe'
+        care_plan: isUrgent
             ? 'Do not rely on home care alone. Arrange same-day medical review and monitor breathing, alertness, hydration, and fever pattern.'
-            : 'Rest, hydrate, monitor temperature and symptoms, and avoid heavy meals. If symptoms worsen, persist, or new danger signs appear, seek medical care.',
+            : needsConsult
+                ? 'Rest and monitor your symptoms carefully. Please book an appointment to see a doctor within the next 1-2 days, or sooner if symptoms worsen.'
+                : 'Rest, hydrate, monitor temperature and symptoms, and avoid heavy meals. If symptoms worsen, persist, or new danger signs appear, seek medical care.',
         lifestyle_advice: ['Keep notes on temperature, vomiting frequency, hydration, and any worsening symptoms.'],
-        when_to_consult: hasRedFlags || severity === 'severe'
+        when_to_consult: isUrgent
             ? 'Seek medical care today.'
-            : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
+            : needsConsult
+                ? 'See a doctor within 1-2 days. Go sooner or to an urgent care centre if symptoms worsen significantly.'
+                : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
         practitioner_prep: `Share this clearly: ${summaryForUser}. ${practitionerCheckForSchema(state.activeSchemaId)}`,
         red_flags: [
             ...state.redFlagsFound,
