@@ -2364,6 +2364,7 @@ UI HINT OUTPUT SAFETY:
             }
         }
 
+        const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
         const groqStartIndex = groqKeyIndex % groqKeyPool.length;
         groqKeyIndex = (groqKeyIndex + 1) % groqKeyPool.length;
         const maxGroqRetryBudgetMs = isFinalTurn ? 20_000 : needsBalancedModel ? 15_000 : 12_000;

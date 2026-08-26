@@ -3,16 +3,16 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 
 export const AI_PHASE_CONFIG = {
-    // Primary provider (Gemini 3.6 Flash)
+    // Primary provider (Gemini 2.5 Flash)
     primary: 'gemini',
 
-    // Fallback provider (Gemini 3.6 Flash)
+    // Fallback provider (Gemini 2.5 Flash Lite)
     fallback: 'gemini',
 
     // Model Selection
     models: {
-        groq: 'groq/compound',                     // unused (Groq bypassed)
-        groqFast: 'groq/compound',                  // unused (Groq bypassed)
+        groq: 'groq/compound',                     // used ONLY for final diagnosis JSON
+        groqFast: 'groq/compound',                  // used for conversational Q&A turns
         gemini: 'gemini-3.6-flash',
         geminiLite: 'gemini-3.6-flash',             // lite not available on this key
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
@@ -57,8 +57,8 @@ export const AI_PHASE_CONFIG = {
     // ── LLM Generation Parameters ─────────────────────────────────────────────
     generation: {
         temperature: 0.15,          // Low temp → deterministic, medically appropriate
-        maxRetries: 1,             // Retry once before fallback
-        timeoutMs: 15000,          // Complete-response timeout; avoids saving half-streamed answers
+        maxRetries: 2,             // Retry twice before fallback
+        timeoutMs: 15000,          // Timeout per request (compound is fast, 15s is sufficient)
         maxTokens: 1500,           // Max output tokens per response
         retryDelayMs: 500,         // Wait 500ms before retry (fast key rotation)
     },
