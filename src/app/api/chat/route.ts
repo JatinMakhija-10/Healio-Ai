@@ -2298,7 +2298,6 @@ UI HINT OUTPUT SAFETY:
                                         temperature: AI_PHASE_CONFIG.generation.temperature,
                                         maxOutputTokens: maxTokensForTurn,
                                     },
-                                    thinkingConfig: { thinkingBudget: 0 }, // disable thinking for fast responses
                                 }),
                                 signal: geminiController.signal,
                             }
