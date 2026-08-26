@@ -2271,23 +2271,21 @@ UI HINT OUTPUT SAFETY:
                 parts: [{ text: m.content }],
             }));
 
-            const geminiModels = [
-                AI_PHASE_CONFIG.models.gemini,
-                AI_PHASE_CONFIG.models.geminiLite,
-            ];
+            const geminiModel = AI_PHASE_CONFIG.models.gemini;
             let geminiText = '';
             let geminiSucceeded = false;
-            let geminiModelUsed = '';
             let lastGeminiError = '';
+            const maxGeminiAttempts = 3;
 
-            for (const model of geminiModels) {
+            for (let attempt = 0; attempt < maxGeminiAttempts; attempt++) {
                 for (const geminiKey of geminiKeys) {
                     const geminiController = new AbortController();
                     const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
 
                     try {
+                        console.log(`[Gemini] attempt=${attempt + 1}/${maxGeminiAttempts} model=${geminiModel} key=...${geminiKey.slice(-6)}`);
                         const geminiResponse = await fetch(
-                            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+                            `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,
                             {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -2306,20 +2304,32 @@ UI HINT OUTPUT SAFETY:
                         if (geminiResponse.ok) {
                             const geminiData = await geminiResponse.json();
                             geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                            geminiSucceeded = true;
-                            geminiModelUsed = model;
-                            break;
+                            if (geminiText) {
+                                geminiSucceeded = true;
+                                console.log(`[Gemini] ✅ Success on attempt ${attempt + 1}, response length=${geminiText.length}`);
+                                break;
+                            }
+                            console.warn(`[Gemini] HTTP 200 but empty text, retrying...`);
                         }
 
                         const errorText = await geminiResponse.text();
                         lastGeminiError = `${geminiResponse.status} ${errorText.slice(0, 300)}`;
-                        console.error(`[Gemini] ${model} failed status=${geminiResponse.status} body=${errorText.slice(0, 300)}`);
+                        console.error(`[Gemini] ${geminiModel} failed status=${geminiResponse.status} body=${errorText.slice(0, 200)}`);
+
+                        // On 429 rate limit, wait and retry
+                        if (geminiResponse.status === 429) {
+                            const retryAfter = Math.min(2000 * (attempt + 1), 6000);
+                            console.log(`[Gemini] 429 rate limited, waiting ${retryAfter}ms before retry...`);
+                            await new Promise(r => setTimeout(r, retryAfter));
+                            break; // break inner key loop to go to next attempt
+                        }
+
                         if (geminiResponse.status === 400 && /api key not valid|api_key_invalid|invalid api key/i.test(errorText)) {
                             disableGeminiApiKey(geminiKey);
                         }
                     } catch (error) {
                         lastGeminiError = providerErrorText(error).slice(0, 300);
-                        console.error(`[Gemini] ${model} request failed: ${lastGeminiError}`);
+                        console.error(`[Gemini] ${geminiModel} request failed: ${lastGeminiError}`);
                         if (isInvalidGeminiKeyError(error)) {
                             disableGeminiApiKey(geminiKey);
                         }
@@ -2340,7 +2350,7 @@ UI HINT OUTPUT SAFETY:
                 await logLlmRequest(serviceClient, {
                     userId,
                     provider: 'gemini',
-                    model: geminiModelUsed,
+                    model: geminiModel,
                     intent: intentResult.intent,
                     creditAction,
                     latencyMs: totalMs,
@@ -2355,11 +2365,11 @@ UI HINT OUTPUT SAFETY:
                 return streamTextResponse(safeGeminiText, {
                     'Connection': 'keep-alive',
                     'X-Provider': 'gemini',
-                    'X-Model': geminiModelUsed,
+                    'X-Model': geminiModel,
                     'X-Response-Time': String(totalMs),
                 });
             } else {
-                console.error('[Gemini Primary] Failed to get response:', lastGeminiError);
+                console.error('[Gemini Primary] All attempts failed:', lastGeminiError);
                 return streamTextResponse("I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏");
             }
         }
