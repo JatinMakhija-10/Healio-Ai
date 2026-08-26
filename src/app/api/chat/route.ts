@@ -1848,7 +1848,7 @@ export async function POST(req: NextRequest) {
                     ? [process.env.GROQ_API_KEY]
                     : []
         );
-        if (groqKeyPool.length === 0) {
+        if (groqKeyPool.length === 0 && AI_PHASE_CONFIG.primary !== 'gemini') {
             return streamTextResponse('AI service is not configured. Please contact support.');
         }
         // Key selected per-attempt inside the retry loop (see below)
