@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
-import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
+import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, getGroqApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
 import { reserveCredits, captureCredits, releaseCredits, type AroviaCreditAction } from '@/lib/credits/server';
 import { getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
@@ -1859,15 +1859,7 @@ export async function POST(req: NextRequest) {
         const processedMessages = buildSafeWindow(messages, dynamicMaxMessages);
 
         // ── Groq key pool (supports GROQ_API_KEYS comma-separated OR single GROQ_API_KEY)
-        // Strip surrounding quotes from env var values (e.g. "key1,key2" → key1,key2)
-        const groqKeyPool: string[] = (() => {
-            const rawKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '';
-            return rawKeys
-                .replace(/^['"]+|['"]+$/g, '')   // strip outer quotes
-                .split(',')
-                .map(k => k.trim().replace(/^['"]+|['"]+$/g, ''))
-                .filter(Boolean);
-        })();
+        const groqKeyPool = getGroqApiKeys();
         if (groqKeyPool.length === 0 && AI_PHASE_CONFIG.primary !== 'gemini') {
             return streamTextResponse('AI service is not configured. Please contact support.');
         }
