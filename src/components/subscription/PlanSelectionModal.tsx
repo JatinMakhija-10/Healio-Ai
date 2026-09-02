@@ -55,7 +55,6 @@ export function PlanSelectionModal({
 
                         <div className="relative z-10 space-y-6">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold border border-teal-500/30">
-                                <Sparkles className="h-3 w-3" />
                                 {featureLocked ? `Unlock ${featureLocked}` : "Upgrade Your Health"}
                             </div>
 
@@ -69,15 +68,12 @@ export function PlanSelectionModal({
                                 <p className="text-slate-400 leading-relaxed">
                                     {isPro
                                         ? "Unlock doctor-grade analytics, clinical sandbox access, AI-assisted SOAP notes, and zero platform fees."
-                                        : "Get unlimited access to advanced AI diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family."}
+                                        : "Get unlimited access to advanced diagnosis, detailed health reports, and comprehensive wellness tracking for your whole family."}
                                 </p>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                                        <Shield className="h-5 w-5 text-teal-400" />
-                                    </div>
                                     <div>
                                         <p className="font-semibold">{isPro ? "Practice Growth" : "Comprehensive Protection"}</p>
                                         <p className="text-xs text-slate-400">
@@ -86,13 +82,10 @@ export function PlanSelectionModal({
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                                        <Zap className="h-5 w-5 text-purple-400" />
-                                    </div>
                                     <div>
                                         <p className="font-semibold">{isPro ? "Clinical Intelligence" : "Faster Answers"}</p>
                                         <p className="text-xs text-slate-400">
-                                            {isPro ? "Sandbox analysis and AI-enhanced notes" : "Instant report generation and priority support"}
+                                            {isPro ? "Sandbox analysis and doctor-enhanced notes" : "Instant report generation and priority support"}
                                         </p>
                                     </div>
                                 </div>

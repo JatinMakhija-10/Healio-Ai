@@ -11,8 +11,8 @@ export const AI_PHASE_CONFIG = {
 
     // Model Selection
     models: {
-        groq: 'groq/compound',                     // used ONLY for final diagnosis JSON
-        groqFast: 'groq/compound',                  // used for conversational Q&A turns
+        groq: 'groq/compound',                     // used for final diagnosis JSON (compound agentic model)
+        groqFast: 'groq/compound',                  // used for Q&A turns — same model, smaller token budget
         gemini: 'gemini-3.6-flash',
         geminiLite: 'gemini-3.6-flash',             // lite not available on this key
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model

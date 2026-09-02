@@ -111,4 +111,46 @@ describe('ConversationIntakeState', () => {
         expect(state.answeredFields.has('fever.temp_value')).toBe(true);
         expect(state.collectedData.get('fever.temp_value')).toBe('101F');
     });
+
+    it('correctly maps nausea to vomiting_diarrhea schema and suppresses body location and pain sensation questions', () => {
+        const schema = selectSymptomQuestionSchema('i feel nauseous since morning');
+        expect(schema.id).toBe('vomiting_diarrhea');
+
+        const state = buildConversationIntakeState([
+            { role: 'user', content: 'i feel nauseous since morning' },
+        ]);
+
+        expect(state.activeSchemaId).toBe('vomiting_diarrhea');
+        // Ensure body location ("Where in your body") is NOT queued for nausea/vomiting
+        expect(state.pendingQueue.some((field) => field.key === 'location')).toBe(false);
+        // Ensure generic pain sensation is NOT queued
+        expect(state.pendingQueue.some((field) => field.key === 'sensation')).toBe(false);
+    });
+
+    it('correctly maps eye complaints to eye_problem schema instead of body_pain', () => {
+        const eyePainSchema = selectSymptomQuestionSchema('I have pain in right eye');
+        expect(eyePainSchema.id).toBe('eye_problem');
+
+        const blurryVisionSchema = selectSymptomQuestionSchema('my vision is blurry and I see halos');
+        expect(blurryVisionSchema.id).toBe('eye_problem');
+
+        const hingedEyeSchema = selectSymptomQuestionSchema('aankh mein dard hai');
+        expect(hingedEyeSchema.id).toBe('eye_problem');
+
+        const state = buildConversationIntakeState([
+            { role: 'user', content: 'I have pain in right eye' },
+        ]);
+
+        expect(state.activeSchemaId).toBe('eye_problem');
+        // Ensure musculoskeletal red flags (numbness, inability to bear weight) are NOT in eye_problem queue
+        expect(state.pendingQueue.some((field) => field.key === 'body_pain.red_flags')).toBe(false);
+        // Ensure eye danger signs are queued instead
+        expect(state.pendingQueue.some((field) => field.key === 'eye_problem.danger_signs')).toBe(true);
+    });
+
+    it('routes musculoskeletal complaints to body_pain schema properly', () => {
+        expect(selectSymptomQuestionSchema('I have severe back pain').id).toBe('body_pain');
+        expect(selectSymptomQuestionSchema('My knee hurts').id).toBe('body_pain');
+        expect(selectSymptomQuestionSchema('shoulder pain').id).toBe('body_pain');
+    });
 });

@@ -96,7 +96,7 @@ export function InputBar({
         : "Tell Arovia what you are feeling...";
 
     return (
-        <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_28px_rgba(26,26,46,0.08)] backdrop-blur md:px-6 md:py-4">
+        <div className="shrink-0 border-t border-[#E5E3DC] bg-white/95 px-3 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(26,26,46,0.07)] backdrop-blur md:px-6 md:pt-3 md:pb-3">
             {/* Listening indicator */}
             <AnimatePresence>
                 {isRecording && (
@@ -114,7 +114,7 @@ export function InputBar({
 
             <div className="mx-auto flex max-w-3xl items-end gap-2">
                 {/* Text area */}
-                <div className="relative flex-1 rounded-[14px] border border-[#DAD7CF] bg-[#FDFBF7] shadow-sm transition-all focus-within:border-[#0F6E56] focus-within:ring-2 focus-within:ring-[#9FE1CB] md:rounded-[8px]">
+                <div className="relative flex-1 rounded-[14px] border border-[#DAD7CF] bg-[#FDFBF7] shadow-sm transition-all focus-within:border-[#0F6E56] focus-within:shadow-[0_0_0_3px_rgba(15,110,86,0.12)] md:rounded-[8px]">
                     <textarea
                         ref={textareaRef}
                         value={value}

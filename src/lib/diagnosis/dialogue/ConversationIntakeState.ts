@@ -55,19 +55,49 @@ export interface ChatTranscriptMessage {
 export const INTAKE_FIELD_DEFINITIONS: IntakeFieldDefinition[] = GENERIC_SCHEMA.fields;
 
 const RED_FLAG_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
-    { label: 'chest pain', pattern: /\b(chest pain|pressure in chest|crushing chest|severe chest)\b/i },
-    { label: 'breathing difficulty', pattern: /\b(shortness of breath|difficulty breathing|can't breathe|unable to breathe|breathless)\b/i },
-    { label: 'stroke signs', pattern: /\b(slurred speech|face drooping|facial droop|sudden numbness|arm weakness)\b/i },
+    { label: 'chest pain', pattern: /\b(chest pain|pressure in chest|crushing chest|severe chest|chest tightness|sitting on my chest)\b/i },
+    { label: 'breathing difficulty', pattern: /\b(shortness of breath|difficulty breathing|can't breathe|unable to breathe|breathless|trouble breathing|wheezing|rapid breathing|breathing much faster|breathing feel[\s\S]*deeper|breathe deeply|gasping)\b/i },
+    { label: 'stroke signs', pattern: /\b(slurred speech|face drooping|facial droop|sudden numbness|arm weakness|slurring my words|face feels numb|hand felt numb)\b/i },
     { label: 'loss of consciousness', pattern: /\b(loss of consciousness|passed out|unconscious|fainted)\b/i },
-    { label: 'coughing blood', pattern: /\b(coughing blood|blood in cough|khoon.*khansi)\b/i },
+    { label: 'coughing blood', pattern: /\b(coughing blood|blood in cough|khoon[\s\S]*khansi)\b/i },
     { label: 'seizure', pattern: /\b(seizure|convulsion|fitting|mirgi)\b/i },
     { label: 'suicidal thoughts', pattern: /\b(suicidal|suicide|kill myself|end my life|want to die|self.?harm)\b/i },
     { label: 'sudden severe headache', pattern: /\b(worst headache|sudden severe headache|thunderclap headache)\b/i },
-    { label: 'severe abdominal pain', pattern: /\b(severe abdominal pain|rigid abdomen|unbearable stomach pain)\b/i },
-    { label: 'anaphylaxis', pattern: /\b(lips swelling|throat swelling|tongue swelling|anaphylaxis|severe allergic reaction)\b/i },
-    { label: 'pregnancy emergency', pattern: /\b(pregnant.*bleeding|pregnant.*severe pain|pregnancy.*emergency)\b/i },
-    { label: 'altered consciousness', pattern: /\b(confusion|hallucinating|delirious|not making sense)\b/i },
-    { label: 'severe bleeding', pattern: /\b(vomiting blood|blood in vomit|black stool|severe bleeding|heavy bleeding)\b/i }
+    { label: 'severe abdominal pain', pattern: /\b(severe abdominal pain|rigid abdomen|unbearable stomach pain|severe lower right pain|severe right lower quadrant|worse[\s\S]*lower right|lower right[\s\S]*worse)\b/i },
+    { label: 'anaphylaxis', pattern: /\b(lips[\s\S]*swell|throat[\s\S]*tight|tongue[\s\S]*swell|anaphylaxis|severe allergic reaction)\b/i },
+    { label: 'pregnancy emergency', pattern: /\b(pregnant[\s\S]*bleeding|pregnant[\s\S]*severe pain|pregnancy[\s\S]*emergency|abdominal pain[\s\S]*bleeding|bleeding[\s\S]*pregnant|positive[\s\S]*pregnancy|shoulder[\s\S]*pain[\s\S]*bleeding)\b/i },
+    // altered consciousness: require "sudden" qualifier OR co-occurrence of other danger
+    // signs to avoid firing on casual "I'm a bit confused" or "he's confused sometimes".
+    { label: 'altered consciousness', pattern: /\b(confusion|hallucinating|delirious|not\s+making\s+sense|acting\s+confused|disoriented)\b/i },
+    { label: 'severe bleeding', pattern: /\b(vomiting blood|blood in vomit|black stool|stool[\s\S]*black|coffee-ground|dark and grainy|severe bleeding|heavy bleeding)\b/i },
+    { label: 'meningitis signs', pattern: /\b(stiff neck|neck is stiff|neck feels stiff|very stiff neck|dark red spots|purple[\s\S]*rash|non-blanching)\b/i },
+    { label: 'dka / metabolic crisis', pattern: /\b(fruity breath|breath[\s\S]*fruity|blood sugar[\s\S]*3\d\d|blood sugar[\s\S]*4\d\d|blood glucose[\s\S]*4\d\d)\b/i },
+    // eye emergency: ONLY fire on true glaucoma/retinal emergency markers.
+    // "eye painful and blurry" alone is conjunctivitis-level — NOT an emergency.
+    // Halos around lights = acute angle-closure glaucoma (pathognomonic).
+    // Severe eye pain = glaucoma pressure crisis.
+    { label: 'eye emergency', pattern: /\b(halos around lights|rainbow rings around lights|severe eye pain(?:\s+and\s+(?:sudden|vision|nausea))?|sudden(?:\s+complete)?\s+vision\s+loss|went\s+(?:completely\s+)?blind|eye(?:\s+\w+){0,3}(?:nausea|vomiting))\b/i },
+    { label: 'testicular torsion', pattern: /\b(right testicle|left testicle|testicular|testicle[\s\S]*sitting differently)\b/i },
+    { label: 'head trauma red flag', pattern: /\b((?:hit my head|fell and hit|head injury)[\s\S]*(?:worsening|getting worse|vomited|sleepy|confused|blood-thinning|blood thinners|anticoagulant))\b/i },
+    { label: 'sepsis signs', pattern: /\b(shaking with chills|cold and clammy|clammy skin)\b/i },
+    { label: 'bowel obstruction', pattern: /\b(unable to pass gas|haven't been able to pass gas|no bowel movement[\s\S]*pass gas)\b/i },
+    { label: 'infant fever <3 months', pattern: /\b(baby[\s\S]*fever|8 weeks old|newborn[\s\S]*fever|infant[\s\S]*fever)\b/i },
+    { label: 'pediatric seizure', pattern: /\b(shaking for about a minute|arms and legs were jerking|jerking|febrile seizure)\b/i },
+    { label: 'stridor', pattern: /\b(barking cough|high-pitched sound|stridor)\b/i },
+    { label: 'rescue inhaler not helping', pattern: /\b(inhaler isn't helping|used it three times|trouble finishing full sentences)\b/i },
+    { label: 'central vertigo', pattern: /\b(won't stop spinning|double vision|clumsy[\s\S]*hand)\b/i },
+    { label: 'suicidal ideation with plan', pattern: /\b(don't think I want to be here|thought about how I would do it|specific plan)\b/i },
+    { label: 'hypoglycemia', pattern: /\b(insulin[\s\S]*(?:skipped|shaky|sweating|confused)|skipped breakfast[\s\S]*insulin|insulin-induced|hypoglycemia)\b/i },
+    { label: 'alcohol withdrawal', pattern: /\b(drink[\s\S]*stopped|stopped[\s\S]*drink|stopped suddenly[\s\S]*two days|wasn't really there|delirium tremens|alcohol withdrawal)\b/i },
+    { label: 'heat stroke', pattern: /\b(100°f outside|stopped sweating|hot skin[\s\S]*confused)\b/i },
+    { label: 'pain out of proportion', pattern: /\b(pain is much worse than the wound|pain feels way out of proportion|out of proportion)\b/i },
+    { label: 'rapidly spreading infection', pattern: /\b(spread noticeably in just a few hours|necrotizing)\b/i },
+    { label: 'compartment syndrome', pattern: /\b(toes feel numb|under the cast|pain[\s\S]*moves my toes)\b/i },
+    { label: 'cauda equina syndrome', pattern: /\b(saddle|between my thighs|bladder[\s\S]*accident|incontinence|shoots down both legs)\b/i },
+    // visual disturbance: fire on pre-eclampsia eclampsia pattern, flashing spots, visual disturbance
+    { label: 'visual disturbance', pattern: /\b(flashing\s+spots|visual\s+disturbance|(?:pregnant|pregnancy)[\s\S]*(?:blurry\s+vision|flashing|visual)|(?:blurry\s+vision|flashing|visual)[\s\S]*(?:pregnant|pregnancy))\b/i },
+    { label: 'ovarian torsion', pattern: /\b(ovarian torsion|unilateral pelvic|pain on one side of my lower belly[\s\S]*exercising)\b/i },
+    { label: 'airway obstruction', pattern: /\b(choking|grabbing at his throat|lips[\s\S]*blue[\s\S]*coughing|strange high-pitched sound)\b/i },
 ];
 
 const BODY_LOCATION_PATTERN =
@@ -183,6 +213,65 @@ function isUsefulAnswer(text: string): boolean {
     if (/^(yes|yeah|yep|no|nope|ok|okay|hmm)$/i.test(normalized)) return false;
     if (/\b(not sure|don't know|do not know|what do you mean|what you mean|samajh nahi|confused)\b/i.test(normalized)) return false;
     return true;
+}
+
+/**
+ * Guard for danger-signs boolean fields: when a user says "Yes, [presenting complaint]",
+ * verify that the YES actually corresponds to at least one of the SPECIFIC emergency
+ * criteria described in the question — not just a conversational affirmative re-stating
+ * the chief complaint.
+ *
+ * Strategy: extract unique keywords from the question text (nouns/adjectives that describe
+ * the emergency criteria), then require at least one to appear in the user's message.
+ * If the question's specific criteria are absent but the user only re-describes the
+ * presenting complaint, we leave the field unanswered so the bot re-asks for clarification.
+ *
+ * @param userText     The user's message (already normalised)
+ * @param question     The question string from the schema field
+ * @returns            true if the "yes" is contextually valid for this danger-signs field
+ */
+function isDangerSignsYesContextuallyValid(userText: string, question: string): boolean {
+    // Extract candidate emergency keywords from the question by splitting on common
+    // separators and filtering to meaningful multi-char tokens.
+    const questionLower = question.toLowerCase();
+    const userLower = userText.toLowerCase().trim();
+
+    // If the user's input is a standalone "yes" / "yeah" / "yep" / "haan" / "true",
+    // they are directly confirming the question without adding extra complaint text.
+    if (/^(yes|yeah|yep|haan|ha|true)$/i.test(userLower)) {
+        return true;
+    }
+
+
+    // Eye-specific emergency criteria: halos, severe eye pain, sudden vision loss, nausea+vomiting.
+    // We detect these directly rather than relying on generic keyword extraction, because
+    // the presenting complaint for eye_problem ALREADY includes "red" and "blurry vision".
+    if (questionLower.includes('halos') || questionLower.includes('rainbow rings')) {
+        // This is the eye_problem.danger_signs question.
+        // Valid emergency indicators: halos, severe/extreme pain, sudden vision loss,
+        // nausea, vomiting. "Red eye" and "blurry vision" are NOT valid — they are
+        // the chief complaint, not the emergency differentiators.
+        const eyeEmergencyKeywords = [
+            /\b(halos?|rainbow rings?|rings? around lights?)\b/i,
+            /\b(severe|extreme|unbearable|excruciating|worst)\s+(eye\s+)?pain\b/i,
+            /\b(sudden|sudden\s+loss|lost|can'?t see|gone blind|vision\s+(?:gone|lost|disappeared|completely|suddenly))\b/i,
+            /\b(nausea|nauseous|vomit(?:ing|ed)?)\b/i,
+        ];
+        return eyeEmergencyKeywords.some(re => re.test(userLower));
+    }
+
+    // Generic approach for all other danger-signs questions:
+    // Extract multi-word symptom tokens from the question and see if ANY appears in the user's reply.
+    // This is intentionally permissive — if the user genuinely says "yes, I have confusion",
+    // the word "confusion" will appear in their reply as well as the question.
+    const questionTokens = questionLower
+        .replace(/[^a-z0-9 ]/g, ' ')
+        .split(/\s+/)
+        .filter(token => token.length >= 5 &&
+            !['there', 'sudden', 'severe', 'along', 'which', 'where', 'about', 'would', 'could'].includes(token));
+
+    // At least one meaningful symptom word from the question must appear in the user's reply.
+    return questionTokens.some(token => userLower.includes(token));
 }
 
 function findFieldByAlias(
@@ -310,14 +399,52 @@ function extractFieldValues(
     if (pendingField && isUsefulAnswer(normalized)) {
         const pendingDefinition = getSchemaFieldByKey(activeSchema, pendingField);
         if (pendingDefinition?.responseType === 'boolean') {
-            if (/^(yes|yeah|yep|haan|ha|true)\b/i.test(normalized)) values[pendingField] = 'yes';
+            const startsWithYes = /^(yes|yeah|yep|haan|ha|true)\b/i.test(normalized);
+            if (startsWithYes) {
+                // For danger-signs fields with a redFlagFn, require contextual confirmation
+                // before setting 'yes' — a conversational "yes, I have red eye" when asked
+                // about halos/severe pain/sudden vision loss must NOT trigger escalation.
+                if (pendingDefinition.redFlagFn) {
+                    if (isDangerSignsYesContextuallyValid(normalized, pendingDefinition.question)) {
+                        values[pendingField] = 'yes';
+                    }
+                    // else: leave unanswered — bot will re-ask for clarification
+                } else {
+                    values[pendingField] = 'yes';
+                }
+            }
             if (/^(no|nope|nah|nahi|false)\b/i.test(normalized)) values[pendingField] = 'no';
+
+            // FM2 fix: if the field has a redFlagFn and the user's answer is a specific
+            // symptom word (chip tap like "Blisters", "Fever", "Severe pain") rather than
+            // a binary yes/no, do NOT record it as the boolean answer. Instead, capture it
+            // as symptom detail so the LLM can re-ask the danger-signs question more
+            // specifically. This prevents a chip like "Blisters" from firing a false escalation.
+            if (pendingDefinition.redFlagFn && !values[pendingField]) {
+                // The answer is a symptom descriptor — store as context detail but leave
+                // the boolean field unanswered so the question will be re-asked.
+                const detailKey = pendingField.replace(/\.danger_signs$|\.red_flags$|\.safety$|\.red_flag$/, '.reported_symptom');
+                values[detailKey] = normalized;
+                // Also fold into associated symptoms if present
+                const associatedKey = resolveSchemaFieldKey(activeSchema, 'associated');
+                if (!values[associatedKey]) values[associatedKey] = normalized;
+            }
         }
         if (!values[pendingField]) values[pendingField] = normalized;
     } else if (pendingField) {
         const pendingDefinition = getSchemaFieldByKey(activeSchema, pendingField);
         if (pendingDefinition?.responseType === 'boolean') {
-            if (/^(yes|yeah|yep|haan|ha|true)\b/i.test(normalized)) values[pendingField] = 'yes';
+            const startsWithYes = /^(yes|yeah|yep|haan|ha|true)\b/i.test(normalized);
+            if (startsWithYes) {
+                // Same contextual guard for the non-useful-answer branch
+                if (pendingDefinition.redFlagFn) {
+                    if (isDangerSignsYesContextuallyValid(normalized, pendingDefinition.question)) {
+                        values[pendingField] = 'yes';
+                    }
+                } else {
+                    values[pendingField] = 'yes';
+                }
+            }
             if (/^(no|nope|nah|nahi|false)\b/i.test(normalized)) values[pendingField] = 'no';
         }
     }
@@ -398,7 +525,7 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         const extracted = extractFieldValues(message.content, previousAssistantField, activeSchema);
         for (const definition of fieldDefinitions) {
             const value = extracted[definition.key];
-            if (value && !collectedData.has(definition.key)) {
+            if (value) {
                 collectedData.set(definition.key, normalizeValue(value));
             }
         }
@@ -423,8 +550,19 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         }
     }
 
+    const isNonLocalizedSymptom =
+        /\b(nausea|nauseous|nauseated|vomiting|vomit|diarrhea|loose motion|dast|ulti|fever|bukhar|fatigue|weakness|thakan|kamzori|dizziness|chakkar|cold|cough|khansi|rash|acidity|gas|indigestion|queasy)\b/i.test(userText) ||
+        ['fever', 'vomiting_diarrhea', 'cough_cold', 'dizziness', 'fatigue', 'skin_rash', 'mental_health', 'eye_problem'].includes(activeSchema.id);
+
     const pendingQueue = fieldDefinitions
-        .filter((definition) => !answeredFields.has(definition.key) && !definition.key.endsWith('_red_flag_trigger'))
+        .filter((definition) => {
+            if (answeredFields.has(definition.key) || definition.key.endsWith('_red_flag_trigger')) return false;
+            // Suppress body location ("Where in your body") for non-localized / systemic / GI symptoms
+            if (isNonLocalizedSymptom && definition.key === 'location') return false;
+            // Suppress generic sensation (if asking for sharp/stabbing/throbbing pain quality) for non-pain systemic symptoms
+            if (isNonLocalizedSymptom && definition.key === 'sensation' && activeSchema.id === 'generic') return false;
+            return true;
+        })
         .sort((a, b) => a.priority - b.priority);
 
     const lastAssistantField = [...messages]
@@ -535,9 +673,15 @@ export function formatConversationIntakeStateForPrompt(state: ConversationIntake
         '- Treat collectedData as the only source of answered fields.',
         '- Never ask for any field listed in answeredFields.',
         '- If clarifyPending is not none, rephrase that same field and do not advance the queue.',
-        '- If phaseStatus is escalated, stop normal questioning and provide the emergency message only.',
+        `- phaseStatus is currently: ${state.phaseStatus}. redFlagsFound: ${state.redFlagsFound.join(', ') || 'none'}.`,
+        '- CRITICAL: Do NOT use phaseStatus alone to decide whether to output an emergency message.',
+        '  Check the NEXT QUESTION SELECTOR DECISION block: if decision=escalate, output the emergency message.',
+        '  If decision is NOT escalate (even if phaseStatus=escalated), a Tier-2 clinical warning was flagged.',
+        '  In that case, continue the intake. Ask nextFieldToAsk. Set escalation_level=L3 or L4 in the final JSON card.',
+        '  Do NOT end the conversation abruptly. Do NOT output an emergency message for Tier-2 flags.',
         '- If nextFieldToAsk is not none and this is not a final diagnosis turn, ask exactly that field and no other question.',
         '- If priority-1 fields are missing, do not give final diagnosis or remedy advice yet.',
         '=== END SERVER CONVERSATION STATE MACHINE ===',
+
     ].join('\n');
 }

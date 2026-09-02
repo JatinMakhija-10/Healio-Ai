@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { rateLimitCheck } from '@/lib/api/rateLimit';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin, AI_PHASE_CONFIG, getGeminiApiKeys, disableGeminiApiKey } from '@/lib/ai/config';
+import { reserveCredits, captureCredits, releaseCredits, type AroviaCreditAction } from '@/lib/credits/server';
 import { getParallelEmbeddings } from '@/lib/ai/jina';
 import { buildMedicalHistoryContext } from '@/lib/chat/consultationHistory';
 import { logLatency, alertIfSlow, SpanCollector } from '@/lib/chat/latencyMonitor';
@@ -42,13 +43,19 @@ const EMERGENCY_PATTERNS: RegExp[] = [
     /\bchest\s*(?:pain|pressure|tightness)\b/i,
     /\bshort(?:ness)?\s+of\s+breath\b/i,
     /\bdifficulty\s+breathing\b/i,
-    /\bsudden\s+(?:severe\s+)?headache\b/i,
+    // "sudden headache" alone is too common (exercise, sneezing, etc.).
+    // Require thunderclap/worst-ever qualifier for a true subarachnoid emergency.
+    /\b(?:worst|thunderclap|sudden\s+severe|sudden\s+extreme)\s+headache\b/i,
     /\bloss\s+of\s+consciousness\b/i,
-    /\bfaint(?:ed|ing)?\b/i,
+    // Fainting alone is common (dehydration, heat, anxiety). Require a cardiac/
+    // respiratory co-occurring term in the same message for hard escalation.
+    /\b(?:faint(?:ed|ing)?|passed\s+out)\b.{0,80}\b(?:chest|heart|breath|pulse|palpitat|arm|jaw)\b/i,
+    /\b(?:chest|heart|breath|pulse|palpitat|arm|jaw)\b.{0,80}\b(?:faint(?:ed|ing)?|passed\s+out)\b/i,
     /\bcough(?:ing)?\s+blood\b/i,
     /\bslurred?\s+speech\b/i,
     /\bfacial?\s+droop(?:ing)?\b/i,
-    /\bsevere\s+abdominal\s+pain\b/i,
+    // "severe abdominal pain" requires a true compound qualifier
+    /\b(?:unbearable|excruciating|worst)\s+(?:abdominal|stomach|belly)\s+pain\b/i,
     /\b(?:baby|infant|newborn).{0,40}\b(?:high\s+)?fever\b/i,
     /\b(?:suicidal|suicide|kill myself|end my life)\b/i,
     /\bseizure\b/i,
@@ -137,6 +144,11 @@ function isInvalidGeminiKeyError(error: unknown): boolean {
            text.includes('api_key_invalid') || 
            text.includes('invalid api key') ||
            text.includes('key is invalid');
+}
+
+function cleanLlmText(text: string): string {
+    if (!text) return '';
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 }
 
 // ── RAG: Homeopathic (Boericke's Materia Medica) ───────────────────────────
@@ -855,45 +867,27 @@ function creditActionForTurn(intent: AroviaIntentResult, userTurns: number, isFi
     return 'standard_chat';
 }
 
-async function consumeCreditsBeforeAi(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serviceClient: any,
+async function reserveCreditsBeforeAi(
     userId: string,
-    action: string
-): Promise<Response | null> {
-    const { data, error } = await serviceClient.rpc('consume_arovia_credits', {
-        p_user_id: userId,
-        p_action: action,
-    });
+    action: AroviaCreditAction
+): Promise<{ reservationId?: string; response?: Response }> {
+    const result = await reserveCredits(userId, action);
 
-    if (error) {
-        const message = String(error.message || '');
-        if (/consume_arovia_credits|function .* does not exist|schema cache/i.test(message)) {
-            console.warn('[credits] consume_arovia_credits is not available yet; falling back to legacy usage gate.');
-            return null;
-        }
-
-        console.error('[credits] consume_arovia_credits failed:', message);
-        return new Response(JSON.stringify({ error: 'credits_check_failed' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+    if (!result.success && result.error === 'insufficient_credits') {
+        return {
+            response: new Response(JSON.stringify({
+                error: 'insufficient_credits',
+                balance: result.balance ?? 0,
+                required: result.required ?? 1,
+                plan: result.plan ?? 'free',
+            }), {
+                status: 402,
+                headers: { 'Content-Type': 'application/json' },
+            })
+        };
     }
 
-    const result = typeof data === 'string' ? JSON.parse(data) : data;
-    if (result?.success === false || result?.error === 'insufficient_credits') {
-        return new Response(JSON.stringify({
-            error: 'insufficient_credits',
-            balance: result?.balance ?? result?.available ?? 0,
-            required: result?.required ?? 1,
-            plan: result?.plan ?? 'free',
-        }), {
-            status: 402,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    return null;
+    return { reservationId: result.reservation_id };
 }
 
 async function logLlmRequest(
@@ -982,12 +976,18 @@ QUESTION PRIORITY (ask ONE at a time, skip if already answered):
   Q1: chief_complaint   — What is the main problem?
   Q2: duration          — How long has this been happening?
   Q3: severity          — How bad is it on a scale of 1-10?
-  Q4: location          — Where exactly in the body?
-  Q5: sensation         — What does the discomfort or symptom feel like? Use simple layman words and do not assume it is pain.
+  Q4: location          — Where exactly in the body? (PAIN ONLY - skip for nausea, vomiting, fever, fatigue, dizziness, cold, rash)
+  Q5: sensation         — What does the discomfort or symptom feel like? Use symptom-relevant words and NEVER assume it is pain.
   Q6: associated        — Any fever, nausea, dizziness, or other symptoms alongside?
   Q7: aggravation       — What makes it worse?
   Q8: amelioration      — What gives relief?
   Q9: history           — How did it start? Any stress, poor sleep, dietary change?
+
+SYMPTOM-SPECIFIC APPLICABILITY RULES (CRITICAL):
+- NEVER ask Q4 location ("Where in your body") or Q5 pain descriptors ("sharp/stabbing/throbbing") for non-pain, GI, or systemic symptoms (nausea, vomiting, fever, fatigue, dizziness, diarrhea, cold, rash).
+- For nausea, vomiting, or stomach upset, focus strictly on duration, frequency, food triggers, ability to keep ORS/water down, and dehydration red flags.
+- Q4 location is ONLY for localized physical pain (back pain, joint pain, chest pain, headache).
+- Q5 sensation pain-quality options are ONLY for pain conditions. For non-pain symptoms, use symptom-relevant options (e.g., dry vs wet for cough, queasy vs vomiting for nausea) or skip Q5.
 
 PROFILE-AWARE SKIP RULES:
   - If PATIENT PROFILE provides the patient's age, gender, conditions, medications — do NOT ask about these. You already know.
@@ -1086,6 +1086,7 @@ ALLERGY SAFETY (HIGHEST PRIORITY AFTER EMERGENCY):
 - Never ask a question whose answer was already given earlier in the conversation.
 - Never ask about information already present in the PATIENT PROFILE (age, gender, conditions, medications, allergies).
 - Never respond in Hindi or Hinglish when the user wrote in English. This is the most critical language rule.
+- Never write escalation-level codes like [L1], [L2], [L3], [L4], or [L5] in conversational text. These codes belong ONLY inside the structured JSON block. If they appear in plain text the user will see them literally as "[L4]" — this is forbidden.
 
 [STATIC RULES (ALWAYS IN SYSTEM PROMPT)]
 - Ask exactly one question per turn. Never bundle two questions in one reply.
@@ -1546,18 +1547,30 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
     const collectedSummary = formatCollectedSummary(state);
     const summaryForUser = collectedSummary || `Main concern: ${concern}`;
     const hasRedFlags = state.redFlagsFound.length > 0;
-    const severity = hasRedFlags ? 'severe' : inferFallbackSeverity(state);
+    const severity = inferFallbackSeverity(state);
+    // L4 requires BOTH confirmed red flags AND severity at severe/high level.
+    // A mild-severity presentation with a caution flag gets L3 (doctor within days),
+    // not L4 (same-day urgent care). This prevents conjunctivitis and similar
+    // common conditions from being escalated to the emergency tier.
+    const escalationLevel = (hasRedFlags && severity === 'severe') ? 'L4'
+        : hasRedFlags ? 'L3'
+        : severity === 'severe' ? 'L3'
+        : 'L2';
+    const isUrgent = escalationLevel === 'L4';
+    const needsConsult = escalationLevel === 'L3' || isUrgent;
     const confidence = Math.max(55, Math.min(78, 45 + state.answeredFields.size * 5));
     const schemaLabel = state.activeSchemaLabel || 'symptom';
-    const safeSelfCare = !hasRedFlags && severity !== 'severe';
+    const safeSelfCare = !isUrgent && severity !== 'severe';
 
     return {
         id: `fallback-${state.activeSchemaId}`,
         concern_summary: `Based on what you shared, this fits a ${schemaLabel.toLowerCase()} pattern that should be monitored carefully. This is cautious guidance, not a confirmed diagnosis.`,
-        escalation_level: hasRedFlags || severity === 'severe' ? 'L4' : 'L2',
-        escalation_action: hasRedFlags || severity === 'severe'
+        escalation_level: escalationLevel,
+        escalation_action: isUrgent
             ? 'Please seek same-day medical care, especially if symptoms worsen or any danger sign appears.'
-            : '',
+            : needsConsult
+                ? 'Please see a doctor within the next 1-2 days to confirm the diagnosis and rule out other causes.'
+                : '',
         name: `Likely ${schemaLabel.toLowerCase()} pattern`,
         description: `Key details considered: ${summaryForUser}. This assessment uses only the information collected in this chat and should be confirmed by a qualified practitioner if symptoms persist or worsen.`,
         severity,
@@ -1590,13 +1603,17 @@ function buildFallbackDiagnosisCard(state: ConversationIntakeState) {
                 evidence_label: 'Common self-care',
             },
         ] : [],
-        care_plan: hasRedFlags || severity === 'severe'
+        care_plan: isUrgent
             ? 'Do not rely on home care alone. Arrange same-day medical review and monitor breathing, alertness, hydration, and fever pattern.'
-            : 'Rest, hydrate, monitor temperature and symptoms, and avoid heavy meals. If symptoms worsen, persist, or new danger signs appear, seek medical care.',
+            : needsConsult
+                ? 'Rest and monitor your symptoms carefully. Please book an appointment to see a doctor within the next 1-2 days, or sooner if symptoms worsen.'
+                : 'Rest, hydrate, monitor temperature and symptoms, and avoid heavy meals. If symptoms worsen, persist, or new danger signs appear, seek medical care.',
         lifestyle_advice: ['Keep notes on temperature, vomiting frequency, hydration, and any worsening symptoms.'],
-        when_to_consult: hasRedFlags || severity === 'severe'
+        when_to_consult: isUrgent
             ? 'Seek medical care today.'
-            : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
+            : needsConsult
+                ? 'See a doctor within 1-2 days. Go sooner or to an urgent care centre if symptoms worsen significantly.'
+                : 'Consult a doctor if symptoms do not improve within 24-48 hours, vomiting continues, fever rises, dehydration appears, or you feel worse.',
         practitioner_prep: `Share this clearly: ${summaryForUser}. ${practitionerCheckForSchema(state.activeSchemaId)}`,
         red_flags: [
             ...state.redFlagsFound,
@@ -1653,6 +1670,7 @@ export async function POST(req: NextRequest) {
     );
 
     const processRequest = async (): Promise<Response> => {
+        let reservationId: string | undefined;
         try {
         // ── Rate limit: 20 req / 60 s per IP ─────────────────────────────────────
         const limited = rateLimitCheck(req, 'chat', 20, 60_000);
@@ -1841,13 +1859,15 @@ export async function POST(req: NextRequest) {
         const processedMessages = buildSafeWindow(messages, dynamicMaxMessages);
 
         // ── Groq key pool (supports GROQ_API_KEYS comma-separated OR single GROQ_API_KEY)
-        const groqKeyPool: string[] = (
-            process.env.GROQ_API_KEYS
-                ? process.env.GROQ_API_KEYS.split(',').map(k => k.trim()).filter(Boolean)
-                : process.env.GROQ_API_KEY
-                    ? [process.env.GROQ_API_KEY]
-                    : []
-        );
+        // Strip surrounding quotes from env var values (e.g. "key1,key2" → key1,key2)
+        const groqKeyPool: string[] = (() => {
+            const rawKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '';
+            return rawKeys
+                .replace(/^['"]+|['"]+$/g, '')   // strip outer quotes
+                .split(',')
+                .map(k => k.trim().replace(/^['"]+|['"]+$/g, ''))
+                .filter(Boolean);
+        })();
         if (groqKeyPool.length === 0 && AI_PHASE_CONFIG.primary !== 'gemini') {
             return streamTextResponse('AI service is not configured. Please contact support.');
         }
@@ -1959,8 +1979,8 @@ export async function POST(req: NextRequest) {
             (intentResult.intent === 'symptom_query' && userTurns >= 3);
 
         const groqModel = needsBalancedModel
-            ? AI_PHASE_CONFIG.models.groq        // llama-3.3-70b-versatile — rich diagnosis
-            : AI_PHASE_CONFIG.models.groqFast;   // llama-3.1-8b-instant — fast Q&A
+            ? AI_PHASE_CONFIG.models.groq        // groq/compound — rich diagnosis
+            : AI_PHASE_CONFIG.models.groqFast;   // groq/compound-mini — fast & precise Q&A
 
         const maxTokensForTurn = isFinalTurn ? 4096 : 1500;
 
@@ -1978,9 +1998,10 @@ export async function POST(req: NextRequest) {
             /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
                 .test(lastUserMsg)
         );
-        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched);
-        const creditGateResponse = await consumeCreditsBeforeAi(serviceClient, userId, creditAction);
-        if (creditGateResponse) return creditGateResponse;
+        const creditAction = creditActionForTurn(intentResult, userTurns, isFinalTurn, ragWillBeFetched) as AroviaCreditAction;
+        const creditReserve = await reserveCreditsBeforeAi(userId, creditAction);
+        if (creditReserve.response) return creditReserve.response;
+        reservationId = creditReserve.reservationId;
 
         // ── RAG gating ──────────────────────────────────────────────────────
         let ragContext = '';
@@ -2356,8 +2377,12 @@ UI HINT OUTPUT SAFETY:
                     latencyMs: totalMs,
                 });
 
+                if (reservationId) {
+                    await captureCredits(reservationId);
+                }
+
                 const safeGeminiText = ensureFinalDiagnosisPayload(
-                    geminiText,
+                    cleanLlmText(geminiText),
                     isFinalTurn,
                     conversationIntakeState
                 );
@@ -2370,6 +2395,9 @@ UI HINT OUTPUT SAFETY:
                 });
             } else {
                 console.error('[Gemini Primary] All attempts failed:', lastGeminiError);
+                if (reservationId) {
+                    await releaseCredits(reservationId, 'gemini_primary_failed').catch(() => null);
+                }
                 return streamTextResponse("I'm experiencing high demand right now. Please try sending your message again in a few seconds. 🙏");
             }
         }
@@ -2506,7 +2534,8 @@ UI HINT OUTPUT SAFETY:
 
                         if (geminiResponse.ok) {
                             const geminiData = await geminiResponse.json();
-                            geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            const rawGeminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            geminiText = cleanLlmText(rawGeminiText);
                             geminiSucceeded = true;
                             geminiModelUsed = model;
                             break;
@@ -2560,7 +2589,8 @@ UI HINT OUTPUT SAFETY:
 
                         if (rescueResponse.ok) {
                             const rescueData = await rescueResponse.json();
-                            const rescueText = rescueData.choices?.[0]?.message?.content || '';
+                            const rawRescueText = rescueData.choices?.[0]?.message?.content || '';
+                            const rescueText = cleanLlmText(rawRescueText);
                             if (rescueText) {
                                 const safeRescueText = ensureFinalDiagnosisPayload(
                                     rescueText,
@@ -2604,6 +2634,10 @@ UI HINT OUTPUT SAFETY:
                 latencyMs: Date.now() - requestStart,
             });
 
+            if (reservationId) {
+                await captureCredits(reservationId);
+            }
+
             return streamTextResponse(safeGeminiText, {
                 'X-Provider': 'gemini',
                 'X-Model': geminiModelUsed,
@@ -2611,11 +2645,15 @@ UI HINT OUTPUT SAFETY:
         }
 
         const groqData = await groqResponse.json();
-        const groqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        const rawGroqText = groqData.choices?.[0]?.message?.content?.trim() || '';
+        const groqText = cleanLlmText(rawGroqText);
         const groqFinishReason = groqData.choices?.[0]?.finish_reason || '';
 
         if (!groqText) {
             console.error('[Groq] Empty completion payload:', JSON.stringify(groqData).slice(0, 500));
+            if (reservationId) {
+                await releaseCredits(reservationId, 'empty_payload');
+            }
             return streamTextResponse("I'm having trouble forming a complete reply right now. Please send that once more and I will continue carefully.", {
                 'X-Provider': 'groq',
                 'X-Model': groqModel,
@@ -2625,6 +2663,9 @@ UI HINT OUTPUT SAFETY:
 
         if (groqFinishReason === 'length') {
             console.warn('[Groq] Completion hit token limit; returning retry-safe message.');
+            if (reservationId) {
+                await captureCredits(reservationId);
+            }
             if (isFinalTurn) {
                 return streamTextResponse(
                     ensureFinalDiagnosisPayload('', true, conversationIntakeState),
@@ -2656,6 +2697,10 @@ UI HINT OUTPUT SAFETY:
             latencyMs: totalMs,
         });
 
+        if (reservationId) {
+            await captureCredits(reservationId);
+        }
+
         const safeGroqText = ensureFinalDiagnosisPayload(
             groqText,
             isFinalTurn,
@@ -2672,6 +2717,9 @@ UI HINT OUTPUT SAFETY:
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (innerError: any) {
             console.error('[chat/route] Inner error:', innerError);
+            if (reservationId) {
+                await releaseCredits(reservationId, 'inner_error').catch(() => null);
+            }
             return streamTextResponse("Something went wrong on my end. Please try again in a moment. 🙏");
         }
     };

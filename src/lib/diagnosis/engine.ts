@@ -93,12 +93,19 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
     // ================== CARDIAC EMERGENCIES ==================
 
     // 1a. Heart Attack - Classic presentation
-    if (allText.includes("chest") && (allText.includes("sweat") || allText.includes("arm") || allText.includes("crushing") || allText.includes("pressure"))) {
+    // Requires CHEST + (crushing/squeezing/pressure/tightness) AND at least one associated sign
+    // Prevents false positives from e.g. "arm pain + chest congestion"
+    const hasChestPressureQuality = allText.includes("crushing") || allText.includes("squeezing") || allText.includes("pressure") || allText.includes("tightness") || allText.includes("heavy");
+    const hasClassicAcsAssociation = allText.includes("sweat") || allText.includes("left arm") || allText.includes("jaw pain") || allText.includes("short of breath") || allText.includes("shortness of breath");
+    if (allText.includes("chest") && hasChestPressureQuality && hasClassicAcsAssociation) {
         alerts.push("🚨 CARDIAC EMERGENCY: Potential heart attack. Call 911 immediately. Do not drive yourself.");
     }
 
     // 1b. Heart Attack - Atypical (especially in women)
-    if ((allText.includes("jaw") || allText.includes("back")) && allText.includes("pain") && (allText.includes("nausea") || allText.includes("sweat") || allText.includes("short of breath"))) {
+    // Must combine jaw/back pain WITH sweat OR breathlessness — back pain + nausea alone is not enough
+    if ((allText.includes("jaw") || allText.includes("back")) && allText.includes("pain") &&
+        (allText.includes("sweat") || allText.includes("short of breath") || allText.includes("shortness of breath")) &&
+        allText.includes("chest")) {
         alerts.push("🚨 CARDIAC EMERGENCY: Atypical heart attack symptoms. Call 911 immediately.");
     }
 
@@ -117,7 +124,10 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
     }
 
     // 2b. Meningitis
-    if (allText.includes("head") && allText.includes("neck") && (allText.includes("stiff") || allText.includes("severe"))) {
+    // Requires "stiff neck" or "neck stiffness" as a phrase — "neck" + "severe" alone is too common
+    // (e.g. severe neck pain from muscle strain would otherwise trigger this)
+    const hasStiffNeck = allText.includes("stiff neck") || allText.includes("neck stiffness") || allText.includes("cannot bend neck") || allText.includes("can't bend neck");
+    if ((allText.includes("fever") || allText.includes("headache")) && hasStiffNeck) {
         alerts.push("🚨 MENINGITIS RISK: Potential meningitis. Seek emergency care immediately.");
     }
 
@@ -156,8 +166,11 @@ export function scanRedFlags(symptoms: UserSymptomData): string[] {
         alerts.push("🚨 ANAPHYLAXIS RISK: Severe allergic reaction. Use EpiPen if available. Call 911 immediately.");
     }
 
-    if (allText.includes("throat") && allText.includes("swelling")) {
-        alerts.push("🚨 AIRWAY EMERGENCY: Throat swelling can be life-threatening. Call 911 immediately.");
+    // Throat swelling is only an airway emergency when breathing is compromised
+    // Simple tonsil swelling or sore throat does NOT qualify
+    if (allText.includes("throat") && allText.includes("swelling") &&
+        (allText.includes("breath") || allText.includes("can't swallow") || allText.includes("drooling") || allText.includes("stridor"))) {
+        alerts.push("🚨 AIRWAY EMERGENCY: Throat swelling with breathing difficulty can be life-threatening. Call 911 immediately.");
     }
 
     // ================== TRAUMA EMERGENCIES ==================

@@ -56,18 +56,54 @@ const scenarioCards = [
   },
 ];
 
-const chatMessages = [
+const timelineEvents = [
   {
-    from: "user",
-    text: "Bacche ko shaam se fever hai. Ghar par abhi kya safe hai?",
+    date: "Today · 2:14 AM",
+    type: "triage",
+    badge: "L1 · Routine",
+    badgeColor: "#0F6E56",
+    badgeBg: "#E1F5EE",
+    icon: "🌿",
+    title: "Fever — Home Care Advised",
+    subtitle: "Child · 4 yrs · 100.2°F",
+    detail: "Tulsi kadha, ORS fluids, light clothing. Monitor every 4h. Seek care if >103°F or breathing changes.",
+    tag: "Confidence 88%",
   },
   {
-    from: "arovia",
-    text: "Temperature note karein, fluids/ORS dete rahein, aur light clothing rakhein. I can explain home remedies and traditional care, but breathing trouble, severe weakness, or very high fever needs a doctor urgently.",
+    date: "Yesterday · 8:30 PM",
+    type: "prescription",
+    badge: "Rx Logged",
+    badgeColor: "#5B4EDD",
+    badgeBg: "#EDEAFF",
+    icon: "💊",
+    title: "Paracetamol 250mg",
+    subtitle: "Prescribed · Dr. Meera Iyer",
+    detail: "Every 6h as needed. Avoid NSAIDs. Full course completed — no recurrence noted.",
+    tag: "Course complete",
   },
   {
-    from: "arovia",
-    text: "Age, current temperature, aur fever kitne ghante se hai batayein. I use source-backed scoring, not assumptions, to ask the next question.",
+    date: "3 days ago · 11:00 AM",
+    type: "lab",
+    badge: "Lab Result",
+    badgeColor: "#C07000",
+    badgeBg: "#FFF3CD",
+    icon: "🧪",
+    title: "CBC Report — Normal Range",
+    subtitle: "Uploaded & AI-analysed",
+    detail: "Haemoglobin 11.8 g/dL · WBC within range · Platelets normal. No follow-up required.",
+    tag: "All clear",
+  },
+  {
+    date: "1 week ago · 6:45 PM",
+    type: "wellness",
+    badge: "Prakriti Scan",
+    badgeColor: "#0F6E56",
+    badgeBg: "#E1F5EE",
+    icon: "☀️",
+    title: "Vikriti Check — Vata Imbalance",
+    subtitle: "Seasonal routine update",
+    detail: "Warm sesame oil massage, ginger tea mornings, reduce cold foods. Reassess in 14 days.",
+    tag: "Routine updated",
   },
 ];
 
@@ -239,46 +275,65 @@ function SectionHeader({
   );
 }
 
-function ChatDemo() {
+function HealthTimeline() {
   return (
-    <div className="mx-auto max-w-md rounded-[8px] border border-[#DAD7CF] bg-white p-3 shadow-sm">
-      <div className="mb-3 flex items-center justify-between border-b border-[#E5E3DC] pb-3">
-        <div className="flex items-center gap-2">
+    <div className="mx-auto w-full max-w-md">
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           <AroviaMark className="size-9 rounded-[8px]" />
           <div>
-            <p className="text-sm font-bold text-[#1C1C1E]">Arovia</p>
-            <p className="text-xs text-[#6B6B6B]">Usually replies in seconds</p>
+            <p className="text-sm font-bold text-[#1C1C1E]">Health Timeline</p>
+            <p className="text-xs text-[#6B6B6B]">Family · All members · Last 7 days</p>
           </div>
         </div>
-        <div className="rounded-full bg-[#E1F5EE] px-3 py-1 text-xs font-bold text-[#0F6E56]">
-          Safe next steps
+        <div className="flex items-center gap-1.5 rounded-full bg-[#E1F5EE] px-3 py-1 text-[11px] font-bold text-[#0F6E56]">
+          <span className="inline-flex size-1.5 rounded-full bg-[#0F6E56]" />
+          Live
         </div>
       </div>
 
-      <div className="space-y-3">
-        {chatMessages.map((message, index) => (
-          <div
-            className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}
-            key={`${message.from}-${index}`}
+      {/* Timeline */}
+      <div className="relative space-y-0">
+        {/* Vertical line */}
+        <div className="absolute left-[19px] top-4 bottom-4 w-px bg-gradient-to-b from-[#9FE1CB] via-[#9FE1CB]/50 to-transparent" />
+
+        {timelineEvents.map((event, i) => (
+          <motion.div
+            key={event.title}
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1, duration: 0.4, ease: "easeOut" }}
+            className="relative flex gap-4 pb-4"
           >
-            <div
-              className={`max-w-[82%] rounded-[8px] px-4 py-3 text-sm leading-6 ${
-                message.from === "user"
-                  ? "bg-[#1A1A2E] text-white"
-                  : "bg-[#F7F6F2] text-[#1C1C1E]"
-              }`}
-            >
-              {message.text}
+            {/* Icon node */}
+            <div className="relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white bg-[#F7F6F2] shadow-sm text-base">
+              {event.icon}
             </div>
-          </div>
+
+            {/* Card */}
+            <div className="flex-1 rounded-[10px] border border-[#E5E3DC] bg-white p-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_4px_20px_rgba(0,0,0,0.09)]">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9B9B9B]">{event.date}</p>
+                  <p className="mt-0.5 text-sm font-bold leading-snug text-[#1A1A2E]">{event.title}</p>
+                  <p className="text-xs text-[#6B6B6B]">{event.subtitle}</p>
+                </div>
+                <span
+                  className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                  style={{ color: event.badgeColor, background: event.badgeBg }}
+                >
+                  {event.badge}
+                </span>
+              </div>
+              <p className="text-xs leading-[1.6] text-[#555555]">{event.detail}</p>
+              <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-[#E5E3DC] bg-[#FDFBF7] px-2 py-0.5">
+                <CheckCircle2 className="size-3 text-[#0F6E56]" />
+                <span className="text-[10px] font-semibold text-[#0F6E56]">{event.tag}</span>
+              </div>
+            </div>
+          </motion.div>
         ))}
-        <div className="flex justify-start">
-          <div className="flex min-h-12 items-center gap-1 rounded-[8px] bg-[#F7F6F2] px-4">
-            <span className="size-2 animate-pulse rounded-full bg-[#0F6E56]" />
-            <span className="size-2 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:120ms]" />
-            <span className="size-2 animate-pulse rounded-full bg-[#0F6E56] [animation-delay:240ms]" />
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -589,24 +644,25 @@ export default function LandingPage() {
       </section>
 
       <section className="py-16">
-        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
-          <ChatDemo />
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
+          <HealthTimeline />
 
           <div className="mx-auto max-w-xl text-center lg:text-left">
+            <p className="mb-3 text-sm font-bold uppercase tracking-normal text-[#0F6E56]">Your complete health story</p>
             <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
-              Home remedies feel safer when the limits are clear.
+              Every health moment, organised in one place.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#555555]">
-              Arovia brings Ayurvedic care, homeopathic context, kadha-style household routines, and practical next steps into one calm explanation, while keeping doctor signals visible when symptoms may need professional care.
+              Arovia logs every triage, prescription, lab result, and Ayurvedic wellness routine into a single living timeline — so your family's health story is always clear, connected, and never lost.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[8px] border border-[#C8E7DA] bg-[#E1F5EE] p-4">
-                <p className="text-sm font-bold text-[#0F6E56]">Ayurvedic home care</p>
-                <p className="mt-1 text-sm leading-6 text-[#555555]">Plain remedies and routines with clear safety limits.</p>
+                <p className="text-sm font-bold text-[#0F6E56]">Diagnoses & Lab reports</p>
+                <p className="mt-1 text-sm leading-6 text-[#555555]">AI-read reports with plain-language summaries for every family member.</p>
               </div>
               <div className="rounded-[8px] border border-[#DAD7CF] bg-white p-4">
-                <p className="text-sm font-bold text-[#1A1A2E]">Homeopathic context</p>
-                <p className="mt-1 text-sm leading-6 text-[#555555]">Traditional options are framed with evidence and caution.</p>
+                <p className="text-sm font-bold text-[#1A1A2E]">Prescriptions & Wellness</p>
+                <p className="mt-1 text-sm leading-6 text-[#555555]">Medicines, Ayurvedic routines, and doctor notes — all in one feed.</p>
               </div>
             </div>
           </div>

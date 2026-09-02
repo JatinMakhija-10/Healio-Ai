@@ -26,12 +26,65 @@ const FIELD_ALIAS_BY_SCHEMA_KEY: Record<string, IntakeFieldKey[]> = {
     'abdominal_pain.duration': ['duration'],
     'cough_cold.duration': ['duration'],
     'vomiting_diarrhea.duration': ['duration'],
+    'vomiting_diarrhea.severity': ['severity'],
     'skin_rash.duration': ['duration'],
     'dizziness.duration': ['duration'],
     'fatigue.duration': ['duration'],
     'mental_health.duration': ['duration'],
+    'eye_problem.duration': ['duration'],
     'body_pain.duration': ['duration'],
 };
+
+// ── Tiered Red Flag System ────────────────────────────────────────────────────
+//
+// TIER 1 — HARD STOP: True life-threatening emergencies where seconds count.
+// These immediately terminate the chat and send the emergency number message.
+// Only patterns that unambiguously require 112/911 belong here.
+//
+// TIER 2 — SOFT ESCALATE: Clinical warning signs that need professional review
+// (same-day or urgent) but NOT immediate emergency services. The conversation
+// continues; the LLM sets escalation_level to L3 or L4 in the final card.
+//
+const TIER_1_HARD_STOP_FLAGS = new Set([
+    'chest pain',
+    'breathing difficulty',
+    'stroke signs',
+    'loss of consciousness',
+    'coughing blood',
+    'seizure',
+    'suicidal thoughts',
+    'sudden severe headache',
+    'severe abdominal pain',
+    'anaphylaxis',
+    'pregnancy emergency',
+    'altered consciousness',
+    'severe bleeding',
+    'meningitis signs',
+    'dka / metabolic crisis',
+    'eye emergency',
+    'testicular torsion',
+    'head trauma red flag',
+    'sepsis signs',
+    'bowel obstruction',
+    'infant fever <3 months',
+    'pediatric seizure',
+    'stridor',
+    'rescue inhaler not helping',
+    'central vertigo',
+    'suicidal ideation with plan',
+    'hypoglycemia',
+    'alcohol withdrawal',
+    'heat stroke',
+    'pain out of proportion',
+    'rapidly spreading infection',
+    'compartment syndrome',
+    'cauda equina syndrome',
+    'visual disturbance',
+    'ovarian torsion',
+    'airway obstruction',
+]);
+
+
 
 function parseDurationDays(value: string | undefined): number | null {
     if (!value) return null;
@@ -106,13 +159,30 @@ function getField(state: ConversationIntakeState, key: IntakeFieldKey): IntakeFi
 }
 
 export function selectNextQuestionDecision(state: ConversationIntakeState): NextQuestionDecision {
-    if (state.phaseStatus === 'escalated' || state.redFlagsFound.length > 0) {
-        return {
-            type: 'escalate',
-            field: null,
-            reason: `Red flag detected: ${state.redFlagsFound.join(', ') || 'clinical red flag'}`,
-            stopQuestioning: true,
-        };
+    // ── Tiered escalation check ───────────────────────────────────────────────
+    // Only Tier 1 flags hard-stop the conversation. Tier 2 flags (eye emergency,
+    // altered consciousness, blisters, etc.) allow intake to continue — the LLM
+    // sets L3/L4 in the final card using the phaseStatus + redFlagsFound context.
+    if (state.redFlagsFound.length > 0) {
+        const hardStopFlag = state.redFlagsFound.find((flag) =>
+            TIER_1_HARD_STOP_FLAGS.has(flag) ||
+            flag.endsWith('.danger_signs') ||
+            flag.endsWith('_red_flag_trigger') ||
+            flag.endsWith('.red_flags') ||
+            state.fieldDefinitions.some((f) => f.key === flag && Boolean(f.redFlagFn))
+        );
+        if (hardStopFlag) {
+            return {
+                type: 'escalate',
+                field: null,
+                reason: `Critical red flag detected: ${hardStopFlag}`,
+                stopQuestioning: true,
+            };
+        }
+        // Tier 2: clinical warning flags present — continue intake, note in log.
+        // phaseStatus will be 'escalated' in the state but the decision is NOT
+        // 'escalate', so the route.ts will proceed to the LLM with the state context.
+        console.log(`[NextQuestionSelector] Tier-2 soft flag(s): ${state.redFlagsFound.join(', ')} — continuing intake (LLM should use L3/L4).`);
     }
 
     if (state.clarifyPending) {
@@ -181,6 +251,10 @@ export function formatNextQuestionDecisionForPrompt(decision: NextQuestionDecisi
         '- If decision is ask_required, ask exactly that required field.',
         '- If decision is ask_contextual, ask exactly that schema-specific contextual field.',
         '- If decision is summarize, stop asking questions and provide a concise structured summary with likely possibilities.',
+        '- IMPORTANT: If phaseStatus is escalated but decision is NOT escalate, a Tier-2 clinical warning sign was detected.',
+        '  Continue the intake normally. Set escalation_level to L3 or L4 in the final JSON card.',
+        '  Do NOT output an emergency message. Do NOT end the conversation abruptly.',
+        '  Ask the next pending question as normal.',
         '=== END NEXT QUESTION SELECTOR DECISION ===',
     ].join('\n');
 }

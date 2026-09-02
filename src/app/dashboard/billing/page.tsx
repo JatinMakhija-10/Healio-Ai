@@ -164,9 +164,8 @@ export default function BillingPage() {
                 {!isPaid && (
                     <Button
                         onClick={() => setShowUpgrade(true)}
-                        className="bg-teal-600 hover:bg-teal-700 gap-2"
+                        className="bg-teal-600 hover:bg-teal-700 font-semibold"
                     >
-                        <Sparkles className="h-4 w-4" />
                         Upgrade to Plus
                     </Button>
                 )}
@@ -176,36 +175,27 @@ export default function BillingPage() {
             <Card className="border-teal-200 bg-gradient-to-br from-white to-teal-50/50">
                 <CardContent className="p-5">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2.5 rounded-xl ${isPaid ? "bg-teal-100" : "bg-slate-100"}`}>
-                                {isPaid ? (
-                                    <Crown className="h-5 w-5 text-teal-700" />
-                                ) : (
-                                    <Shield className="h-5 w-5 text-slate-500" />
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h2 className="font-bold text-lg text-slate-900">
+                                    {planDetails.name}
+                                </h2>
+                                {isPaid && (
+                                    <Badge className="bg-teal-100 text-teal-800 text-[10px] font-bold uppercase tracking-wider border-0">
+                                        Active
+                                    </Badge>
                                 )}
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h2 className="font-bold text-lg text-slate-900">
-                                        {planDetails.name}
-                                    </h2>
-                                    {isPaid && (
-                                        <Badge className="bg-teal-100 text-teal-800 text-[10px] font-bold uppercase tracking-wider border-0">
-                                            Active
-                                        </Badge>
-                                    )}
-                                </div>
-                                <p className="text-sm text-slate-500">
-                                    {isPaid
-                                        ? `${formatINR(planDetails.price)}/${planDetails.interval} · ${getMonthlyCreditGrant(plan)} credits/month included`
-                                        : `${FREE_MONTHLY_CONSULTATIONS} consultations/month · ${FREE_DAILY_CONSULTATIONS}/day · ${FREE_COOLDOWN_SECONDS}s cooldown`}
-                                </p>
-                                <p className="mt-1 text-xs text-slate-500">
-                                    {isPaid
-                                        ? "Unlimited basic AI consultations. Advanced features (Wellness Snapshot, Family Consult, PDF Wellness Summary) use 1–5 credits each from your monthly pool."
-                                        : "Basic consultations use free monthly quota. Premium add-ons require credits."}
-                                </p>
-                            </div>
+                            <p className="text-sm text-slate-500 mt-1">
+                                {isPaid
+                                    ? `${formatINR(planDetails.price)}/${planDetails.interval} · ${getMonthlyCreditGrant(plan)} credits/month included`
+                                    : `${FREE_MONTHLY_CONSULTATIONS} consultations/month · ${FREE_DAILY_CONSULTATIONS}/day · ${FREE_COOLDOWN_SECONDS}s cooldown`}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                                {isPaid
+                                    ? "Unlimited basic consultations. Advanced features (Wellness Snapshot, Family Consult, PDF Wellness Summary) use 1–5 credits each from your monthly pool."
+                                    : "Basic consultations use free monthly quota. Premium add-ons require credits."}
+                            </p>
                         </div>
                         {isPaid && (
                             <Badge variant="outline" className="text-xs text-slate-500">
@@ -221,8 +211,7 @@ export default function BillingPage() {
                 {/* Monthly Usage */}
                 <Card>
                     <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Activity className="h-4 w-4 text-teal-600" />
+                        <div className="mb-3">
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                                 Monthly Usage
                             </span>
@@ -256,8 +245,7 @@ export default function BillingPage() {
                 {/* Daily Usage */}
                 <Card>
                     <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Clock className="h-4 w-4 text-amber-600" />
+                        <div className="mb-3">
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                                 Today
                             </span>
@@ -289,8 +277,7 @@ export default function BillingPage() {
                 {/* Credits Balance */}
                 <Card className="border-purple-200 bg-gradient-to-br from-white to-purple-50/30">
                     <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Zap className="h-4 w-4 text-purple-600" />
+                        <div className="mb-3">
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                                 Credits
                             </span>
@@ -311,34 +298,30 @@ export default function BillingPage() {
             {/* ─── Credit Costs Reference ──────────────────────────── */}
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-teal-600" />
+                    <CardTitle className="text-base">
                         Premium Feature Credit Costs
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[
-                            { label: "Specialist AI Consultation (add-on)", cost: CREDIT_COSTS.consultation, icon: Activity },
-                            { label: "Wellness Snapshot", cost: CREDIT_COSTS.wellness_snapshot, icon: Heart },
-                            { label: "Family Consult", cost: CREDIT_COSTS.family_consult, icon: Users },
-                            { label: "PDF Wellness Summary", cost: CREDIT_COSTS.pdf_report, icon: FileText },
-                            { label: "Priority Booking", cost: CREDIT_COSTS.priority_booking, icon: TrendingUp },
-                            { label: "Specialist 2nd Opinion", cost: CREDIT_COSTS.specialist_opinion, icon: Sparkles },
-                            { label: "Lab Report Analysis", cost: CREDIT_COSTS.lab_report_analysis, icon: FileText },
-                            { label: "Video Consult (Doctor)", cost: CREDIT_COSTS.video_consult, icon: Activity },
+                            { label: "Specialist Consultation", cost: CREDIT_COSTS.consultation },
+                            { label: "Wellness Snapshot", cost: CREDIT_COSTS.wellness_snapshot },
+                            { label: "Family Consult", cost: CREDIT_COSTS.family_consult },
+                            { label: "PDF Wellness Summary", cost: CREDIT_COSTS.pdf_report },
+                            { label: "Priority Booking", cost: CREDIT_COSTS.priority_booking },
+                            { label: "Specialist 2nd Opinion", cost: CREDIT_COSTS.specialist_opinion },
+                            { label: "Lab Report Analysis", cost: CREDIT_COSTS.lab_report_analysis },
+                            { label: "Video Consult (Doctor)", cost: CREDIT_COSTS.video_consult },
                         ].map((item) => (
                             <div
                                 key={item.label}
-                                className="flex items-center gap-3 bg-slate-50 rounded-lg px-3 py-2.5"
+                                className="bg-slate-50 rounded-lg px-3.5 py-3"
                             >
-                                <item.icon className="h-4 w-4 text-slate-400 shrink-0" />
-                                <div>
-                                    <p className="text-xs font-medium text-slate-700">{item.label}</p>
-                                    <p className="text-[11px] text-slate-400">
-                                        {item.cost} credit{item.cost > 1 ? "s" : ""}
-                                    </p>
-                                </div>
+                                <p className="text-xs font-medium text-slate-700">{item.label}</p>
+                                <p className="text-[11px] text-slate-400 mt-1 font-semibold">
+                                    {item.cost} credit{item.cost > 1 ? "s" : ""}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -349,8 +332,7 @@ export default function BillingPage() {
             <Card>
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <CreditCard className="h-4 w-4 text-teal-600" />
+                        <CardTitle className="text-base">
                             Top-Up Credit Packs
                         </CardTitle>
                         <span className="text-xs text-slate-400">Prepaid · No subscription required</span>
@@ -381,12 +363,9 @@ export default function BillingPage() {
                                         <span className="text-sm font-normal text-slate-400"> credits</span>
                                     </p>
                                     {pack.bonus > 0 && (
-                                        <div className="flex items-center justify-center gap-1 mt-1">
-                                            <Gift className="h-3 w-3 text-green-600" />
-                                            <span className="text-xs font-semibold text-green-700">
-                                                +{pack.bonus} bonus
-                                            </span>
-                                        </div>
+                                        <p className="text-xs font-semibold text-green-700 mt-1">
+                                            +{pack.bonus} bonus
+                                        </p>
                                     )}
                                 </div>
                                 <div className="text-center mb-3">
@@ -404,14 +383,7 @@ export default function BillingPage() {
                                     disabled={purchasing === pack.id}
                                     onClick={() => handleTopUp(pack)}
                                 >
-                                    {purchasing === pack.id ? (
-                                        "Processing..."
-                                    ) : (
-                                        <>
-                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                            Buy Now
-                                        </>
-                                    )}
+                                    {purchasing === pack.id ? "Processing..." : "Buy Now"}
                                 </Button>
                             </div>
                         ))}
@@ -424,8 +396,7 @@ export default function BillingPage() {
                 <Card className="border-teal-200">
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between flex-wrap gap-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Crown className="h-4 w-4 text-teal-600" />
+                            <CardTitle className="text-base">
                                 Choose Your Plan
                             </CardTitle>
                             {/* Monthly / Yearly toggle */}
@@ -472,18 +443,9 @@ export default function BillingPage() {
                                                 Recommended
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-2 mb-2">
-                                            {isFree ? (
-                                                <Shield className="h-4 w-4 text-slate-400" />
-                                            ) : isPlus ? (
-                                                <Crown className="h-4 w-4 text-teal-600" />
-                                            ) : (
-                                                <Sparkles className="h-4 w-4 text-purple-600" />
-                                            )}
-                                            <h3 className={`font-bold text-sm ${isPlus ? "text-teal-800" : "text-slate-700"}`}>
-                                                {t.name}
-                                            </h3>
-                                        </div>
+                                        <h3 className={`font-bold text-base mb-1 ${isPlus ? "text-teal-800" : "text-slate-900"}`}>
+                                            {t.name}
+                                        </h3>
                                         <p className="text-xs text-slate-500 mb-3 min-h-[2.5em]">{t.tagline}</p>
                                         <div className="mb-4">
                                             <span className="text-2xl font-bold text-slate-900">
@@ -521,12 +483,7 @@ export default function BillingPage() {
                                             }`}
                                             onClick={() => !isFree && setShowUpgrade(true)}
                                         >
-                                            {isFree ? "Current Plan" : (
-                                                <>
-                                                    <Sparkles className="h-3 w-3 mr-1" />
-                                                    Upgrade to {t.name.replace("Arovia ", "")}
-                                                </>
-                                            )}
+                                            {isFree ? "Current Plan" : `Upgrade to ${t.name.replace("Arovia ", "")}`}
                                         </Button>
                                     </div>
                                 );
@@ -540,21 +497,20 @@ export default function BillingPage() {
             {isPaid && (
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-teal-600" />
+                        <CardTitle className="text-base">
                             Your {planDetails.name} Features
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {planDetails.features.map((feat) => ({ label: feat, icon: Check, active: true })).map((feat) => (
+                            {planDetails.features.map((feat) => (
                                 <div
-                                    key={feat.label}
-                                    className="flex items-center gap-3 bg-teal-50 border border-teal-100 rounded-lg px-3 py-3"
+                                    key={feat}
+                                    className="flex items-center gap-2.5 bg-teal-50/70 border border-teal-100 rounded-lg px-3.5 py-3"
                                 >
-                                    <feat.icon className="h-4 w-4 text-teal-600 shrink-0" />
-                                    <span className="text-xs font-medium text-teal-800">
-                                        {feat.label}
+                                    <Check className="h-4 w-4 text-teal-600 shrink-0" />
+                                    <span className="text-xs font-medium text-teal-900">
+                                        {feat}
                                     </span>
                                 </div>
                             ))}
@@ -567,8 +523,7 @@ export default function BillingPage() {
             {history.length > 0 && (
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-slate-500" />
+                        <CardTitle className="text-base">
                             Recent Transactions
                         </CardTitle>
                     </CardHeader>
@@ -579,34 +534,19 @@ export default function BillingPage() {
                                     key={tx.id}
                                     className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-slate-50 transition-colors"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                tx.amount > 0
-                                                    ? "bg-green-50 text-green-600"
-                                                    : "bg-red-50 text-red-500"
-                                            }`}
-                                        >
-                                            {tx.amount > 0 ? (
-                                                <ArrowUpRight className="h-4 w-4" />
-                                            ) : (
-                                                <ChevronRight className="h-4 w-4 rotate-90" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-700">
-                                                {formatTxAction(tx.action)}
-                                            </p>
-                                            <p className="text-xs text-slate-400">
-                                                {tx.description ??
-                                                    new Date(tx.created_at).toLocaleDateString("en-IN", {
-                                                        month: "short",
-                                                        day: "numeric",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
-                                            </p>
-                                        </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-700">
+                                            {formatTxAction(tx.action)}
+                                        </p>
+                                        <p className="text-xs text-slate-400">
+                                            {tx.description ??
+                                                new Date(tx.created_at).toLocaleDateString("en-IN", {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                        </p>
                                     </div>
                                     <div className="text-right">
                                         <p
