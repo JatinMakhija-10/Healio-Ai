@@ -2285,7 +2285,7 @@ UI HINT OUTPUT SAFETY:
                 return streamTextResponse("AI service is not configured with a valid Gemini API key. Please add your key in settings.");
             }
 
-            console.log('[Gemini] Executing Gemini 3.6 Flash as Primary LLM...');
+            console.log('[Gemini] Executing Gemini 2.5 Flash as Primary LLM...');
 
             const geminiMessages = processedMessages.map((m: { role: string; content: string }) => ({
                 role: m.role === 'assistant' ? 'model' : 'user',
@@ -2296,7 +2296,7 @@ UI HINT OUTPUT SAFETY:
             let geminiText = '';
             let geminiSucceeded = false;
             let lastGeminiError = '';
-            const maxGeminiAttempts = 3;
+            const maxGeminiAttempts = 5;  // More retries for free-tier rate limits
 
             for (let attempt = 0; attempt < maxGeminiAttempts; attempt++) {
                 for (const geminiKey of geminiKeys) {
@@ -2337,10 +2337,10 @@ UI HINT OUTPUT SAFETY:
                         lastGeminiError = `${geminiResponse.status} ${errorText.slice(0, 300)}`;
                         console.error(`[Gemini] ${geminiModel} failed status=${geminiResponse.status} body=${errorText.slice(0, 200)}`);
 
-                        // On 429 rate limit, wait and retry
+                        // On 429 rate limit, wait with exponential backoff and retry
                         if (geminiResponse.status === 429) {
-                            const retryAfter = Math.min(2000 * (attempt + 1), 6000);
-                            console.log(`[Gemini] 429 rate limited, waiting ${retryAfter}ms before retry...`);
+                            const retryAfter = Math.min(3000 * (attempt + 1), 10000);
+                            console.log(`[Gemini] 429 rate limited, waiting ${retryAfter}ms before retry (attempt ${attempt + 1}/${maxGeminiAttempts})...`);
                             await new Promise(r => setTimeout(r, retryAfter));
                             break; // break inner key loop to go to next attempt
                         }
@@ -2402,6 +2402,8 @@ UI HINT OUTPUT SAFETY:
             }
         }
 
+        // ── Groq path: only execute when Groq keys are available ────────────
+        if (groqKeyPool.length > 0) {
         const maxGroqAttempts = Math.max(AI_PHASE_CONFIG.generation.maxRetries + 1, groqKeyPool.length);
         const groqStartIndex = groqKeyIndex % groqKeyPool.length;
         groqKeyIndex = (groqKeyIndex + 1) % groqKeyPool.length;
@@ -2483,6 +2485,9 @@ UI HINT OUTPUT SAFETY:
                 }
                 // Will fall through to Gemini fallback after all retries
             }
+        }
+        } else {
+            console.log('[Groq] No Groq API keys configured — skipping Groq, using Gemini fallback directly.');
         }
 
         if (!groqResponse || !groqResponse.ok) {
