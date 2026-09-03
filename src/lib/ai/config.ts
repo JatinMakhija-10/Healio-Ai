@@ -3,18 +3,18 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 
 export const AI_PHASE_CONFIG = {
-    // Primary provider (Gemini 2.5 Flash)
-    primary: 'gemini',
+    // Primary provider — Groq (both keys verified working 2026-09-03)
+    primary: 'groq' as 'groq' | 'gemini',
 
-    // Fallback provider (Gemini 2.5 Flash Lite)
-    fallback: 'gemini',
+    // Fallback provider — Gemini 3.6 Flash (AQ-format key requires 3.x models)
+    fallback: 'gemini' as 'groq' | 'gemini',
 
     // Model Selection
     models: {
         groq: 'groq/compound',                     // used for final diagnosis JSON (compound agentic model)
-        groqFast: 'groq/compound',                  // used for Q&A turns — same model, smaller token budget
-        gemini: 'gemini-2.5-flash',                 // free-tier compatible
-        geminiLite: 'gemini-2.5-flash-lite',        // free-tier fallback
+        groqFast: 'groq/compound-mini',             // used for Q&A turns — lighter, faster
+        gemini: 'gemini-3.6-flash',                 // required for AQ-format API keys
+        geminiLite: 'gemini-3.6-flash',             // same model (lite not available for this key type)
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
         homeRemedyEmbedding: 'gemini-embedding-001', // 3072-dim — matches home_remedy_embeddings ingestion
     },

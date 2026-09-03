@@ -2277,7 +2277,7 @@ UI HINT OUTPUT SAFETY:
                 return streamTextResponse("AI service is not configured with a valid Gemini API key. Please add your key in settings.");
             }
 
-            console.log('[Gemini] Executing Gemini 2.5 Flash as Primary LLM...');
+            console.log(`[Gemini] Executing ${AI_PHASE_CONFIG.models.gemini} as Primary LLM...`);
 
             const geminiMessages = processedMessages.map((m: { role: string; content: string }) => ({
                 role: m.role === 'assistant' ? 'model' : 'user',
