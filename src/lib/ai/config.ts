@@ -9,10 +9,13 @@ export const AI_PHASE_CONFIG = {
     // Fallback provider — Gemini 3.6 Flash (AQ-format key requires 3.x models)
     fallback: 'gemini' as 'groq' | 'gemini',
 
-    // Model Selection
+    // Model Selection — latencies measured live 2026-09-03:
+    //   qwen3.8-27b: ~900ms | gpt-oss-120b: ~1.5s | compound-mini: ~3.8s
+    //   groq/compound: >60s (agentic, DO NOT USE for chat — causes timeouts)
     models: {
-        groq: 'groq/compound',                     // used for final diagnosis JSON (compound agentic model)
-        groqFast: 'groq/compound-mini',             // used for Q&A turns — lighter, faster
+        groq: 'openai/gpt-oss-120b',               // 120B param — best quality for diagnosis (~1.5s)
+        groqFast: 'qwen/qwen3.8-27b',              // 27B param — fast Q&A turns (~900ms)
+        groqRescue: 'groq/compound-mini',           // rescue fallback (~3.8s, always works)
         gemini: 'gemini-3.6-flash',                 // required for AQ-format API keys
         geminiLite: 'gemini-3.6-flash',             // same model (lite not available for this key type)
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model

@@ -1971,8 +1971,8 @@ export async function POST(req: NextRequest) {
             (intentResult.intent === 'symptom_query' && userTurns >= 3);
 
         const groqModel = needsBalancedModel
-            ? AI_PHASE_CONFIG.models.groq        // groq/compound — rich diagnosis
-            : AI_PHASE_CONFIG.models.groqFast;   // groq/compound-mini — fast & precise Q&A
+            ? AI_PHASE_CONFIG.models.groq        // gpt-oss-120b — rich diagnosis (~1.5s)
+            : AI_PHASE_CONFIG.models.groqFast;   // qwen3.8-27b — fast Q&A (~900ms)
 
         const maxTokensForTurn = isFinalTurn ? 4096 : 1500;
 
@@ -2572,7 +2572,7 @@ UI HINT OUTPUT SAFETY:
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                model: AI_PHASE_CONFIG.models.groqFast,
+                                model: AI_PHASE_CONFIG.models.groqRescue,
                                 messages: [
                                     { role: 'system', content: languageDirective ? `${SYSTEM_PROMPT}\n\n${languageDirective}` : SYSTEM_PROMPT },
                                     ...processedMessages.slice(-6),
@@ -2596,7 +2596,7 @@ UI HINT OUTPUT SAFETY:
                                 );
                                 return streamTextResponse(safeRescueText, {
                                     'X-Provider': 'groq-rescue',
-                                    'X-Model': AI_PHASE_CONFIG.models.groqFast,
+                                    'X-Model': AI_PHASE_CONFIG.models.groqRescue,
                                 });
                             }
                         } else {
