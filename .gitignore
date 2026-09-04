@@ -138,6 +138,7 @@ data/datasets/
 # Tooling diagnostics (auto-generated, not for git)
 .helm-diag/
 .jetro/
+tmp/
 HEAD_diff.txt
 get_diff.txt
 tmp_pubmed_check.py
