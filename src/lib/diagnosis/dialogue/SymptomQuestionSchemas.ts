@@ -47,8 +47,8 @@ export const GENERIC_SCHEMA: SymptomQuestionSchema = {
         { key: 'location', priority: 2, required: false, responseType: 'text', question: 'Where exactly in the body is this happening?' },
         { key: 'sensation', priority: 2, required: false, responseType: 'text', question: 'What does the symptom or discomfort feel like?' },
         { key: 'associated', priority: 2, required: false, responseType: 'multi_select', question: 'Are there any other symptoms alongside this?' },
-        { key: 'aggravation', priority: 2, required: false, responseType: 'text', question: 'What makes it worse?' },
-        { key: 'amelioration', priority: 2, required: false, responseType: 'text', question: 'What gives relief?' },
+        { key: 'aggravation', priority: 2, required: false, responseType: 'text', question: 'Is there anything specific that seems to make your symptoms worse — such as eating, moving around, stress, or position?' },
+        { key: 'amelioration', priority: 2, required: false, responseType: 'text', question: 'Is there anything that brings you relief, like resting, warm water, eating, or medicine?' },
         { key: 'history', priority: 3, required: false, responseType: 'text', question: 'How did it start, or what was happening before it began?' },
     ],
 };
@@ -236,8 +236,8 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
             { key: 'body_pain.location', aliases: ['location'], priority: 2, required: false, responseType: 'text', question: 'Where is the pain located?' },
             { key: 'body_pain.sensation', aliases: ['sensation'], priority: 2, required: false, responseType: 'text', question: 'What does the pain feel like (e.g. sharp, dull, aching, throbbing)?' },
             { key: 'body_pain.onset', aliases: ['history'], priority: 2, required: false, responseType: 'text', question: 'How did this start, or what were you doing before the pain began?' },
-            { key: 'body_pain.aggravation', aliases: ['aggravation'], priority: 2, required: false, responseType: 'text', question: 'What makes the pain worse?' },
-            { key: 'body_pain.amelioration', aliases: ['amelioration'], priority: 2, required: false, responseType: 'text', question: 'What gives relief?' },
+            { key: 'body_pain.aggravation', aliases: ['aggravation'], priority: 2, required: false, responseType: 'text', question: 'Is there anything specific that seems to make the pain worse, such as physical movement, bending, or exertion?' },
+            { key: 'body_pain.amelioration', aliases: ['amelioration'], priority: 2, required: false, responseType: 'text', question: 'Is there anything that brings relief, such as resting, heat, or ice?' },
         ],
     },
 ];
