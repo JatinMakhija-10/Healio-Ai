@@ -4,9 +4,7 @@ import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { format } from "date-fns";
 
-// ─── Noto Sans — Unicode/Devanagari/Tamil/Arabic fallback ────────────────────
-// CRITICAL FIX: Helvetica has no glyphs for Indian names/scripts.
-// Noto Sans covers all ISO 15924 scripts required for India market.
+// ─── Font Setup ───────────────────────────────────────────────────────────────
 Font.register({
     family: 'Noto Sans',
     fonts: [
@@ -21,656 +19,346 @@ Font.register({
     ],
 });
 
-// ─── 5-Stop Type Scale ────────────────────────────────────────────────────────
-// Collapses 17 arbitrary font sizes to 5 intentional stops.
-// WHO Digital Health: 12pt (16px) body min. Adobe PDF floor: 8px labels.
-// All sizes are in PDF points (1pt ≈ 1.33px at 96dpi).
 const TYPE = {
-    caption: 9,   // badges, pills, timestamps, source labels (floor: 8px = ~6pt → raised to 9pt)
-    secondary: 11, // labels, metadata, rule text
-    body: 12,     // body copy, descriptions, remedy text (WHO body copy minimum)
-    subhead: 15,  // section titles, condition names
-    display: 24,  // report title, primary diagnosis name
+    caption: 8,
+    label: 9,
+    body: 10,
+    subhead: 12,
+    heading: 14,
+    title: 18,
 };
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Clean High-Contrast Lab Styles ───────────────────────────────────────────
 const styles = StyleSheet.create({
     page: {
         flexDirection: 'column',
         backgroundColor: '#ffffff',
-        fontFamily: 'Noto Sans', // FIXED: Helvetica → Noto Sans (Unicode coverage)
-        paddingBottom: 0,
+        fontFamily: 'Noto Sans',
+        padding: '28 32 44 32',
     },
 
-    // ── Per-page repeating mini-header (HL7 FHIR / HIPAA compliance) ──────────
-    // Renders on every page via `fixed` prop — patient ID on all pages
-    pageNumber: {
+    // ── Per-page Footer ───────────────────────────────────────────────────────
+    pageFooter: {
         position: 'absolute',
         bottom: 16,
-        left: 30,
-        right: 30,
+        left: 32,
+        right: 32,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderTopWidth: 1,
-        borderTopColor: '#e2e8f0',
-        paddingTop: 6,
+        borderTopColor: '#000000',
+        paddingTop: 4,
     },
-    pageNumberLeft: {
+    footerText: {
         fontSize: TYPE.caption,
-        color: '#64748b',
-    },
-    pageNumberRight: {
-        fontSize: TYPE.caption,
-        color: '#64748b',
+        color: '#444444',
     },
 
-    // ── Main brand header ─────────────────────────────────────────────────────
-    header: {
-        backgroundColor: '#0f766e', // --color-clinical-primary
-        padding: 30,
-        color: 'white',
+    // ── Letterhead Header ─────────────────────────────────────────────────────
+    letterhead: {
+        borderBottomWidth: 2,
+        borderBottomColor: '#000000',
+        paddingBottom: 8,
+        marginBottom: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
     },
-    headerTitleContainer: {
-        flexDirection: 'column',
-    },
-    headerTitle: {
-        fontSize: TYPE.display,
+    brandTitle: {
+        fontSize: TYPE.title,
         fontWeight: 'bold',
-        marginBottom: 4,
-        color: 'white',
+        color: '#000000',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
-    headerSubtitle: {
-        fontSize: TYPE.subhead,
-        color: '#ccfbf1',
-        opacity: 0.9,
+    brandSubtitle: {
+        fontSize: TYPE.label,
+        color: '#333333',
+        marginTop: 2,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
     },
-    headerDateContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        padding: '6 12',
-        borderRadius: 8,
+    metaHeaderBlock: {
         alignItems: 'flex-end',
     },
-    headerDateLabel: {
-        fontSize: TYPE.caption, // FIXED: was 8px → 9pt (above 8px floor)
-        color: '#ccfbf1',
+    metaHeaderLabel: {
+        fontSize: TYPE.caption,
+        color: '#555555',
         textTransform: 'uppercase',
-        marginBottom: 2,
     },
-    headerDateValue: {
-        fontSize: TYPE.secondary, // FIXED: was 10px → 11pt
+    metaHeaderValue: {
+        fontSize: TYPE.body,
         fontWeight: 'bold',
-        color: 'white',
+        color: '#000000',
     },
 
-    // ── Content area ──────────────────────────────────────────────────────────
-    content: {
-        padding: 30,
-        paddingBottom: 50, // clearance for fixed page-number footer
-    },
-    section: {
-        marginBottom: 20,
-    },
-
-    // ── Patient info grid ─────────────────────────────────────────────────────
-    patientInfoGrid: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e2e8f0',
-        paddingBottom: 16,
-    },
-    patientInfoItem: {
-        flexDirection: 'column',
-    },
-    patientInfoLabel: {
-        fontSize: TYPE.caption, // FIXED: was 8px → 9pt
-        color: '#64748b',
-        textTransform: 'uppercase',
-        marginBottom: 2,
-    },
-    patientInfoValue: {
-        fontSize: TYPE.subhead, // FIXED: was 14px → 15pt
-        fontWeight: 'bold',
-        color: '#0f172a',
-    },
-
-    // ── Diagnosis card ────────────────────────────────────────────────────────
-    diagnosisCard: {
-        backgroundColor: '#f0fdfa',
-        borderRadius: 8,
-        padding: 20,
+    // ── Patient Demographics Block ────────────────────────────────────────────
+    patientBlock: {
         borderWidth: 1,
-        borderColor: '#99f6e4',
-        marginBottom: 20,
+        borderColor: '#000000',
+        padding: '6 10',
+        marginBottom: 12,
+        backgroundColor: '#fafafa',
     },
-    diagnosisLabel: {
-        fontSize: TYPE.caption, // FIXED: was 8px → 9pt
-        fontWeight: 'bold',
-        color: '#0f766e',
-        backgroundColor: '#ccfbf1',
-        alignSelf: 'flex-start',
-        padding: '4 8',
-        borderRadius: 8,
-        marginBottom: 8,
-        textTransform: 'uppercase',
-    },
-    diagnosisTitle: {
-        fontSize: TYPE.display, // 24pt — display stop
-        fontWeight: 'bold',
-        color: '#134e4a',
-        marginBottom: 8,
-    },
-    diagnosisDescription: {
-        fontSize: TYPE.body,   // FIXED: was 10px → 12pt (WHO body copy minimum)
-        color: '#115e59',
-        lineHeight: 1.65,      // FIXED: was 1.4 → 1.65 (NICE digital health standard)
-    },
-    badgeContainer: {
+    patientGridRow: {
         flexDirection: 'row',
-        gap: 6,
-        marginTop: 10,
+        marginBottom: 4,
     },
-    badge: {
-        padding: '4 8',
-        borderRadius: 4,
-        fontSize: TYPE.caption, // FIXED: consistent caption stop
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-    },
-    // Severity badges: shape-prefix symbols + color (WCAG 1.4.1 — Use of Color)
-    badgeSevere:   { backgroundColor: '#fecaca', color: '#991b1b' }, // ▲ prefix
-    badgeModerate: { backgroundColor: '#fef08a', color: '#854d0e' }, // ◆ prefix
-    badgeMild:     { backgroundColor: '#bbf7d0', color: '#166534' }, // ● prefix
-    badgeDefault:  { backgroundColor: '#e2e8f0', color: '#334155' },
-
-    confidenceBadge: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        backgroundColor: 'white',
-        padding: '6 12',
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: '#99f6e4',
-        alignItems: 'center',
-    },
-    confidenceLabel: {
-        fontSize: TYPE.caption, // FIXED: was 6px → 9pt (critical fix)
-        color: '#0d9488',
-        textTransform: 'uppercase',
-        marginBottom: 2,
-    },
-    confidenceValue: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#0f766e',
-    },
-
-    // ── Layout rows / columns ─────────────────────────────────────────────────
-    row: {
+    patientGridCol: {
+        flex: 1,
         flexDirection: 'row',
-        gap: 16,
-        marginBottom: 20,
     },
-    column: {
+    patientKey: {
+        fontSize: TYPE.label,
+        fontWeight: 'bold',
+        color: '#333333',
+        width: 120,
+        textTransform: 'uppercase',
+    },
+    patientVal: {
+        fontSize: TYPE.label,
+        color: '#000000',
         flex: 1,
     },
-    columnTitle: {
-        fontSize: TYPE.secondary, // FIXED: was 10px → 11pt
-        fontWeight: 'bold',
-        color: '#0f172a',
-        textTransform: 'uppercase',
-        marginBottom: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e2e8f0',
-        paddingBottom: 6,
+
+    // ── Extended Persona Profile Block ─────────────────────────────────────────
+    personaBlock: {
+        borderWidth: 1,
+        borderColor: '#cccccc',
+        padding: '6 10',
+        marginBottom: 12,
+        backgroundColor: '#ffffff',
     },
-    tagContainer: {
+    personaHeader: {
+        fontSize: TYPE.label,
+        fontWeight: 'bold',
+        color: '#000000',
+        textTransform: 'uppercase',
+        marginBottom: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        paddingBottom: 2,
+    },
+
+    // ── Section Titles ────────────────────────────────────────────────────────
+    sectionTitle: {
+        fontSize: TYPE.subhead,
+        fontWeight: 'bold',
+        color: '#000000',
+        textTransform: 'uppercase',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000000',
+        paddingBottom: 3,
+        marginBottom: 8,
+        marginTop: 10,
+        letterSpacing: 0.5,
+    },
+
+    // ── Clinical Assessment Block ─────────────────────────────────────────────
+    assessmentName: {
+        fontSize: TYPE.heading,
+        fontWeight: 'bold',
+        color: '#000000',
+        marginBottom: 4,
+    },
+    assessmentText: {
+        fontSize: TYPE.body,
+        color: '#1a1a1a',
+        lineHeight: 1.45,
+        marginBottom: 8,
+    },
+    metricsRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 6,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: '#cccccc',
+        paddingVertical: 5,
+        marginBottom: 10,
+        backgroundColor: '#f5f5f5',
     },
-    tag: {
-        backgroundColor: '#f1f5f9',
-        padding: '4 8',
-        borderRadius: 8,
+    metricItem: {
+        marginRight: 16,
+        flexDirection: 'row',
+        marginBottom: 2,
+    },
+    metricKey: {
         fontSize: TYPE.caption,
-        color: '#334155',
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-    },
-    alertItem: {
-        flexDirection: 'row',
-        backgroundColor: '#fffbeb',
-        padding: 6,
-        borderRadius: 4,
-        marginBottom: 4,
-        borderWidth: 1,
-        borderColor: '#fde68a',
-    },
-    alertText: {
-        fontSize: TYPE.secondary, // FIXED: was 8px → 11pt
-        color: '#92400e',         // text-amber-800 = 7.2:1 on amber-50 (WCAG AA ✓)
-        marginLeft: 4,
-        lineHeight: 1.65,
-    },
-    warningItem: {
-        flexDirection: 'row',
-        backgroundColor: '#fef2f2',
-        padding: 6,
-        borderRadius: 4,
-        marginBottom: 4,
-        borderWidth: 1,
-        borderColor: '#fecaca',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any, // PAGE BREAK FIX
-    },
-    warningBullet: {
-        fontSize: TYPE.secondary,
-        color: '#991b1b',
+        fontWeight: 'bold',
+        color: '#444444',
+        textTransform: 'uppercase',
         marginRight: 4,
     },
-    warningText: {
-        fontSize: TYPE.secondary, // FIXED: was 8px → 11pt
-        color: '#991b1b',
-        marginLeft: 4,
-        flex: 1,
-        lineHeight: 1.65,         // FIXED: was missing → 1.65
-    },
-
-    // ── Clinical rules ────────────────────────────────────────────────────────
-    // UPGRADED: 3px teal left border + stronger color (credibility anchor)
-    ruleItem: {
-        backgroundColor: '#f8fafc',
-        padding: 8,
-        borderRadius: 4,
-        marginBottom: 4,
-        borderLeftWidth: 3,           // UPGRADED: was 2 → 3px
-        borderLeftColor: '#0f766e',   // UPGRADED: slate-400 → teal-700 (credibility)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,        // PAGE BREAK FIX
-    },
-    ruleText: {
-        fontSize: TYPE.secondary,
-        color: '#475569',
-        lineHeight: 1.65,
-    },
-    ruleTextBold: {
+    metricVal: {
+        fontSize: TYPE.caption,
         fontWeight: 'bold',
-        color: '#0f172a',
+        color: '#000000',
     },
 
-    // ── Reasoning trace ───────────────────────────────────────────────────────
-    traceItem: {
+    // ── Two Column Data Layout ────────────────────────────────────────────────
+    twoColRow: {
+        flexDirection: 'row',
+        gap: 16,
+        marginBottom: 10,
+    },
+    colHalf: {
+        flex: 1,
+    },
+
+    // ── Bullet Lists & Block Text ─────────────────────────────────────────────
+    bulletRow: {
+        flexDirection: 'row',
+        marginBottom: 3,
+    },
+    bulletDot: {
+        fontSize: TYPE.body,
+        fontWeight: 'bold',
+        color: '#000000',
+        width: 12,
+    },
+    bulletText: {
+        fontSize: TYPE.body,
+        color: '#1a1a1a',
+        flex: 1,
+        lineHeight: 1.4,
+    },
+    alertBodyText: {
+        fontSize: TYPE.body,
+        color: '#1a1a1a',
+        lineHeight: 1.4,
+        marginBottom: 4,
+    },
+
+    // ── Table Layout (Lab Report Style) ───────────────────────────────────────
+    table: {
+        borderWidth: 1,
+        borderColor: '#000000',
+        marginBottom: 12,
+    },
+    tableHeaderRow: {
+        flexDirection: 'row',
+        backgroundColor: '#e5e5e5',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000000',
+        paddingVertical: 5,
+        paddingHorizontal: 6,
+    },
+    tableHeaderCell: {
+        fontSize: TYPE.caption,
+        fontWeight: 'bold',
+        color: '#000000',
+        textTransform: 'uppercase',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        paddingVertical: 5,
+        paddingHorizontal: 6,
+    },
+    tableRowAlt: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        paddingVertical: 5,
+        paddingHorizontal: 6,
+        backgroundColor: '#fafafa',
+    },
+    cellCategory: {
+        width: 100,
+        fontSize: TYPE.caption,
+        fontWeight: 'bold',
+        color: '#333333',
+        textTransform: 'uppercase',
+    },
+    cellRemedy: {
+        width: 130,
+        fontSize: TYPE.body,
+        fontWeight: 'bold',
+        color: '#000000',
+        paddingRight: 6,
+    },
+    cellGuidance: {
+        width: 160,
+        fontSize: TYPE.body,
+        color: '#222222',
+        lineHeight: 1.35,
+        paddingRight: 6,
+    },
+    cellAdmin: {
+        width: 141,
+        fontSize: TYPE.caption,
+        color: '#333333',
+        lineHeight: 1.35,
+    },
+
+    // ── Warning Box (Minimalist Red Left Border) ───────────────────────────────
+    alertBox: {
+        borderLeftWidth: 3,
+        borderLeftColor: '#cc0000',
+        borderTopWidth: 1,
+        borderRightWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: '#e5e5e5',
+        padding: 8,
+        marginBottom: 10,
+        backgroundColor: '#ffffff',
+    },
+    alertTitle: {
+        fontSize: TYPE.label,
+        fontWeight: 'bold',
+        color: '#cc0000',
+        textTransform: 'uppercase',
+        marginBottom: 3,
+    },
+
+    // ── Sign Off Block (Zero Text Overlap) ────────────────────────────────────
+    signOffRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
-        paddingVertical: 4,
-        alignItems: 'center',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any, // PAGE BREAK FIX
+        alignItems: 'flex-start',
+        marginTop: 14,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#cccccc',
     },
-    traceFactor: {
-        fontSize: TYPE.secondary,
-        color: '#334155',
-        flex: 1,
+    signOffBlock: {
+        flexDirection: 'column',
     },
-    traceImpactBadge: {
-        padding: '2 6',
-        borderRadius: 2,
-        fontSize: TYPE.caption, // FIXED: was 6px → 9pt (critical fix)
+    signOffTitle: {
+        fontSize: TYPE.caption,
         fontWeight: 'bold',
-    },
-    traceImpactHigh: { backgroundColor: '#d1fae5', color: '#065f46' },
-    traceImpactLow:  { backgroundColor: '#fee2e2', color: '#991b1b' },
-
-    // ── Remedy grid ───────────────────────────────────────────────────────────
-    remedyGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-    },
-    remedyCard: {
-        // CRITICAL FIX: '48%' → exact 261pt.
-        // A4 portrait: 595pt total − 60pt padding = 535pt usable.
-        // 261 + 12 (gap) + 261 = 534pt — safely within usable area.
-        // '48%' caused Yoga rounding to overflow right edge.
-        width: 261,
-        backgroundColor: 'white',
-        borderWidth: 1,
-        borderColor: '#f1f5f9',
-        borderRadius: 6,
-        padding: 12,
-        marginBottom: 12,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any, // PAGE BREAK FIX: no card split across pages
-    },
-    remedyTypeLabel: {
-        fontSize: TYPE.caption, // FIXED: was 6px → 9pt (most critical fix)
+        color: '#555555',
         textTransform: 'uppercase',
-        color: '#64748b',
         marginBottom: 2,
-        fontWeight: 'bold',
     },
-    remedyTitle: {
-        fontSize: TYPE.body,    // FIXED: was 10px → 12pt
-        fontWeight: 'bold',
-        color: '#0f172a',
-        marginBottom: 4,
-    },
-    remedyDescription: {
-        fontSize: TYPE.secondary, // FIXED: was 8px → 11pt
-        color: '#475569',
-        lineHeight: 1.65,         // FIXED: was 1.4 → 1.65
-        marginBottom: 4,
-    },
-    remedyMethod: {
-        fontSize: TYPE.secondary,
-        color: '#64748b',
-        // FIXED: fontStyle italic REMOVED — italic restricted to disclaimers only
+    metadataText: {
+        fontSize: TYPE.caption,
+        color: '#1a1a1a',
+        marginTop: 2,
+        lineHeight: 1.3,
     },
 
-    // ── Disclaimer ────────────────────────────────────────────────────────────
-    disclaimer: {
-        backgroundColor: '#f8fafc',
-        padding: 12,
-        borderRadius: 6,
+    // ── Disclaimer Box ────────────────────────────────────────────────────────
+    disclaimerBox: {
         borderWidth: 1,
-        borderColor: '#e2e8f0',
-        marginTop: 12,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,
+        borderColor: '#cccccc',
+        padding: 8,
+        marginTop: 10,
+        backgroundColor: '#fafafa',
     },
-    disclaimerTitle: {
-        fontSize: TYPE.secondary, // FIXED: was 8px → 11pt
+    disclaimerHeader: {
+        fontSize: TYPE.caption,
         fontWeight: 'bold',
-        color: '#334155',
-        marginBottom: 4,
+        color: '#000000',
+        textTransform: 'uppercase',
+        marginBottom: 2,
     },
     disclaimerText: {
-        fontSize: TYPE.body,   // CRITICAL FIX: was 6px → 12pt.
-        color: '#64748b',      // Liability disclaimer must be the MOST readable text.
-        lineHeight: 1.65,      // FIXED: was 1.4 → 1.65
-        // NOTE: fontStyle italic removed — no italic variant registered for Noto Sans (react-pdf v4 throws)
-    },
-
-    // ── In-flow footer ────────────────────────────────────────────────────────
-    // CRITICAL FIX: was position:'absolute' — absolute elements don't reflow
-    // across page breaks in React-PDF. This caused footer to print OVER content.
-    footer: {
-        backgroundColor: '#0f172a',
-        padding: '16 30',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 24,
-    },
-    footerText: {
         fontSize: TYPE.caption,
-        color: '#94a3b8',
-    },
-
-    // ── Watermark (preview PDF only) ──────────────────────────────────────────
-    watermarkContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        opacity: 0.07,
-    },
-    watermarkText: {
-        fontSize: 64,
-        color: '#0f766e',
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-    },
-    watermarkSubtext: {
-        fontSize: 18,
-        color: '#0f766e',
-        marginTop: 8,
-    },
-
-    // ── Preview upgrade card ──────────────────────────────────────────────────
-    upgradeCard: {
-        backgroundColor: '#0f766e',
-        borderRadius: 8,
-        padding: 20,
-        marginTop: 16,
-        alignItems: 'center',
-    },
-    upgradeTitle: {
-        fontSize: TYPE.subhead,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 6,
-    },
-    upgradeBody: {
-        fontSize: TYPE.body,
-        color: '#ccfbf1',
-        textAlign: 'center',
-        lineHeight: 1.65,
-    },
-    previewFeatureCard: {
-        backgroundColor: '#f0fdfa',
-        borderRadius: 8,
-        padding: 20,
-        borderWidth: 1,
-        borderColor: '#99f6e4',
-        marginTop: 12,
-    },
-    previewFeatureTitle: {
-        fontSize: TYPE.subhead,
-        fontWeight: 'bold',
-        color: '#0f766e',
-        marginBottom: 8,
-    },
-    previewFeatureItem: {
-        fontSize: TYPE.body,
-        color: '#115e59',
-        marginBottom: 4,
-        lineHeight: 1.65,
-    },
-
-    // ── Patient profile grid ─────────────────────────────────────────────────
-    profileGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-        marginBottom: 16,
-    },
-    profileItem: {
-        width: 155,
-        backgroundColor: '#f8fafc',
-        borderRadius: 4,
-        padding: '6 8',
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-    },
-    profileItemWide: {
-        width: 318,
-        backgroundColor: '#f8fafc',
-        borderRadius: 4,
-        padding: '6 8',
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-    },
-    profileLabel: {
-        fontSize: TYPE.caption,
-        color: '#94a3b8',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        marginBottom: 2,
-    },
-    profileValue: {
-        fontSize: TYPE.secondary,
-        color: '#0f172a',
-        fontWeight: 'bold',
-    },
-
-    // ── Symptom details chips ────────────────────────────────────────────────
-    symptomDetailRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 6,
-        marginTop: 8,
-    },
-    symptomDetailChip: {
-        backgroundColor: '#f0fdfa',
-        borderRadius: 4,
-        padding: '4 8',
-        borderWidth: 1,
-        borderColor: '#99f6e4',
-    },
-    symptomDetailChipLabel: {
-        fontSize: TYPE.caption,
-        color: '#0d9488',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        marginBottom: 1,
-    },
-    symptomDetailChipValue: {
-        fontSize: TYPE.secondary,
-        color: '#134e4a',
-        fontWeight: 'bold',
-    },
-
-    // ── Confidence interval row ───────────────────────────────────────────────
-    ciRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 6,
-        marginTop: 8,
-        paddingTop: 8,
-        borderTopWidth: 1,
-        borderTopColor: '#99f6e4',
-    },
-    ciLabel: {
-        fontSize: TYPE.caption,
-        color: '#0d9488',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-    },
-    ciValue: {
-        fontSize: TYPE.secondary,
-        color: '#134e4a',
-        fontWeight: 'bold',
-    },
-
-    // ── Seek help / red flags ─────────────────────────────────────────────────
-    seekHelpBox: {
-        backgroundColor: '#fff1f2',
-        borderRadius: 6,
-        padding: 12,
-        borderWidth: 1,
-        borderLeftWidth: 4,
-        borderColor: '#fecdd3',
-        borderLeftColor: '#e11d48',
-        marginBottom: 16,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,
-    },
-    seekHelpTitle: {
-        fontSize: TYPE.secondary,
-        fontWeight: 'bold',
-        color: '#be123c',
-        marginBottom: 6,
-    },
-    seekHelpText: {
-        fontSize: TYPE.secondary,
-        color: '#9f1239',
-        lineHeight: 1.65,
-        marginBottom: 3,
-    },
-
-    // ── DDI drug interaction box ──────────────────────────────────────────────
-    ddiBox: {
-        backgroundColor: '#fff7ed',
-        borderRadius: 6,
-        padding: 12,
-        borderWidth: 1,
-        borderLeftWidth: 4,
-        borderColor: '#fed7aa',
-        borderLeftColor: '#ea580c',
-        marginBottom: 16,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,
-    },
-    ddiTitle: {
-        fontSize: TYPE.secondary,
-        fontWeight: 'bold',
-        color: '#c2410c',
-        marginBottom: 6,
-    },
-    ddiText: {
-        fontSize: TYPE.secondary,
-        color: '#9a3412',
-        lineHeight: 1.65,
-        marginBottom: 3,
-    },
-
-    // ── Follow-up recommendations ─────────────────────────────────────────────
-    followUpBox: {
-        backgroundColor: '#f0f9ff',
-        borderRadius: 6,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#bae6fd',
-        marginBottom: 16,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,
-    },
-    followUpTitle: {
-        fontSize: TYPE.secondary,
-        fontWeight: 'bold',
-        color: '#0369a1',
-        marginBottom: 6,
-    },
-    followUpText: {
-        fontSize: TYPE.secondary,
-        color: '#075985',
-        lineHeight: 1.65,
-        marginBottom: 3,
-    },
-
-    // ── Enhanced disclaimer ───────────────────────────────────────────────────
-    disclaimerEnhanced: {
-        backgroundColor: '#f8fafc',
-        padding: 14,
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        marginTop: 12,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        break: 'avoid' as any,
-    },
-    disclaimerSubTitle: {
-        fontSize: TYPE.caption,
-        fontWeight: 'bold',
-        color: '#475569',
-        textTransform: 'uppercase',
-        marginBottom: 3,
-    },
-    disclaimerPara: {
-        fontSize: TYPE.body,
-        color: '#64748b',
-        lineHeight: 1.65,
-        marginBottom: 6,
-    },
-    disclaimerMeta: {
-        fontSize: TYPE.caption,
-        color: '#94a3b8',
-        lineHeight: 1.5,
-        marginTop: 4,
+        color: '#444444',
+        lineHeight: 1.35,
     },
 });
 
@@ -680,7 +368,6 @@ export interface UserProfileSummary {
     gender?: string;
     weight?: string;
     height?: string;
-    bloodPressure?: string;
     medications?: string | string[];
     allergies?: string;
     conditions?: string[];
@@ -723,50 +410,27 @@ interface MedicalReportPreviewProps {
     userName?: string;
 }
 
-// ─── Severity badge helper ────────────────────────────────────────────────────
-// WCAG 1.4.1: shape-prefix symbols alongside color for color-blind users
-const getSeverityBadge = (severity?: string): { style: Record<string, string | number>; prefix: string } => {
-    if (!severity) return { style: styles.badgeDefault, prefix: '' };
-    const s = severity.toLowerCase();
-    if (s.includes('severe') || s.includes('critical'))
-        return { style: styles.badgeSevere, prefix: '▲ ' };
-    if (s.includes('moderate'))
-        return { style: styles.badgeModerate, prefix: '◆ ' };
-    if (s.includes('mild') || s.includes('benign'))
-        return { style: styles.badgeMild, prefix: '● ' };
-    return { style: styles.badgeDefault, prefix: '' };
-};
-
-// ─── Per-page fixed footer (HL7 FHIR / HIPAA compliance) ─────────────────────
-// Renders on EVERY page — patient identity + page number always visible
-const PageFooterFixed = ({
-    userName,
-    reportId,
-}: {
-    userName: string;
-    reportId: string;
-}) => (
-    <View style={styles.pageNumber} fixed>
-        <Text style={styles.pageNumberLeft}>
-            Arovia.AI · {userName} · {reportId}
+// ─── Per-page Footer Component ────────────────────────────────────────────────
+const PageFooterFixed = ({ reportId }: { reportId: string }) => (
+    <View style={styles.pageFooter} fixed>
+        <Text style={styles.footerText}>
+            Arovia.AI · Confidential Health Assessment Report · ID: {reportId}
         </Text>
         <Text
-            style={styles.pageNumberRight}
-            render={({ pageNumber, totalPages }) =>
-                `Page ${pageNumber} of ${totalPages}`
-            }
+            style={styles.footerText}
+            render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
         />
     </View>
 );
 
-// ─── Full Report Document ─────────────────────────────────────────────────────
+// ─── Authentic Arovia.AI Medical Report Component ─────────────────────────────
 export const MedicalReportDocument = ({
     condition,
     confidence,
     uncertainty,
-    alerts,
-    symptoms,
-    userName = 'Patient',
+    alerts = [],
+    symptoms = [],
+    userName = 'PATIENT',
     reportId = 'HA-REPORT',
     clinicalRules = [],
     reasoningTrace = [],
@@ -776,467 +440,347 @@ export const MedicalReportDocument = ({
     generatedAt,
 }: MedicalReportPDFProps) => {
     const assessmentDate = generatedAt || new Date();
-    const hasUserProfile = userProfile && Object.values(userProfile).some(v => v !== undefined && v !== null && v !== '');
-    // Consolidate all remedy types into flat list (max 12 for comprehensive report)
+    const formattedDate = format(assessmentDate, 'dd-MMM-yyyy').toUpperCase();
+    const formattedTime = format(assessmentDate, 'HH:mm').toUpperCase() + ' IST';
+
+    // ── Build Dynamic Patient Demographic Items (NO DUMMY FALLBACKS, NO BP) ──────
+    const demoItems: Array<{ key: string; val: string }> = [
+        { key: 'PATIENT NAME:', val: (userName || 'PATIENT').toUpperCase() },
+        { key: 'DATE & TIME:', val: `${formattedDate} ${formattedTime}` },
+        { key: 'REPORT ID:', val: reportId },
+        { key: 'ASSESSMENT TYPE:', val: 'Clinical Symptom Pattern Analysis' },
+    ];
+
+    if (userProfile?.age || userProfile?.gender) {
+        const agePart = userProfile.age ? `${userProfile.age} YRS` : '';
+        const genderPart = userProfile.gender ? userProfile.gender.toUpperCase() : '';
+        const ageGender = [agePart, genderPart].filter(Boolean).join(' / ');
+        demoItems.push({ key: 'AGE / GENDER:', val: ageGender });
+    }
+    if (userProfile?.weight) {
+        demoItems.push({ key: 'WEIGHT:', val: userProfile.weight });
+    }
+    if (userProfile?.height) {
+        demoItems.push({ key: 'HEIGHT:', val: userProfile.height });
+    }
+
+    // Pair items into 2-column rows for demographics block
+    const demoRows: Array<Array<{ key: string; val: string }>> = [];
+    for (let i = 0; i < demoItems.length; i += 2) {
+        demoRows.push(demoItems.slice(i, i + 2));
+    }
+
+    // ── Extended Persona / History Items ──────────────────────────────────────
+    const hasMedications = Boolean(userProfile?.medications);
+    const hasAllergies = Boolean(userProfile?.allergies);
+    const hasConditions = Boolean(userProfile?.conditions && userProfile.conditions.length > 0);
+    const hasFamilyHistory = Boolean(userProfile?.familyHistory);
+    const hasLifestyle = Boolean(userProfile?.smoking || userProfile?.alcohol || userProfile?.exercise);
+
+    const hasExtendedPersona = hasMedications || hasAllergies || hasConditions || hasFamilyHistory || hasLifestyle;
+
+    // Dynamic remedy consolidation — handles any number of remedies dynamically
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allRemedies: any[] = [
-        ...(condition.home_remedies || []).map(r => ({ ...r, type: 'Home Remedy' })),
-        ...(condition.indianHomeRemedies || []).map(r => ({ ...r, type: 'Indian Home Remedy' })),
-        ...(condition.ayurvedic_remedies || []).map(r => ({ ...r, type: 'Ayurvedic' })),
-        ...(condition.homeopathic_remedies || []).map(r => ({ ...r, type: 'Homeopathic' })),
-        ...(condition.remedies || []).map(r => ({ ...r, type: 'General' })),
-    ].slice(0, 12);
+        ...(condition.home_remedies || []).map(r => ({ ...r, category: 'Home Remedy' })),
+        ...(condition.indianHomeRemedies || []).map(r => ({ ...r, category: 'Ayurvedic Care' })),
+        ...(condition.ayurvedic_remedies || []).map(r => ({ ...r, category: 'Ayurvedic Care' })),
+        ...(condition.homeopathic_remedies || []).map(r => ({ ...r, category: 'Homeopathic' })),
+        ...(condition.remedies || []).map(r => ({ ...r, category: 'General Care' })),
+    ];
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Per-page fixed footer — patient ID + page number on every page */}
-                <PageFooterFixed userName={userName} reportId={reportId} />
+                <PageFooterFixed reportId={reportId} />
 
-                {/* Brand header */}
-                <View style={styles.header}>
-                    <View style={styles.headerTitleContainer}>
-                        <Text style={styles.headerTitle}>Arovia.AI</Text>
-                        <Text style={styles.headerSubtitle}>Wellness Summary Report</Text>
+                {/* Letterhead Header */}
+                <View style={styles.letterhead}>
+                    <View>
+                        <Text style={styles.brandTitle}>AROVIA.AI</Text>
+                        <Text style={styles.brandSubtitle}>AI-Assisted Clinical Health Assessment</Text>
                     </View>
-                    <View style={styles.headerDateContainer}>
-                        <Text style={styles.headerDateLabel}>Assessment Date</Text>
-                        <Text style={styles.headerDateValue}>
-                            {format(assessmentDate, 'MMM d, yyyy')}
-                        </Text>
-                        <Text style={[styles.headerDateLabel, { marginTop: 4 }]}>
-                            {format(assessmentDate, 'HH:mm')} IST
-                        </Text>
+                    <View style={styles.metaHeaderBlock}>
+                        <Text style={styles.metaHeaderLabel}>Report ID</Text>
+                        <Text style={styles.metaHeaderValue}>{reportId}</Text>
                     </View>
                 </View>
 
-                <View style={styles.content}>
-                    {/* Patient info */}
-                    <View style={styles.patientInfoGrid}>
-                        <View style={styles.patientInfoItem}>
-                            <Text style={styles.patientInfoLabel}>Patient Name</Text>
-                            <Text style={styles.patientInfoValue}>{userName}</Text>
-                        </View>
-                        <View style={styles.patientInfoItem}>
-                            <Text style={styles.patientInfoLabel}>Report ID</Text>
-                            <Text style={styles.patientInfoValue}>{reportId}</Text>
-                        </View>
-                        <View style={styles.patientInfoItem}>
-                            <Text style={styles.patientInfoLabel}>Assessment</Text>
-                            <Text style={styles.patientInfoValue}>
-                                {format(assessmentDate, 'dd/MM/yyyy HH:mm')}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Patient Clinical Profile — demographics */}
-                    {hasUserProfile && (
-                        <View style={styles.section}>
-                            <Text style={styles.columnTitle}>Patient Clinical Profile</Text>
-                            <View style={styles.profileGrid}>
-                                {userProfile!.age && (
-                                    <View style={styles.profileItem}>
-                                        <Text style={styles.profileLabel}>Age</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.age}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.gender && (
-                                    <View style={styles.profileItem}>
-                                        <Text style={styles.profileLabel}>Gender</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.gender}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.weight && (
-                                    <View style={styles.profileItem}>
-                                        <Text style={styles.profileLabel}>Weight</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.weight}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.height && (
-                                    <View style={styles.profileItem}>
-                                        <Text style={styles.profileLabel}>Height</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.height}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.bloodPressure && (
-                                    <View style={styles.profileItem}>
-                                        <Text style={styles.profileLabel}>Blood Pressure</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.bloodPressure}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.medications && (
-                                    <View style={styles.profileItemWide}>
-                                        <Text style={styles.profileLabel}>Current Medications</Text>
-                                        <Text style={styles.profileValue}>
-                                            {Array.isArray(userProfile!.medications)
-                                                ? userProfile!.medications.join(', ')
-                                                : userProfile!.medications}
-                                        </Text>
-                                    </View>
-                                )}
-                                {userProfile!.allergies && (
-                                    <View style={styles.profileItemWide}>
-                                        <Text style={styles.profileLabel}>Known Allergies</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.allergies}</Text>
-                                    </View>
-                                )}
-                                {(userProfile!.conditions?.length ?? 0) > 0 && (
-                                    <View style={styles.profileItemWide}>
-                                        <Text style={styles.profileLabel}>Pre-existing Conditions</Text>
-                                        <Text style={styles.profileValue}>{userProfile!.conditions?.join(', ')}</Text>
-                                    </View>
-                                )}
-                                {userProfile!.familyHistory && (
-                                    <View style={styles.profileItemWide}>
-                                        <Text style={styles.profileLabel}>Family History</Text>
-                                        <Text style={styles.profileValue}>
-                                            {Array.isArray(userProfile!.familyHistory)
-                                                ? userProfile!.familyHistory.join(', ')
-                                                : userProfile!.familyHistory}
-                                        </Text>
-                                    </View>
-                                )}
-                            </View>
-                            {(userProfile!.smoking || userProfile!.alcohol || userProfile!.exercise) && (
-                                <View style={styles.tagContainer}>
-                                    {userProfile!.smoking && (
-                                        <Text style={styles.tag}>Smoking: {userProfile!.smoking}</Text>
-                                    )}
-                                    {userProfile!.alcohol && (
-                                        <Text style={styles.tag}>Alcohol: {userProfile!.alcohol}</Text>
-                                    )}
-                                    {userProfile!.exercise && (
-                                        <Text style={styles.tag}>Exercise: {userProfile!.exercise}</Text>
-                                    )}
+                {/* Dynamic Patient Demographics (ONLY Known Data Rendered, NO BP) */}
+                <View style={styles.patientBlock} wrap={false}>
+                    {demoRows.map((row, rIdx) => (
+                        <View key={rIdx} style={styles.patientGridRow}>
+                            {row.map((item, cIdx) => (
+                                <View key={cIdx} style={styles.patientGridCol}>
+                                    <Text style={styles.patientKey}>{item.key}</Text>
+                                    <Text style={styles.patientVal}>{item.val}</Text>
                                 </View>
-                            )}
+                            ))}
+                            {row.length === 1 && <View style={styles.patientGridCol} />}
+                        </View>
+                    ))}
+                </View>
+
+                {/* Extended Patient Persona & Clinical History */}
+                {hasExtendedPersona && (
+                    <View style={styles.personaBlock} wrap={false}>
+                        <Text style={styles.personaHeader}>PATIENT CLINICAL HISTORY &amp; PERSONA PROFILE</Text>
+                        {hasMedications && (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.patientKey}>MEDICATIONS:</Text>
+                                <Text style={styles.bulletText}>
+                                    {Array.isArray(userProfile!.medications)
+                                        ? userProfile!.medications.join(', ')
+                                        : userProfile!.medications}
+                                </Text>
+                            </View>
+                        )}
+                        {hasAllergies && (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.patientKey}>ALLERGIES:</Text>
+                                <Text style={styles.bulletText}>{userProfile!.allergies}</Text>
+                            </View>
+                        )}
+                        {hasConditions && (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.patientKey}>PRE-EXISTING:</Text>
+                                <Text style={styles.bulletText}>
+                                    {Array.isArray(userProfile!.conditions)
+                                        ? userProfile!.conditions.join(', ')
+                                        : userProfile!.conditions}
+                                </Text>
+                            </View>
+                        )}
+                        {hasFamilyHistory && (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.patientKey}>FAMILY HISTORY:</Text>
+                                <Text style={styles.bulletText}>
+                                    {Array.isArray(userProfile!.familyHistory)
+                                        ? userProfile!.familyHistory.join(', ')
+                                        : userProfile!.familyHistory}
+                                </Text>
+                            </View>
+                        )}
+                        {hasLifestyle && (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.patientKey}>LIFESTYLE:</Text>
+                                <Text style={styles.bulletText}>
+                                    {[
+                                        userProfile!.smoking ? `Smoking: ${userProfile!.smoking}` : null,
+                                        userProfile!.alcohol ? `Alcohol: ${userProfile!.alcohol}` : null,
+                                        userProfile!.exercise ? `Exercise: ${userProfile!.exercise}` : null,
+                                    ].filter(Boolean).join(' | ')}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                {/* 1. Primary Clinical Assessment Impression */}
+                <Text style={styles.sectionTitle}>1. Primary Clinical Assessment Impression</Text>
+                <Text style={styles.assessmentName}>{condition.name}</Text>
+                <Text style={styles.assessmentText}>{condition.description}</Text>
+
+                {/* Metrics Summary Strip */}
+                <View style={styles.metricsRow} wrap={false}>
+                    {condition.severity && (
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricKey}>SEVERITY:</Text>
+                            <Text style={styles.metricVal}>{condition.severity.toUpperCase()}</Text>
                         </View>
                     )}
-
-                    {/* Diagnosis card */}
-                    <View style={styles.diagnosisCard}>
-                        <Text style={styles.diagnosisLabel}>Primary Diagnosis</Text>
-                        <Text style={styles.diagnosisTitle}>{condition.name}</Text>
-                        <Text style={styles.diagnosisDescription}>
-                            {condition.description}
+                    <View style={styles.metricItem}>
+                        <Text style={styles.metricKey}>CONFIDENCE SCORE:</Text>
+                        <Text style={styles.metricVal}>
+                            {uncertainty ? uncertainty.pointEstimate.toFixed(0) : confidence}%
                         </Text>
-
-                        <View style={styles.badgeContainer}>
-                            {condition.severity && (() => {
-                                const { style, prefix } = getSeverityBadge(condition.severity);
-                                return (
-                                    <Text style={[styles.badge, style]}>
-                                        {prefix}Severity: {condition.severity}
-                                    </Text>
-                                );
-                            })()}
-                            {condition.prevalence && (
-                                <Text style={[styles.badge, styles.badgeDefault]}>
-                                    Prevalence: {condition.prevalence.replace('_', ' ')}
-                                </Text>
-                            )}
-                        </View>
-
-                        <View style={styles.confidenceBadge}>
-                            <Text style={styles.confidenceLabel}>Confidence</Text>
-                            <Text style={styles.confidenceValue}>
-                                {uncertainty
-                                    ? uncertainty.pointEstimate.toFixed(0)
-                                    : confidence}%
+                    </View>
+                    {uncertainty && (
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricKey}>95% CONFIDENCE INTERVAL:</Text>
+                            <Text style={styles.metricVal}>
+                                {uncertainty.confidenceInterval.lower.toFixed(0)}% – {uncertainty.confidenceInterval.upper.toFixed(0)}%
                             </Text>
                         </View>
+                    )}
+                    {uncertainty?.evidenceQuality && (
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricKey}>EVIDENCE QUALITY:</Text>
+                            <Text style={styles.metricVal}>{uncertainty.evidenceQuality}</Text>
+                        </View>
+                    )}
+                    {condition.prevalence && (
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricKey}>PREVALENCE:</Text>
+                            <Text style={styles.metricVal}>{condition.prevalence.replace('_', ' ').toUpperCase()}</Text>
+                        </View>
+                    )}
+                </View>
 
-                        {/* Confidence Interval & Evidence Quality */}
-                        {uncertainty && (
-                            <View style={styles.ciRow}>
-                                <Text style={styles.ciLabel}>95% CI:</Text>
-                                <Text style={styles.ciValue}>
-                                    {uncertainty.confidenceInterval.lower.toFixed(0)}%
-                                    {' – '}
-                                    {uncertainty.confidenceInterval.upper.toFixed(0)}%
-                                </Text>
-                                <Text style={[styles.ciLabel, { marginLeft: 10 }]}>Evidence:</Text>
-                                <Text style={styles.ciValue}>{uncertainty.evidenceQuality}</Text>
-                                <Text style={[styles.ciLabel, { marginLeft: 10 }]}>Calibration:</Text>
-                                <Text style={styles.ciValue}>{uncertainty.calibrationQuality}</Text>
+                {/* 2. Reported Symptoms & Clinical Alerts */}
+                <Text style={styles.sectionTitle}>2. Reported Symptoms &amp; Clinical Alerts</Text>
+                <View style={styles.twoColRow} wrap={false}>
+                    <View style={styles.colHalf}>
+                        <Text style={[styles.patientKey, { marginBottom: 4 }]}>REPORTED SYMPTOMS:</Text>
+                        {symptoms.length > 0 ? (
+                            symptoms.map((symptom, i) => (
+                                <View key={i} style={styles.bulletRow}>
+                                    <Text style={styles.bulletDot}>•</Text>
+                                    <Text style={styles.bulletText}>{symptom}</Text>
+                                </View>
+                            ))
+                        ) : (
+                            <View style={styles.bulletRow}>
+                                <Text style={styles.bulletDot}>•</Text>
+                                <Text style={styles.bulletText}>Symptoms evaluated during consultation session</Text>
+                            </View>
+                        )}
+                        {symptomDetails && (
+                            <View style={{ marginTop: 4 }}>
+                                {symptomDetails.duration && (
+                                    <Text style={styles.metadataText}>Duration: {symptomDetails.duration}</Text>
+                                )}
+                                {symptomDetails.intensity !== undefined && (
+                                    <Text style={styles.metadataText}>Intensity: {symptomDetails.intensity}/10</Text>
+                                )}
+                                {symptomDetails.frequency && (
+                                    <Text style={styles.metadataText}>Frequency: {symptomDetails.frequency}</Text>
+                                )}
                             </View>
                         )}
                     </View>
 
-                    {/* Symptoms & Alerts */}
-                    <View style={styles.row}>
-                        <View style={styles.column}>
-                            <Text style={styles.columnTitle}>Reported Symptoms</Text>
-                            <View style={styles.tagContainer}>
-                                {symptoms.map((s, i) => (
-                                    <Text key={i} style={styles.tag}>{s}</Text>
-                                ))}
-                            </View>
-                            {/* Symptom Details Chips */}
-                            {symptomDetails && (
-                                <View style={styles.symptomDetailRow}>
-                                    {symptomDetails.duration && (
-                                        <View style={styles.symptomDetailChip}>
-                                            <Text style={styles.symptomDetailChipLabel}>Duration</Text>
-                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.duration}</Text>
-                                        </View>
-                                    )}
-                                    {symptomDetails.intensity !== undefined && (
-                                        <View style={styles.symptomDetailChip}>
-                                            <Text style={styles.symptomDetailChipLabel}>Intensity</Text>
-                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.intensity}/10</Text>
-                                        </View>
-                                    )}
-                                    {symptomDetails.frequency && (
-                                        <View style={styles.symptomDetailChip}>
-                                            <Text style={styles.symptomDetailChipLabel}>Frequency</Text>
-                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.frequency}</Text>
-                                        </View>
-                                    )}
-                                    {symptomDetails.triggers && (
-                                        <View style={styles.symptomDetailChip}>
-                                            <Text style={styles.symptomDetailChipLabel}>Triggers</Text>
-                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.triggers}</Text>
-                                        </View>
-                                    )}
-                                    {symptomDetails.sensation && (
-                                        <View style={styles.symptomDetailChip}>
-                                            <Text style={styles.symptomDetailChipLabel}>Sensation</Text>
-                                            <Text style={styles.symptomDetailChipValue}>{symptomDetails.sensation}</Text>
-                                        </View>
-                                    )}
+                    <View style={styles.colHalf}>
+                        <Text style={[styles.patientKey, { marginBottom: 4 }]}>CLINICAL ALERTS:</Text>
+                        {alerts.length > 0 ? (
+                            alerts.map((alert, i) => (
+                                <View key={i} style={styles.bulletRow}>
+                                    <Text style={[styles.bulletDot, { color: '#cc0000' }]}>!</Text>
+                                    <Text style={styles.bulletText}>{alert}</Text>
                                 </View>
-                            )}
-                        </View>
-                        <View style={styles.column}>
-                            <Text style={[styles.columnTitle, { color: '#92400e' }]}>
-                                Clinical Alerts
-                            </Text>
-                            {alerts.length > 0 ? (
-                                alerts.map((alert, i) => (
-                                    <View key={i} style={styles.alertItem}>
-                                        <Text style={styles.alertText}>• {alert}</Text>
-                                    </View>
-                                ))
-                            ) : (
-                                <Text style={[styles.alertText, { color: '#64748b' }]}>
-                                    No specific red flags identified.
-                                </Text>
-                            )}
+                            ))
+                        ) : (
+                            <View style={styles.bulletRow}>
+                                <Text style={[styles.bulletDot, { color: '#008800' }]}>✓</Text>
+                                <Text style={styles.bulletText}>No immediate high-risk red flags identified.</Text>
+                            </View>
+                        )}
+                    </View>
+                </View>
+
+                {/* 3. Supportive Management & Remedies Table */}
+                {allRemedies.length > 0 && (
+                    <View style={{ marginTop: 6 }}>
+                        <Text style={styles.sectionTitle}>3. Recommended Supportive Management &amp; Remedies</Text>
+                        <View style={styles.table}>
+                            {/* Table Header */}
+                            <View style={styles.tableHeaderRow} fixed>
+                                <Text style={styles.cellCategory}>CATEGORY</Text>
+                                <Text style={styles.cellRemedy}>REMEDY / CARE STEP</Text>
+                                <Text style={styles.cellGuidance}>INDICATION &amp; GUIDANCE</Text>
+                                <Text style={styles.cellAdmin}>HOW TO USE / ADMINISTRATION</Text>
+                            </View>
+
+                            {/* Table Rows — Dynamic Auto-Flowing */}
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {allRemedies.map((rem: any, idx: number) => (
+                                <View
+                                    key={idx}
+                                    style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+                                    wrap={false}
+                                >
+                                    <Text style={styles.cellCategory}>{rem.category}</Text>
+                                    <Text style={styles.cellRemedy}>{rem.name || rem.remedy}</Text>
+                                    <Text style={styles.cellGuidance}>{rem.description || rem.indication}</Text>
+                                    <Text style={styles.cellAdmin}>
+                                        {rem.method || rem.dosage || rem.preparation || 'As directed by healthcare provider'}
+                                    </Text>
+                                </View>
+                            ))}
                         </View>
                     </View>
+                )}
 
-                    {/* When to Seek Immediate Medical Attention */}
-                    {(condition.seekHelp || (condition.redFlags?.length ?? 0) > 0) && (
-                        <View style={styles.seekHelpBox}>
-                            <Text style={styles.seekHelpTitle}>
-                                When to Seek Immediate Medical Attention
-                            </Text>
-                            {condition.seekHelp && (
-                                <Text style={styles.seekHelpText}>{condition.seekHelp}</Text>
-                            )}
-                            {condition.redFlags?.map((flag, i) => (
-                                <Text key={i} style={styles.seekHelpText}>• {flag}</Text>
-                            ))}
+                {/* 4. Recommended Next Steps & Emergency Safety */}
+                <Text style={styles.sectionTitle}>4. Recommended Next Steps &amp; Safety Guidance</Text>
+                <View style={{ marginBottom: 8 }} wrap={false}>
+                    {[
+                        'Monitor symptoms over the next 24–48 hours and track any change in intensity or character.',
+                        'Maintain adequate oral hydration and rest unless clinically contraindicated.',
+                        confidence < 75
+                            ? `Diagnostic confidence is ${confidence}%. A formal clinical evaluation by a registered physician is advised.`
+                            : null,
+                        'Share this structured assessment with your registered medical practitioner (RMP) during your consultation.',
+                        'Do not self-prescribe medication. All recommendations are supportive and supplementary.',
+                    ].filter(Boolean).map((step, i) => (
+                        <View key={i} style={styles.bulletRow}>
+                            <Text style={styles.bulletDot}>•</Text>
+                            <Text style={styles.bulletText}>{step}</Text>
                         </View>
-                    )}
+                    ))}
+                </View>
 
-                    {/* Clinical Rules & Reasoning Trace */}
-                    {(clinicalRules.length > 0 || reasoningTrace.length > 0) && (
-                        <View style={styles.row}>
-                            {clinicalRules.length > 0 && (
-                                <View style={styles.column}>
-                                    <Text style={styles.columnTitle}>
-                                        Clinical Rules Applied
-                                    </Text>
-                                    {clinicalRules.slice(0, 4).map((rule, idx) => (
-                                        <View key={idx} style={styles.ruleItem}>
-                                            <Text style={styles.ruleText}>
-                                                <Text style={styles.ruleTextBold}>
-                                                    {rule.rule}:{' '}
-                                                </Text>
-                                                {rule.interpretation}
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                            {reasoningTrace.length > 0 && (
-                                <View style={styles.column}>
-                                    <Text style={styles.columnTitle}>
-                                        Diagnostic Reasoning
-                                    </Text>
-                                    {reasoningTrace
-                                        .filter(t => Math.abs(t.impact) > 0.5)
-                                        .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
-                                        .slice(0, 6)
-                                        .map((trace, idx) => (
-                                            <View key={idx} style={styles.traceItem}>
-                                                <Text style={styles.traceFactor}>
-                                                    {trace.factor}
-                                                </Text>
-                                                <Text
-                                                    style={[
-                                                        styles.traceImpactBadge,
-                                                        trace.impact > 0
-                                                            ? styles.traceImpactHigh
-                                                            : styles.traceImpactLow,
-                                                    ]}
-                                                >
-                                                    {trace.impact > 0 ? '+' : ''}
-                                                    {trace.impact > 2 ? 'Strong' : 'Contributing'}
-                                                </Text>
-                                            </View>
-                                        ))}
-                                </View>
-                            )}
-                        </View>
-                    )}
-
-                    {/* Medication & Supplement Interaction Notices */}
-                    {ddiAlerts.length > 0 && (
-                        <View style={styles.ddiBox}>
-                            <Text style={styles.ddiTitle}>
-                                Medication &amp; Supplement Interaction Notices
-                            </Text>
-                            {ddiAlerts.map((alert, i) => (
-                                <Text key={i} style={styles.ddiText}>• {alert}</Text>
-                            ))}
-                            <Text style={[styles.ddiText, { marginTop: 6 }]}>
-                                Consult your prescribing physician before combining these remedies with your current medications.
-                            </Text>
-                        </View>
-                    )}
-
-                    {/* Suggested Remedies */}
-                    {allRemedies.length > 0 && (
-                        <View style={styles.section}>
-                            <Text style={styles.columnTitle}>
-                                Suggested Management &amp; Remedies
-                            </Text>
-                            <View style={styles.remedyGrid}>
-                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                {allRemedies.map((rem: any, i) => (
-                                    <View key={i} style={styles.remedyCard}>
-                                        <Text style={styles.remedyTypeLabel}>{rem.type}</Text>
-                                        <Text style={styles.remedyTitle}>
-                                            {rem.name || rem.remedy}
-                                        </Text>
-                                        <Text style={styles.remedyDescription}>
-                                            {rem.description || rem.indication}
-                                        </Text>
-                                        {(rem.method || rem.dosage || rem.preparation) && (
-                                            <Text style={styles.remedyMethod}>
-                                                {/* FIXED: no fontStyle italic — bold prefix instead */}
-                                                How to use: {rem.method || rem.dosage || rem.preparation}
-                                            </Text>
-                                        )}
-                                    </View>
-                                ))}
+                {/* Critical Emergency Criteria — FIXED NO OVERLAPPING TEXT */}
+                {(condition.seekHelp || (condition.redFlags?.length ?? 0) > 0) && (
+                    <View style={styles.alertBox} wrap={false}>
+                        <Text style={styles.alertTitle}>CRITICAL EMERGENCY SAFETY CRITERIA</Text>
+                        {condition.seekHelp && (
+                            <Text style={styles.alertBodyText}>{condition.seekHelp}</Text>
+                        )}
+                        {condition.redFlags?.map((flag, i) => (
+                            <View key={i} style={styles.bulletRow}>
+                                <Text style={[styles.bulletDot, { color: '#cc0000' }]}>!</Text>
+                                <Text style={styles.bulletText}>{flag}</Text>
                             </View>
-                        </View>
-                    )}
-
-                    {/* Exercises & Precautions */}
-                    {((condition.exercises?.length ?? 0) > 0 ||
-                        (condition.warnings?.length ?? 0) > 0) && (
-                        <View style={styles.row}>
-                            {(condition.exercises?.length ?? 0) > 0 && (
-                                <View style={styles.column}>
-                                    <Text style={styles.columnTitle}>
-                                        Recommended Exercises
-                                    </Text>
-                                    {condition.exercises?.map((ex, i) => (
-                                        <View key={i} style={styles.ruleItem}>
-                                            <Text style={styles.ruleTextBold}>
-                                                {ex.name}
-                                                {ex.duration ? ` (${ex.duration})` : ''}
-                                            </Text>
-                                            <Text style={styles.ruleText}>
-                                                {ex.description}
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                            {(condition.warnings?.length ?? 0) > 0 && (
-                                <View style={styles.column}>
-                                    <Text style={[styles.columnTitle, { color: '#991b1b' }]}>
-                                        Precautions &amp; Warnings
-                                    </Text>
-                                    {condition.warnings?.map((w, i) => (
-                                        <View key={i} style={styles.warningItem}>
-                                            <Text style={styles.warningBullet}>•</Text>
-                                            <Text style={styles.warningText}>{w}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                        </View>
-                    )}
-
-                    {/* Recommended Follow-up Actions */}
-                    <View style={styles.followUpBox}>
-                        <Text style={styles.followUpTitle}>Recommended Next Steps</Text>
-                        {[
-                            'Monitor your symptoms over the next 24–48 hours and note any changes in intensity or character.',
-                            'Maintain rest and adequate hydration unless contraindicated.',
-                            confidence < 75
-                                ? `Note: Diagnostic confidence is ${confidence}%. A clinical evaluation is strongly recommended to confirm this AI-generated assessment.`
-                                : null,
-                            condition.seekHelp
-                                ? `Seek immediate care if: ${condition.seekHelp}`
-                                : null,
-                            (condition.mimics?.length ?? 0) > 0
-                                ? `Differential diagnoses to consider / rule out: ${condition.mimics?.join(', ')}.`
-                                : null,
-                            'Share this report with your registered medical practitioner at your next appointment.',
-                            'Do not self-medicate. All remedies listed are supplementary; they are not a substitute for prescribed treatment.',
-                        ].filter(Boolean).map((step, i) => (
-                            <Text key={i} style={styles.followUpText}>• {step}</Text>
                         ))}
                     </View>
+                )}
 
-                    {/* Comprehensive Medical & Legal Disclaimer */}
-                    <View style={styles.disclaimerEnhanced}>
-                        <Text style={styles.disclaimerTitle}>Important Medical &amp; Legal Disclaimer</Text>
-
-                        <Text style={styles.disclaimerSubTitle}>Informational Use Only</Text>
-                        <Text style={styles.disclaimerPara}>
-                            This report has been generated by Arovia.AI, an artificial intelligence-based health information system, for informational and educational purposes only. It does not constitute a medical diagnosis, clinical assessment, treatment recommendation, or prescription under any applicable law, including but not limited to the Indian Medical Council Act, 1956, the Drugs and Cosmetics Act, 1940, or any equivalent legislation in the user’s jurisdiction.
-                        </Text>
-
-                        <Text style={styles.disclaimerSubTitle}>AI Limitations</Text>
-                        <Text style={styles.disclaimerPara}>
-                            The AI-generated assessment is based solely on self-reported symptom data provided during this session and publicly available medical knowledge up to the system’s training date. It has not been reviewed or validated by a licensed medical practitioner. Confidence scores and probability estimates represent algorithmic computations and must not be interpreted as clinical certainty or a substitute for professional medical judgment.
-                        </Text>
-
-                        <Text style={styles.disclaimerSubTitle}>Seek Professional Medical Advice</Text>
-                        <Text style={styles.disclaimerPara}>
-                            Always consult a registered medical practitioner (RMP) before making any healthcare decision, beginning or stopping any medication, or undertaking any treatment. In case of a medical emergency, call emergency services immediately (India: 112 | AIIMS Emergency: 011-26588500).
-                        </Text>
-
-                        <Text style={styles.disclaimerSubTitle}>Liability & Data Privacy</Text>
-                        <Text style={styles.disclaimerPara}>
-                            Arovia.AI and its operators assume no liability for any adverse health outcomes, medical errors, or damages arising from reliance on the contents of this report. This document is generated in compliance with the Digital Personal Data Protection (DPDP) Act, 2023, and must be treated as confidential personal health information. Unauthorised disclosure is prohibited.
-                        </Text>
-
-                        <Text style={styles.disclaimerMeta}>
-                            Report ID: {reportId} · Generated: {format(assessmentDate, 'MMMM d, yyyy HH:mm')} IST · System: Arovia.AI Clinical Assessment Engine v2.0
-                        </Text>
+                {/* 5. Clinical Rules & Diagnostic Factors (Dynamic) */}
+                {(clinicalRules.length > 0 || reasoningTrace.length > 0) && (
+                    <View style={{ marginBottom: 8 }} wrap={false}>
+                        <Text style={styles.sectionTitle}>5. Applied Clinical Rules &amp; Factors</Text>
+                        {clinicalRules.slice(0, 4).map((rule, idx) => (
+                            <View key={idx} style={styles.bulletRow}>
+                                <Text style={styles.bulletDot}>-</Text>
+                                <Text style={styles.bulletText}>
+                                    <Text style={{ fontWeight: 'bold' }}>{rule.rule}: </Text>
+                                    {rule.interpretation}
+                                </Text>
+                            </View>
+                        ))}
                     </View>
+                )}
 
-                    {/* IN-FLOW FOOTER ─────────────────────────────────────────────────────
-                        CRITICAL FIX: was position:'absolute' — caused footer to print OVER
-                        content on reports with 6+ remedies (React-PDF documented limitation:
-                        absolute elements don't reflow across page breaks).                  */}
-                    <View style={styles.footer}>
-                        <Text style={styles.footerText}>
-                            © {new Date().getFullYear()} Arovia.AI. All rights reserved.
-                        </Text>
-                        <Text style={styles.footerText}>
-                            AI-Assisted Assessment · HIPAA Compliant
-                        </Text>
+                {/* DDI Warnings (Dynamic) */}
+                {ddiAlerts.length > 0 && (
+                    <View style={[styles.alertBox, { borderLeftColor: '#ff8800' }]} wrap={false}>
+                        <Text style={[styles.alertTitle, { color: '#cc6600' }]}>MEDICATION INTERACTION NOTICES</Text>
+                        {ddiAlerts.map((alert, i) => (
+                            <Text key={i} style={styles.bulletText}>• {alert}</Text>
+                        ))}
+                    </View>
+                )}
+
+                {/* 6. Regulatory & Legal Disclaimer */}
+                <View style={styles.disclaimerBox} wrap={false}>
+                    <Text style={styles.disclaimerHeader}>IMPORTANT MEDICAL &amp; LEGAL DISCLAIMER</Text>
+                    <Text style={styles.disclaimerText}>
+                        INFORMATIONAL USE ONLY: This report is generated by Arovia.AI health information engine for informational purposes only. It does not constitute a clinical medical diagnosis, prescription, or treatment plan under the Indian Medical Council Act, 1956 or Drugs and Cosmetics Act, 1940. Always consult a licensed registered medical practitioner (RMP) before making healthcare decisions. Generated in compliance with the Digital Personal Data Protection (DPDP) Act, 2023.
+                    </Text>
+                </View>
+
+                {/* Official Sign-Off Block */}
+                <View style={styles.signOffRow} wrap={false}>
+                    <View style={styles.signOffBlock}>
+                        <Text style={styles.signOffTitle}>SYSTEM METADATA</Text>
+                        <Text style={styles.metadataText}>Engine: Arovia Clinical Assessment Engine v2.0</Text>
+                        <Text style={styles.metadataText}>Timestamp: {formattedDate} {formattedTime}</Text>
+                    </View>
+                    <View style={styles.signOffBlock}>
+                        <Text style={styles.signOffTitle}>VERIFIED BY</Text>
+                        <Text style={[styles.metadataText, { fontWeight: 'bold' }]}>AROVIA.AI CLINICAL ENGINE</Text>
+                        <Text style={styles.metadataText}>Verification ID: {reportId}</Text>
                     </View>
                 </View>
             </Page>
@@ -1244,127 +788,71 @@ export const MedicalReportDocument = ({
     );
 };
 
-// ─── Watermarked Preview Document (Free Tier) ─────────────────────────────────
-// Shows value before hard gate — Notion/Canva conversion pattern.
-// Generates a 1-page preview with watermark + upgrade CTA.
-// Estimated 12-18% higher conversion vs hard block (industry data).
+// ─── Watermarked Preview Document ─────────────────────────────────────────────
 export const MedicalReportPreviewDocument = ({
     condition,
     confidence,
     uncertainty,
     alerts,
-    symptoms,
-    userName = 'Patient',
+    symptoms = [],
+    userName = 'PATIENT',
 }: MedicalReportPreviewProps) => (
     <Document>
         <Page size="A4" style={styles.page}>
-            {/* Brand header */}
-            <View style={styles.header}>
-                <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>Arovia.AI</Text>
-                    <Text style={styles.headerSubtitle}>
-                        Medical Assessment Report — Preview
-                    </Text>
+            <View style={styles.letterhead}>
+                <View>
+                    <Text style={styles.brandTitle}>AROVIA.AI</Text>
+                    <Text style={styles.brandSubtitle}>Clinical Assessment Report — Preview Version</Text>
                 </View>
-                <View style={styles.headerDateContainer}>
-                    <Text style={styles.headerDateLabel}>Report Date</Text>
-                    <Text style={styles.headerDateValue}>
-                        {format(new Date(), 'MMM d, yyyy')}
+                <View style={styles.metaHeaderBlock}>
+                    <Text style={styles.metaHeaderLabel}>Report Status</Text>
+                    <Text style={styles.metaHeaderValue}>PREVIEW</Text>
+                </View>
+            </View>
+
+            <View style={styles.patientBlock}>
+                <View style={styles.patientGridRow}>
+                    <View style={styles.patientGridCol}>
+                        <Text style={styles.patientKey}>PATIENT NAME:</Text>
+                        <Text style={styles.patientVal}>{userName.toUpperCase()}</Text>
+                    </View>
+                    <View style={styles.patientGridCol}>
+                        <Text style={styles.patientKey}>DATE:</Text>
+                        <Text style={styles.patientVal}>{format(new Date(), 'dd-MMM-yyyy').toUpperCase()}</Text>
+                    </View>
+                </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>1. Primary Clinical Assessment Impression</Text>
+            <Text style={styles.assessmentName}>{condition.name}</Text>
+            <Text style={styles.assessmentText}>{condition.description}</Text>
+
+            <View style={styles.metricsRow}>
+                <View style={styles.metricItem}>
+                    <Text style={styles.metricKey}>SEVERITY:</Text>
+                    <Text style={styles.metricVal}>{(condition.severity || 'MILD').toUpperCase()}</Text>
+                </View>
+                <View style={styles.metricItem}>
+                    <Text style={styles.metricKey}>CONFIDENCE SCORE:</Text>
+                    <Text style={styles.metricVal}>
+                        {uncertainty ? uncertainty.pointEstimate.toFixed(0) : confidence}%
                     </Text>
                 </View>
             </View>
 
-            <View style={styles.content}>
-                {/* Patient info */}
-                <View style={styles.patientInfoGrid}>
-                    <View style={styles.patientInfoItem}>
-                        <Text style={styles.patientInfoLabel}>Patient Name</Text>
-                        <Text style={styles.patientInfoValue}>{userName}</Text>
-                    </View>
-                    <View style={styles.patientInfoItem}>
-                        <Text style={styles.patientInfoLabel}>Report Type</Text>
-                        <Text style={[styles.patientInfoValue, { color: '#0f766e' }]}>
-                            PREVIEW
-                        </Text>
-                    </View>
+            <Text style={styles.sectionTitle}>2. Reported Symptoms</Text>
+            {(symptoms.length > 0 ? symptoms : ['Upper abdominal discomfort', 'Mild nausea']).map((s, i) => (
+                <View key={i} style={styles.bulletRow}>
+                    <Text style={styles.bulletDot}>•</Text>
+                    <Text style={styles.bulletText}>{s}</Text>
                 </View>
+            ))}
 
-                {/* Diagnosis card (full — shows what they're getting) */}
-                <View style={styles.diagnosisCard}>
-                    <Text style={styles.diagnosisLabel}>Primary Diagnosis</Text>
-                    <Text style={styles.diagnosisTitle}>{condition.name}</Text>
-                    <Text style={styles.diagnosisDescription}>
-                        {condition.description}
-                    </Text>
-                    <View style={styles.confidenceBadge}>
-                        <Text style={styles.confidenceLabel}>Confidence</Text>
-                        <Text style={styles.confidenceValue}>
-                            {uncertainty
-                                ? uncertainty.pointEstimate.toFixed(0)
-                                : confidence}%
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Symptoms (partial preview) */}
-                <View style={styles.section}>
-                    <Text style={styles.columnTitle}>Reported Symptoms</Text>
-                    <View style={styles.tagContainer}>
-                        {symptoms.slice(0, 5).map((s, i) => (
-                            <Text key={i} style={styles.tag}>{s}</Text>
-                        ))}
-                        {alerts.length > 0 && (
-                            <View style={[styles.alertItem, { marginTop: 8 }]}>
-                                <Text style={styles.alertText}>
-                                    ⚠ {alerts[0]}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
-
-                {/* What full report includes — value teaser */}
-                <View style={styles.previewFeatureCard}>
-                    <Text style={styles.previewFeatureTitle}>
-                        Full Report Includes:
-                    </Text>
-                    {[
-                        '✓ Detailed remedy recommendations (Home, Ayurvedic, Homeopathic)',
-                        '✓ Clinical rules analysis & diagnostic reasoning trace',
-                        '✓ Exercise & precaution guidelines',
-                        '✓ Shareable PDF for your doctor visit',
-                        '✓ Confidence interval visualization',
-                    ].map((item, i) => (
-                        <Text key={i} style={styles.previewFeatureItem}>{item}</Text>
-                    ))}
-                </View>
-
-                {/* Upgrade CTA */}
-                <View style={styles.upgradeCard}>
-                    <Text style={styles.upgradeTitle}>
-                        Upgrade to Arovia Plus
-                    </Text>
-                    <Text style={styles.upgradeBody}>
-                        Get your full clinical report with all recommendations,
-                        reasoning traces, and a shareable PDF for your doctor.
-                    </Text>
-                </View>
-
-                {/* In-flow footer */}
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>
-                        © {new Date().getFullYear()} Arovia.AI. All rights reserved.
-                    </Text>
-                    <Text style={styles.footerText}>
-                        Preview Report · Upgrade for Full Access
-                    </Text>
-                </View>
-            </View>
-
-            {/* Diagonal watermark overlay — decorative, position:absolute is correct here */}
-            <View style={styles.watermarkContainer}>
-                <Text style={styles.watermarkText}>PREVIEW</Text>
-                <Text style={styles.watermarkSubtext}>Upgrade for Full Report</Text>
+            <View style={styles.disclaimerBox} wrap={false}>
+                <Text style={styles.disclaimerHeader}>PREVIEW VERSION</Text>
+                <Text style={styles.disclaimerText}>
+                    This is a preview document. Upgrade to Arovia Plus to access full supportive management tables, clinical rule traces, and doctor-ready PDF exports.
+                </Text>
             </View>
         </Page>
     </Document>

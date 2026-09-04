@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import { pdf } from '@react-pdf/renderer';
 import { MedicalReportDocument } from '@/components/chat/MedicalReportPDF';
-import type { SymptomDetailsSummary } from '@/components/chat/MedicalReportPDF';
+import type { SymptomDetailsSummary, UserProfileSummary } from '@/components/chat/MedicalReportPDF';
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
 import { SeverityBadge } from "@/components/ui/SeverityBadge";
 import { MentalHealthAssessmentCard, isMentalHealthPattern } from "@/components/chat/MentalHealthAssessmentCard";
@@ -249,6 +249,22 @@ export default function HistoryPage() {
                     : consultation.symptoms.intensity,
             } : undefined;
 
+            const csUserProf = consultation.symptoms?.userProfile;
+            const metaProf = user?.user_metadata;
+            const userProfile: UserProfileSummary | undefined = (csUserProf || metaProf) ? {
+                age: csUserProf?.age || metaProf?.age,
+                gender: csUserProf?.gender || metaProf?.gender,
+                weight: csUserProf?.weight || metaProf?.weight,
+                height: csUserProf?.height || metaProf?.height,
+                medications: csUserProf?.medications || metaProf?.medications,
+                allergies: csUserProf?.allergies || metaProf?.allergies,
+                conditions: csUserProf?.conditions || metaProf?.conditions,
+                familyHistory: csUserProf?.familyHistory || metaProf?.familyHistory,
+                smoking: csUserProf?.smoking || metaProf?.smoking,
+                alcohol: csUserProf?.alcohol || metaProf?.alcohol,
+                exercise: csUserProf?.exercise || metaProf?.exercise,
+            } : undefined;
+
             const blob = await pdf(
                 <MedicalReportDocument
                     condition={hydratedCondition}
@@ -258,8 +274,10 @@ export default function HistoryPage() {
                     symptoms={Object.values(consultation.symptoms?.location || []).concat(consultation.symptoms?.painType ? [consultation.symptoms.painType] : [])}
                     userName={user?.user_metadata?.full_name || 'Patient'}
                     reportId={historyReportId}
-                    generatedAt={new Date()}
+                    generatedAt={new Date(consultation.created_at)}
                     symptomDetails={symptomDetails}
+                    userProfile={userProfile}
+                    clinicalRules={consultation.clinicalRules || []}
                 />
             ).toBlob();
 
