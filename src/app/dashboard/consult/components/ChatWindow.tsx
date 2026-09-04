@@ -195,7 +195,10 @@ export function ChatWindow({ messages, isLoading, onSendMessage, onWidgetActive,
                                         exit={{ opacity: 0, height: 0 }}
                                         className="overflow-hidden px-4 pl-14"
                                     >
-                                        <PainSliderWidget onSubmit={(val) => onSendMessage(`${val}/10`)} />
+                                        <PainSliderWidget
+                                            questionText={lastMessage.content}
+                                            onSubmit={(val) => onSendMessage(`${val}/10`)}
+                                        />
                                     </motion.div>
                                 )}
 
