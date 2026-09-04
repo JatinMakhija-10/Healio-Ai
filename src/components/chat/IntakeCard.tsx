@@ -158,6 +158,140 @@ export function IntakeCard({ onSubmit }: IntakeCardProps) {
                             <SelectItem value="burning">Burning</SelectItem>
                             <SelectItem value="stiff">Stiff / Tight</SelectItem>
                             <SelectItem value="shooting">Shooting / Electric</SelectItem>
+    const [painType, setPainType] = useState("");
+    const [duration, setDuration] = useState("");
+    const [whenStarted, setWhenStarted] = useState("");
+    const [frequency, setFrequency] = useState("");
+    const [triggers, setTriggers] = useState("");
+    const [relievers, setRelievers] = useState("");
+    const [radiation, setRadiation] = useState("");
+    const [additionalNotes, setAdditionalNotes] = useState("");
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = debounce(() => {
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+        setErrors({});
+
+        try {
+            // Build comprehensive symptom data with sanitization
+            const notes = [
+                whenStarted && `Started: ${sanitizeInput(whenStarted, { stripHtml: true, maxLength: 100 })}`,
+                triggers && `Worse with: ${sanitizeInput(triggers, { stripHtml: true, maxLength: 200 })}`,
+                relievers && `Better with: ${sanitizeInput(relievers, { stripHtml: true, maxLength: 200 })}`,
+                radiation && `Radiates to: ${sanitizeInput(radiation, { stripHtml: true, maxLength: 200 })}`,
+                additionalNotes && sanitizeInput(additionalNotes, { stripHtml: true, maxLength: 500 })
+            ].filter(Boolean).join(". ");
+
+            const rawData = {
+                location: [sanitizeInput(location, { stripHtml: true, normalizeWhitespace: true, maxLength: 200 })],
+                intensity: intensity[0],
+                painType: painType,
+                duration: duration,
+                triggers: sanitizeInput(triggers, { stripHtml: true, maxLength: 1000 }),
+                frequency: sanitizeInput(frequency, { stripHtml: true, maxLength: 500 }),
+                additionalNotes: notes
+            };
+
+            // Validate with Zod schema
+            const validatedData = SymptomDataSchema.parse(rawData);
+
+            // Submit validated and sanitized data
+            onSubmit(validatedData as UserSymptomData);
+        } catch (error) {
+            // Handle validation errors
+            if (error instanceof z.ZodError) {
+                const fieldErrors: Record<string, string> = {};
+                error.issues.forEach((err: z.ZodIssue) => {
+                    const path = err.path.join('.');
+                    fieldErrors[path] = err.message;
+                });
+                setErrors(fieldErrors);
+            } else {
+                console.error('Submission error:', error);
+                setErrors({ general: 'An error occurred. Please try again.' });
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, 500); // Debounce to prevent double-clicks
+
+    const getPainLabel = (value: number) => {
+        if (value === 0) return "No pain";
+        if (value <= 3) return "Mild";
+        if (value <= 6) return "Moderate";
+        if (value <= 8) return "Severe";
+        return "Worst possible";
+    };
+
+    return (
+        <Card className="w-full max-w-2xl mx-auto border-slate-200 shadow-md">
+            <CardHeader>
+                <CardTitle className="text-xl text-slate-800">New Consultation</CardTitle>
+                <CardDescription>
+                    Please answer the following questions to help us understand your symptoms better.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {/* Location */}
+                <div className="space-y-2">
+                    <Label htmlFor="location" className="text-base font-medium">
+                        Where is your pain or discomfort? *
+                    </Label>
+                    <Input
+                        id="location"
+                        placeholder="e.g. Lower Back, Head, Right Knee, Stomach"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="text-base"
+                    />
+                </div>
+
+                {/* Pain Intensity */}
+                <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                            <Label className="text-base font-medium">Current Pain Intensity *</Label>
+                            <p className="text-xs text-slate-500">
+                                How would you rate the intensity of your pain on a scale from 0 to 10, where 0 is no pain and 10 is the worst pain you can imagine?
+                            </p>
+                        </div>
+                        <div className="text-right">
+                            <div className="font-bold text-2xl text-teal-600">{intensity[0]}</div>
+                            <div className="text-xs text-slate-500">{getPainLabel(intensity[0])}</div>
+                        </div>
+                    </div>
+                    <Slider
+                        value={intensity}
+                        onValueChange={setIntensity}
+                        min={0}
+                        max={10}
+                        step={1}
+                        className="cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-slate-500 font-medium px-1">
+                        <span>0 - No pain</span>
+                        <span>5 - Moderate</span>
+                        <span>10 - Worst Possible</span>
+                    </div>
+                </div>
+
+                {/* Pain Type */}
+                <div className="space-y-2">
+                    <Label className="text-base font-medium">What does it feel like? *</Label>
+                    <Select value={painType} onValueChange={setPainType}>
+                        <SelectTrigger className="text-base">
+                            <SelectValue placeholder="Select the type of sensation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="aching">Aching / Dull</SelectItem>
+                            <SelectItem value="sharp">Sharp / Stabbing</SelectItem>
+                            <SelectItem value="throbbing">Throbbing / Pulsating</SelectItem>
+                            <SelectItem value="burning">Burning</SelectItem>
+                            <SelectItem value="stiff">Stiff / Tight</SelectItem>
+                            <SelectItem value="shooting">Shooting / Electric</SelectItem>
                             <SelectItem value="cramping">Cramping</SelectItem>
                             <SelectItem value="numb">Numb / Tingling</SelectItem>
                         </SelectContent>
@@ -226,11 +360,11 @@ export function IntakeCard({ onSubmit }: IntakeCardProps) {
                 {/* What makes it worse */}
                 <div className="space-y-2">
                     <Label htmlFor="triggers" className="text-base font-medium">
-                        What makes it worse?
+                        Is there anything that makes it worse?
                     </Label>
                     <Input
                         id="triggers"
-                        placeholder="e.g. Movement, sitting, bending, coughing"
+                        placeholder="e.g. Eating, movement, sitting, bending"
                         value={triggers}
                         onChange={(e) => setTriggers(e.target.value)}
                     />
@@ -239,11 +373,11 @@ export function IntakeCard({ onSubmit }: IntakeCardProps) {
                 {/* What makes it better */}
                 <div className="space-y-2">
                     <Label htmlFor="relievers" className="text-base font-medium">
-                        What makes it better?
+                        Is there anything that brings relief?
                     </Label>
                     <Input
                         id="relievers"
-                        placeholder="e.g. Rest, heat, medication"
+                        placeholder="e.g. Rest, warm water, heat, medication"
                         value={relievers}
                         onChange={(e) => setRelievers(e.target.value)}
                     />
@@ -301,9 +435,6 @@ export function IntakeCard({ onSubmit }: IntakeCardProps) {
 
                 <Button
                     className="w-full bg-teal-700 hover:bg-teal-800 text-white h-12 text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSubmit}
-                    disabled={!location || !painType || !duration || isSubmitting}
-                >
                     {isSubmitting ? 'Validating...' : 'Start Diagnosis'}
                 </Button>
             </CardContent>
