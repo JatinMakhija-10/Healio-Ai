@@ -621,7 +621,6 @@ export function DiagnosisResultCard({
             gender: up.gender,
             weight: up.weight,
             height: up.height,
-            bloodPressure: up.bloodPressure,
             medications: up.medications,
             allergies: up.allergies,
             conditions: up.conditions,
