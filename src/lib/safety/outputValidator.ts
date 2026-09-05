@@ -40,6 +40,8 @@ export interface ValidationProfile {
     sexAtBirth?: string | null;
     /** Optional: list of remedies blocked by Stage 2.5 DDI filter */
     blockedRemedies?: string[];
+    /** Optional: patient's known allergies for post-gen contraindication scan (c1.md §I.3.2) */
+    allergies?: string[];
 }
 
 export interface FieldViolation {
@@ -217,25 +219,31 @@ export function validateOutputAgainstProfile(
     }
 
     // ── 2. DDI Blocked Remedies Safety Rule (P0-3) ───────────────────────────
+    // Extended (c1.md §I.3.2): scans ALL remedy arrays, not just `remedies`
     const blockedRemedies = profile?.blockedRemedies || [];
+    const allRemedyArrayNames = ['remedies', 'ayurvedic_remedies', 'home_remedies', 'indianHomeRemedies'] as const;
+
     if (blockedRemedies.length > 0) {
         const fullContentText = JSON.stringify(jsonResponse).toLowerCase();
         for (const blocked of blockedRemedies) {
             const blockedLower = blocked.trim().toLowerCase();
             if (!blockedLower) continue;
 
-            // Check if blocked remedy appears in remedies array
-            if (Array.isArray(jsonResponse.remedies)) {
-                jsonResponse.remedies.forEach((r: unknown, idx: number) => {
-                    const remedyName = (r as { name?: string })?.name?.toLowerCase() || '';
-                    if (remedyName.includes(blockedLower) || blockedLower.includes(remedyName)) {
-                        fieldViolations.push({
-                            field: `remedies[${idx}]`,
-                            term: `blocked_remedy:${blocked}`,
-                            excerpt: `DDI Contraindication: "${blocked}" is strictly blocked for this patient.`,
-                        });
-                    }
-                });
+            // Check if blocked remedy appears in ANY remedy array
+            for (const arrayName of allRemedyArrayNames) {
+                const arr = jsonResponse[arrayName];
+                if (Array.isArray(arr)) {
+                    arr.forEach((r: unknown, idx: number) => {
+                        const remedyName = (r as { name?: string })?.name?.toLowerCase() || '';
+                        if (remedyName.includes(blockedLower) || blockedLower.includes(remedyName)) {
+                            fieldViolations.push({
+                                field: `${arrayName}[${idx}]`,
+                                term: `blocked_remedy:${blocked}`,
+                                excerpt: `DDI Contraindication: "${blocked}" is strictly blocked for this patient.`,
+                            });
+                        }
+                    });
+                }
             }
 
             // Check if blocked remedy is mentioned in prose or description
@@ -244,6 +252,48 @@ export function validateOutputAgainstProfile(
                     field: 'response_text',
                     term: `blocked_remedy:${blocked}`,
                     excerpt: `DDI Contraindication: Mention of blocked remedy "${blocked}" detected in LLM output.`,
+                });
+            }
+        }
+    }
+
+    // ── 2b. Allergy Cross-Check Safety Rule (c1.md §I.3.2) ───────────────────
+    // Scans ALL remedy arrays for substances matching the patient's allergy list.
+    // This is defense-in-depth: the prompt already instructs the LLM to avoid
+    // allergens, but LLMs can fail to comply under conversational pressure.
+    const patientAllergies = profile?.allergies || [];
+    if (patientAllergies.length > 0) {
+        for (const allergy of patientAllergies) {
+            const allergyLower = allergy.trim().toLowerCase();
+            if (!allergyLower) continue;
+
+            for (const arrayName of allRemedyArrayNames) {
+                const arr = jsonResponse[arrayName];
+                if (Array.isArray(arr)) {
+                    arr.forEach((r: unknown, idx: number) => {
+                        const remedyName = (r as { name?: string })?.name?.toLowerCase() || '';
+                        const remedyDesc = (r as { description?: string })?.description?.toLowerCase() || '';
+                        if (
+                            remedyName.includes(allergyLower) || allergyLower.includes(remedyName) ||
+                            remedyDesc.includes(allergyLower)
+                        ) {
+                            fieldViolations.push({
+                                field: `${arrayName}[${idx}]`,
+                                term: `allergy:${allergy}`,
+                                excerpt: `Allergy Contraindication: Patient is allergic to "${allergy}". Found in ${arrayName}[${idx}].`,
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Also check prose fields for allergy mentions
+            const fullContentText = JSON.stringify(jsonResponse).toLowerCase();
+            if (fullContentText.includes(allergyLower)) {
+                fieldViolations.push({
+                    field: 'response_text',
+                    term: `allergy:${allergy}`,
+                    excerpt: `Allergy Contraindication: Mention of allergen "${allergy}" detected in LLM output.`,
                 });
             }
         }
@@ -285,15 +335,35 @@ export function validateOutputAgainstProfile(
 
     const sanitized = JSON.parse(JSON.stringify(jsonResponse)) as Record<string, unknown>;
 
-    // P0-3 Blocked Remedy Sanitization
-    if (blockedRemedies.length > 0 && Array.isArray(sanitized.remedies)) {
-        sanitized.remedies = (sanitized.remedies as Array<{ name?: string }>).filter((r) => {
-            const name = r.name?.toLowerCase() || '';
-            return !blockedRemedies.some((b) => {
-                const bLower = b.trim().toLowerCase();
-                return bLower && (name.includes(bLower) || bLower.includes(name));
-            });
-        });
+    // P0-3 Blocked Remedy Sanitization — extended to all remedy arrays (c1.md §I.3.2)
+    if (blockedRemedies.length > 0) {
+        for (const arrayName of allRemedyArrayNames) {
+            if (Array.isArray(sanitized[arrayName])) {
+                sanitized[arrayName] = (sanitized[arrayName] as Array<{ name?: string }>).filter((r) => {
+                    const name = r.name?.toLowerCase() || '';
+                    return !blockedRemedies.some((b) => {
+                        const bLower = b.trim().toLowerCase();
+                        return bLower && (name.includes(bLower) || bLower.includes(name));
+                    });
+                });
+            }
+        }
+    }
+
+    // Allergy-based remedy sanitization (c1.md §I.3.2)
+    if (patientAllergies.length > 0) {
+        for (const arrayName of allRemedyArrayNames) {
+            if (Array.isArray(sanitized[arrayName])) {
+                sanitized[arrayName] = (sanitized[arrayName] as Array<{ name?: string; description?: string }>).filter((r) => {
+                    const name = r.name?.toLowerCase() || '';
+                    const desc = r.description?.toLowerCase() || '';
+                    return !patientAllergies.some((a) => {
+                        const aLower = a.trim().toLowerCase();
+                        return aLower && (name.includes(aLower) || aLower.includes(name) || desc.includes(aLower));
+                    });
+                });
+            }
+        }
     }
 
     const reproCtx = normalizeReproductiveContext({

@@ -33,8 +33,17 @@ describe('Phase 0 Safety & Security Verification Tests', () => {
             const response = await diagnose(strokeSymptoms);
 
             expect(response.results).toHaveLength(0);
-            expect(response.alerts?.some((a) => a.includes('STROKE WARNING'))).toBe(true);
-            expect(response.orchestrationMeta?.pipelineStages).toContain('emergency_bypass_triggered');
+            // The red-flag gate (c1.md §I.1) now intercepts stroke symptoms BEFORE
+            // the legacy scanRedFlags. Accept either the gate's clinician-reviewed
+            // message (contains "stroke") or the legacy STROKE WARNING format.
+            expect(response.alerts?.some((a) =>
+                a.includes('STROKE WARNING') || a.toLowerCase().includes('stroke')
+            )).toBe(true);
+            // Accept either the new gate stage name or the legacy bypass stage
+            const stages = response.orchestrationMeta?.pipelineStages || [];
+            expect(
+                stages.includes('emergency_bypass_triggered') || stages.includes('red_flag_gate')
+            ).toBe(true);
         });
     });
 

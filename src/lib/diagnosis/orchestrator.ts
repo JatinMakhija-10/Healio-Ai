@@ -44,7 +44,7 @@ import {
     buildEvidenceMetrics,
 } from "./engine";
 import { symptomCorrelationDetector, DetectedPattern } from "./advanced/SymptomCorrelations";
-import { clinicalRules, RuleResult } from "./advanced/ClinicalDecisionRules";
+import { clinicalRules, RuleResult, computeWellsOverride, type WellsOverrideResult } from "./advanced/ClinicalDecisionRules";
 import { uncertaintyQuantifier, UncertaintyEstimate } from "./advanced/UncertaintyQuantification";
 import { infoGainSelector } from "./advanced/InformationGainSelector";
 import { checkInteractions, buildDDIPromptSection } from "./ddi";
@@ -53,6 +53,7 @@ import { runIntelligenceLayer, mergeIntelligenceIntoResponse } from "./advanced/
 import { buildPersonaProfile } from "./advanced/PersonaEngine";
 import type { IntelligenceContext, EnhancedDiagnosisOutput } from "./advanced/intelligenceTypes";
 import { enrichDiagnosisSession } from "./datasources";
+import { checkRedFlags as checkRedFlagGate } from "../safety/redFlagGate";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -110,6 +111,8 @@ export interface OrchestratedResult {
         convergenceGated: boolean;
         posteriorRedFlags: string[];
         ddi: DDIMeta;
+        /** Wells' Criteria DVT override result (c1.md §I.2) — present when DVT suspected */
+        wellsOverride?: WellsOverrideResult;
         mcmcConvergence?: {
             effectiveSampleSize: number;
             gewekePValue: number;
@@ -191,9 +194,68 @@ export async function diagnose(
     }).catch(() => { /* non-fatal */ });
 
     // ═══════════════════════════════════════════════════════════════════════
+    // PRE-STAGE 0 — Deterministic Red-Flag Override Gate (c1.md §I.1)
+    //
+    // Runs BEFORE everything else. If EMERGENCY_STOP fires, the pipeline
+    // short-circuits with a fixed clinician-reviewed message — no MCMC,
+    // no LLM, no AI inference. If URGENT_ESCALATION fires, the message
+    // is injected as a priority alert and the pipeline continues.
+    // ═══════════════════════════════════════════════════════════════════════
+    const parsedText = [
+        ...symptoms.location,
+        symptoms.painType || '',
+        symptoms.additionalNotes || '',
+        symptoms.triggers || '',
+    ].filter(Boolean).join(' ');
+
+    const redFlagGateResult = checkRedFlagGate(parsedText);
+    if (redFlagGateResult) {
+        completedStages.push('red_flag_gate');
+
+        if (redFlagGateResult.action === 'EMERGENCY_STOP') {
+            console.warn(`[Orchestrator] RED-FLAG GATE EMERGENCY_STOP: rule=${redFlagGateResult.rule.id}`);
+            return {
+                results: [],
+                alerts: [redFlagGateResult.message],
+                orchestrationMeta: {
+                    bayesianTopK: [],
+                    ragApplied: false,
+                    ragRemediesFound: [],
+                    aiProvider: 'none',
+                    aiLatencyMs: 0,
+                    bayesianCalibratedConfidence: 0,
+                    fusionMethod: 'bayesian_dominant',
+                    pipelineStages: completedStages,
+                    convergenceGated: false,
+                    posteriorRedFlags: [],
+                    ddi: {
+                        ddiApplied: false,
+                        ddiBlockedCount: 0,
+                        ddiFlaggedCount: 0,
+                        ddiAlerts: [],
+                        unrecognizedMeds: [],
+                    },
+                },
+            };
+        }
+
+        // URGENT_ESCALATION — inject as priority alert, continue pipeline
+        if (redFlagGateResult.action === 'URGENT_ESCALATION') {
+            console.warn(`[Orchestrator] RED-FLAG GATE URGENT_ESCALATION: rule=${redFlagGateResult.rule.id}`);
+            // Will be merged into alerts in STAGE 0 below
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // STAGE 0 — Safety Red-Flag Scan (always runs first)
     // ═══════════════════════════════════════════════════════════════════════
     const alerts = scanRedFlags(symptoms);
+
+    // Merge any URGENT_ESCALATION alert from the gate into the main alert list
+    if (redFlagGateResult && redFlagGateResult.action === 'URGENT_ESCALATION') {
+        alerts.unshift(redFlagGateResult.message);
+    }
+
     completedStages.push("red_flags");
 
     // P0-5 Fix: Emergency Red Flag Immediate Bypass
@@ -396,6 +458,60 @@ export async function diagnose(
         completedStages.push("clinical_rules");
     } catch (e) {
         console.error("[Orchestrator] Clinical rules stage error:", e);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 2.1 — Wells' Criteria DVT Override (c1.md §I.2)
+    //
+    // When DVT is clinically suspected, run the validated Wells' scoring and
+    // override the MCMC engine's custom DVT multiplier stack with the
+    // published cohort probability (~5% / ~17% / ~53%).
+    //
+    // The MCMC engine still runs for ALL conditions, but if the top Bayesian
+    // candidate is DVT/PE-related and Wells' fires, we replace its score
+    // with the validated probability × 100.
+    // ═══════════════════════════════════════════════════════════════════════
+    let wellsOverrideResult: WellsOverrideResult | undefined;
+    try {
+        const symptomList = extractSymptomList(symptoms);
+        const demographics = {
+            age: symptoms.userProfile?.age,
+            cancer_treatment_recent: symptoms.userProfile?.conditions?.some(
+                (c: string) => /cancer|malignan|tumor|tumour|chemo/i.test(c)
+            ),
+            hormonal_therapy: symptoms.userProfile?.medications
+                ? (Array.isArray(symptoms.userProfile.medications)
+                    ? symptoms.userProfile.medications
+                    : [symptoms.userProfile.medications]
+                ).some((m: string) => /hormonal|estrogen|contracepti|birth\s*control/i.test(m))
+                : false,
+        };
+
+        wellsOverrideResult = computeWellsOverride(symptomList, demographics);
+
+        if (wellsOverrideResult.applied) {
+            completedStages.push('wells_override');
+            console.log(
+                `[Orchestrator] WELLS' OVERRIDE: score=${wellsOverrideResult.score}, ` +
+                `tier=${wellsOverrideResult.riskTier}, prob=${(wellsOverrideResult.validatedProbability * 100).toFixed(0)}%`
+            );
+
+            // Override the top Bayesian candidate's score if it's DVT/PE-related
+            const dvtCandidate = bayesianCandidates.find(c =>
+                /dvt|deep\s*vein|pulmonary.*embol|venous.*thromb/i.test(c.conditionName)
+            );
+            if (dvtCandidate) {
+                const wellsScore = Math.round(wellsOverrideResult.validatedProbability * 100);
+                dvtCandidate.reasoningTrace.push({
+                    factor: `Wells' Criteria Override: ${wellsOverrideResult.interpretation} (score ${wellsOverrideResult.score})`,
+                    impact: wellsScore,
+                    type: 'prior',
+                });
+                dvtCandidate.score = wellsScore;
+            }
+        }
+    } catch (e) {
+        console.error('[Orchestrator] Wells\' override error (non-fatal):', e);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -679,6 +795,7 @@ export async function diagnose(
             posteriorPredictiveP: topMcmc.posteriorPredictiveP,
             credibleInterval: topMcmc.credibleInterval,
         } : undefined,
+        wellsOverride: wellsOverrideResult?.applied ? wellsOverrideResult : undefined,
     };
 
     // ═══════════════════════════════════════════════════════════════════════

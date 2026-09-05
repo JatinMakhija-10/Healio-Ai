@@ -407,3 +407,126 @@ export class ClinicalDecisionRules {
 }
 
 export const clinicalRules = new ClinicalDecisionRules();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WELLS' CRITERIA DVT OVERRIDE (c1.md Part I, §I.2)
+//
+// Replaces the custom α-stacking multiplier approach for DVT risk with the
+// validated Wells' Criteria scoring system. The output is a validated risk tier
+// mapped to published post-test probabilities from the original Wells cohort,
+// NOT a bespoke percentage the system invented.
+//
+// The MCMC engine is preserved for conditions WITHOUT an established decision
+// rule, but DVT-specific scoring defers to Wells' when it fires.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type WellsRiskTier = 'low' | 'moderate' | 'high';
+
+export interface WellsOverrideResult {
+    /** Whether the Wells' override was applied */
+    applied: boolean;
+    /** Wells' raw score */
+    score: number;
+    /** Risk tier derived from Wells' score thresholds */
+    riskTier: WellsRiskTier;
+    /**
+     * Published post-test probability from the original Wells cohort.
+     * This is a VALIDATED number, not a model-generated estimate.
+     * Reference: Wells PS et al., Lancet 1997; 350: 1795–98
+     */
+    validatedProbability: number;
+    /** Human-readable interpretation for the reasoning trace */
+    interpretation: string;
+    /** Clinical recommendation */
+    recommendation: string;
+    /** The full RuleResult from wellsScoreDVT */
+    ruleResult: RuleResult;
+}
+
+/**
+ * Maps a Wells' risk tier to the published post-test probability from
+ * the original validation cohort.
+ *
+ * These are NOT custom numbers — they come from:
+ *   Wells PS, Anderson DR, Bormanis J, et al.
+ *   "Value of assessment of pretest probability of deep-vein thrombosis
+ *    in clinical management." Lancet. 1997; 350(9094): 1795–1798.
+ *
+ * Low  (score ≤0):  ~5% DVT prevalence
+ * Moderate (1–2):   ~17% DVT prevalence
+ * High (≥3):        ~53% DVT prevalence
+ */
+export function wellsRiskToProbability(riskTier: WellsRiskTier): number {
+    switch (riskTier) {
+        case 'low':      return 0.05;   // ~5%
+        case 'moderate': return 0.17;   // ~17%
+        case 'high':     return 0.53;   // ~53%
+    }
+}
+
+/**
+ * Computes a Wells' Criteria override for DVT when DVT is clinically suspected.
+ *
+ * Returns a WellsOverrideResult with `applied: true` when DVT symptoms are
+ * present, providing a validated risk tier and probability that should replace
+ * the MCMC engine's custom DVT multiplier stack.
+ *
+ * Returns `applied: false` when DVT is not suspected (no leg/calf symptoms).
+ *
+ * @param symptoms     Normalized symptom list from extractSymptomList()
+ * @param demographics Patient demographics (age, cancer status, etc.)
+ */
+export function computeWellsOverride(
+    symptoms: string[],
+    demographics: DemographicData = {}
+): WellsOverrideResult {
+    // Only apply when DVT is clinically suspected
+    const dvtSuspected =
+        symptoms.includes('leg_swelling') ||
+        symptoms.includes('calf_pain') ||
+        symptoms.includes('leg_pain') ||
+        symptoms.includes('calf_tenderness') ||
+        symptoms.includes('deep_vein_tenderness') ||
+        symptoms.includes('leg_swelling_entire') ||
+        symptoms.includes('calf_asymmetry') ||
+        symptoms.includes('pitting_edema');
+
+    if (!dvtSuspected) {
+        return {
+            applied: false,
+            score: 0,
+            riskTier: 'low',
+            validatedProbability: 0,
+            interpretation: 'DVT not suspected — Wells\' override not applied',
+            recommendation: '',
+            ruleResult: {
+                rule: 'Wells Score for DVT',
+                score: 0,
+                interpretation: 'Not applicable',
+                recommendation: '',
+                confidence: 0,
+            },
+        };
+    }
+
+    // Run the validated Wells' scoring
+    const ruleResult = wellsScoreDVT(symptoms, demographics);
+
+    // Map score to risk tier
+    const riskTier: WellsRiskTier =
+        ruleResult.score >= 3 ? 'high' :
+        ruleResult.score >= 1 ? 'moderate' :
+        'low';
+
+    const validatedProbability = wellsRiskToProbability(riskTier);
+
+    return {
+        applied: true,
+        score: ruleResult.score,
+        riskTier,
+        validatedProbability,
+        interpretation: ruleResult.interpretation,
+        recommendation: ruleResult.recommendation,
+        ruleResult,
+    };
+}

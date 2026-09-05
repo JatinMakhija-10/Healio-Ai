@@ -21,6 +21,7 @@ import { computeBMI, getBMIClass } from '@/lib/diagnosis/advanced/PersonaEngine'
 import { buildEnrichedQuery, extractProfileContext } from '@/lib/rag/queryRewriter';
 import { applyAllergyFilter, serialiseFilteredChunks, hasAnyFlaggedChunk, type RetrievedChunk } from '@/lib/rag/safetyFilter';
 import { detectCompoundRedFlags, buildEmergencyResponseText } from '@/lib/safety/redFlagDetector';
+import { checkRedFlags as checkRedFlagGate, buildGateResponseText } from '@/lib/safety/redFlagGate';
 import { validateProfileConsistency, formatValidationWarningsForPrompt } from '@/lib/profile/clinicalValidator';
 import {
     buildDrugInteractionPrompt,
@@ -1715,6 +1716,22 @@ export async function POST(req: NextRequest) {
                 .filter((m: { role?: string; content?: string }) => m.role === 'user')
                 .pop()?.content ?? ''
             : '';
+
+        // ── PRIORITY 0: Deterministic Red-Flag Override Gate (c1.md §I.1) ─────
+        // Runs FIRST, before all other safety checks. Fixed clinician-reviewed
+        // messages, negation-aware, fails safe. EMERGENCY_STOP bypasses LLM.
+        const redFlagGateResult = checkRedFlagGate(rawLastUserMsg);
+        if (redFlagGateResult) {
+            if (redFlagGateResult.action === 'EMERGENCY_STOP') {
+                const gateText = buildGateResponseText(redFlagGateResult);
+                return streamTextResponse(gateText, {
+                    'X-Intake-Decision': 'red-flag-gate-stop',
+                    'X-Red-Flag-Rule': redFlagGateResult.rule.id,
+                });
+            }
+            // URGENT_ESCALATION: inject as context, continue pipeline
+            // (the escalation message will be merged into alerts downstream)
+        }
 
         if (hasEmergencyRedFlag(rawLastUserMsg)) {
             return streamTextResponse(EMERGENCY_RESPONSE, { 'X-Intake-Decision': 'emergency-keyword' });
