@@ -530,3 +530,299 @@ export function computeWellsOverride(
         ruleResult,
     };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHARED TYPES — Validated Clinical Calculator Results (c1.md §I.2 extension)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type EvidenceGrade = 'A' | 'B' | 'C' | 'expert-consensus';
+export type RiskTierLabel = 'low' | 'moderate' | 'high' | 'critical';
+
+/**
+ * Typed result returned by every validated clinical calculator.
+ * validatedProbability is always sourced from published cohort data —
+ * never an internally generated estimate.
+ */
+export interface ValidatedRuleResult {
+    ruleName: string;
+    score: number;
+    riskTier: RiskTierLabel;
+    validatedProbability: number;
+    interpretation: string;
+    recommendation: string;
+    citation: string;
+    evidenceGrade: EvidenceGrade;
+    scoringBreakdown: string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CURB-65 — Pneumonia Severity Index (c1.md §I.2)
+//
+// Reference: Lim WS et al., Thorax. 2003;58(5):377–382. PMID 12728155
+//   Score ≤1 → Low       → ~1.5% 30-day mortality → outpatient
+//   Score 2  → Moderate  → ~9.2%                  → short-stay/supervised
+//   Score 3–4→ High      → ~22%                   → hospitalise
+//   Score 5  → Critical  → ~57%                   → ICU consider
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CURB65Input {
+    elevatedBUN: boolean;
+    respiratoryRateHigh: boolean;
+    lowBloodPressure: boolean;
+    ageOver65: boolean;
+    newConfusion: boolean;
+}
+
+export function calculateCURB65(input: CURB65Input): ValidatedRuleResult {
+    const scoringBreakdown: string[] = [];
+    let score = 0;
+
+    if (input.newConfusion) { score += 1; scoringBreakdown.push('Confusion (+1)'); }
+    if (input.elevatedBUN) { score += 1; scoringBreakdown.push('Elevated BUN/Urea (+1)'); }
+    if (input.respiratoryRateHigh) { score += 1; scoringBreakdown.push('Respiratory rate ≥30/min (+1)'); }
+    if (input.lowBloodPressure) { score += 1; scoringBreakdown.push('Low blood pressure (+1)'); }
+    if (input.ageOver65) { score += 1; scoringBreakdown.push('Age ≥65 years (+1)'); }
+
+    let riskTier: RiskTierLabel;
+    let validatedProbability: number;
+    let interpretation: string;
+    let recommendation: string;
+
+    if (score <= 1) {
+        riskTier = 'low';
+        validatedProbability = 0.015;
+        interpretation = 'Low severity pneumonia (CURB-65 ≤1)';
+        recommendation = 'Consider outpatient treatment. ~1.5% 30-day mortality. Follow up within 48 hours.';
+    } else if (score === 2) {
+        riskTier = 'moderate';
+        validatedProbability = 0.092;
+        interpretation = 'Moderate severity pneumonia (CURB-65 = 2)';
+        recommendation = 'Consider short inpatient admission or closely supervised outpatient care.';
+    } else if (score <= 4) {
+        riskTier = 'high';
+        validatedProbability = 0.22;
+        interpretation = 'Severe pneumonia (CURB-65 3–4)';
+        recommendation = 'Hospitalise. ~22% 30-day mortality. Consider IV antibiotics and supplemental oxygen.';
+    } else {
+        riskTier = 'critical';
+        validatedProbability = 0.57;
+        interpretation = 'Very severe pneumonia (CURB-65 = 5)';
+        recommendation = 'Immediate hospitalisation. Consider ICU admission. ~57% 30-day mortality.';
+    }
+
+    return {
+        ruleName: 'CURB-65 Pneumonia Severity Score',
+        score,
+        riskTier,
+        validatedProbability,
+        interpretation,
+        recommendation,
+        citation: 'Lim WS et al. Thorax. 2003;58(5):377-382. PMID 12728155',
+        evidenceGrade: 'A',
+        scoringBreakdown,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHA₂DS₂-VASc — Stroke Risk in Atrial Fibrillation (c1.md §I.2)
+//
+// Reference: Lip GY et al., Chest. 2010;137(2):263–272. PMID 19762550
+//   Score 0  → ~0%   annual stroke risk
+//   Score 1  → ~1.3% annual stroke risk — consider anticoagulation
+//   Score ≥2 → ≥2.2% annual stroke risk — anticoagulation recommended
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CHA2DS2VAScInput {
+    heartFailure: boolean;
+    hypertension: boolean;
+    ageOver75: boolean;
+    age65to74: boolean;
+    diabetes: boolean;
+    priorStrokeOrTIA: boolean;
+    vascularDisease: boolean;
+    femaleSex: boolean;
+}
+
+export function calculateCHA2DS2VASc(input: CHA2DS2VAScInput): ValidatedRuleResult {
+    const scoringBreakdown: string[] = [];
+    let score = 0;
+
+    if (input.heartFailure) { score += 1; scoringBreakdown.push('Heart failure (+1)'); }
+    if (input.hypertension) { score += 1; scoringBreakdown.push('Hypertension (+1)'); }
+    if (input.ageOver75) { score += 2; scoringBreakdown.push('Age ≥75 years (+2)'); }
+    else if (input.age65to74) { score += 1; scoringBreakdown.push('Age 65–74 years (+1)'); }
+    if (input.diabetes) { score += 1; scoringBreakdown.push('Diabetes mellitus (+1)'); }
+    if (input.priorStrokeOrTIA) { score += 2; scoringBreakdown.push('Prior stroke/TIA (+2)'); }
+    if (input.vascularDisease) { score += 1; scoringBreakdown.push('Vascular disease (+1)'); }
+    if (input.femaleSex) { score += 1; scoringBreakdown.push('Female sex (+1)'); }
+
+    // Annual stroke rates from Lip et al. 2010 Table 4
+    const ANNUAL_STROKE_RISK: Record<number, number> = {
+        0: 0.000, 1: 0.013, 2: 0.022, 3: 0.032,
+        4: 0.040, 5: 0.068, 6: 0.094, 7: 0.098,
+        8: 0.118, 9: 0.154,
+    };
+    const clampedScore = Math.min(score, 9);
+    const validatedProbability = ANNUAL_STROKE_RISK[clampedScore] ?? 0.154;
+
+    let riskTier: RiskTierLabel;
+    let interpretation: string;
+    let recommendation: string;
+
+    if (score === 0) {
+        riskTier = 'low';
+        interpretation = 'Low stroke risk (CHA₂DS₂-VASc = 0)';
+        recommendation = 'No antithrombotic therapy needed.';
+    } else if (score === 1) {
+        riskTier = 'moderate';
+        interpretation = 'Borderline stroke risk (CHA₂DS₂-VASc = 1)';
+        recommendation = 'Consider oral anticoagulation (OAC). Shared decision-making recommended. ~1.3% annual stroke risk.';
+    } else {
+        riskTier = 'high';
+        interpretation = `Elevated stroke risk (CHA₂DS₂-VASc = ${score})`;
+        recommendation = `Oral anticoagulation recommended — ~${(validatedProbability * 100).toFixed(1)}% annual stroke risk. Warfarin (INR 2–3) or NOAC preferred.`;
+    }
+
+    return {
+        ruleName: 'CHA\u2082DS\u2082-VASc Stroke Risk Score (Atrial Fibrillation)',
+        score,
+        riskTier,
+        validatedProbability,
+        interpretation,
+        recommendation,
+        citation: 'Lip GY et al. Chest. 2010;137(2):263-272. PMID 19762550',
+        evidenceGrade: 'A',
+        scoringBreakdown,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CENTOR / McISAAC — Strep Pharyngitis Likelihood (c1.md §I.2)
+//
+// Reference: McIsaac WJ et al., CMAJ. 2000;163(7):811–815. PMID 11033707
+//   Score ≤0 → ~1–2.5% → No testing, no antibiotics
+//   Score 1  → ~5–10%  → No testing, no antibiotics
+//   Score 2  → ~11–17% → Culture/rapid antigen test
+//   Score 3  → ~28–35% → Culture/rapid antigen test
+//   Score ≥4 → ~52%    → Empiric antibiotics reasonable
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CentorInput {
+    tonsilllarExudates: boolean;
+    tenderAnteriorLymphadenopathy: boolean;
+    fever: boolean;
+    coughAbsent: boolean;
+    ageGroup: 'child' | 'adult' | 'older_adult';
+}
+
+export function calculateCentor(input: CentorInput): ValidatedRuleResult {
+    const scoringBreakdown: string[] = [];
+    let score = 0;
+
+    if (input.tonsilllarExudates) { score += 1; scoringBreakdown.push('Tonsillar exudates (+1)'); }
+    if (input.tenderAnteriorLymphadenopathy) { score += 1; scoringBreakdown.push('Tender anterior lymphadenopathy (+1)'); }
+    if (input.fever) { score += 1; scoringBreakdown.push('Fever >38\u00b0C (+1)'); }
+    if (input.coughAbsent) { score += 1; scoringBreakdown.push('Cough absent (+1)'); }
+
+    if (input.ageGroup === 'child') {
+        score += 1; scoringBreakdown.push('Age 3–14 years (+1)');
+    } else if (input.ageGroup === 'older_adult') {
+        score -= 1; scoringBreakdown.push('Age \u226545 years (\u22121)');
+    } else {
+        scoringBreakdown.push('Age 15–44 years (0)');
+    }
+
+    const STREP_PROBABILITY: Record<number, number> = {
+        '-1': 0.010, 0: 0.025, 1: 0.075, 2: 0.140, 3: 0.315, 4: 0.520, 5: 0.520,
+    };
+    const clampedScore = Math.max(-1, Math.min(score, 5));
+    const validatedProbability = STREP_PROBABILITY[clampedScore] ?? 0.025;
+
+    let riskTier: RiskTierLabel;
+    let interpretation: string;
+    let recommendation: string;
+
+    if (score <= 1) {
+        riskTier = 'low';
+        interpretation = `Low strep probability (Centor score ${score})`;
+        recommendation = 'No throat culture or antibiotics needed. Supportive care.';
+    } else if (score <= 3) {
+        riskTier = 'moderate';
+        interpretation = `Moderate strep probability (Centor score ${score})`;
+        recommendation = `Throat culture or rapid antigen test (RADT) recommended (~${(validatedProbability * 100).toFixed(0)}% probability). Treat only if positive.`;
+    } else {
+        riskTier = 'high';
+        interpretation = `High strep probability (Centor score ${score})`;
+        recommendation = `Empiric antibiotics reasonable (~${(validatedProbability * 100).toFixed(0)}% probability). Penicillin V or amoxicillin first-line.`;
+    }
+
+    return {
+        ruleName: 'Modified Centor (McIsaac) Score — Strep Pharyngitis',
+        score,
+        riskTier,
+        validatedProbability,
+        interpretation,
+        recommendation,
+        citation: 'McIsaac WJ et al. CMAJ. 2000;163(7):811-815. PMID 11033707',
+        evidenceGrade: 'A',
+        scoringBreakdown,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// qSOFA — Quick Sequential Organ Failure Assessment (Sepsis-3) (c1.md §I.2)
+//
+// Reference: Seymour CW et al., JAMA. 2016;315(8):801–810. PMID 26903335
+//   Score 0  → ~3% in-hospital mortality
+//   Score 1  → ~6% — monitor, reassess
+//   Score ≥2 → ~24% — HIGH RISK, initiate sepsis protocol immediately
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface QSOFAInput {
+    alteredMentalStatus: boolean;
+    respiratoryRateHigh: boolean;
+    lowSystolicBP: boolean;
+}
+
+export function calculateQSOFA(input: QSOFAInput): ValidatedRuleResult {
+    const scoringBreakdown: string[] = [];
+    let score = 0;
+
+    if (input.alteredMentalStatus) { score += 1; scoringBreakdown.push('Altered mental status (+1)'); }
+    if (input.respiratoryRateHigh) { score += 1; scoringBreakdown.push('Respiratory rate \u226522/min (+1)'); }
+    if (input.lowSystolicBP) { score += 1; scoringBreakdown.push('Systolic BP \u2264100 mmHg (+1)'); }
+
+    // In-hospital mortality from Seymour et al. 2016 non-ICU validation cohort
+    const MORTALITY: Record<number, number> = { 0: 0.03, 1: 0.06, 2: 0.24, 3: 0.40 };
+    const validatedProbability = MORTALITY[Math.min(score, 3)] ?? 0.40;
+
+    let riskTier: RiskTierLabel;
+    let interpretation: string;
+    let recommendation: string;
+
+    if (score >= 2) {
+        riskTier = 'critical';
+        interpretation = `qSOFA positive — High sepsis mortality risk (score ${score}/3)`;
+        recommendation = 'URGENT: Blood cultures x2, lactate, CBC, metabolic panel. Broad-spectrum antibiotics within 1 hour. ICU evaluation.';
+    } else if (score === 1) {
+        riskTier = 'moderate';
+        interpretation = 'qSOFA borderline (1/3) — Monitor closely';
+        recommendation = 'Reassess frequently. If clinical concern for infection persists or deteriorates, initiate sepsis protocol.';
+    } else {
+        riskTier = 'low';
+        interpretation = 'qSOFA negative (0/3) — Low sepsis mortality risk';
+        recommendation = 'Low mortality risk by qSOFA. Continue monitoring. Clinical judgment always takes precedence.';
+    }
+
+    return {
+        ruleName: 'qSOFA — Quick SOFA Sepsis Bedside Screen',
+        score,
+        riskTier,
+        validatedProbability,
+        interpretation,
+        recommendation,
+        citation: 'Seymour CW et al. JAMA. 2016;315(8):801-810. PMID 26903335',
+        evidenceGrade: 'A',
+        scoringBreakdown,
+    };
+}

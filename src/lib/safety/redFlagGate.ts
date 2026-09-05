@@ -57,10 +57,10 @@ export interface RedFlagGateResult {
  * Window size (in chars) to look back from a pattern match for negation tokens.
  * Matches the approach used in redFlagDetector.ts for consistency.
  */
-const NEGATION_WINDOW_CHARS = 40;
+const NEGATION_WINDOW_CHARS = 60;
 
 const NEGATION_PATTERN =
-    /\b(?:no|not|without|deny|denies|denied|negative\s+for|do\s+not\s+have|don'?t\s+have|does\s+not\s+have|doesn'?t\s+have|never\s+had|nahi|nahin|nahi\s+hai)\b/i;
+    /\b(?:no|not|without|without\s+any|deny|denies|denied|negative\s+for|do\s+not\s+have|don'?t\s+have|does\s+not\s+have|doesn'?t\s+have|never\s+had|rules?\s+out|ruled\s+out|nahi|nahin|nahi\s+hai)\b/i;
 
 function isNegated(text: string, matchIndex: number): boolean {
     const before = text.slice(Math.max(0, matchIndex - NEGATION_WINDOW_CHARS), matchIndex);

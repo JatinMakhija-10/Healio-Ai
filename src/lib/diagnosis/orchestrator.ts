@@ -824,4 +824,81 @@ export async function diagnose(
     return baseResponse;
 }
 
+
 // ─── Private Helpers ──────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FAIL-CLOSED WRAPPER (c1.md §I.3 item 5)
+//
+// Any unhandled exception from the full diagnosis pipeline MUST block the
+// response — never leak raw error text to the client, never silently pass
+// through unfiltered LLM output.
+//
+// This is the outermost safety net. It fires ONLY for genuinely unexpected
+// errors not caught at earlier stages (e.g. OOM, network timeout on LLM call,
+// unhandled promise rejection in a new code path).
+//
+// Usage: replace direct calls to diagnose() with safeOrchestrate() in
+//        all client-facing code paths (API route, chat route, etc.).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Deterministic safe-blocked response returned when the pipeline throws. */
+export const FAIL_CLOSED_RESPONSE = {
+    results: [] as DiagnosisResult[],
+    alerts: [
+        'Our diagnostic system encountered an unexpected error and could not process your symptoms safely. ' +
+        'Please try again in a moment. If your symptoms are severe or urgent, please contact emergency services or visit your nearest clinic.',
+    ],
+    orchestrationMeta: {
+        bayesianTopK: [],
+        ragApplied: false,
+        ragRemediesFound: [],
+        aiProvider: 'none' as const,
+        aiLatencyMs: 0,
+        bayesianCalibratedConfidence: 0,
+        fusionMethod: 'bayesian_dominant' as const,
+        pipelineStages: ['fail_closed'],
+        convergenceGated: false,
+        posteriorRedFlags: [],
+        ddi: {
+            ddiApplied: false,
+            ddiBlockedCount: 0,
+            ddiFlaggedCount: 0,
+            ddiAlerts: [],
+            unrecognizedMeds: [],
+        },
+    },
+} as const;
+
+/**
+ * Fail-closed wrapper around `diagnose()`.
+ *
+ * Guarantees: if the pipeline throws for any reason, the caller always receives
+ * a safe, user-friendly blocked response — never a raw exception, never an
+ * empty/undefined result, and never unfiltered LLM output.
+ *
+ * All client-facing code (API route, chat route) SHOULD call this instead of
+ * `diagnose()` directly.
+ */
+export async function safeOrchestrate(
+    symptoms: UserSymptomData
+): Promise<ReturnType<typeof diagnose>> {
+    try {
+        return await diagnose(symptoms);
+    } catch (err) {
+        console.error('[Orchestrator] FAIL-CLOSED: unhandled pipeline exception blocked:', err);
+        return {
+            ...FAIL_CLOSED_RESPONSE,
+            results: [],
+            alerts: [...FAIL_CLOSED_RESPONSE.alerts],
+            orchestrationMeta: {
+                ...FAIL_CLOSED_RESPONSE.orchestrationMeta,
+                bayesianTopK: [],
+                ragRemediesFound: [],
+                posteriorRedFlags: [],
+                pipelineStages: ['fail_closed'],
+                ddi: { ddiApplied: false, ddiBlockedCount: 0, ddiFlaggedCount: 0, ddiAlerts: [], unrecognizedMeds: [] },
+            },
+        };
+    }
+}
