@@ -204,19 +204,10 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             match_threshold: 0.55,
             match_count: 12,
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const qnaRpcCall = (supabase as any).rpc('search_ayurvedic_qna', {
-            query_embedding: embedding768,
-            match_threshold: 0.55,
-            match_count: 5,
-        });
 
-        const [{ data }, { data: qnaData }] = await Promise.all([
-            Promise.race([rpcCall, new Promise<{ data: null }>(r => setTimeout(() => r({ data: null }), 5_000))]),
-            Promise.race([qnaRpcCall, new Promise<{ data: null }>(r => setTimeout(() => r({ data: null }), 5_000))]).catch(() => ({ data: null })),
-        ]);
+        const { data } = await Promise.race([rpcCall, new Promise<{ data: null }>(r => setTimeout(() => r({ data: null }), 5_000))]);
 
-        if (!data?.length && !qnaData?.length) return '';
+        if (!data?.length) return '';
 
         // Deduplicate: keep one entry per unique source+section combination
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -230,7 +221,7 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             }
         }
 
-        const mainText = [...seen.values()]
+        return [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.60)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
             .slice(0, 6)
@@ -238,17 +229,6 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             .map((c: any, i: number) =>
                 `[${i + 1}] SOURCE: ${c.book} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`
             ).join('\n\n');
-
-        let qnaText = '';
-        if (qnaData?.length) {
-            qnaText = '\n--- BhashaBench Ayurvedic Q&A Context ---\n' +
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (qnaData as any[]).filter(q => (q.similarity ?? 0) >= 0.50).slice(0, 3).map((q, i) =>
-                    `[QnA${i + 1}] DOMAIN: ${q.domain} | relevance: ${((q.similarity ?? 0) * 100).toFixed(0)}%\n${q.chunk_text || `Q: ${q.question}\nANS: ${q.answer}`}`
-                ).join('\n\n');
-        }
-
-        return [mainText, qnaText].filter(Boolean).join('\n\n');
     } catch {
         return '';
     }
