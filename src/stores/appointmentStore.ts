@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type AppointmentStatus =
     | 'scheduled'
@@ -137,6 +137,7 @@ export const useAppointmentStore = create<AppointmentState>()(
         {
             name: 'arovia-appointments',
             partialize: (state) => ({ filters: state.filters }), // Only persist filters
+            storage: typeof window !== 'undefined' && window.localStorage ? createJSONStorage(() => localStorage) : undefined,
         }
     )
 );

@@ -14,3 +14,5 @@ export * from './common';
 export * from './neurological';
 export * from './urogenital';
 export * from './cardiovascular';
+export * from './metabolic';
+export * from './infectious';
