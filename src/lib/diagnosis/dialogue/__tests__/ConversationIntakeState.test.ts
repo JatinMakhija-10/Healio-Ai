@@ -153,4 +153,20 @@ describe('ConversationIntakeState', () => {
         expect(selectSymptomQuestionSchema('My knee hurts').id).toBe('body_pain');
         expect(selectSymptomQuestionSchema('shoulder pain').id).toBe('body_pain');
     });
+
+    it('infers chief_complaint when user responds with chip options like forehead dull ache', () => {
+        const schema = selectSymptomQuestionSchema('dull ache in forehead');
+        expect(schema.id).toBe('headache');
+
+        const state = buildConversationIntakeState([
+            { role: 'user', content: 'dull ache in forehead' },
+            { role: 'assistant', content: 'How long has this been happening?' },
+            { role: 'user', content: 'Dull/aching' },
+            { role: 'assistant', content: 'Are you noticing any other symptoms—like fever, nausea, dizziness, sensitivity to light?' },
+            { role: 'user', content: 'Sensitivity to light' },
+        ]);
+
+        expect(state.answeredFields.has('chief_complaint')).toBe(true);
+        expect(state.pendingQueue.some((f) => f.key === 'chief_complaint')).toBe(false);
+    });
 });

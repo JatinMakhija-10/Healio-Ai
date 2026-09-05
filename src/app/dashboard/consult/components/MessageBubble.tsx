@@ -32,22 +32,23 @@ function formatTime(date: Date) {
 }
 
 function repairDanglingPrompt(text: string): string {
-    const trimmed = text.trim();
+    let trimmed = text.trim();
     if (!trimmed) return trimmed;
 
-    const hasSeverityContext = /\b(severe|severity|intensity|pain|bad|rate|rating|scale)\b/i.test(trimmed);
-    if (!hasSeverityContext) return trimmed;
-
     const repairs: Array<[RegExp, string]> = [
+        [/\b(discomfort|pain|symptom|intensity)\s+is\s+relatively\s*$/i, "$1 is relatively mild."],
+        [/\brelatively\s*$/i, "relatively mild."],
         [/\b(on\s+a\s+scale\s+of)\s*$/i, "$1 1 to 10?"],
         [/\b(scale\s+of)\s*$/i, "$1 1 to 10?"],
         [/\b(on\s+a\s+scale\s+from)\s*$/i, "$1 1 to 10?"],
         [/\b(scale\s+from)\s*$/i, "$1 1 to 10?"],
+        [/\b(rate\s+it|rate\s+the\s+severity|rate\s+the\s+pain)\s*$/i, "$1 on a scale of 1 to 10?"],
     ];
 
     for (const [pattern, replacement] of repairs) {
         if (pattern.test(trimmed)) {
-            return trimmed.replace(pattern, replacement);
+            trimmed = trimmed.replace(pattern, replacement);
+            break;
         }
     }
 

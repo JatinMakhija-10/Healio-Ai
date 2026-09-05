@@ -317,11 +317,14 @@ export function Header() {
                             </p>
                             <button
                                 onClick={() => router.push('/dashboard/billing')}
-                                className="mt-1 inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                className="mt-1 inline-flex items-center gap-1 cursor-pointer hover:opacity-85 transition-all"
+                                title="View Plan & Credits"
                             >
-                                <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-700">
-                                    <Crown size={9} className="text-teal-600" />
-                                    {planLabel} - {creditsBalance} cr
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200/80 bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-800 shadow-xs">
+                                    <Crown size={12} className="text-teal-600 shrink-0" />
+                                    <span>{planLabel}</span>
+                                    <span className="text-teal-300 font-normal">•</span>
+                                    <span className="font-medium text-teal-700">{creditsBalance} {creditsBalance === 1 ? 'Credit' : 'Credits'}</span>
                                 </span>
                             </button>
                         </div>

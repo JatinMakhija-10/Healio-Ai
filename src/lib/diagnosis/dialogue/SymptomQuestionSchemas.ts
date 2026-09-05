@@ -71,7 +71,7 @@ export const SYMPTOM_QUESTION_SCHEMAS: SymptomQuestionSchema[] = [
     {
         id: 'headache',
         label: 'Headache',
-        match: /\b(headache|head pain|migraine|sir dard|sar dard)\b/i,
+        match: /\b(headache|head pain|head ache|migraine|forehead|temple|sir dard|sar dard|pain in (?:my )?head)\b/i,
         fields: [
             { key: 'chief_complaint', priority: 1, required: true, responseType: 'text', question: 'What is the main problem?' },
             { key: 'headache.duration', aliases: ['duration'], priority: 1, required: true, responseType: 'text', question: 'How long have you had the headache?' },

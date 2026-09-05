@@ -104,13 +104,13 @@ const BODY_LOCATION_PATTERN =
     /\b(head|forehead|eye|eyes|ear|ears|nose|throat|neck|chest|stomach|abdomen|belly|back|lower back|shoulder|arm|hand|leg|knee|foot|feet|skin|face|scalp|sinus|tooth|teeth|pelvis|urine|urinary)\b/i;
 
 const SYMPTOM_PATTERN =
-    /\b(fever|headache|cough|cold|rash|vomiting|diarrhea|loose motion|nausea|dizziness|fatigue|weakness|pain|ache|burning|itching|congestion|sore throat|chills|breathless|anxiety|palpitations|swelling|bukhar|khansi|ulti|dast|chakkar|thakan|jalan|khujli)\b/i;
+    /\b(fever|headache|head pain|forehead|temple|cough|cold|rash|vomiting|diarrhea|loose motion|nausea|dizziness|fatigue|weakness|pain|ache|aching|burning|itching|congestion|sore throat|chills|breathless|anxiety|palpitations|swelling|bukhar|khansi|ulti|dast|chakkar|thakan|jalan|khujli|sensitivity to light|light sensitivity|photophobia|blurry vision|vision changes|dull|throbbing|stabbing|sharp|pressure|tightness)\b/i;
 
 const SENSATION_PATTERN =
     /\b(sharp|stabbing|dull|aching|burning|itching|tingling|numb|pressure|tightness|throbbing|pulsing|cramping|swollen|tender|blocked|congested|runny|watery|heavy|weak|tired|nausea|uneasy|dry|wet|productive|tight|scratchy|hoarse|sore|raw|stiff|achy)\b/i;
 
 const ASSOCIATED_SYMPTOM_PATTERN =
-    /\b(fever|chills|cough|sore throat|burning urine|rash|vomiting|nausea|headache|dizziness|fatigue|weakness|diarrhea|loose motion|body ache|shortness of breath|sweating|runny nose|blocked nose|ear pain|palpitations|joint pain|back pain)\b/i;
+    /\b(fever|chills|cough|sore throat|burning urine|rash|vomiting|nausea|headache|dizziness|fatigue|weakness|diarrhea|loose motion|body ache|shortness of breath|sweating|runny nose|blocked nose|ear pain|palpitations|joint pain|back pain|sensitivity to light|light sensitivity|photophobia|blurred vision|blurry vision|visual changes)\b/i;
 
 // Matches durations with OR without leading preposition ("for", "since", "from")
 // Also handles bare relative times: "morning", "evening", "afternoon", "last night"
@@ -538,6 +538,20 @@ export function buildConversationIntakeState(messages: ChatTranscriptMessage[]):
         }
 
         previousAssistantField = null;
+    }
+
+    // Auto-infer chief_complaint if user has sent messages but chief_complaint was not explicitly keyed
+    if (!collectedData.has('chief_complaint')) {
+        const userMessages = messages.filter((m) => m.role === 'user');
+        if (userMessages.length > 0) {
+            const firstUserText = userMessages[0].content.trim();
+            const inferred = activeSchema.id !== 'generic'
+                ? `${activeSchema.label}: ${firstUserText.slice(0, 60)}`
+                : (collectedData.get('location') || collectedData.get('sensation') || firstUserText.slice(0, 80));
+            if (inferred) {
+                collectedData.set('chief_complaint', normalizeValue(inferred));
+            }
+        }
     }
 
     const answeredFields = new Set(collectedData.keys());

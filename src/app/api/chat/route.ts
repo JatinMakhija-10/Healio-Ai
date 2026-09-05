@@ -204,17 +204,25 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             match_threshold: 0.55,
             match_count: 12,
         });
-        const { data } = await Promise.race([
-            rpcCall,
-            new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 5_000)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const qnaRpcCall = (supabase as any).rpc('search_ayurvedic_qna', {
+            query_embedding: embedding768,
+            match_threshold: 0.55,
+            match_count: 5,
+        });
+
+        const [{ data }, { data: qnaData }] = await Promise.all([
+            Promise.race([rpcCall, new Promise<{ data: null }>(r => setTimeout(() => r({ data: null }), 5_000))]),
+            Promise.race([qnaRpcCall, new Promise<{ data: null }>(r => setTimeout(() => r({ data: null }), 5_000))]).catch(() => ({ data: null })),
         ]);
-        if (!data?.length) return '';
+
+        if (!data?.length && !qnaData?.length) return '';
 
         // Deduplicate: keep one entry per unique source+section combination
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const seen = new Map<string, any>();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const row of data as any[]) {
+        for (const row of (data || []) as any[]) {
             const key = `${row.book ?? ''}|${row.section ?? ''}`.toLowerCase().trim();
             if (!key || key === '|') continue;
             if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
@@ -222,7 +230,7 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             }
         }
 
-        return [...seen.values()]
+        const mainText = [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.60)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
             .slice(0, 6)
@@ -230,6 +238,17 @@ async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
             .map((c: any, i: number) =>
                 `[${i + 1}] SOURCE: ${c.book} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`
             ).join('\n\n');
+
+        let qnaText = '';
+        if (qnaData?.length) {
+            qnaText = '\n--- BhashaBench Ayurvedic Q&A Context ---\n' +
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (qnaData as any[]).filter(q => (q.similarity ?? 0) >= 0.50).slice(0, 3).map((q, i) =>
+                    `[QnA${i + 1}] DOMAIN: ${q.domain} | relevance: ${((q.similarity ?? 0) * 100).toFixed(0)}%\n${q.chunk_text || `Q: ${q.question}\nANS: ${q.answer}`}`
+                ).join('\n\n');
+        }
+
+        return [mainText, qnaText].filter(Boolean).join('\n\n');
     } catch {
         return '';
     }
@@ -960,7 +979,7 @@ FORBIDDEN: Mixing languages. Defaulting to Hindi when user spoke English. Using 
 - Keep every reply to 3-4 lines maximum during Q&A phase.
 - Address user as "aap" in Hindi/Hinglish. "you" in English. NEVER use "aap" in English responses.
 - Clinical empathy first — acknowledge the symptom before asking your question.
-- Reassurance transitions: When acknowledging that concerning red-flag signs are absent, use warm, empathetic phrasing like "It is reassuring that those concerning signs are absent" or "I am glad to hear those alarming symptoms are not present". Never jump abruptly to the next question.
+- Reassurance transitions (CRITICAL): ONLY use reassurance phrasing like "I am glad to hear those alarming symptoms are not present" when the user explicitly DENIES symptoms (e.g. says "No", "None", "Neither", "I don't have those"). If the user CONFIRMS a symptom (e.g., "Sensitivity to light", "Nausea", "Fever", "Pain"), acknowledge that confirmed symptom with empathy instead (e.g., "I note that you are experiencing sensitivity to light..."). NEVER say symptoms are absent when the user just reported having them!
 - Interrogative Question Framing (CRITICAL):
   * NEVER ask presumptive or blunt questions like "What makes your stomach pain worse?" or "What makes it worse?". Patients often do not know if something causes aggravation or may not have triggers.
   * ALWAYS frame questions gently and interrogatively, offering concrete examples so patients know what to consider.
@@ -1216,11 +1235,11 @@ function repairDanglingUiHintPrompt(text: string): string {
 
     const prefix = text.slice(0, hintMatch.index).replace(/\s+$/, '');
     const suffix = text.slice(hintMatch.index);
-    const hasSeverityContext = /\b(severe|severity|intensity|pain|bad|rate|rating|scale)\b/i.test(prefix);
-    if (!hasSeverityContext) return text;
 
     let repairedPrefix = prefix;
     const repairs: Array<[RegExp, string]> = [
+        [/\b(discomfort|pain|symptom|intensity)\s+is\s+relatively\s*$/i, '$1 is relatively mild.'],
+        [/\brelatively\s*$/i, 'relatively mild.'],
         [/\b(on\s+a\s+scale\s+of)\s*$/i, '$1 1 to 10'],
         [/\b(scale\s+of)\s*$/i, '$1 1 to 10'],
         [/\b(on\s+a\s+scale\s+from)\s*$/i, '$1 1 to 10'],
