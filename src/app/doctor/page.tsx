@@ -24,6 +24,7 @@ import Link from "next/link";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { api, Appointment } from "@/lib/api";
+import { invoiceService } from "@/lib/invoices/invoiceService";
 
 export default function DoctorDashboardPage() {
     const { user, profile, doctorProfile } = useAuth();
@@ -98,11 +99,25 @@ export default function DoctorDashboardPage() {
                 const completedToday = todayOnly.filter(apt => apt.status === 'completed').length;
 
                 setTodayAppointments(todayOnly);
+
+                // Calculate current month date range for revenue
+                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+                const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+                // Fetch revenue summary for the current month
+                let monthlyRevenue = 0;
+                try {
+                    const revenueSummary = await invoiceService.getDoctorRevenueSummary(doctorId, startOfMonth, endOfMonth);
+                    monthlyRevenue = revenueSummary.totalRevenue;
+                } catch {
+                    // Revenue fetch is non-critical; keep at 0 on error
+                }
+
                 setStats({
                     todayCount: todayOnly.length,
                     weekCount,
                     completedToday,
-                    revenue: 0 // TODO: Implement revenue tracking
+                    revenue: monthlyRevenue
                 });
 
             } catch (error) {
