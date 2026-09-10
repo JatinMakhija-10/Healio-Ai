@@ -32,6 +32,7 @@ import { getJinaEmbedding, getParallelEmbeddings } from "@/lib/ai/jina";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
 import { rateLimitCheck } from "@/lib/api/rateLimit";
 import { validateOutputAgainstProfile } from "@/lib/safety/outputValidator";
+import { buildEvidenceGraph, type BoerickeChunkInput, type AyurvedicChunkInput, type PdfChunkInput, type HomeRemedyChunkInput } from "@/lib/diagnosis/traceability";
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
@@ -123,14 +124,40 @@ function isInvalidGeminiKeyBody(text: string): boolean {
 
 // ─── RAG Helper ───────────────────────────────────────────────────────────────
 
+/** Extended RAG result that includes raw chunks for evidence traceability */
+interface RAGResultWithChunks {
+    context: string;
+    remediesFound: string[];
+    rawBoerickeChunks: BoerickeChunkInput[];
+    rawAyurvedicChunks: AyurvedicChunkInput[];
+    rawPdfChunks: PdfChunkInput[];
+    rawHomeRemedyChunks: HomeRemedyChunkInput[];
+    cacheHit: boolean;
+    activeProviders: ('jina' | 'gemini')[];
+    totalQueries: number;
+}
+
+const EMPTY_RAG_RESULT: RAGResultWithChunks = {
+    context: '',
+    remediesFound: [],
+    rawBoerickeChunks: [],
+    rawAyurvedicChunks: [],
+    rawPdfChunks: [],
+    rawHomeRemedyChunks: [],
+    cacheHit: false,
+    activeProviders: [],
+    totalQueries: 0,
+};
+
 /**
  * Multi-Query RAG: embeds multiple queries and fetches deduplicated Boericke chunks.
  * Falls back to single-query if multi-query fails.
+ * Returns raw chunks alongside the context string for evidence traceability.
  */
 async function fetchMultiQueryRAG(
     symptomText: string,
     primaryDiagnosis: PrimaryDiagnosis
-): Promise<{ context: string; remediesFound: string[] }> {
+): Promise<RAGResultWithChunks> {
     // We still need Gemini for Ayurvedic queries (Gemini-ingested table).
     // Jina handles Boericke + Home Remedies.
     if (!process.env.JINA_API_KEY) {
@@ -142,7 +169,7 @@ async function fetchMultiQueryRAG(
     const cached = getCachedRAG(cacheKey);
     if (cached) {
         console.log('[RAG] Cache hit — skipping embed + RPC cycle');
-        return cached;
+        return { ...cached, rawBoerickeChunks: [], rawAyurvedicChunks: [], rawPdfChunks: [], rawHomeRemedyChunks: [], cacheHit: true, activeProviders: [], totalQueries: 0 };
     }
 
     // Build query set: symptom text + condition-specific query
@@ -247,13 +274,14 @@ async function fetchMultiQueryRAG(
         // Deduplicate and re-rank
         const seenBoericke = new Set<string>();
         const seenAyurvedic = new Set<string>();
-        const allBoerickeChunks: BoerickeChunk[] = [];
-        const allAyurvedicChunks: AyurvedicChunk[] = [];
+        const allBoerickeChunks: BoerickeChunkInput[] = [];
+        const allAyurvedicChunks: AyurvedicChunkInput[] = [];
+        const allPdfChunks: PdfChunkInput[] = [];
 
         for (const result of rpcResults) {
             if (result.status === "fulfilled" && result.value.data) {
                 if (result.value.type === 'boericke') {
-                    for (const chunk of result.value.data as BoerickeChunk[]) {
+                    for (const chunk of result.value.data as BoerickeChunkInput[]) {
                         const key = `${chunk.remedy_name}::${chunk.chunk_text?.slice(0, 120)}`;
                         if (!seenBoericke.has(key)) {
                             seenBoericke.add(key);
@@ -261,7 +289,7 @@ async function fetchMultiQueryRAG(
                         }
                     }
                 } else if (result.value.type === 'ayurvedic') {
-                    for (const chunk of result.value.data as AyurvedicChunk[]) {
+                    for (const chunk of result.value.data as AyurvedicChunkInput[]) {
                         const key = `${chunk.book}::${chunk.text?.slice(0, 120)}`;
                         if (!seenAyurvedic.has(key)) {
                             seenAyurvedic.add(key);
@@ -271,6 +299,12 @@ async function fetchMultiQueryRAG(
                 } else if (result.value.type === 'ayurvedic_pdfs') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     for (const chunk of result.value.data as any[]) {
+                        allPdfChunks.push({
+                            source_file: chunk.source_file,
+                            page_number: chunk.page_number,
+                            chunk_text: chunk.chunk_text,
+                            similarity: chunk.similarity
+                        });
                         const key = `PDF::${chunk.source_file}::${chunk.chunk_text?.slice(0, 120)}`;
                         if (!seenAyurvedic.has(key)) {
                             seenAyurvedic.add(key);
@@ -292,6 +326,7 @@ async function fetchMultiQueryRAG(
         
         const topBoericke = allBoerickeChunks.slice(0, Math.ceil(AI_PHASE_CONFIG.rag.maxTotalChunks / 2));
         const topAyurvedic = allAyurvedicChunks.slice(0, Math.ceil(AI_PHASE_CONFIG.rag.maxTotalChunks / 2));
+        const rawHomeRemedyChunks: HomeRemedyChunkInput[] = (homeRes?.data && Array.isArray(homeRes.data)) ? (homeRes.data as HomeRemedyChunkInput[]) : [];
         
         const remediesFound = [...new Set(topBoericke.map((c) => c.remedy_name).filter(Boolean))];
 
@@ -315,8 +350,22 @@ async function fetchMultiQueryRAG(
             context += homeRemedyContext;
         }
 
-        const result = { context, remediesFound };
-        setCachedRAG(cacheKey, result); // store for future warm requests
+        const activeProviders: ('jina' | 'gemini')[] = [];
+        if (validJinaEmbeddings.length > 0) activeProviders.push('jina');
+        if (validGeminiEmbeddings.length > 0) activeProviders.push('gemini');
+
+        const result: RAGResultWithChunks = {
+            context,
+            remediesFound,
+            rawBoerickeChunks: topBoericke,
+            rawAyurvedicChunks: topAyurvedic,
+            rawPdfChunks: allPdfChunks.slice(0, 5),
+            rawHomeRemedyChunks,
+            cacheHit: false,
+            activeProviders,
+            totalQueries: queries.length + 1,
+        };
+        setCachedRAG(cacheKey, { context, remediesFound }); // store basic result for future warm requests
         return result;
     } catch (err) {
         console.warn("[RAG] Multi-query failed, trying single-query fallback:", err);
@@ -329,7 +378,7 @@ async function fetchMultiQueryRAG(
             const { jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomText);
             const homeEmb = jinaEmb; // Jina for home remedies too
 
-            if (!jinaEmb && !geminiEmb) return { context: '', remediesFound: [] };
+            if (!jinaEmb && !geminiEmb) return { ...EMPTY_RAG_RESULT };
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fdb = supabase as any;
@@ -369,11 +418,12 @@ async function fetchMultiQueryRAG(
                     : Promise.resolve({ data: null }),
             ]);
 
-            const boerickeData = boerickeRes.data as BoerickeChunk[] | null;
-            let ayurvedicData = ayurvedicRes.data as AyurvedicChunk[] | null;
+            const boerickeData = boerickeRes.data as BoerickeChunkInput[] | null;
+            let ayurvedicData = ayurvedicRes.data as AyurvedicChunkInput[] | null;
+            const pdfData = (pdfRes.data?.length ? pdfRes.data : []) as PdfChunkInput[];
 
             if (pdfRes.data?.length) {
-                const mappedPdfs = (pdfRes.data as PdfChunk[]).map(chunk => ({
+                const mappedPdfs: AyurvedicChunkInput[] = (pdfRes.data as PdfChunkInput[]).map(chunk => ({
                     book: chunk.source_file,
                     category: 'PDF Document',
                     section: `Page ${chunk.page_number || 'Unknown'}`,
@@ -385,7 +435,7 @@ async function fetchMultiQueryRAG(
                 ayurvedicData = ayurvedicData.slice(0, 3);
             }
 
-            if (!boerickeData?.length && !ayurvedicData?.length) return { context: '', remediesFound: [] };
+            if (!boerickeData?.length && !ayurvedicData?.length) return { ...EMPTY_RAG_RESULT };
 
             const remediesFound = [...new Set((boerickeData || []).map((c) => c.remedy_name))];
 
@@ -398,18 +448,33 @@ async function fetchMultiQueryRAG(
                 context += '=== AYURVEDIC KNOWLEDGE BASE ===\n\n' +
                     ayurvedicData.map((c) => `Source: ${c.book} / ${c.section}\n${c.text}`).join('\n\n') + '\n\n';
             }
-            if (homeRes.data?.length) {
+            const rawHomeData = (homeRes.data && Array.isArray(homeRes.data)) ? (homeRes.data as HomeRemedyChunkInput[]) : [];
+            if (rawHomeData.length) {
                 context += '=== HOME REMEDIES (Traditional Nuskhe) ===\n\n' +
-                    (homeRes.data as HomeRemedyChunk[]).map((c: HomeRemedyChunk, i: number) =>
+                    rawHomeData.map((c: HomeRemedyChunkInput, i: number) =>
                         `[H${i + 1}] ${c.ailment} — ${c.remedy_name}\n${c.chunk_text}`
                     ).join('\n\n');
             }
 
-            const fallbackResult = { context, remediesFound };
-            setCachedRAG(cacheKey, fallbackResult);
+            const activeProviders: ('jina' | 'gemini')[] = [];
+            if (jinaEmb) activeProviders.push('jina');
+            if (geminiEmb) activeProviders.push('gemini');
+
+            const fallbackResult: RAGResultWithChunks = {
+                context,
+                remediesFound,
+                rawBoerickeChunks: boerickeData || [],
+                rawAyurvedicChunks: ayurvedicData || [],
+                rawPdfChunks: pdfData,
+                rawHomeRemedyChunks: rawHomeData,
+                cacheHit: false,
+                activeProviders,
+                totalQueries: 1,
+            };
+            setCachedRAG(cacheKey, { context, remediesFound });
             return fallbackResult;
         } catch {
-            return { context: "", remediesFound: [] };
+            return { ...EMPTY_RAG_RESULT };
         }
     }
 }
@@ -487,19 +552,21 @@ export async function POST(req: Request) {
 
         let ragContext = "";
         let ragRemediesFound: string[] = [];
+        let ragResultWithChunks: RAGResultWithChunks = { ...EMPTY_RAG_RESULT };
 
         try {
             if (primaryDiagnosis.condition) {
                 // Hard 7s cap on RAG so a slow DB (e.g. re-ingestion writes) never blocks AI
                 const ragResult = await Promise.race([
                     fetchMultiQueryRAG(symptomText, primaryDiagnosis),
-                    new Promise<{ context: string; remediesFound: string[] }>((resolve) =>
+                    new Promise<RAGResultWithChunks>((resolve) =>
                         setTimeout(() => {
                             console.warn("[Diagnose] RAG timed out — proceeding without knowledge base");
-                            resolve({ context: "", remediesFound: [] });
+                            resolve({ ...EMPTY_RAG_RESULT });
                         }, 7_000)
                     ),
                 ]);
+                ragResultWithChunks = ragResult;
                 ragContext = ragResult.context;
                 ragRemediesFound = ragResult.remediesFound;
             }
@@ -805,8 +872,45 @@ Based on all of the above, generate the formatting JSON.`;
             console.error('[Diagnose] Audit log record failed (non-fatal):', auditErr);
         }
 
+        // ── 5. Construct Evidence Traceability Graph ──────────────────────────
+        let evidenceGraph = null;
+        try {
+            evidenceGraph = buildEvidenceGraph({
+                symptoms: {
+                    locations: symptoms.location ?? [],
+                    painType: symptoms.painType ?? null,
+                    triggers: symptoms.triggers ?? null,
+                    duration: symptoms.duration ?? null,
+                    additionalNotes: symptoms.additionalNotes ?? null,
+                    sanitizedSymptomText: symptomText,
+                },
+                bayesian: {
+                    conditionId: primaryDiagnosis.condition,
+                    conditionName: primaryDiagnosis.condition || 'Unknown Condition',
+                    bayesianScore: primaryDiagnosis.bayesianScore || 0,
+                    matchedKeywords: primaryDiagnosis.matchedKeywords || [],
+                    clinicalRuleAlerts,
+                    posteriorRedFlags,
+                },
+                boerickeChunks: ragResultWithChunks.rawBoerickeChunks,
+                ayurvedicChunks: ragResultWithChunks.rawAyurvedicChunks,
+                pdfChunks: ragResultWithChunks.rawPdfChunks,
+                homeRemedyChunks: ragResultWithChunks.rawHomeRemedyChunks,
+                aiRemedies: jsonResult.remedies || [],
+                aiHomeRemedies: jsonResult.indianHomeRemedies || [],
+                provider,
+                latencyMs,
+                cacheHit: ragResultWithChunks.cacheHit,
+                activeProviders: ragResultWithChunks.activeProviders,
+                totalQueries: ragResultWithChunks.totalQueries,
+            });
+        } catch (graphErr) {
+            console.error('[Diagnose] Evidence graph construction failed (non-fatal):', graphErr);
+        }
+
         return NextResponse.json({
             diagnosis: jsonResult,
+            evidenceGraph,
             meta: {
                 provider,
                 latencyMs,
@@ -816,6 +920,8 @@ Based on all of the above, generate the formatting JSON.`;
                 clinicalRuleAlertsUsed: clinicalRuleAlerts.length,
                 posteriorRedFlagsCount: posteriorRedFlags.length,
                 dynamicTemperature,
+                hasEvidenceGraph: evidenceGraph !== null,
+                totalCitations: evidenceGraph?.ragCitations?.length ?? 0,
             },
         });
     } catch (error) {

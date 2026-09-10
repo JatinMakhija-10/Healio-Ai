@@ -30,9 +30,12 @@ import {
     Leaf,
     ExternalLink,
     AlertCircle,
+    BookOpen,
+    GitFork,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
+import type { EvidenceTraceabilityGraph } from "@/lib/diagnosis/traceability";
 import { Button } from "@/components/ui/button";
 import { pdf } from '@react-pdf/renderer';
 import { MedicalReportDocument, MedicalReportPreviewDocument } from "./MedicalReportPDF";
@@ -59,6 +62,7 @@ type ExplainableCondition = Condition & {
     differentialDiagnoses?: DifferentialDiagnosis[];
     care_plan?: string;
     rationale?: string;
+    evidenceGraph?: EvidenceTraceabilityGraph | null;
 };
 
 type FlexibleRemedy = {
@@ -324,6 +328,7 @@ interface DiagnosisResultCardProps {
     ddiFlaggedRemedies?: FlaggedRemedy[]; // Remedies with ⚠ badges
     ddiBlockedRemedies?: FlaggedRemedy[]; // Remedies shown with strikethrough
     userSymptomData?: UserSymptomData;  // Full symptom + profile data for PDF
+    evidenceGraph?: EvidenceTraceabilityGraph | null; // Traceability graph linking symptoms, Bayes, RAG, recommendations
 }
 
 // ─── Severity Badge ───────────────────────────────────────────────────────────
@@ -540,6 +545,7 @@ export function DiagnosisResultCard({
     ddiFlaggedRemedies = [],
     ddiBlockedRemedies = [],
     userSymptomData,
+    evidenceGraph,
 }: DiagnosisResultCardProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -573,7 +579,8 @@ export function DiagnosisResultCard({
     const differentialDiagnoses = Array.isArray(explainableCondition.differentialDiagnoses)
         ? explainableCondition.differentialDiagnoses.filter((item) => item?.name)
         : [];
-    const hasCalculationPanel = showUncertaintyDetails || showDetailedExplanations;
+    const activeEvidenceGraph = evidenceGraph || explainableCondition.evidenceGraph || null;
+    const hasCalculationPanel = showUncertaintyDetails || showDetailedExplanations || activeEvidenceGraph !== null;
 
     // Gather all critical warnings
     const allWarnings = [
@@ -1158,7 +1165,66 @@ export function DiagnosisResultCard({
                                             </div>
                                         )}
 
-                                        {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && (
+                                        {activeEvidenceGraph && (
+                                            <div className="rounded-lg border border-teal-200 bg-teal-50/40 p-3.5 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-900">
+                                                        <BookOpen className="h-3.5 w-3.5 text-teal-700" />
+                                                        <span>Classical Evidence & Traceability</span>
+                                                    </div>
+                                                    <Badge variant="outline" className="border-teal-300 bg-teal-100/70 text-[10px] text-teal-800">
+                                                        {activeEvidenceGraph.ragCitations.length} Classical Source{activeEvidenceGraph.ragCitations.length === 1 ? '' : 's'}
+                                                    </Badge>
+                                                </div>
+
+                                                {/* Recommendation Links */}
+                                                {activeEvidenceGraph.recommendationLinks.length > 0 && (
+                                                    <div className="space-y-1.5">
+                                                        <p className="text-[11px] font-semibold text-teal-950">Remedy Grounding:</p>
+                                                        <div className="grid gap-1.5">
+                                                            {activeEvidenceGraph.recommendationLinks.map((link, idx) => (
+                                                                <div key={idx} className="flex flex-col gap-0.5 rounded border border-teal-100 bg-white p-2 text-xs">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="font-semibold text-slate-900">{link.recommendationName}</span>
+                                                                        <span className="text-[10px] font-medium text-teal-700 capitalize">
+                                                                            {link.evidenceStrength} evidence
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-[11px] text-slate-600 leading-snug">{link.evidenceSummary}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Top Classical Citations */}
+                                                {activeEvidenceGraph.ragCitations.length > 0 && (
+                                                    <div className="space-y-1.5">
+                                                        <p className="text-[11px] font-semibold text-teal-950">Matched Verses & Literature Chunks:</p>
+                                                        <div className="space-y-2">
+                                                            {activeEvidenceGraph.ragCitations.slice(0, 3).map((cit) => (
+                                                                <div key={cit.citationId} className="rounded border border-teal-100/80 bg-white/90 p-2.5 text-xs">
+                                                                    <div className="flex items-center justify-between gap-1 text-[11px] font-semibold text-teal-900 mb-1">
+                                                                        <span>{cit.sourceTitle}</span>
+                                                                        <span className="text-[10px] text-slate-500 font-normal">
+                                                                            Match: {(cit.similarityScore * 100).toFixed(0)}%
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="text-[10px] text-teal-700 font-medium mb-1">
+                                                                        {cit.section}
+                                                                    </div>
+                                                                    <p className="text-[11px] text-slate-600 line-clamp-3 leading-relaxed italic border-l-2 border-teal-300 pl-2">
+                                                                        &ldquo;{cit.chunkText.slice(0, 200)}...&rdquo;
+                                                                    </p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && !activeEvidenceGraph && (
                                             <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
                                                 Detailed calculation data was not returned for this answer. Arovia is still showing the available match score and safety guidance from this chat turn.
                                             </p>

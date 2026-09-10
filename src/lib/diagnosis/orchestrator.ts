@@ -53,6 +53,7 @@ import { runIntelligenceLayer, mergeIntelligenceIntoResponse } from "./advanced/
 import { buildPersonaProfile } from "./advanced/PersonaEngine";
 import type { IntelligenceContext, EnhancedDiagnosisOutput } from "./advanced/intelligenceTypes";
 import { enrichDiagnosisSession } from "./datasources";
+import type { EvidenceTraceabilityGraph } from "./traceability";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,8 @@ export interface OrchestratedResult {
     uncertainty?: UncertaintyEstimate;
     /** Clinical rule results (DVT wells score, Ottawa criteria, etc.) */
     clinicalRuleResults?: RuleResult[];
+    /** Structured evidence traceability graph linking symptoms, Bayes, RAG, and recommendations */
+    evidenceGraph?: EvidenceTraceabilityGraph | null;
     /** Metadata about the full pipeline run */
     orchestrationMeta: {
         bayesianTopK: Array<{
@@ -151,6 +154,7 @@ export async function diagnose(
     alerts?: string[];
     uncertainty?: UncertaintyEstimate;
     clinicalRules?: RuleResult[];
+    evidenceGraph?: EvidenceTraceabilityGraph | null;
     orchestrationMeta?: OrchestratedResult["orchestrationMeta"];
 }> {
     const completedStages: string[] = [];
@@ -484,6 +488,7 @@ export async function diagnose(
     let latencyMs = 0;
     let ragApplied = false;
     let ragRemediesFound: string[] = [];
+    let evidenceGraph: EvidenceTraceabilityGraph | null = null;
 
     // Build DDI prompt section (informs LLM about blocked/flagged remedies)
     const ddiPromptSection = ddiResult ? buildDDIPromptSection(ddiResult) : '';
@@ -528,6 +533,10 @@ export async function diagnose(
         latencyMs = data.meta?.latencyMs || 0;
         ragApplied = data.meta?.ragApplied || false;
         ragRemediesFound = data.meta?.ragRemediesFound || [];
+        if (data.evidenceGraph) {
+            evidenceGraph = data.evidenceGraph;
+            completedStages.push("evidence_traceability");
+        }
 
         if (data.diagnosis) {
             const aiDiag = data.diagnosis;
@@ -543,7 +552,8 @@ export async function diagnose(
                     exercises: [],
                     warnings: aiDiag.warnings || [],
                     seekHelp: aiDiag.seekHelp ? (aiDiag.seekHelpReason || "Please consult a doctor immediately.") : "",
-                },
+                    evidenceGraph,
+                } as any,
                 confidence: Math.round(primaryCandidate.score), // Bayesian Score Authority
                 matchedKeywords: primaryCandidate.matchedKeywords,
                 reasoningTrace: [
@@ -691,6 +701,7 @@ export async function diagnose(
         alerts: mergedAlerts,
         uncertainty,
         clinicalRules: clinicalRuleResults,
+        evidenceGraph,
         orchestrationMeta,
     };
 

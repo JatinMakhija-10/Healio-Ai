@@ -100,16 +100,20 @@ export const DiagnoseResponseMetaSchema = z.object({
     ragApplied: z.boolean(),
     ragRemediesFound: z.array(z.string()),
     ragChunks: z.number(),
-    bayesianPriorsUsed: z.number(),
+    bayesianPriorsUsed: z.number().optional(),
     clinicalRuleAlertsUsed: z.number(),
+    posteriorRedFlagsCount: z.number().optional(),
     dynamicTemperature: z.number(),
-    structuredRemediesInjected: z.boolean(),
-    mcmcUncertaintyInjected: z.boolean(),
-    questionOverridden: z.boolean(),
+    structuredRemediesInjected: z.boolean().optional(),
+    mcmcUncertaintyInjected: z.boolean().optional(),
+    questionOverridden: z.boolean().optional(),
+    hasEvidenceGraph: z.boolean().optional(),
+    totalCitations: z.number().optional(),
 });
 
 export const DiagnoseResponseSchema = z.object({
     diagnosis: DiagnoseAIResultSchema,
+    evidenceGraph: z.any().optional(),
     meta: DiagnoseResponseMetaSchema,
 });
 
