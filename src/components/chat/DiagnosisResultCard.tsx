@@ -43,6 +43,7 @@ import { PlanSelectionModal } from "@/components/subscription/PlanSelectionModal
 import { useAuth } from "@/context/AuthContext";
 import { hasFeature } from "@/lib/subscription/plans";
 import { EmergencyRedirect } from "./EmergencyRedirect";
+import { RecommendedProductsWidget } from "@/components/ecommerce/RecommendedProductsWidget";
 
 type DifferentialDiagnosis = {
     name?: string;
@@ -1207,10 +1208,22 @@ export function DiagnosisResultCard({
                             )}
 
                             {activeCareTab === "ayurveda" && (
-                                <div id="care-panel-ayurveda" role="tabpanel" aria-labelledby="care-tab-ayurveda" className="grid gap-3 sm:grid-cols-2">
-                                    {ayurvedicRemedies.map((remedy, idx) => (
-                                        <RemedyCard key={`ayurveda-${idx}`} remedy={remedy} kind="ayurveda" />
-                                    ))}
+                                <div id="care-panel-ayurveda" role="tabpanel" aria-labelledby="care-tab-ayurveda" className="space-y-4">
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        {ayurvedicRemedies.map((remedy, idx) => (
+                                            <RemedyCard key={`ayurveda-${idx}`} remedy={remedy} kind="ayurveda" />
+                                        ))}
+                                    </div>
+                                    <RecommendedProductsWidget
+                                        diagnosticId={condition.name || 'diag_consult'}
+                                        recommendedFormulations={
+                                            ayurvedicRemedies.length > 0
+                                                ? ayurvedicRemedies.map(r => r.name || r.remedy || '').filter(Boolean)
+                                                : [condition.name]
+                                        }
+                                        patientVikriti="pitta"
+                                        patientConditions={allWarnings}
+                                    />
                                 </div>
                             )}
 

@@ -18,7 +18,8 @@ import {
     Leaf,
     Sun,
     Users,
-    UserRoundSearch
+    UserRoundSearch,
+    ShoppingBag
 } from "lucide-react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,12 @@ const allSidebarItems = [
         href: "/dashboard/profile",
         icon: UserCircle,
         visible: true, // Always visible
+    },
+    {
+        title: "Ayurvedic Store",
+        href: "/dashboard/store",
+        icon: ShoppingBag,
+        visible: true,
     },
     // PHASE 2 — Wellness Section
     {

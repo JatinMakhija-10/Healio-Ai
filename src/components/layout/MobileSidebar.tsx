@@ -15,7 +15,8 @@ import {
     BookOpen,
     Loader2,
     CreditCard,
-    Crown
+    Crown,
+    ShoppingBag
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,12 @@ const allSidebarItems = [
         title: "Profile",
         href: "/dashboard/profile",
         icon: UserCircle,
+        visible: true,
+    },
+    {
+        title: "Ayurvedic Store",
+        href: "/dashboard/store",
+        icon: ShoppingBag,
         visible: true,
     },
     {
