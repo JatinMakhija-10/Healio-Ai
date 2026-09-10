@@ -20,6 +20,12 @@ export interface ClassicalSourceCitation {
     sourceTitle: string;
     /** Book/chapter/section/verse within the source */
     section: string;
+    /** Chapter name/number */
+    chapter?: string;
+    /** Verse or Shloka number */
+    verseNumber?: string;
+    /** Authentic Sanskrit shloka in Devanagari script (when available) */
+    sanskritShloka?: string;
     /** Page number (for PDF-derived chunks) */
     pageNumber?: number | null;
     /** The verbatim retrieved text chunk */
@@ -27,12 +33,20 @@ export interface ClassicalSourceCitation {
     /** Cosine similarity score from vector search (0-1) */
     similarityScore: number;
     /** Embedding provider used for retrieval */
-    embeddingProvider: 'jina' | 'gemini';
+    embeddingProvider: 'jina' | 'gemini' | 'classical_knowledge_base';
     /** Supabase RPC function that was used to retrieve this chunk */
     retrievalFunction: string;
 }
 
 // ─── Bayesian Evidence Node ─────────────────────────────────────────────────────
+
+/** Individual symptom's mathematical likelihood ratio contribution */
+export interface FeatureLikelihoodContribution {
+    feature: string;
+    status: 'present' | 'absent' | 'unknown';
+    likelihoodRatio: number;
+    logOddsImpact: number;
+}
 
 /** Represents the Bayesian MCMC statistical evidence for a condition */
 export interface BayesianEvidenceNode {
@@ -46,6 +60,8 @@ export interface BayesianEvidenceNode {
     supportingSymptoms: string[];
     /** Symptoms that were absent or contradicting */
     contradictingSymptoms: string[];
+    /** Feature-level likelihood contributions explaining mathematical score */
+    featureContributions?: FeatureLikelihoodContribution[];
     /** MCMC convergence diagnostics (if available) */
     mcmcDiagnostics?: {
         rHat: number;

@@ -516,6 +516,13 @@ export async function diagnose(
                     bayesianScore: Math.round(primaryCandidate.score),
                     matchedKeywords: primaryCandidate.matchedKeywords.slice(0, 5),
                     structuredRemedies: safeStructuredRemedies,
+                    mcmcDiagnostics: primaryCandidate.mcmcDiagnostics,
+                    featureContributions: primaryCandidate.reasoningTrace?.map((t) => ({
+                        feature: t.factor,
+                        status: t.type === 'absent' ? 'absent' as const : 'present' as const,
+                        likelihoodRatio: Math.exp(Math.min(Math.max(t.impact, -5), 5)),
+                        logOddsImpact: t.impact,
+                    })),
                 },
                 clinicalRuleAlerts: clinicalRuleResults
                     .map((r) => `${r.rule}: ${r.interpretation}`),

@@ -16,7 +16,9 @@ import type {
     ClassicalSourceCitation,
     RecommendationEvidenceLink,
     RAGRetrievalMetadata,
+    FeatureLikelihoodContribution,
 } from './types';
+import { findClassicalCitations } from './ClassicalSamhitaKnowledgeBase';
 
 // ─── Input Types (mirror the chunk types from diagnose/route.ts) ────────────────
 
@@ -58,6 +60,7 @@ export interface BayesianInput {
     matchedKeywords: string[];
     clinicalRuleAlerts: string[];
     posteriorRedFlags: string[];
+    featureContributions?: FeatureLikelihoodContribution[];
     mcmcDiagnostics?: {
         rHat: number;
         effectiveSampleSize: number;
@@ -210,6 +213,7 @@ export function buildEvidenceGraph(input: BuilderInput): EvidenceTraceabilityGra
         posteriorScore: bayesian.bayesianScore,
         supportingSymptoms: bayesian.matchedKeywords,
         contradictingSymptoms: [], // Could be enriched from absent symptoms in future
+        featureContributions: bayesian.featureContributions,
         mcmcDiagnostics: bayesian.mcmcDiagnostics,
         clinicalRuleAlerts: bayesian.clinicalRuleAlerts,
         posteriorRedFlags: bayesian.posteriorRedFlags,
@@ -282,6 +286,44 @@ export function buildEvidenceGraph(input: BuilderInput): EvidenceTraceabilityGra
         });
     }
 
+    // 3e. Classical Samhita & Boericke Knowledge Base Enricher / Offline Fallback
+    // If classical Samhita citations or Boericke chunks are sparse (e.g. offline DB or single query),
+    // ground the diagnosis directly against authentic Charaka/Sushruta/Astanga/Boericke texts.
+    const allRemedyNames = [
+        ...aiRemedies.map(r => r.name || r.remedy || ''),
+        ...aiHomeRemedies.map(r => r.name || r.remedy || '')
+    ].filter(Boolean);
+
+    const classicalReferences = findClassicalCitations(
+        bayesian.conditionName,
+        symptoms.sanitizedSymptomText,
+        allRemedyNames,
+        3
+    );
+
+    for (const ref of classicalReferences) {
+        // Only add if not already covered by an identical section name
+        const exists = ragCitations.some(
+            c => c.corpus === ref.corpus && c.section.toLowerCase().includes(ref.section.toLowerCase())
+        );
+        if (!exists) {
+            ragCitations.push({
+                citationId: `C${++citationIdx}`,
+                corpus: ref.corpus,
+                sourceTitle: ref.sourceTitle,
+                section: ref.chapter ? `${ref.chapter} — ${ref.section}` : ref.section,
+                chapter: ref.chapter,
+                verseNumber: ref.verseNumber,
+                sanskritShloka: ref.sanskritShloka,
+                pageNumber: null,
+                chunkText: ref.englishTranslation,
+                similarityScore: 0.90, // Authoritative classical canonical match
+                embeddingProvider: 'classical_knowledge_base',
+                retrievalFunction: 'findClassicalCitations',
+            });
+        }
+    }
+
     // ── 4. Build Recommendation Evidence Links ───────────────────────────────
 
     const recommendationLinks: RecommendationEvidenceLink[] = [];
@@ -295,7 +337,12 @@ export function buildEvidenceGraph(input: BuilderInput): EvidenceTraceabilityGra
             if (c.corpus !== 'boericke_materia_medica') return false;
             const sectionLower = c.section.toLowerCase();
             const remedyLower = remedyName.toLowerCase();
-            return sectionLower.includes(remedyLower) || remedyLower.includes(sectionLower.replace('remedy: ', ''));
+            if (sectionLower.includes(remedyLower) || remedyLower.includes(sectionLower.replace('remedy: ', ''))) return true;
+            // Also check significant first 2 tokens (e.g. "Rhus Toxicodendron" in "Rhus Toxicodendron (Poison Ivy)")
+            const remedyBase = remedyLower.replace(/\s+\d+[a-z]?/i, '').trim();
+            const sectionBase = sectionLower.replace(/remedy:\s*/i, '').trim();
+            if (sectionBase.includes(remedyBase) || remedyBase.includes(sectionBase.split(' ')[0])) return true;
+            return false;
         });
 
         const allMatchingSimilarities = matchingCitations.map(c => c.similarityScore);

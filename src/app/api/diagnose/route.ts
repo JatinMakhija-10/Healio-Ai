@@ -75,6 +75,20 @@ interface PrimaryDiagnosis {
     bayesianScore: number;
     matchedKeywords: string[];
     structuredRemedies?: Array<{ name: string; description: string }>;
+    featureContributions?: Array<{
+        feature: string;
+        status: 'present' | 'absent' | 'unknown';
+        likelihoodRatio: number;
+        logOddsImpact: number;
+    }>;
+    mcmcDiagnostics?: {
+        rHat: number;
+        effectiveSampleSize: number;
+        converged: boolean;
+        credibleInterval: { lower: number; upper: number; width: number };
+        acceptanceRate: number;
+        posteriorPredictiveP: number;
+    };
 }
 
 interface BoerickeChunk {
@@ -891,6 +905,8 @@ Based on all of the above, generate the formatting JSON.`;
                     matchedKeywords: primaryDiagnosis.matchedKeywords || [],
                     clinicalRuleAlerts,
                     posteriorRedFlags,
+                    featureContributions: primaryDiagnosis.featureContributions,
+                    mcmcDiagnostics: primaryDiagnosis.mcmcDiagnostics,
                 },
                 boerickeChunks: ragResultWithChunks.rawBoerickeChunks,
                 ayurvedicChunks: ragResultWithChunks.rawAyurvedicChunks,

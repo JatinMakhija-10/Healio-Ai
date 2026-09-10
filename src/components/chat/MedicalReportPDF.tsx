@@ -2,6 +2,7 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
 import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
+import type { EvidenceTraceabilityGraph } from "@/lib/diagnosis/traceability";
 import { format } from "date-fns";
 
 // ─── Font Setup ───────────────────────────────────────────────────────────────
@@ -398,6 +399,7 @@ interface MedicalReportPDFProps {
     userProfile?: UserProfileSummary;
     symptomDetails?: SymptomDetailsSummary;
     ddiAlerts?: string[];
+    evidenceGraph?: EvidenceTraceabilityGraph | null;
     generatedAt?: Date;
 }
 
@@ -428,16 +430,17 @@ export const MedicalReportDocument = ({
     condition,
     confidence,
     uncertainty,
-    alerts = [],
-    symptoms = [],
-    userName = 'PATIENT',
-    reportId = 'HA-REPORT',
+    alerts,
+    symptoms,
+    userName = 'Patient',
+    reportId = 'AROV-DEMO',
     clinicalRules = [],
     reasoningTrace = [],
     userProfile,
     symptomDetails,
     ddiAlerts = [],
-    generatedAt,
+    evidenceGraph,
+    generatedAt = new Date(),
 }: MedicalReportPDFProps) => {
     const assessmentDate = generatedAt || new Date();
     const formattedDate = format(assessmentDate, 'dd-MMM-yyyy').toUpperCase();
@@ -762,7 +765,68 @@ export const MedicalReportDocument = ({
                     </View>
                 )}
 
-                {/* 6. Regulatory & Legal Disclaimer */}
+                {/* 6. Classical Evidence & Literature Traceability (Charaka Samhita & Boericke) */}
+                {evidenceGraph && evidenceGraph.ragCitations?.length > 0 && (
+                    <View style={{ marginBottom: 10 }} wrap={false}>
+                        <Text style={styles.sectionTitle}>6. Classical Literature &amp; Scriptural Evidence Traceability</Text>
+                        <Text style={[styles.assessmentText, { marginBottom: 6 }]}>
+                            Recommendations are grounded in classical Ayurvedic Samhitas (Charaka, Sushruta, Vagbhata) and Boericke Materia Medica via Hybrid RAG + Bayesian verification.
+                        </Text>
+                        <View style={styles.table}>
+                            <View style={styles.tableHeaderRow} fixed>
+                                <Text style={[styles.cellCategory, { width: '32%' }]}>CLASSICAL SOURCE</Text>
+                                <Text style={[styles.cellRemedy, { width: '40%' }]}>VERSE EXCERPT / RUBRIC</Text>
+                                <Text style={[styles.cellGuidance, { width: '28%' }]}>GROUNDED RECOMMENDATION</Text>
+                            </View>
+                            {evidenceGraph.ragCitations.slice(0, 4).map((cit, idx) => {
+                                const matchedLink = evidenceGraph.recommendationLinks?.find(l =>
+                                    l.supportingCitationIds?.includes(cit.citationId)
+                                );
+                                return (
+                                    <View
+                                        key={cit.citationId || idx}
+                                        style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+                                        wrap={false}
+                                    >
+                                        <View style={[styles.cellCategory, { width: '32%' }]}>
+                                            <Text style={{ fontWeight: 'bold', color: '#000000', fontSize: 8 }}>
+                                                {cit.sourceTitle}
+                                            </Text>
+                                            <Text style={{ fontSize: 7, color: '#555555', marginTop: 1 }}>
+                                                {cit.section}
+                                            </Text>
+                                            {cit.verseNumber && (
+                                                <Text style={{ fontSize: 7, color: '#006655', fontStyle: 'italic' }}>
+                                                    {cit.verseNumber}
+                                                </Text>
+                                            )}
+                                        </View>
+                                        <View style={[styles.cellRemedy, { width: '40%' }]}>
+                                            {cit.sanskritShloka && (
+                                                <Text style={{ fontSize: 7, fontStyle: 'italic', color: '#333333', marginBottom: 2 }}>
+                                                    {cit.sanskritShloka}
+                                                </Text>
+                                            )}
+                                            <Text style={{ fontSize: 7.5, color: '#222222', lineHeight: 1.3 }}>
+                                                "{cit.chunkText.slice(0, 160)}..."
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.cellGuidance, { width: '28%' }]}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 8, color: '#000000' }}>
+                                                {matchedLink ? matchedLink.recommendationName : 'Clinical Support'}
+                                            </Text>
+                                            <Text style={{ fontSize: 7, color: '#444444', marginTop: 1 }}>
+                                                Match: {(cit.similarityScore * 100).toFixed(0)}% ({cit.corpus.replace(/_/g, ' ')})
+                                            </Text>
+                                        </View>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
+                {/* 7. Regulatory & Legal Disclaimer */}
                 <View style={styles.disclaimerBox} wrap={false}>
                     <Text style={styles.disclaimerHeader}>IMPORTANT MEDICAL &amp; LEGAL DISCLAIMER</Text>
                     <Text style={styles.disclaimerText}>

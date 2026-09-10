@@ -184,16 +184,16 @@ describe("EvidenceGraphBuilder", () => {
         expect(graph.ragMetadata.activeProviders).toEqual(["jina", "gemini"]);
     });
 
-    it("handles empty RAG inputs gracefully without failing", () => {
+    it("grounds diagnosis against ClassicalSamhitaKnowledgeBase when vector RAG chunks are empty", () => {
         const emptyInput: BuilderInput = {
             symptoms: {
                 locations: ["knee"],
-                sanitizedSymptomText: "knee pain",
+                sanitizedSymptomText: "knee pain joint stiffness",
             },
             bayesian: {
                 conditionName: "Osteoarthritis",
                 bayesianScore: 70,
-                matchedKeywords: ["knee"],
+                matchedKeywords: ["knee", "stiffness"],
                 clinicalRuleAlerts: [],
                 posteriorRedFlags: [],
             },
@@ -201,7 +201,7 @@ describe("EvidenceGraphBuilder", () => {
             ayurvedicChunks: [],
             pdfChunks: [],
             homeRemedyChunks: [],
-            aiRemedies: [{ name: "Rhus Tox" }],
+            aiRemedies: [{ name: "Rhus Toxicodendron 30C" }],
             aiHomeRemedies: [],
             provider: "gemini",
             latencyMs: 900,
@@ -211,9 +211,49 @@ describe("EvidenceGraphBuilder", () => {
         };
 
         const graph = buildEvidenceGraph(emptyInput);
-        expect(graph.ragCitations.length).toBe(0);
+        // Fallback knowledge base grounds against Charaka Samhita (Sandhigata Vata) and Boericke (Rhus Tox)
+        expect(graph.ragCitations.length).toBeGreaterThan(0);
+        const boerickeRef = graph.ragCitations.find((c) => c.corpus === "boericke_materia_medica");
+        expect(boerickeRef).toBeDefined();
+        expect(boerickeRef?.section).toContain("Rhus Toxicodendron");
+
         expect(graph.recommendationLinks.length).toBe(1);
-        expect(graph.recommendationLinks[0].evidenceStrength).toBe("traditional");
+        expect(graph.recommendationLinks[0].supportingCitationIds.length).toBeGreaterThan(0);
         expect(graph.ragMetadata.cacheHit).toBe(true);
+    });
+
+    it("surfaces authentic Sanskrit shlokas and feature likelihood contributions in graph", () => {
+        const inputWithContributions: BuilderInput = {
+            ...mockInput,
+            bayesian: {
+                ...mockInput.bayesian,
+                featureContributions: [
+                    {
+                        feature: "throbbing",
+                        status: "present",
+                        likelihoodRatio: 4.2,
+                        logOddsImpact: 1.43,
+                    },
+                    {
+                        feature: "light sensitivity",
+                        status: "present",
+                        likelihoodRatio: 3.1,
+                        logOddsImpact: 1.13,
+                    },
+                ],
+            },
+        };
+
+        const graph = buildEvidenceGraph(inputWithContributions);
+
+        expect(graph.bayesianEvidence.featureContributions).toBeDefined();
+        expect(graph.bayesianEvidence.featureContributions?.length).toBe(2);
+        expect(graph.bayesianEvidence.featureContributions?.[0].feature).toBe("throbbing");
+        expect(graph.bayesianEvidence.featureContributions?.[0].likelihoodRatio).toBe(4.2);
+
+        // Check that classical samhita shloka is preserved
+        const charakaCitation = graph.ragCitations.find((c) => c.corpus === "charaka_samhita" && c.sanskritShloka);
+        expect(charakaCitation).toBeDefined();
+        expect(charakaCitation?.sanskritShloka).toContain("शिरोरुजायां");
     });
 });

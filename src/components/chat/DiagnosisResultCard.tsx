@@ -691,6 +691,7 @@ export function DiagnosisResultCard({
                     ddiAlerts={ddiAlerts}
                     userProfile={userProfile}
                     symptomDetails={symptomDetails}
+                    evidenceGraph={activeEvidenceGraph}
                     reportId={reportId}
                     generatedAt={generatedAt}
                     userName={user?.user_metadata?.full_name || 'Patient'}
@@ -1170,23 +1171,41 @@ export function DiagnosisResultCard({
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-900">
                                                         <BookOpen className="h-3.5 w-3.5 text-teal-700" />
-                                                        <span>Classical Evidence & Traceability</span>
+                                                        <span>Classical Evidence &amp; Scriptural Lineage</span>
                                                     </div>
-                                                    <Badge variant="outline" className="border-teal-300 bg-teal-100/70 text-[10px] text-teal-800">
-                                                        {activeEvidenceGraph.ragCitations.length} Classical Source{activeEvidenceGraph.ragCitations.length === 1 ? '' : 's'}
-                                                    </Badge>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {activeEvidenceGraph.bayesianEvidence?.posteriorScore && (
+                                                            <Badge variant="outline" className="border-teal-200 bg-teal-50 text-[10px] text-teal-700 font-semibold">
+                                                                Bayesian Posterior: {activeEvidenceGraph.bayesianEvidence.posteriorScore}%
+                                                            </Badge>
+                                                        )}
+                                                        <Badge variant="outline" className="border-teal-300 bg-teal-100/70 text-[10px] text-teal-800">
+                                                            {activeEvidenceGraph.ragCitations.length} Classical Source{activeEvidenceGraph.ragCitations.length === 1 ? '' : 's'}
+                                                        </Badge>
+                                                    </div>
                                                 </div>
 
-                                                {/* Recommendation Links */}
+                                                {/* Visual Evidence Flow Pill Trail */}
+                                                <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-teal-200/60 bg-white/70 px-2.5 py-1.5 text-[11px] text-teal-950 font-medium">
+                                                    <span className="text-teal-700">Patient Symptoms</span>
+                                                    <span className="text-teal-400">→</span>
+                                                    <span className="text-teal-700">MCMC Bayes ({activeEvidenceGraph.bayesianEvidence.posteriorScore}%)</span>
+                                                    <span className="text-teal-400">→</span>
+                                                    <span className="text-teal-700">Charaka &amp; Boericke RAG</span>
+                                                    <span className="text-teal-400">→</span>
+                                                    <span className="font-semibold text-teal-900">Grounded Recommendations</span>
+                                                </div>
+
+                                                {/* Remedy Grounding */}
                                                 {activeEvidenceGraph.recommendationLinks.length > 0 && (
                                                     <div className="space-y-1.5">
-                                                        <p className="text-[11px] font-semibold text-teal-950">Remedy Grounding:</p>
+                                                        <p className="text-[11px] font-semibold text-teal-950">Formulation Evidence Grounding:</p>
                                                         <div className="grid gap-1.5">
                                                             {activeEvidenceGraph.recommendationLinks.map((link, idx) => (
                                                                 <div key={idx} className="flex flex-col gap-0.5 rounded border border-teal-100 bg-white p-2 text-xs">
                                                                     <div className="flex items-center justify-between">
                                                                         <span className="font-semibold text-slate-900">{link.recommendationName}</span>
-                                                                        <span className="text-[10px] font-medium text-teal-700 capitalize">
+                                                                        <span className="text-[10px] font-semibold text-teal-700 capitalize rounded bg-teal-50 px-1.5 py-0.5 border border-teal-100">
                                                                             {link.evidenceStrength} evidence
                                                                         </span>
                                                                     </div>
@@ -1197,24 +1216,30 @@ export function DiagnosisResultCard({
                                                     </div>
                                                 )}
 
-                                                {/* Top Classical Citations */}
+                                                {/* Top Classical Citations with Authentic Shlokas & Rubrics */}
                                                 {activeEvidenceGraph.ragCitations.length > 0 && (
                                                     <div className="space-y-1.5">
-                                                        <p className="text-[11px] font-semibold text-teal-950">Matched Verses & Literature Chunks:</p>
+                                                        <p className="text-[11px] font-semibold text-teal-950">Matched Verses &amp; Literature Chunks:</p>
                                                         <div className="space-y-2">
-                                                            {activeEvidenceGraph.ragCitations.slice(0, 3).map((cit) => (
-                                                                <div key={cit.citationId} className="rounded border border-teal-100/80 bg-white/90 p-2.5 text-xs">
-                                                                    <div className="flex items-center justify-between gap-1 text-[11px] font-semibold text-teal-900 mb-1">
+                                                            {activeEvidenceGraph.ragCitations.slice(0, 4).map((cit) => (
+                                                                <div key={cit.citationId} className="rounded border border-teal-100/80 bg-white/90 p-2.5 text-xs space-y-1.5">
+                                                                    <div className="flex items-center justify-between gap-1 text-[11px] font-semibold text-teal-900">
                                                                         <span>{cit.sourceTitle}</span>
-                                                                        <span className="text-[10px] text-slate-500 font-normal">
-                                                                            Match: {(cit.similarityScore * 100).toFixed(0)}%
+                                                                        <span className="text-[10px] text-teal-700 font-medium">
+                                                                            Relevance: {(cit.similarityScore * 100).toFixed(0)}%
                                                                         </span>
                                                                     </div>
-                                                                    <div className="text-[10px] text-teal-700 font-medium mb-1">
+                                                                    <div className="text-[10px] text-teal-800 font-medium">
                                                                         {cit.section}
+                                                                        {cit.verseNumber && <span className="ml-1 text-teal-600 font-normal">({cit.verseNumber})</span>}
                                                                     </div>
-                                                                    <p className="text-[11px] text-slate-600 line-clamp-3 leading-relaxed italic border-l-2 border-teal-300 pl-2">
-                                                                        &ldquo;{cit.chunkText.slice(0, 200)}...&rdquo;
+                                                                    {cit.sanskritShloka && (
+                                                                        <div className="rounded bg-teal-50/70 p-2 font-serif text-[11px] leading-relaxed text-teal-950 border-l-2 border-teal-400">
+                                                                            {cit.sanskritShloka}
+                                                                        </div>
+                                                                    )}
+                                                                    <p className="text-[11px] text-slate-600 line-clamp-3 leading-relaxed italic border-l-2 border-slate-200 pl-2">
+                                                                        &ldquo;{cit.chunkText.slice(0, 220)}...&rdquo;
                                                                     </p>
                                                                 </div>
                                                             ))}
