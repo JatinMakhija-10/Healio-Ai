@@ -91,13 +91,13 @@ interface PrimaryDiagnosis {
     };
 }
 
-interface BoerickeChunk {
+interface _BoerickeChunk {
     remedy_name: string;
     chunk_text: string;
     similarity: number;
 }
 
-interface AyurvedicChunk {
+interface _AyurvedicChunk {
     book: string;
     category: string;
     section: string;
@@ -105,7 +105,7 @@ interface AyurvedicChunk {
     similarity: number;
 }
 
-interface PdfChunk {
+interface _PdfChunk {
     source_file: string;
     page_number?: number | null;
     chunk_text: string;
@@ -523,6 +523,7 @@ export async function POST(req: Request) {
             _detectedLanguage = 'en' as 'en' | 'hi' | 'hinglish',
             ddiPromptSection = '' as string,
             blockedRemedies = [] as string[],
+            pvDelta = null,
         } = body;
 
         if (!symptoms) {
@@ -625,7 +626,21 @@ Include appropriate warnings and set seekHelp=true.\n`
             ? `${ddiPromptSection}\n\nCRITICAL SAFETY RULE: Do NOT add any drug interaction warnings that are not listed in the DDI CONTEXT above. Do NOT re-recommend any blocked remedies. Limit interaction messaging strictly to what the DDI layer has already determined.\n`
             : '';
 
-        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}${posteriorRedFlagSection}${ddiSection}
+        // Ayurvedic Personalization (Prakriti vs Vikriti Δ)
+        const pvDeltaSection = pvDelta?.delta
+            ? `=== PRAKRITI–VIKRITI Δ CONSTITUTIONAL PROFILE (AYURVEDIC PERSONALIZATION) ===
+Prakriti (Birth Constitution): ${pvDelta.prakriti?.primaryDosha || 'balanced'}${pvDelta.prakriti?.secondaryDosha ? `-${pvDelta.prakriti.secondaryDosha}` : ''} (${pvDelta.prakriti?.assessmentSource || 'profile'})
+Current Vikriti (Imbalance): ${pvDelta.vikriti?.primaryDosha || 'balanced'} (Severity: ${pvDelta.imbalanceSeverity || 'mild'})
+Doshic Delta (Δ = Vikriti - Prakriti): Vata ${pvDelta.delta?.vata > 0 ? '+' : ''}${Math.round(pvDelta.delta?.vata || 0)}, Pitta ${pvDelta.delta?.pitta > 0 ? '+' : ''}${Math.round(pvDelta.delta?.pitta || 0)}, Kapha ${pvDelta.delta?.kapha > 0 ? '+' : ''}${Math.round(pvDelta.delta?.kapha || 0)}
+Primary Doshic Deviation: ${pvDelta.delta?.primaryDeviation || 'none'} (${pvDelta.delta?.primaryDirection || 'excess'})
+Top Δ-Matched Herbs: ${pvDelta.recommendedHerbs?.map((h: { name: string }) => h.name).join(', ') || 'General tridoshic'}
+Constitutional Diet Guidance: Emphasize [${pvDelta.therapeuticGuidance?.dietEmphasis?.slice(0, 3).join(', ') || ''}], Avoid [${pvDelta.therapeuticGuidance?.dietAvoid?.slice(0, 3).join(', ') || ''}]
+Personalized Lifestyle & Yoga: ${[...(pvDelta.therapeuticGuidance?.lifestyle?.slice(0, 2) || []), ...(pvDelta.therapeuticGuidance?.practices?.slice(0, 2) || [])].join(', ')}
+
+CLINICAL INSTRUCTION: Personalize your Indian Home Remedies (indianHomeRemedies) and rationale to pacify the primary deviated dosha (${pvDelta.delta?.primaryDeviation || 'imbalance'}) while respecting the patient's underlying Prakriti.\n\n`
+            : '';
+
+        const userPrompt = `${bayesianSection}${structuredRemedySection}${clinicalSection}${posteriorRedFlagSection}${ddiSection}${pvDeltaSection}
 === PATIENT PRESENTATION ===
 
 Symptoms:
@@ -866,6 +881,7 @@ Based on all of the above, generate the formatting JSON.`;
         }
         // P0-9 Audit Log Recording
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await (supabase as any).from('audit_logs').insert({
                 user_id: user.id,
                 event_type: 'diagnostic_run',
@@ -927,6 +943,7 @@ Based on all of the above, generate the formatting JSON.`;
         return NextResponse.json({
             diagnosis: jsonResult,
             evidenceGraph,
+            pvDelta,
             meta: {
                 provider,
                 latencyMs,
@@ -938,6 +955,7 @@ Based on all of the above, generate the formatting JSON.`;
                 dynamicTemperature,
                 hasEvidenceGraph: evidenceGraph !== null,
                 totalCitations: evidenceGraph?.ragCitations?.length ?? 0,
+                pvDeltaApplied: pvDelta !== null,
             },
         });
     } catch (error) {

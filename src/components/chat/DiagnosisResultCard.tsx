@@ -31,11 +31,11 @@ import {
     ExternalLink,
     AlertCircle,
     BookOpen,
-    GitFork,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import type { EvidenceTraceabilityGraph } from "@/lib/diagnosis/traceability";
+import type { PVDeltaAssessment } from "@/lib/diagnosis/pvDelta";
 import { Button } from "@/components/ui/button";
 import { pdf } from '@react-pdf/renderer';
 import { MedicalReportDocument, MedicalReportPreviewDocument } from "./MedicalReportPDF";
@@ -329,6 +329,7 @@ interface DiagnosisResultCardProps {
     ddiBlockedRemedies?: FlaggedRemedy[]; // Remedies shown with strikethrough
     userSymptomData?: UserSymptomData;  // Full symptom + profile data for PDF
     evidenceGraph?: EvidenceTraceabilityGraph | null; // Traceability graph linking symptoms, Bayes, RAG, recommendations
+    pvDelta?: PVDeltaAssessment | null;  // Prakriti–Vikriti Δ constitutional personalisation
 }
 
 // ─── Severity Badge ───────────────────────────────────────────────────────────
@@ -546,6 +547,7 @@ export function DiagnosisResultCard({
     ddiBlockedRemedies = [],
     userSymptomData,
     evidenceGraph,
+    pvDelta,
 }: DiagnosisResultCardProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -692,6 +694,7 @@ export function DiagnosisResultCard({
                     userProfile={userProfile}
                     symptomDetails={symptomDetails}
                     evidenceGraph={activeEvidenceGraph}
+                    pvDelta={pvDelta}
                     reportId={reportId}
                     generatedAt={generatedAt}
                     userName={user?.user_metadata?.full_name || 'Patient'}
@@ -1249,7 +1252,132 @@ export function DiagnosisResultCard({
                                             </div>
                                         )}
 
-                                        {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && !activeEvidenceGraph && (
+                                        {/* ═══ Prakriti–Vikriti Δ Panel ═══ */}
+                                        {pvDelta && (
+                                            <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-3.5 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-900">
+                                                        <Leaf className="h-3.5 w-3.5 text-amber-700" />
+                                                        <span>Prakriti–Vikriti Δ Constitutional Analysis</span>
+                                                    </div>
+                                                    <Badge variant="outline" className="text-[11px] border-amber-300 text-amber-800 capitalize">
+                                                        {pvDelta.imbalanceSeverity} imbalance
+                                                    </Badge>
+                                                </div>
+
+                                                {/* Summary narrative */}
+                                                <p className="text-[11px] leading-relaxed text-amber-900/80 bg-amber-100/60 rounded-md px-2.5 py-2">
+                                                    {pvDelta.summary}
+                                                </p>
+
+                                                {/* Dosha Δ Bars */}
+                                                <div className="space-y-1.5">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">Δ = Vikriti − Prakriti (per dosha)</p>
+                                                    {(['vata', 'pitta', 'kapha'] as const).map((dosha) => {
+                                                        const deltaVal = pvDelta.delta[dosha];
+                                                        const isExcess = deltaVal > 0;
+                                                        const magnitude = Math.abs(deltaVal);
+                                                        const widthPct = Math.min(100, Math.round((magnitude / 50) * 100));
+                                                        const isPrimary = pvDelta.delta.primaryDeviation === dosha;
+                                                        return (
+                                                            <div key={dosha} className="flex items-center gap-2">
+                                                                <span className={`text-[10px] w-10 capitalize font-medium ${isPrimary ? 'text-amber-900 font-bold' : 'text-amber-700'}`}>
+                                                                    {dosha}
+                                                                </span>
+                                                                <div className="flex-1 flex items-center gap-1">
+                                                                    <div className="flex-1 bg-amber-100 rounded-full h-1.5 overflow-hidden">
+                                                                        <div
+                                                                            className={`h-full rounded-full transition-all ${isExcess ? 'bg-orange-500' : 'bg-blue-400'}`}
+                                                                            style={{ width: `${widthPct}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className={`text-[10px] font-mono w-10 text-right ${isExcess ? 'text-orange-700' : deltaVal < 0 ? 'text-blue-600' : 'text-slate-500'}`}>
+                                                                        {deltaVal > 0 ? '+' : ''}{Math.round(deltaVal)}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-slate-400">{isExcess ? 'vriddhi' : deltaVal < 0 ? 'kshaya' : '≈'}</span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                {/* Recommended Herbs */}
+                                                {pvDelta.recommendedHerbs.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 mb-1.5">
+                                                            Δ-Matched Herbs (ranked by doshic compatibility)
+                                                        </p>
+                                                        <div className="space-y-1.5">
+                                                            {pvDelta.recommendedHerbs.slice(0, 4).map((herb) => (
+                                                                <div key={herb.id} className="flex items-start gap-2 bg-white/70 rounded-md px-2 py-1.5 border border-amber-100">
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                                            <span className="text-[11px] font-semibold text-amber-900">{herb.name}</span>
+                                                                            {herb.hindiName && (
+                                                                                <span className="text-[11px] text-amber-700">{herb.hindiName}</span>
+                                                                            )}
+                                                                        </div>
+                                                                        <p className="text-[10px] text-slate-600 mt-0.5 leading-relaxed">{herb.rationale}</p>
+                                                                        {herb.primaryPreparation && (
+                                                                            <p className="text-[9px] text-slate-400 mt-0.5 italic">{herb.primaryPreparation}</p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-right flex-shrink-0">
+                                                                        <span className="text-[10px] font-mono text-amber-700 font-bold">
+                                                                            {Math.round(herb.compatibilityScore * 100)}%
+                                                                        </span>
+                                                                        <p className="text-[9px] text-slate-400">match</p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Therapeutic guidance */}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {pvDelta.therapeuticGuidance.dietEmphasis.length > 0 && (
+                                                        <div className="bg-white/60 rounded-md p-2 border border-amber-100">
+                                                            <p className="text-[9px] font-bold uppercase tracking-wide text-green-700 mb-1">Emphasise</p>
+                                                            <ul className="space-y-0.5">
+                                                                {pvDelta.therapeuticGuidance.dietEmphasis.slice(0, 3).map((item, i) => (
+                                                                    <li key={i} className="text-[10px] text-slate-600 leading-tight">• {item}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    {pvDelta.therapeuticGuidance.dietAvoid.length > 0 && (
+                                                        <div className="bg-white/60 rounded-md p-2 border border-amber-100">
+                                                            <p className="text-[9px] font-bold uppercase tracking-wide text-red-600 mb-1">Avoid</p>
+                                                            <ul className="space-y-0.5">
+                                                                {pvDelta.therapeuticGuidance.dietAvoid.slice(0, 3).map((item, i) => (
+                                                                    <li key={i} className="text-[10px] text-slate-600 leading-tight">• {item}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {pvDelta.therapeuticGuidance.practices.length > 0 && (
+                                                    <div className="bg-white/60 rounded-md px-2.5 py-2 border border-amber-100">
+                                                        <p className="text-[9px] font-bold uppercase tracking-wide text-purple-700 mb-1">Yoga & Pranayama</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {pvDelta.therapeuticGuidance.practices.slice(0, 3).map((p, i) => (
+                                                                <span key={i} className="text-[10px] bg-purple-50 text-purple-700 border border-purple-100 rounded-full px-2 py-0.5">
+                                                                    {p}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <p className="text-[9px] text-amber-700/60 italic">
+                                                    Prakriti assessed via {pvDelta.prakriti.assessmentSource.replace(/_/g, ' ')} · Season: {pvDelta.currentSeason}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {clinicalRules.length === 0 && significantReasoning.length === 0 && differentialDiagnoses.length === 0 && !explainableCondition.bayesianFactors && !explainableCondition.rationale && !activeEvidenceGraph && !pvDelta && (
                                             <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
                                                 Detailed calculation data was not returned for this answer. Arovia is still showing the available match score and safety guidance from this chat turn.
                                             </p>

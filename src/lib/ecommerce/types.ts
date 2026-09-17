@@ -8,9 +8,9 @@
  * 4. Multi-supplier order dispatch (Vaidyanath Group B2B dropship, native inventory, affiliate fallback)
  */
 
-import { DoshaType } from '../ayurveda/types';
+import type { DoshaType } from '../ayurveda/types';
 
-export { DoshaType };
+export type { DoshaType };
 
 export type ProductForm =
   | 'churna'        // Powder

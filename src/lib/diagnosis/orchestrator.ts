@@ -54,6 +54,8 @@ import { buildPersonaProfile } from "./advanced/PersonaEngine";
 import type { IntelligenceContext, EnhancedDiagnosisOutput } from "./advanced/intelligenceTypes";
 import { enrichDiagnosisSession } from "./datasources";
 import type { EvidenceTraceabilityGraph } from "./traceability";
+import { computePVDelta } from "./pvDelta";
+import type { PVDeltaAssessment } from "./pvDelta";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,6 +96,8 @@ export interface OrchestratedResult {
     clinicalRuleResults?: RuleResult[];
     /** Structured evidence traceability graph linking symptoms, Bayes, RAG, and recommendations */
     evidenceGraph?: EvidenceTraceabilityGraph | null;
+    /** Prakriti–Vikriti Δ assessment (constitutional imbalance personalisation) */
+    pvDelta?: PVDeltaAssessment | null;
     /** Metadata about the full pipeline run */
     orchestrationMeta: {
         bayesianTopK: Array<{
@@ -155,6 +159,7 @@ export async function diagnose(
     uncertainty?: UncertaintyEstimate;
     clinicalRules?: RuleResult[];
     evidenceGraph?: EvidenceTraceabilityGraph | null;
+    pvDelta?: PVDeltaAssessment | null;
     orchestrationMeta?: OrchestratedResult["orchestrationMeta"];
 }> {
     const completedStages: string[] = [];
@@ -483,12 +488,38 @@ export async function diagnose(
         };
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // STAGE 3.5 — Prakriti–Vikriti Δ Pipeline Step (Ayurvedic Personalisation)
+    //
+    // Computes the delta between the patient's birth constitution (Prakriti)
+    // and their current doshic imbalance (Vikriti) derived from symptoms.
+    //
+    // Outputs:
+    //   - pvDelta.delta          : per-dosha Δ scores (excess / deficiency)
+    //   - pvDelta.recommendedHerbs: top-5 herbs ranked by Δ-compatibility
+    //   - pvDelta.confidenceModifier: small pp adjustment to Bayesian score
+    //   - pvDelta.therapeuticGuidance: diet, lifestyle, pranayama guidance
+    //
+    // 100% synchronous, fault-tolerant, zero latency impact.
+    // ═══════════════════════════════════════════════════════════════════════
+    let pvDelta: import("./pvDelta").PVDeltaAssessment | null = null;
+    try {
+        const topConditionNames = bayesianCandidates.slice(0, 3).map(c => c.conditionName);
+        pvDelta = computePVDelta(symptoms, topConditionNames);
+        if (pvDelta) {
+            completedStages.push("prakriti_vikriti_delta");
+        }
+    } catch (e) {
+        console.error("[Orchestrator] PV Delta stage error (non-fatal):", e);
+    }
+
     let aiResult: DiagnosisResult | null = null;
     let provider = "unknown";
     let latencyMs = 0;
     let ragApplied = false;
     let ragRemediesFound: string[] = [];
     let evidenceGraph: EvidenceTraceabilityGraph | null = null;
+
 
     // Build DDI prompt section (informs LLM about blocked/flagged remedies)
     const ddiPromptSection = ddiResult ? buildDDIPromptSection(ddiResult) : '';
@@ -529,6 +560,7 @@ export async function diagnose(
                 posteriorRedFlags: [...new Set(allPosteriorRedFlags)],
                 detectedLanguage: symptoms.userProfile?.language || 'en',
                 ddiPromptSection,
+                pvDelta,
             }),
         });
 
@@ -560,6 +592,7 @@ export async function diagnose(
                     warnings: aiDiag.warnings || [],
                     seekHelp: aiDiag.seekHelp ? (aiDiag.seekHelpReason || "Please consult a doctor immediately.") : "",
                     evidenceGraph,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } as any,
                 confidence: Math.round(primaryCandidate.score), // Bayesian Score Authority
                 matchedKeywords: primaryCandidate.matchedKeywords,
@@ -709,6 +742,7 @@ export async function diagnose(
         uncertainty,
         clinicalRules: clinicalRuleResults,
         evidenceGraph,
+        pvDelta,
         orchestrationMeta,
     };
 

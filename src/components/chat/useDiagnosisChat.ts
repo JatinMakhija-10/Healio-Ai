@@ -49,6 +49,9 @@ export type DiagnosisMessage = {
     ddiAlerts?: string[];                 // Interaction alert strings from DDI checker
     ddiFlaggedRemedies?: FlaggedRemedy[]; // Remedies with ⚠ severity badges (not blocked)
     ddiBlockedRemedies?: FlaggedRemedy[]; // Remedies blocked: shown strikethrough
+    // ─── Prakriti–Vikriti Δ ───────────────────────────────────────────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pvDelta?: any | null;  // PVDeltaAssessment — typed as any to avoid circular import
 };
 
 export interface DiagnosisChatState {
@@ -253,6 +256,7 @@ export function useDiagnosisChat(): DiagnosisChatState & DiagnosisChatActions {
                         ddiAlerts: ddiMeta?.ddiAlerts ?? [],
                         ddiFlaggedRemedies: [],  // FlaggedRemedy arrays from orchestrator Stage 2.5
                         ddiBlockedRemedies: [],  // populated once checker result is surfaced via meta
+                        pvDelta: result.pvDelta ?? null,
                     });
 
                     await saveConsultation(data, topResult, result.uncertainty, result.clinicalRules);

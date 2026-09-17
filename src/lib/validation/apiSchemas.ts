@@ -109,11 +109,13 @@ export const DiagnoseResponseMetaSchema = z.object({
     questionOverridden: z.boolean().optional(),
     hasEvidenceGraph: z.boolean().optional(),
     totalCitations: z.number().optional(),
+    pvDeltaApplied: z.boolean().optional(),
 });
 
 export const DiagnoseResponseSchema = z.object({
     diagnosis: DiagnoseAIResultSchema,
     evidenceGraph: z.any().optional(),
+    pvDelta: z.any().optional(),
     meta: DiagnoseResponseMetaSchema,
 });
 

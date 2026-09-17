@@ -303,6 +303,7 @@ export function MessageList({
                                     ddiFlaggedRemedies={msg.ddiFlaggedRemedies}
                                     ddiBlockedRemedies={msg.ddiBlockedRemedies}
                                     userSymptomData={symptomData ?? undefined}
+                                    pvDelta={msg.pvDelta}
                                 />
                             )}
                         </div>

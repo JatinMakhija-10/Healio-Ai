@@ -3,6 +3,7 @@ import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/rendere
 import { Condition, ReasoningTraceEntry } from "@/lib/diagnosis/types";
 import { UncertaintyEstimate, RuleResult } from "@/lib/diagnosis/advanced";
 import type { EvidenceTraceabilityGraph } from "@/lib/diagnosis/traceability";
+import type { PVDeltaAssessment } from "@/lib/diagnosis/pvDelta";
 import { format } from "date-fns";
 
 // ─── Font Setup ───────────────────────────────────────────────────────────────
@@ -400,6 +401,7 @@ interface MedicalReportPDFProps {
     symptomDetails?: SymptomDetailsSummary;
     ddiAlerts?: string[];
     evidenceGraph?: EvidenceTraceabilityGraph | null;
+    pvDelta?: PVDeltaAssessment | null;
     generatedAt?: Date;
 }
 
@@ -426,7 +428,7 @@ const PageFooterFixed = ({ reportId }: { reportId: string }) => (
 );
 
 // ─── Authentic Arovia.AI Medical Report Component ─────────────────────────────
-export const MedicalReportDocument = ({
+export const MedicalReportDocument: React.FC<MedicalReportPDFProps> = ({
     condition,
     confidence,
     uncertainty,
@@ -440,6 +442,7 @@ export const MedicalReportDocument = ({
     symptomDetails,
     ddiAlerts = [],
     evidenceGraph,
+    pvDelta,
     generatedAt = new Date(),
 }: MedicalReportPDFProps) => {
     const assessmentDate = generatedAt || new Date();
@@ -808,7 +811,7 @@ export const MedicalReportDocument = ({
                                                 </Text>
                                             )}
                                             <Text style={{ fontSize: 7.5, color: '#222222', lineHeight: 1.3 }}>
-                                                "{cit.chunkText.slice(0, 160)}..."
+                                                {`"${cit.chunkText.slice(0, 160)}..."`}
                                             </Text>
                                         </View>
                                         <View style={[styles.cellGuidance, { width: '28%' }]}>
@@ -826,7 +829,71 @@ export const MedicalReportDocument = ({
                     </View>
                 )}
 
-                {/* 7. Regulatory & Legal Disclaimer */}
+                {/* 7. Ayurvedic Constitutional Analysis (Prakriti vs Vikriti Δ) */}
+                {pvDelta && (
+                    <View style={{ marginBottom: 10 }} wrap={false}>
+                        <Text style={styles.sectionTitle}>7. Ayurvedic Constitutional Analysis (Prakriti vs Vikriti Δ)</Text>
+                        <Text style={[styles.assessmentText, { marginBottom: 4 }]}>
+                            {pvDelta.summary}
+                        </Text>
+                        <View style={[styles.patientBlock, { marginBottom: 6, padding: '4 8' }]}>
+                            <View style={styles.patientGridRow}>
+                                <View style={styles.patientGridCol}>
+                                    <Text style={styles.patientKey}>PRAKRITI (NATURAL):</Text>
+                                    <Text style={styles.patientVal}>
+                                        {pvDelta.prakriti.primaryDosha.toUpperCase()}{pvDelta.prakriti.secondaryDosha ? `-${pvDelta.prakriti.secondaryDosha.toUpperCase()}` : ''} ({pvDelta.prakriti.assessmentSource.replace(/_/g, ' ')})
+                                    </Text>
+                                </View>
+                                <View style={styles.patientGridCol}>
+                                    <Text style={styles.patientKey}>CURRENT VIKRITI:</Text>
+                                    <Text style={styles.patientVal}>
+                                        {pvDelta.vikriti.primaryDosha.toUpperCase()} ({pvDelta.imbalanceSeverity.toUpperCase()} IMBALANCE)
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.patientGridRow}>
+                                <View style={styles.patientGridCol}>
+                                    <Text style={styles.patientKey}>DOSHIC DELTA (Δ):</Text>
+                                    <Text style={styles.patientVal}>
+                                        Vata {pvDelta.delta.vata > 0 ? '+' : ''}{Math.round(pvDelta.delta.vata)} | Pitta {pvDelta.delta.pitta > 0 ? '+' : ''}{Math.round(pvDelta.delta.pitta)} | Kapha {pvDelta.delta.kapha > 0 ? '+' : ''}{Math.round(pvDelta.delta.kapha)}
+                                    </Text>
+                                </View>
+                                <View style={styles.patientGridCol}>
+                                    <Text style={styles.patientKey}>PRIMARY DEVIATION:</Text>
+                                    <Text style={[styles.patientVal, { fontWeight: 'bold' }]}>
+                                        {pvDelta.delta.primaryDeviation.toUpperCase()} ({pvDelta.delta.primaryDirection.toUpperCase()})
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                        {pvDelta.recommendedHerbs?.length > 0 && (
+                            <View style={styles.table}>
+                                <View style={styles.tableHeaderRow} fixed>
+                                    <Text style={[styles.cellCategory, { width: '30%' }]}>Δ-MATCHED HERB</Text>
+                                    <Text style={[styles.cellRemedy, { width: '45%' }]}>ACTION &amp; RATIONALE</Text>
+                                    <Text style={[styles.cellGuidance, { width: '25%' }]}>COMPATIBILITY</Text>
+                                </View>
+                                {pvDelta.recommendedHerbs.slice(0, 3).map((herb, idx) => (
+                                    <View key={herb.id || idx} style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt} wrap={false}>
+                                        <View style={[styles.cellCategory, { width: '30%' }]}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 8, color: '#000000' }}>{herb.name}</Text>
+                                            {herb.hindiName && <Text style={{ fontSize: 7, color: '#555555' }}>{herb.hindiName}</Text>}
+                                        </View>
+                                        <View style={[styles.cellRemedy, { width: '45%' }]}>
+                                            <Text style={{ fontSize: 7.5, color: '#222222' }}>{herb.rationale}</Text>
+                                            {herb.primaryPreparation && <Text style={{ fontSize: 6.5, color: '#666666', fontStyle: 'italic', marginTop: 1 }}>{herb.primaryPreparation}</Text>}
+                                        </View>
+                                        <View style={[styles.cellGuidance, { width: '25%' }]}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 8, color: '#006655' }}>{Math.round(herb.compatibilityScore * 100)}% Match</Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                {/* 8. Regulatory & Legal Disclaimer */}
                 <View style={styles.disclaimerBox} wrap={false}>
                     <Text style={styles.disclaimerHeader}>IMPORTANT MEDICAL &amp; LEGAL DISCLAIMER</Text>
                     <Text style={styles.disclaimerText}>
@@ -857,7 +924,7 @@ export const MedicalReportPreviewDocument = ({
     condition,
     confidence,
     uncertainty,
-    alerts,
+    alerts: _alerts,
     symptoms = [],
     userName = 'PATIENT',
 }: MedicalReportPreviewProps) => (
