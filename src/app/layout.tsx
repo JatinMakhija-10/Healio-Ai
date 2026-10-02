@@ -50,6 +50,14 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   twitter: {
     card: "summary",
     title: "Arovia.AI - Where Science Meets Soul",
