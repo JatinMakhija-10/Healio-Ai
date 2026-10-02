@@ -16,9 +16,13 @@ import {
   Mic,
   Moon,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
   Stethoscope,
   UserRoundCheck,
 } from "lucide-react";
+import { AYURVEDIC_CATALOG } from "@/lib/ecommerce/catalog/catalogData";
+import { ProductCard } from "@/components/ecommerce/ProductCard";
 
 const trustSignals = [
   {
@@ -665,6 +669,64 @@ export default function LandingPage() {
                 <p className="mt-1 text-sm leading-6 text-[#555555]">Medicines, Ayurvedic routines, and doctor notes — all in one feed.</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Ayurvedic Shop Section ─────────────────────────────────────────── */}
+      <section className="py-20 bg-gradient-to-b from-[#F7F6F2] to-white" id="ayurvedic-shop">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-[#E1F5EE] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0F6E56]">
+              <Sparkles className="size-3.5" />
+              Official Partner: Vaidyanath Group
+            </div>
+            <h2 className="text-3xl font-bold leading-tight tracking-normal text-[#1A1A2E] sm:text-4xl">
+              Authentic Ayurvedic formulations,{" "}
+              <span className="text-[#0F6E56]">prescribed by your diagnosis.</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-[#555555]">
+              Every product is matched to your doshic constitution, sourced from AYUSH GMP-certified Vaidyanath Group, and directly traceable to your Healio consultation.
+            </p>
+          </div>
+
+          {/* Product Grid — show first 4 featured products */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {AYURVEDIC_CATALOG.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {/* Trust Badges Row */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-[#6B6B6B]">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="size-4 text-[#0F6E56]" />
+              <span>AYUSH GMP Certified</span>
+            </div>
+            <span className="hidden sm:inline text-[#DAD7CF]">|</span>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="size-4 text-[#0F6E56]" />
+              <span>Direct Vaidyanath Dropship</span>
+            </div>
+            <span className="hidden sm:inline text-[#DAD7CF]">|</span>
+            <div className="flex items-center gap-1.5">
+              <ShoppingBag className="size-4 text-[#0F6E56]" />
+              <span>Free delivery above ₹499</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="mt-8 text-center">
+            <Link
+              href="/dashboard/store"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0F6E56] px-7 text-base font-bold text-white shadow-sm transition hover:bg-[#0B5B47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F6E56]"
+            >
+              <ShoppingBag className="size-4" />
+              Browse Full Ayurvedic Pharmacy
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+            <p className="mt-3 text-xs text-[#9B9B9B]">Sign in to get products matched to your personal consultation</p>
           </div>
         </div>
       </section>

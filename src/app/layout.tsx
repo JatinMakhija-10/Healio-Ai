@@ -6,6 +6,7 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
 import "../bones/registry";
 import { Analytics } from "@vercel/analytics/next";
+import { CartDrawer } from "@/components/ecommerce/CartDrawer";
 
 const siteUrl = new URL("https://arovia-ai.vercel.app");
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             {children}
+            <CartDrawer />
           </AuthProvider>
         </QueryProvider>
         <Toaster
