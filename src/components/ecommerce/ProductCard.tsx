@@ -183,12 +183,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </button>
         ) : (
           <a
-            href={product.affiliateFallbackUrl || 'https://www.baidyanath.co.in'}
+            href={product.affiliateFallbackUrl || '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 py-2 px-3 rounded-xl font-medium text-xs flex items-center justify-center gap-1.5 bg-zinc-800 text-white hover:bg-zinc-900 transition"
           >
-            <span>Buy on Baidyanath</span>
+            <span>Shop Online</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}

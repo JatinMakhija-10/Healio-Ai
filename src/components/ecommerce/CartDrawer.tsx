@@ -72,7 +72,7 @@ export const CartDrawer: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert(`Order Created Successfully!\nOrder ID: ${data.order.id}\nStatus: ${data.order.status}\nFulfillment: Dispatched to Vaidyanath Group Logistics`);
+        alert(`Order Confirmed!\nOrder ID: ${data.order.id}\nStatus: ${data.order.status}\nFulfillment: Processing with Arovia Logistics`);
         setOpen(false);
       } else {
         alert(`Checkout Error: ${data.error}`);
@@ -260,7 +260,7 @@ export const CartDrawer: React.FC = () => {
                 className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
               >
                 {isCheckingOut ? (
-                  <span>Processing with Vaidyanath Logistics...</span>
+                  <span>Processing your order…</span>
                 ) : (
                   <>
                     <span>Proceed to Direct Checkout</span>

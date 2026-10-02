@@ -79,7 +79,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
       <div className="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 flex flex-col items-center justify-center text-center space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Matching clinical formulations to verified Vaidyanath Group inventory...
+          Matching clinical formulations to verified Arovia pharmacy inventory...
         </p>
       </div>
     );
@@ -103,7 +103,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
             </h3>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Grounded in your diagnostic report. Sourced from partner <strong className="font-semibold text-zinc-700 dark:text-zinc-300">Vaidyanath Group</strong>.
+            Grounded in your diagnostic report. Sourced from Arovia's <strong className="font-semibold text-zinc-700 dark:text-zinc-300">AYUSH Certified</strong> partner network.
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>100% Authentic AYUSH GMP Certified Formulations</span>
         </div>
-        <span>Direct Vaidyanath Group Dropship</span>
+        <span>AYUSH GMP Certified · Direct Dropship</span>
       </div>
     </div>
   );
