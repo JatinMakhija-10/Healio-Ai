@@ -127,9 +127,17 @@ tmp_*.txt
 # Large data / binary files (not for git)
 Books/
 Medicines/
+NewBooks*/
+New Sources/
+brag-output/
 data/ayurveda/raw/
 data/ayurveda/processed/
 data/datasets/
+data/models/
+*.safetensors
+*.bin
+*.pt
+*.pth
 *.pdf
 *.xlsx
 *.jsonl
@@ -143,3 +151,4 @@ HEAD_diff.txt
 get_diff.txt
 tmp_pubmed_check.py
 scripts/test_scrape.js
+

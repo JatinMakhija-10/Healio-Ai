@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 import {
     LayoutDashboard,
     Calendar,
@@ -92,22 +93,22 @@ export function DoctorSidebar() {
                 "flex items-center gap-3 p-4 border-b border-slate-800",
                 collapsed && "justify-center"
             )}>
-                <div className="relative">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
-                        <Stethoscope className="h-5 w-5 text-white" />
+                <Link href="/doctor" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <div className="relative shrink-0">
+                        <AroviaLogo variant="icon" size={40} className="rounded-xl" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-slate-900" />
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-slate-900" />
-                </div>
-                {!collapsed && (
-                    <div className="flex flex-col">
-                        <span className="text-lg font-bold text-white tracking-tight">
-                            Arovia<span className="text-teal-400">.AI</span>
-                        </span>
-                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
-                            {isPro ? "Doctor Portal Pro" : "Doctor Portal"}
-                        </span>
-                    </div>
-                )}
+                    {!collapsed && (
+                        <div className="flex flex-col">
+                            <span className="text-lg font-bold text-white tracking-tight">
+                                Arovia<span className="text-teal-400">.AI</span>
+                            </span>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+                                {isPro ? "Doctor Portal Pro" : "Doctor Portal"}
+                            </span>
+                        </div>
+                    )}
+                </Link>
             </div>
 
             {/* Navigation */}

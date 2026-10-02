@@ -18,6 +18,7 @@ import {
     Crown,
     ShoppingBag
 } from "lucide-react";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -122,19 +123,9 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                         className="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-50 md:hidden flex flex-col shadow-xl"
                     >
                         {/* Header */}
-                        <div className="p-6 flex items-center justify-between border-b border-slate-100">
-                            <Link href="/" onClick={onClose} className="flex items-center gap-2 hover:opacity-90 transition-opacity" aria-label="Arovia home">
-                                <div className="bg-teal-600 text-white p-1.5 rounded-lg">
-                                    <Leaf size={20} strokeWidth={2.5} />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
-                                        Arovia.AI
-                                    </span>
-                                    <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
-                                        WHERE SCIENCE MEETS SOUL
-                                    </span>
-                                </div>
+                        <div className="p-5 flex items-center justify-between border-b border-slate-100">
+                            <Link href="/" onClick={onClose} className="flex items-center hover:opacity-90 transition-opacity" aria-label="Arovia home">
+                                <AroviaLogo variant="horizontal" size={34} priority />
                             </Link>
                             <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-500">
                                 <X size={20} />

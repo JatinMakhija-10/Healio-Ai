@@ -470,8 +470,9 @@ export default function OnboardingWizard() {
 
             <div className="w-full max-w-xl space-y-5">
                 {/* Logo / brand */}
-                <div className="text-center mb-2">
-                    <span className="text-teal-600 font-bold text-lg tracking-tight">arovia<span className="text-slate-400 font-light">.</span>ai</span>
+                <div className="flex justify-center mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo-horizontal.png" alt="arovia.ai" style={{ height: '32px', objectFit: 'contain' }} />
                 </div>
 
                 {/* Progress */}

@@ -6,11 +6,15 @@
  * mismatch and silently returns garbage similarity scores.
  *
  * Provider → Table mapping:
- *   Jina AI v5 (768-dim) → boericke_embeddings, home_remedy_embeddings
- *   Gemini     (768-dim) → ayurvedic_knowledge_embeddings
+ *   Jina AI v5 (768-dim) → boericke_embeddings, home_remedy_embeddings, ayurvedic_knowledge_embeddings
  *   OpenAI    (1536-dim) → conditions  (via /api/embeddings route)
  *
- * At query time, Jina and Gemini fire in PARALLEL for maximum speed.
+ * ayurvedic_knowledge_embeddings contains 3 source groups all unified under Jina AI:
+ *   - PlanetAyurveda (classical Ayurvedic texts) — being re-ingested with Jina
+ *   - NewSources (13 medical/herbal books: Culpeper, Domestic Medicine, First Aid, etc.)
+ *   - WHO ICD-11 MMS 2024-01 (WHO disease classification ontology)
+ *
+ * At query time, only Jina fires for all ayurvedic/medical knowledge lookups.
  */
 
 import { getGeminiClient, getGeminiApiKeys, disableGeminiApiKey, AI_PHASE_CONFIG } from '@/lib/ai/config';

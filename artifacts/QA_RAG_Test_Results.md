@@ -1,4 +1,4 @@
-# Healio.AI RAG Detection Quality Report
+# Arovia.AI RAG Detection Quality Report
 
 *Generated automatically by parsing core symptoms through the Vector Brain.*
 
@@ -15,6 +15,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 2: **Acute Appendicitis**
@@ -25,6 +28,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -37,6 +43,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 4: **Urinary Tract Infection (UTI)**
@@ -47,6 +56,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -59,6 +71,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 6: **Hypothyroidism**
@@ -69,6 +84,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -81,6 +99,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 8: **Polycystic Ovary Syndrome (PCOS)**
@@ -91,6 +112,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -103,6 +127,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 10: **Kidney Stones**
@@ -113,6 +140,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -125,6 +155,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 12: **Psoriasis**
@@ -135,6 +168,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -147,6 +183,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 14: **Liver Cirrhosis / Jaundice**
@@ -157,6 +196,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -169,6 +211,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 16: **Typhoid Fever**
@@ -179,6 +224,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -191,6 +239,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 18: **Chickenpox (Varicella)**
@@ -201,6 +252,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -213,6 +267,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 20: **Acute Gastroenteritis**
@@ -223,6 +280,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -235,6 +295,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 22: **Hypertension (High Blood Pressure)**
@@ -245,6 +308,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -257,6 +323,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 24: **Iron-Deficiency Anemia**
@@ -267,6 +336,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -279,6 +351,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 26: **Vertigo (BPPV)**
@@ -289,6 +364,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -301,6 +379,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 28: **Major Depressive Disorder**
@@ -311,6 +392,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -323,6 +407,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 30: **Panic Disorder**
@@ -333,6 +420,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -345,6 +435,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 32: **Systemic Lupus Erythematosus (SLE)**
@@ -355,6 +448,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -367,6 +463,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 34: **Endometriosis**
@@ -377,6 +476,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -389,6 +491,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 36: **Childhood Asthma**
@@ -399,6 +504,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -411,6 +519,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 38: **Chronic Kidney Disease (CKD)**
@@ -421,6 +532,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 
@@ -433,6 +547,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 40: **Allergic Rhinitis**
@@ -444,6 +561,9 @@
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
 
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
+
 ---
 
 ## 🩺 Test 41: **Acute Angle-Closure Glaucoma**
@@ -454,6 +574,9 @@
 
 ### 💊 Homeopathic Matches (Boericke's Materia Medica)
 *No Homeopathic matches found above threshold.*
+
+### 🍯 Traditional Home Remedies & Nuskhe
+*No Home Remedy matches found above threshold.*
 
 ---
 

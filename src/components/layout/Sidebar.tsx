@@ -21,6 +21,7 @@ import {
     UserRoundSearch,
     ShoppingBag
 } from "lucide-react";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/components/ui/button";
 import {
@@ -172,18 +173,8 @@ export function Sidebar() {
     return (
         <div className="flex h-full flex-col border-r border-slate-200 bg-white w-64 hidden md:flex">
             {/* Logo */}
-            <Link href="/" className="px-6 py-5 flex items-center gap-2.5 hover:opacity-90 transition-opacity" aria-label="Arovia home">
-                <div className="bg-teal-600 text-white p-1.5 rounded-lg">
-                    <Leaf size={20} strokeWidth={2.5} />
-                </div>
-                <div className="flex flex-col">
-                    <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
-                        Arovia.AI
-                    </span>
-                    <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
-                        WHERE SCIENCE MEETS SOUL
-                    </span>
-                </div>
+            <Link href="/" className="px-5 py-4 flex items-center hover:opacity-90 transition-opacity" aria-label="Arovia home">
+                <AroviaLogo variant="horizontal" size={36} priority />
             </Link>
 
             {/* Navigation */}

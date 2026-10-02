@@ -172,8 +172,10 @@ async function fetchMultiQueryRAG(
     symptomText: string,
     primaryDiagnosis: PrimaryDiagnosis
 ): Promise<RAGResultWithChunks> {
-    // We still need Gemini for Ayurvedic queries (Gemini-ingested table).
-    // Jina handles Boericke + Home Remedies.
+    // Jina AI (768-dim) handles ALL knowledge base tables:
+    //   boericke_embeddings, home_remedy_embeddings, ayurvedic_knowledge_embeddings
+    // ayurvedic_knowledge_embeddings covers PlanetAyurveda classical texts +
+    //   NewSources medical library (13 books) + WHO ICD-11 MMS 2024-01
     if (!process.env.JINA_API_KEY) {
         console.warn('[diagnose] JINA_API_KEY not set — RAG will be degraded');
     }
@@ -208,25 +210,29 @@ async function fetchMultiQueryRAG(
         ]);
 
         const allParallel = parallelResults.status === 'fulfilled' ? parallelResults.value : [];
-        const validJinaEmbeddings    = allParallel.map(r => r.jina).filter((e): e is number[] => !!e && e.length > 0);
-        const validGeminiEmbeddings  = allParallel.map(r => r.gemini768).filter((e): e is number[] => !!e && e.length > 0);
+        const validJinaEmbeddings = allParallel.map(r => r.jina).filter((e): e is number[] => !!e && e.length > 0);
+        const validGeminiEmbeddings = allParallel.map(r => r.gemini768).filter((e): e is number[] => !!e && e.length > 0);
 
-        if (validJinaEmbeddings.length === 0 && validGeminiEmbeddings.length === 0) {
-            throw new Error('No valid embeddings from either provider');
+        const validEmbeddings = validJinaEmbeddings.length > 0 ? validJinaEmbeddings : validGeminiEmbeddings;
+
+        if (validEmbeddings.length === 0) {
+            throw new Error('No valid embeddings available from Jina or Gemini');
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = supabase as any;
 
-        // Unwrap home remedy embedding (Jina)
-        const homeEmbedding = homeEmbResult.status === 'fulfilled' ? homeEmbResult.value : null;
+        // Unwrap home remedy embedding (Jina or Gemini fallback)
+        const homeEmbedding = homeEmbResult.status === 'fulfilled' && homeEmbResult.value?.length
+            ? homeEmbResult.value
+            : validEmbeddings[0] || null;
 
         // ── Fan-out all Supabase RPCs simultaneously ──────────────────────────────────
         // Boericke + Ayurvedic per embedding + home remedies — all in parallel
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpcPromises: Promise<any>[] = [];
-        // 1. Boericke — Jina embeddings
-        validJinaEmbeddings.forEach(embedding => {
+        // 1. Boericke — 768-dim embeddings
+        validEmbeddings.forEach(embedding => {
             rpcPromises.push(
                 db.rpc("match_boericke_embeddings", {
                     query_embedding: embedding,
@@ -242,17 +248,17 @@ async function fetchMultiQueryRAG(
                 }).then((res: { data: unknown }) => ({ type: 'ayurvedic_pdfs', data: res.data }))
             );
         });
-        // 2. Ayurvedic — Gemini 768-dim embeddings
-        validGeminiEmbeddings.forEach(ayurvedicEmb => {
+        // 2. Ayurvedic (PlanetAyurveda + NewSources + WHO ICD-11) — 768-dim embeddings
+        validEmbeddings.forEach(ayurvedicEmb => {
             rpcPromises.push(
                 Promise.race([
                     db.rpc("search_ayurvedic_knowledge", {
                         query_embedding: ayurvedicEmb,
-                        match_threshold: 0.55,
+                        match_threshold: 0.52,
                         match_count: Math.ceil(AI_PHASE_CONFIG.rag.matchCountPerQuery / 2),
                     }).then((res: { data: unknown }) => ({ type: 'ayurvedic', data: res.data })),
                     new Promise<{ type: string; data: null }>((resolve) =>
-                        setTimeout(() => resolve({ type: 'ayurvedic', data: null }), 5_000)
+                        setTimeout(() => resolve({ type: 'ayurvedic', data: null }), 6_000)
                     ),
                 ])
             );
@@ -354,19 +360,30 @@ async function fetchMultiQueryRAG(
         }
         
         if (topAyurvedic.length > 0) {
-            context += '=== AYURVEDIC KNOWLEDGE BASE (retrieved via multi-query RAG) ===\n\n' +
-                topAyurvedic.map((c, i) =>
-                    `[A${i + 1}] Source: ${c.book} / ${c.section} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
-                ).join('\n\n') + '\n\n';
+            // Separate WHO ICD-11 from medical/ayurvedic books for cleaner prompt context
+            const icd11Chunks = topAyurvedic.filter(c => (c as unknown as { source?: string }).source === 'WHO ICD-11 MMS 2024-01' || c.section?.includes('ICD-11 CODE:'));
+            const bookChunks = topAyurvedic.filter(c => !((c as unknown as { source?: string }).source === 'WHO ICD-11 MMS 2024-01' || c.section?.includes('ICD-11 CODE:')));
+
+            if (bookChunks.length > 0) {
+                context += '=== AYURVEDIC & MEDICAL KNOWLEDGE BASE (PlanetAyurveda + NewSources Medical Library) ===\n\n' +
+                    bookChunks.map((c, i) =>
+                        `[A${i + 1}] Source: ${(c as unknown as { source?: string }).source ?? c.book} / ${c.book} / ${c.section} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
+                    ).join('\n\n') + '\n\n';
+            }
+            if (icd11Chunks.length > 0) {
+                context += '=== WHO ICD-11 DISEASE CLASSIFICATION (2024-01 Release) ===\n\n' +
+                    icd11Chunks.map((c, i) =>
+                        `[ICD${i + 1}] ${c.section} (relevance ${((c.similarity ?? 0) * 100).toFixed(0)}%)\n${c.text}`
+                    ).join('\n\n') + '\n\n';
+            }
         }
 
         if (homeRemedyContext) {
             context += homeRemedyContext;
         }
 
-        const activeProviders: ('jina' | 'gemini')[] = [];
+        const activeProviders: ('jina' | 'gemini')[] = ['jina'];
         if (validJinaEmbeddings.length > 0) activeProviders.push('jina');
-        if (validGeminiEmbeddings.length > 0) activeProviders.push('gemini');
 
         const result: RAGResultWithChunks = {
             context,
@@ -392,44 +409,37 @@ async function fetchMultiQueryRAG(
             const { jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomText);
             const homeEmb = jinaEmb; // Jina for home remedies too
 
-            if (!jinaEmb && !geminiEmb) return { ...EMPTY_RAG_RESULT };
+            const activeEmb = jinaEmb || geminiEmb;
+            if (!activeEmb) return { ...EMPTY_RAG_RESULT };
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fdb = supabase as any;
 
-            // Fan-out all RPCs with correct providers
+            // Fan-out all RPCs with available 768-dim embedding
             const [boerickeRes, ayurvedicRes, homeRes, pdfRes] = await Promise.all([
-                jinaEmb
-                    ? fdb.rpc("match_boericke_embeddings", {
-                        query_embedding: jinaEmb,
-                        match_threshold: 0.60,
+                fdb.rpc("match_boericke_embeddings", {
+                    query_embedding: activeEmb,
+                    match_threshold: 0.60,
+                    match_count: 3,
+                }),
+                Promise.race([
+                    fdb.rpc("search_ayurvedic_knowledge", {
+                        query_embedding: activeEmb,
+                        match_threshold: 0.52,
                         match_count: 3,
-                    })
-                    : Promise.resolve({ data: null }),
-                geminiEmb
-                    ? Promise.race([
-                        fdb.rpc("search_ayurvedic_knowledge", {
-                            query_embedding: geminiEmb,
-                            match_threshold: 0.55,
-                            match_count: 3,
-                        }),
-                        new Promise<{ data: null }>((r) => setTimeout(() => r({ data: null }), 4_000)),
-                    ])
-                    : Promise.resolve({ data: null }),
-                homeEmb
-                    ? fdb.rpc('match_home_remedy_embeddings', {
-                        query_embedding: homeEmb,
-                        match_threshold: 0.58,
-                        match_count: 4,
-                    })
-                    : Promise.resolve({ data: null }),
-                jinaEmb
-                    ? fdb.rpc("match_ayurvedic_pdfs", {
-                        query_embedding: jinaEmb,
-                        match_threshold: 0.60,
-                        match_count: 3,
-                    })
-                    : Promise.resolve({ data: null }),
+                    }),
+                    new Promise<{ data: null }>((r) => setTimeout(() => r({ data: null }), 5_000)),
+                ]),
+                fdb.rpc('match_home_remedy_embeddings', {
+                    query_embedding: activeEmb,
+                    match_threshold: 0.58,
+                    match_count: 4,
+                }),
+                fdb.rpc("match_ayurvedic_pdfs", {
+                    query_embedding: activeEmb,
+                    match_threshold: 0.60,
+                    match_count: 3,
+                }),
             ]);
 
             const boerickeData = boerickeRes.data as BoerickeChunkInput[] | null;

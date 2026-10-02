@@ -78,36 +78,26 @@ export function MedicalReportTemplate({
             }}>
                 <div style={{ position: 'relative', zIndex: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <div style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            padding: '8px',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Activity style={{ width: '28px', height: '28px', color: '#ffffff' }} />
-                        </div>
-                        <h1 style={{
-                            fontSize: '36px',
-                            fontWeight: 'bold',
-                            margin: 0,
-                            letterSpacing: '-0.5px'
-                        }}>Arovia.AI</h1>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/logo-horizontal.png"
+                            alt="Arovia.AI"
+                            style={{ height: '44px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                        />
                     </div>
                     <p style={{
                         color: '#ccfbf1',
                         fontSize: '18px',
                         fontWeight: 500,
-                        marginLeft: '56px',
-                        marginTop: 0,
+                        marginLeft: 0,
+                        marginTop: '4px',
                         marginBottom: '24px'
                     }}>Medical Assessment Report</p>
 
                     <div style={{
                         display: 'flex',
                         gap: '24px',
-                        marginLeft: '56px'
+                        marginLeft: 0
                     }}>
                         <div style={{
                             display: 'flex',

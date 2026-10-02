@@ -189,46 +189,50 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
     }
 }
 
-// ── RAG: Ayurvedic Classical Texts ──────────────────────────────────────────
-// Sources: Planet Ayurveda books, CCRAS e-books, classical Sanskrit texts
-// IMPORTANT: These are FORMAL Ayurvedic medicines — herbs, formulations, decoctions
-// that require purchase from an Ayurvedic pharmacy. NOT kitchen shelf items.
-// NOTE: ayurvedic_knowledge_embeddings uses vector(768) — pass 768-dim embedding only.
-async function fetchAyurvedicContext(embedding768: number[]): Promise<string> {
+// ── RAG: Ayurvedic & Medical Knowledge Base ──────────────────────────────────
+// Unified Jina AI (768-dim) knowledge base covering:
+//   1. PlanetAyurveda — classical Ayurvedic texts, herbs & formulations
+//   2. NewSources — 13 medical/herbal books (Culpeper, Domestic Medicine, First Aid, etc.)
+//   3. WHO ICD-11 MMS 2024-01 — WHO disease classification ontology
+// NOTE: ALL sources use Jina AI 768-dim embeddings — pass jinaEmb only.
+async function fetchAyurvedicContext(jinaEmbedding: number[]): Promise<string> {
     try {
         const supabase = getSupabaseAdmin(); // singleton
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpcCall = (supabase as any).rpc('search_ayurvedic_knowledge', {
-            query_embedding: embedding768,
-            match_threshold: 0.55,
-            match_count: 12,
+            query_embedding: jinaEmbedding,
+            match_threshold: 0.52,
+            match_count: 16,
         });
         const { data } = await Promise.race([
             rpcCall,
-            new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 5_000)),
+            new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 6_000)),
         ]);
         if (!data?.length) return '';
 
-        // Deduplicate: keep one entry per unique source+section combination
+        // Deduplicate: keep highest-similarity chunk per source+book+section combination
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const seen = new Map<string, any>();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         for (const row of data as any[]) {
-            const key = `${row.book ?? ''}|${row.section ?? ''}`.toLowerCase().trim();
-            if (!key || key === '|') continue;
+            const key = `${row.source ?? ''}|${row.book ?? ''}|${row.section ?? ''}`.toLowerCase().trim();
+            if (!key || key === '||') continue;
             if (!seen.has(key) || (row.similarity ?? 0) > (seen.get(key).similarity ?? 0)) {
                 seen.set(key, row);
             }
         }
 
         return [...seen.values()]
-            .filter(c => (c.similarity ?? 0) >= 0.60)
+            .filter(c => (c.similarity ?? 0) >= 0.55)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-            .slice(0, 6)
+            .slice(0, 8)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((c: any, i: number) =>
-                `[${i + 1}] SOURCE: ${c.book} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`
-            ).join('\n\n');
+            .map((c: any, i: number) => {
+                const sourceLabel = c.source === 'WHO ICD-11 MMS 2024-01'
+                    ? `ICD-11 CODE: ${c.section?.replace('Code: ', '').split(' | ')[0] ?? ''} | ${c.book}`
+                    : `SOURCE: ${c.source ?? c.book} | BOOK: ${c.book}`;
+                return `[${i + 1}] ${sourceLabel} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`;
+            }).join('\n\n');
     } catch {
         return '';
     }
@@ -384,28 +388,26 @@ async function fetchAllContext(
     try {
         const t0Embed = Date.now();
 
-        // ── Fire BOTH providers in PARALLEL ──────────────────────────────────
-        // Jina  → boericke_embeddings + home_remedy_embeddings (768-dim)
-        // Gemini → ayurvedic_knowledge_embeddings (768-dim, Gemini-ingested)
-        // Both start simultaneously; neither waits for the other.
-        const { jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomSummary);
+        // ── Fire embedding in PARALLEL, all RAG tables via Jina ──────────────
+        // Jina (768-dim) → ALL tables:
+        //   boericke_embeddings, home_remedy_embeddings, ayurvedic_knowledge_embeddings
+        // ayurvedic_knowledge_embeddings covers PlanetAyurveda + NewSources (13 books)
+        //   + WHO ICD-11 MMS 2024-01 — all unified under Jina AI embeddings.
+        const { jina: jinaEmb } = await getParallelEmbeddings(symptomSummary);
 
-        // Use shared Jina embedding for both Boericke and Home Remedies
-        const embedding     = jinaEmb;                    // Jina  → Boericke
-        const embedding768  = geminiEmb;                  // Gemini → Ayurvedic
-        const embedding3072 = jinaEmb; // Jina -> Home Remedies
+        // Single Jina embedding fans out to all knowledge base tables
+        const embedding = jinaEmb; // Jina → Boericke, HomeRemedies, Ayurvedic/Medical KB
 
         const embedDone = Date.now();
         spans?.record('embedJina', embedDone - t0Embed);
-        spans?.record('embedGemini768', embedDone - t0Embed);
         if (!embedding) return { context: '', homeRemediesAvailable: false };
 
         const t0Rpc = Date.now();
         const [homeopathicRaw, ayurvedicRaw, homeRemedyRaw, ayurvedicPdfRaw] = await Promise.all([
             fetchBoerickeContext(embedding),
-            includeIndianCare && embedding768 ? fetchAyurvedicContext(embedding768) : Promise.resolve(''),
-            includeIndianCare && !skipHomeRemedies ? fetchHomeRemedyContext(embedding3072) : Promise.resolve(''),
-            includeIndianCare && embedding ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
+            includeIndianCare ? fetchAyurvedicContext(embedding) : Promise.resolve(''),
+            includeIndianCare && !skipHomeRemedies ? fetchHomeRemedyContext(embedding) : Promise.resolve(''),
+            includeIndianCare ? fetchAyurvedicPdfContext(embedding) : Promise.resolve(''),
         ]);
         const rpcDone = Date.now();
         spans?.record('ragBoericke', rpcDone - t0Rpc);
@@ -415,18 +417,28 @@ async function fetchAllContext(
         // Track whether home remedies RAG data was actually retrieved
         const homeRemediesAvailable = includeIndianCare && !skipHomeRemedies && !!homeRemedyRaw;
 
+        // Split ayurvedic results into: Ayurvedic/Medical books vs WHO ICD-11 classification
+        const icd11Raw = ayurvedicRaw
+            ? ayurvedicRaw.split('\n\n').filter(chunk => chunk.includes('ICD-11 CODE:')).join('\n\n')
+            : '';
+        const medicalBooksRaw = ayurvedicRaw
+            ? ayurvedicRaw.split('\n\n').filter(chunk => !chunk.includes('ICD-11 CODE:')).join('\n\n')
+            : '';
+
         const sections = [
             homeopathicRaw && [
                 '[SECTION A: HOMEOPATHIC — Boerickes Materia Medica]',
                 'Use entries below ONLY for homeopathic_remedies JSON array.',
                 homeopathicRaw,
             ].join('\n'),
-            ayurvedicRaw || ayurvedicPdfRaw ? [
-                '[SECTION B: AYURVEDIC CLASSICAL MEDICINE — Planet Ayurveda / CCRAS / Classical Texts / PDF Manuals]',
-                'FORMAL Ayurvedic herbs & formulations (Ashwagandha, Triphala, Sitopaladi, etc.)',
-                'Require Ayurvedic pharmacy. Use ONLY for ayurvedic_remedies JSON array.',
-                ayurvedicRaw,
-                ayurvedicPdfRaw ? `\n--- Additional PDF Manuals Context ---\n${ayurvedicPdfRaw}` : ''
+            medicalBooksRaw || ayurvedicPdfRaw ? [
+                '[SECTION B: AYURVEDIC & MEDICAL KNOWLEDGE BASE]',
+                'Sources: PlanetAyurveda classical texts, NewSources medical library (Culpeper\'s Herbal, Domestic Medicine, Herbal Simples, Weeds in Medicine, First Aid guides, Fasting & Health, Household Management, etc.), PDF Manuals.',
+                'FORMAL Ayurvedic herbs & formulations (Ashwagandha, Triphala, Sitopaladi, etc.) require Ayurvedic pharmacy.',
+                'Historical medical/herbal texts provide general guidance — always recommend physician consultation.',
+                'Use for ayurvedic_remedies JSON array. Cite the specific book source in your response.',
+                medicalBooksRaw,
+                ayurvedicPdfRaw ? `\n--- PDF Manuals ---\n${ayurvedicPdfRaw}` : ''
             ].filter(Boolean).join('\n') : null,
             homeRemedyRaw && [
                 '[SECTION C: DADI-NANI KE NUSKHE — Household Kitchen Remedies]',
@@ -434,10 +446,17 @@ async function fetchAllContext(
                 'NO pharmacy needed. Use ONLY for home_remedies JSON array.',
                 homeRemedyRaw,
             ].join('\n'),
+            icd11Raw && [
+                '[SECTION D: WHO ICD-11 DISEASE CLASSIFICATION (2024-01 Release)]',
+                'Official WHO International Classification of Diseases, 11th Revision.',
+                'Use to identify disease categories, diagnostic criteria, inclusions/exclusions, and ICD-11 codes.',
+                'When relevant, mention the ICD-11 code and chapter in your response for clinical precision.',
+                icd11Raw,
+            ].join('\n'),
         ].filter(Boolean);
 
         const context = sections.length ? sections.join('\n\n') : '';
-        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, Ayurvedic=${!!ayurvedicRaw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies}, includeIndianCare=${includeIndianCare})`);
+        console.log(`[RAG] Sections: Homeopathic=${!!homeopathicRaw}, MedicalBooks=${!!medicalBooksRaw}, ICD11=${!!icd11Raw}, HomeRemedies=${homeRemediesAvailable} (skipHomeRemedies=${skipHomeRemedies}, includeIndianCare=${includeIndianCare})`);
 
         // ── Store in cache ───────────────────────────────────────────────────
         if (context) {

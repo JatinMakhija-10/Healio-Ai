@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 
 function getNotificationMeta(type: string) {
     switch (type) {
@@ -125,7 +126,9 @@ export function DoctorHeader() {
 
     return (
         <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0 shadow-sm">
-            <div />
+            <a href="/doctor" className="hover:opacity-80 transition-opacity" aria-label="Arovia Doctor Portal">
+                <AroviaLogo variant="horizontal" size={32} />
+            </a>
 
             <div className="flex items-center gap-3">
                 {/* Notification Bell */}

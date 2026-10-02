@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Leaf, ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 
 export default function NotFound() {
   return (
@@ -7,18 +8,10 @@ export default function NotFound() {
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center gap-2.5 mb-12 hover:opacity-80 transition-opacity"
+        className="mb-12 hover:opacity-80 transition-opacity"
         aria-label="Arovia home"
       >
-        <div className="grid size-10 place-items-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm">
-          <Leaf className="size-6" strokeWidth={2.4} />
-        </div>
-        <div className="flex flex-col text-left">
-          <span className="text-base font-bold tracking-tight text-[#1C1C1E]">Arovia.AI</span>
-          <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
-            Where science meets soul
-          </span>
-        </div>
+        <AroviaLogo variant="horizontal" size={36} />
       </Link>
 
       {/* 404 Content */}

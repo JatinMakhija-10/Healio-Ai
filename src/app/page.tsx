@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { AroviaLogo } from "@/components/ui/AroviaLogo";
 import {
   ArrowRight,
   Baby,
@@ -147,10 +148,10 @@ const evidencePoints = [
 function AroviaMark({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`grid size-[52px] place-items-center rounded-[8px] bg-[#1D9E75] text-white shadow-sm ${className}`}
+      className={`inline-flex items-center justify-center ${className}`}
       aria-hidden="true"
     >
-      <Leaf className="size-8" strokeWidth={2.4} />
+      <AroviaLogo variant="icon" size={52} priority />
     </div>
   );
 }
@@ -167,8 +168,8 @@ function FamilyIllustration() {
         {/* Top Header Status Row */}
         <div className="flex items-center justify-between border-b border-[#E5E3DC]/80 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="relative flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F6E56] to-[#0B5B47] text-white shadow-md">
-              <Leaf className="size-5" />
+            <div className="relative flex size-10 items-center justify-center rounded-xl overflow-hidden shadow-md">
+              <AroviaLogo variant="icon" size={40} />
               <span className="absolute -right-0.5 -top-0.5 flex size-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#9FE1CB] opacity-75" />
                 <span className="relative inline-flex size-3 rounded-full bg-[#10B981]" />
@@ -522,13 +523,7 @@ export default function LandingPage() {
       >
         <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <Link href="/" className="flex items-center gap-3" aria-label="Arovia home">
-            <AroviaMark />
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-normal text-[#1C1C1E]">Arovia.AI</span>
-              <span className="text-[9px] font-semibold tracking-[0.08em] uppercase text-[#0F6E56]">
-                Where science meets soul
-              </span>
-            </div>
+            <AroviaLogo variant="horizontal" size={38} priority />
           </Link>
 
           <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-[#1C1C1E]" aria-label="Primary navigation">

@@ -12,57 +12,99 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-// We use the same model as the backend with Key Rotation to avoid 429 errors
-const apiKeys = (process.env.GEMINI_API_KEYS?.split(',') || [process.env.GEMINI_API_KEY || '']).map(k => k.trim()).filter(Boolean);
-let currentClientIndex = 0;
-let ai = new GoogleGenAI({ apiKey: apiKeys[0] });
+const jinaKey = process.env.JINA_API_KEY;
+const geminiKeys = (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);
 
-async function generateEmbedding(text: string): Promise<number[] | null> {
-    for (let attempts = 0; attempts < apiKeys.length; attempts++) {
-        try {
-            const embResp = await ai.models.embedContent({
-                model: 'gemini-embedding-2-preview',
-                contents: text,
-            });
-            return embResp.embeddings?.[0]?.values ?? null;
-        } catch (e: any) {
-            const errString = String(e.message || e);
-            if (errString.includes('429') || errString.includes('quota') || errString.includes('limit')) {
-                currentClientIndex = (currentClientIndex + 1) % apiKeys.length;
-                ai = new GoogleGenAI({ apiKey: apiKeys[currentClientIndex] });
-                console.log(`  🔄 Key hit quota limit. Switching to key ${currentClientIndex + 1}/${apiKeys.length}...`);
-            } else {
-                console.error("Embedding Error Unrelated to Quota:", e);
-                return null;
+async function generateEmbedding(text: string, retries = 2, delay = 1000): Promise<number[] | null> {
+    if (jinaKey) {
+        for (let attempt = 0; attempt < retries; attempt++) {
+            try {
+                const resp = await fetch('https://api.jina.ai/v1/embeddings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jinaKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: 'jina-embeddings-v3',
+                        task: 'retrieval.query',
+                        dimensions: 768,
+                        input: [text],
+                    }),
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    return data.data[0].embedding;
+                }
+                if (resp.status === 429) {
+                    await new Promise(r => setTimeout(r, delay * (attempt + 1)));
+                    continue;
+                }
+                console.warn(`Jina API ${resp.status} ${resp.statusText} — falling back to Gemini 768`);
+                break;
+            } catch (e: any) {
+                if (attempt === retries - 1) {
+                    console.warn("Jina Embedding Exception:", e.message || e);
+                }
+                await new Promise(r => setTimeout(r, delay));
             }
         }
     }
-    console.error("🛑 All available API keys have exhausted their daily quota.");
+
+    // Fallback: Gemini 768-dim embedding
+    for (const key of geminiKeys) {
+        try {
+            const ai = new GoogleGenAI({ apiKey: key });
+            const res = await ai.models.embedContent({
+                model: 'gemini-embedding-2-preview',
+                contents: text,
+                config: { outputDimensionality: 768 },
+            });
+            const values = res.embeddings?.[0]?.values;
+            if (values && values.length > 0) {
+                return values;
+            }
+        } catch (err: any) {
+            console.warn(`Gemini embedding failed with key: ${err.message || err}`);
+        }
+    }
     return null;
 }
 
-// Simulated RAG Functions exactly as they run on the server
+// Simulated RAG Functions matching production server routes
 async function fetchBoerickeContext(embedding: number[]): Promise<string> {
     const { data } = await supabase.rpc('match_boericke_embeddings', {
         query_embedding: embedding,
-        match_threshold: 0.70,
+        match_threshold: 0.35,
         match_count: 3,
     });
     if (!data?.length) return '*No Homeopathic matches found above threshold.*';
     return (data as any[])
-        .map((c: any, i: number) => `**[${i + 1}] ${c.remedy_name}** *(Relevance: ${((c.similarity ?? 0) * 100).toFixed(1)}%)*\n> ${c.chunk_text.substring(0, 300).replace(/\\n/g, ' ')}...`)
+        .map((c: any, i: number) => `**[${i + 1}] ${c.remedy_name}** *(Relevance: ${((c.similarity ?? 0) * 100).toFixed(1)}%)*\n> ${(c.chunk_text || '').substring(0, 300).replace(/\n/g, ' ')}...`)
         .join('\n\n');
 }
 
 async function fetchAyurvedicContext(embedding: number[]): Promise<string> {
     const { data } = await supabase.rpc('search_ayurvedic_knowledge', {
         query_embedding: embedding,
-        match_threshold: 0.65,
+        match_threshold: 0.35,
         match_count: 3,
     });
     if (!data?.length) return '*No Ayurvedic matches found above threshold.*';
     return (data as any[])
-        .map((c: any, i: number) => `**[${i + 1}] ${c.book} / ${c.category}** *(Relevance: ${((c.similarity ?? 0) * 100).toFixed(1)}%)*\n> ${c.text.substring(0, 300).replace(/\\n/g, ' ')}...`)
+        .map((c: any, i: number) => `**[${i + 1}] ${c.book || c.source || 'Ayurvedic Knowledge'} / ${c.category || 'General'}** *(Relevance: ${((c.similarity ?? 0) * 100).toFixed(1)}%)*\n> ${(c.text || '').substring(0, 300).replace(/\n/g, ' ')}...`)
+        .join('\n\n');
+}
+
+async function fetchHomeRemediesContext(embedding: number[]): Promise<string> {
+    const { data } = await supabase.rpc('match_home_remedy_embeddings', {
+        query_embedding: embedding,
+        match_threshold: 0.35,
+        match_count: 3,
+    });
+    if (!data?.length) return '*No Home Remedy matches found above threshold.*';
+    return (data as any[])
+        .map((c: any, i: number) => `**[${i + 1}] ${c.remedy_name} (${c.ailment || 'Remedy'})** *(Relevance: ${((c.similarity ?? 0) * 100).toFixed(1)}%)*\n> ${(c.chunk_text || '').substring(0, 300).replace(/\n/g, ' ')}...`)
         .join('\n\n');
 }
 
@@ -285,9 +327,10 @@ async function runTests() {
             continue;
         }
 
-        const [boericke, ayurveda] = await Promise.all([
+        const [boericke, ayurveda, remedies] = await Promise.all([
             fetchBoerickeContext(embedding),
-            fetchAyurvedicContext(embedding)
+            fetchAyurvedicContext(embedding),
+            fetchHomeRemediesContext(embedding)
         ]);
 
         markdownOutput += `### 🌿 Ayurvedic & Botanical Matches (Planet Ayurveda / Ancient Texts)\n`;
@@ -295,6 +338,9 @@ async function runTests() {
 
         markdownOutput += `### 💊 Homeopathic Matches (Boericke's Materia Medica)\n`;
         markdownOutput += `${boericke}\n\n`;
+
+        markdownOutput += `### 🍯 Traditional Home Remedies & Nuskhe\n`;
+        markdownOutput += `${remedies}\n\n`;
 
         markdownOutput += `---\n\n`;
     }

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-
+import { AroviaLogo } from '@/components/ui/AroviaLogo';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -90,14 +90,8 @@ export default function LoginPage() {
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg shadow-[#1A1A2E]/8 p-8 border border-[#DAD7CF]">
                 {/* AroviaMark + Brand Header */}
                 <div className="flex flex-col items-center text-center mb-8">
-                    <div className="relative mb-4">
-                        <div className="absolute inset-0 rounded-[8px] bg-[#C8E7DA] opacity-50" />
-                        <div className="relative flex h-12 w-12 items-center justify-center rounded-[8px] border border-[#B8DED0] bg-white shadow-sm">
-                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                                <path d="M14 3C9.5 3 5.5 6.5 5.5 11.5C5.5 17.5 14 25 14 25C14 25 22.5 17.5 22.5 11.5C22.5 6.5 18.5 3 14 3Z" fill="#0F6E56" />
-                                <path d="M14 8C12 10 11 13 12 16C13 13 15 11 18 10C16.5 8.5 15 7.5 14 8Z" fill="#E1F5EE" />
-                            </svg>
-                        </div>
+                    <div className="mb-5">
+                        <AroviaLogo variant="icon" size={64} priority className="mx-auto" />
                     </div>
                     <h1 style={{ fontFamily: "var(--font-dm-serif), serif", fontWeight: 400 }} className="text-2xl text-[#1A1A2E] tracking-tight">Welcome back</h1>
                     <p className="text-[#6B6B6B] mt-1.5 text-sm">Sign in to your Arovia account</p>
