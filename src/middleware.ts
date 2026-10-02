@@ -97,9 +97,18 @@ export async function middleware(request: NextRequest) {
         },
     })
 
-    // Read session from cookie (no network call — prevents Edge timeout)
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user ?? null
+    // Read session from cookie (with 3.5s timeout to prevent Edge function upstream timeout)
+    let user = null;
+    try {
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null } }), 3500)
+        );
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+        user = session?.user ?? null;
+    } catch (e) {
+        console.error('Middleware session error:', e);
+    }
 
     // --- RBAC Enforcement ---
     const protectedPrefixes = ['/admin', '/doctor', '/dashboard'];

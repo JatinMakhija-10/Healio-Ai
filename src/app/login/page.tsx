@@ -29,44 +29,49 @@ export default function LoginPage() {
             if (signInError) throw signInError;
 
             if (session) {
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-
-                if (profileError) throw profileError;
-
-                // If no profile exists yet, still allow patient dashboard access
-                if (!profile) {
-                    router.push('/dashboard');
-                    return;
-                }
-
-                if (profile.role === 'patient') {
-                    router.push('/dashboard');
-                } else if (profile.role === 'doctor') {
-                    const { data: doctorProfile } = await supabase
-                        .from('doctors')
-                        .select('verification_status, is_profile_complete')
-                        .eq('user_id', session.user.id)
+                let targetRoute = '/dashboard';
+                try {
+                    // Timeout profile fetch after 2.5s to prevent hanging on network/DB latency
+                    const profileQuery = supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
                         .maybeSingle();
 
-                    if (!doctorProfile?.is_profile_complete) {
-                        router.push('/doctor/onboarding');
-                    } else {
-                        router.push('/doctor');
+                    const timeoutPromise = new Promise<{ data: null }>((resolve) =>
+                        setTimeout(() => resolve({ data: null }), 2500)
+                    );
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const res: any = await Promise.race([profileQuery, timeoutPromise]);
+                    const role = res?.data?.role || session.user.user_metadata?.role || 'patient';
+
+                    if (role === 'doctor') {
+                        const doctorQuery = supabase
+                            .from('doctors')
+                            .select('is_profile_complete')
+                            .eq('user_id', session.user.id)
+                            .maybeSingle();
+
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const docRes: any = await Promise.race([doctorQuery, timeoutPromise]);
+                        if (docRes?.data && !docRes.data.is_profile_complete) {
+                            targetRoute = '/doctor/onboarding';
+                        } else {
+                            targetRoute = '/doctor';
+                        }
+                    } else if (role === 'admin') {
+                        targetRoute = '/admin';
                     }
-                } else if (profile.role === 'admin') {
-                    router.push('/admin');
-                } else {
-                    // Default fallback for unknown roles
-                    router.push('/dashboard');
+                } catch {
+                    targetRoute = '/dashboard';
                 }
+
+                router.push(targetRoute);
             }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'Failed to sign in');
         } finally {
             setLoading(false);
         }
