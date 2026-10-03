@@ -44,7 +44,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
             patientVikriti,
             patientPrakriti,
             patientConditions,
-            preferredBrand: 'Vaidyanath Group'
+            preferredBrand: 'Healio Pharmacy'
           })
         });
 

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       patientPrakriti: body.patientPrakriti,
       patientConditions: body.patientConditions || [],
       patientAge: body.patientAge,
-      preferredBrand: body.preferredBrand || 'Vaidyanath Group'
+      preferredBrand: body.preferredBrand || 'Healio Pharmacy'
     });
 
     return NextResponse.json({

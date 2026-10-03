@@ -2,7 +2,7 @@
  * Supplier Fulfillment Adapter Interface
  * 
  * Standardizes communication across different e-commerce fulfillment partners,
- * including direct B2B API integrations (Vaidyanath Group), internal 3PL warehouses,
+ * including direct B2B API integrations (Healio Pharmacy), internal 3PL warehouses,
  * and fallback affiliate programs.
  */
 
@@ -37,7 +37,7 @@ export interface TrackingDetails {
 }
 
 export interface ISupplierFulfillmentAdapter {
-  readonly supplierId: 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
+  readonly supplierId: 'HEALIO_PHARMACY' | 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
 
   /**
    * Check real-time inventory levels for given SKUs

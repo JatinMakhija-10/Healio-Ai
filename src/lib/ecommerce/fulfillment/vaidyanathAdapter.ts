@@ -1,5 +1,5 @@
 /**
- * Vaidyanath Group (Shree Baidyanath Ayurved Bhawan) Fulfillment Adapter
+ * Healio Pharmacy Fulfillment Adapter
  * 
  * Provides:
  * 1. B2B dropshipping dispatch via REST API
@@ -10,7 +10,7 @@
 import { ProductSKU, Order, ShippingAddress } from '../types';
 import { ISupplierFulfillmentAdapter, StockStatus, FulfillmentSubmissionResult, TrackingDetails } from './adapter.interface';
 
-export interface VaidyanathConfig {
+export interface HealioPharmacyConfig {
   apiKey?: string;
   apiUrl?: string;
   merchantId?: string;
@@ -18,29 +18,28 @@ export interface VaidyanathConfig {
   isTestMode?: boolean;
 }
 
-export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
-  public readonly supplierId = 'VAIDYANATH_GROUP' as const;
+export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
+  public readonly supplierId = 'HEALIO_PHARMACY' as const;
   private apiKey: string;
   private apiUrl: string;
   private merchantId: string;
   private defaultAffiliateCode: string;
   private isTestMode: boolean;
 
-  constructor(config?: VaidyanathConfig) {
-    this.apiKey = config?.apiKey || process.env.VAIDYANATH_API_KEY || 'vdn_sandbox_key_99812';
-    this.apiUrl = config?.apiUrl || process.env.VAIDYANATH_API_URL || 'https://api.baidyanath.co.in/b2b/v1';
-    this.merchantId = config?.merchantId || process.env.VAIDYANATH_MERCHANT_ID || 'HEALIO_AYURVEDA_01';
+  constructor(config?: HealioPharmacyConfig) {
+    this.apiKey = config?.apiKey || process.env.HEALIO_PHARMACY_API_KEY || 'hl_sandbox_key_99812';
+    this.apiUrl = config?.apiUrl || process.env.HEALIO_PHARMACY_API_URL || 'https://api.healio.ai/pharmacy/v1';
+    this.merchantId = config?.merchantId || process.env.HEALIO_MERCHANT_ID || 'HEALIO_AYURVEDA_01';
     this.defaultAffiliateCode = config?.defaultAffiliateCode || 'healio_partner_2026';
-    this.isTestMode = config?.isTestMode ?? (!process.env.VAIDYANATH_API_KEY);
+    this.isTestMode = config?.isTestMode ?? (!process.env.HEALIO_PHARMACY_API_KEY);
   }
 
   /**
-   * Check real-time stock levels with Vaidyanath inventory
+   * Check real-time stock levels with Healio Pharmacy inventory
    */
   public async checkInventory(skus: string[]): Promise<Map<string, StockStatus>> {
     const stockMap = new Map<string, StockStatus>();
 
-    // Simulated sandbox response when in test/sandbox mode
     for (const sku of skus) {
       stockMap.set(sku, {
         sku,
@@ -54,14 +53,14 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
   }
 
   /**
-   * Submit an order to Vaidyanath dropship logistics
+   * Submit an order to Healio Pharmacy dropship logistics
    */
   public async submitDropshipOrder(order: Order, address: ShippingAddress): Promise<FulfillmentSubmissionResult> {
-    const vdnItems = order.items.filter(item => item.sku.startsWith('VDN-'));
-    if (vdnItems.length === 0) {
+    const healioItems = order.items.filter(item => item.sku.startsWith('HEALIO-') || item.sku.startsWith('VDN-') || item.brand === 'Healio Pharmacy');
+    if (healioItems.length === 0) {
       return {
         success: false,
-        error: 'No Vaidyanath Group SKUs found in order.'
+        error: 'No Healio Pharmacy SKUs found in order.'
       };
     }
 
@@ -80,7 +79,7 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
           country: address.country || 'India'
         }
       },
-      lineItems: vdnItems.map(item => ({
+      lineItems: healioItems.map(item => ({
         sku: item.sku,
         quantity: item.quantity,
         pricePerUnit: item.unitPriceInINR
@@ -89,13 +88,13 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
     };
 
     if (this.isTestMode) {
-      const mockOrderId = `VDN-ORD-${Date.now().toString().slice(-6)}`;
+      const mockOrderId = `HL-ORD-${Date.now().toString().slice(-6)}`;
       const mockTrackingNumber = `BLUEDART-${Math.floor(100000000 + Math.random() * 900000000)}`;
 
       return {
         success: true,
         supplierOrderId: mockOrderId,
-        carrierName: 'Blue Dart Express (Vaidyanath Logistics)',
+        carrierName: 'Blue Dart Express (Healio Express Logistics)',
         trackingNumber: mockTrackingNumber,
         trackingUrl: `https://www.bluedart.com/tracking?track=${mockTrackingNumber}`,
         estimatedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -115,7 +114,7 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to dispatch Vaidyanath order`);
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to dispatch Healio Pharmacy order`);
       }
 
       const data = await response.json();
@@ -130,7 +129,7 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
     } catch (err: any) {
       return {
         success: false,
-        error: err.message || 'Unknown network error communicating with Vaidyanath API'
+        error: err.message || 'Unknown network error communicating with Healio Pharmacy API'
       };
     }
   }
@@ -146,7 +145,7 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
         carrierName: 'Blue Dart Express',
         trackingNumber: `BLUEDART-TEST-${supplierOrderId}`,
         trackingUrl: `https://www.bluedart.com/tracking?track=${supplierOrderId}`,
-        currentLocation: 'Nagpur Central Ayurvedic Depot',
+        currentLocation: 'Central Ayurvedic Depot',
         lastUpdated: new Date().toISOString(),
         estimatedDeliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
       };
@@ -175,7 +174,10 @@ export class VaidyanathSupplierAdapter implements ISupplierFulfillmentAdapter {
       return `${product.affiliateFallbackUrl}${separator}ref=${encodeURIComponent(ref)}&utm_source=healio_ai&utm_medium=diagnostic_engine&utm_campaign=ayurvedic_care`;
     }
     
-    // Default search referral on Baidyanath website
-    return `https://www.baidyanath.co.in/search?q=${encodeURIComponent(product.title)}&ref=${encodeURIComponent(ref)}&utm_source=healio_ai`;
+    return `https://healio.ai/store/search?q=${encodeURIComponent(product.title)}&ref=${encodeURIComponent(ref)}&utm_source=healio_ai`;
   }
 }
+
+// Alias for backwards compatibility
+export const VaidyanathSupplierAdapter = HealioPharmacyAdapter;
+export type VaidyanathConfig = HealioPharmacyConfig;

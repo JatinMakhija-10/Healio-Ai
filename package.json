@@ -10,7 +10,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:bones": "boneyard-js build",
-    "eval:rag": "tsx scripts/eval/rag_eval.ts"
+    "eval:rag": "tsx scripts/eval/rag_eval.ts",
+    "brain:reingest": "tsx scripts/brain_reingest_all.ts",
+    "brain:reingest:boericke": "tsx scripts/brain_reingest_all.ts --source boericke",
+    "brain:reingest:remedies": "tsx scripts/brain_reingest_all.ts --source home_remedies",
+    "brain:reingest:ayurvedic": "tsx scripts/brain_reingest_all.ts --source ayurvedic",
+    "brain:reingest:icd11": "tsx scripts/brain_reingest_all.ts --source icd11",
+    "brain:reingest:force": "tsx scripts/brain_reingest_all.ts --force",
+    "brain:ingest:boericke": "tsx scripts/ingest_boericke_jina.ts"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",

@@ -2,7 +2,7 @@
  * Formulation-to-SKU Recommendation Matcher
  * 
  * Bridges the clinical diagnostic engine (Bayesian probabilities + RAG classical monographs)
- * to real-world commercial Ayurvedic products from Vaidyanath Group and authorized suppliers.
+ * to real-world commercial Ayurvedic products from Healio Pharmacy and authorized suppliers.
  */
 
 import { ProductSKU, DoshaType, TraceabilityMetadata } from '../types';
@@ -15,7 +15,7 @@ export interface ClinicalMatchRequest {
   patientPrakriti?: DoshaType;          // Baseline constitution
   patientConditions?: string[];         // e.g. ["pregnancy", "hypertension", "diabetes"]
   patientAge?: number;
-  preferredBrand?: string;              // Default: "Vaidyanath Group"
+  preferredBrand?: string;              // Default: "Healio Pharmacy"
 }
 
 export interface ProductMatchResult {
@@ -65,8 +65,8 @@ export class FormulationMatcher {
         const safetyAlerts: string[] = [];
         let isSafe = true;
 
-        // 2. Brand Priority (Vaidyanath Group partnership priority)
-        const targetBrand = request.preferredBrand || 'Vaidyanath Group';
+        // 2. Brand Priority (Healio Pharmacy partnership priority)
+        const targetBrand = request.preferredBrand || 'Healio Pharmacy';
         if (product.brand.toLowerCase() === targetBrand.toLowerCase()) {
           score += 15;
         }
@@ -104,7 +104,7 @@ export class FormulationMatcher {
         // 6. Stock & Availability
         if (product.stockQuantity <= 0) {
           score -= 20;
-          safetyAlerts.push('Direct inventory out of stock. Instant dispatch available via Vaidyanath affiliate.');
+          safetyAlerts.push('Direct inventory out of stock. Instant dispatch available via partner affiliate.');
         }
 
         // 7. Clinical Traceability

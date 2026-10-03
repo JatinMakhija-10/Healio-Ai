@@ -5,11 +5,11 @@
  * 1. Order generation from cart & shipping address
  * 2. Schedule E-1 prescription governance
  * 3. Payment lifecycle (Razorpay / Stripe)
- * 4. Multi-supplier dispatch to Vaidyanath Group
+ * 4. Multi-supplier dispatch to Healio Pharmacy
  */
 
 import { Cart, Order, OrderStatus, ShippingAddress, SupplierDispatchOrder } from '../types';
-import { VaidyanathSupplierAdapter } from '../fulfillment/vaidyanathAdapter';
+import { HealioPharmacyAdapter } from '../fulfillment/vaidyanathAdapter';
 
 export interface CheckoutOptions {
   paymentMethod?: 'RAZORPAY' | 'STRIPE' | 'COD';
@@ -20,7 +20,7 @@ export interface CheckoutOptions {
 export class CheckoutService {
   private static orders: Map<string, Order> = new Map();
 
-  constructor(private vaidyanathAdapter: VaidyanathSupplierAdapter) {}
+  constructor(private healioAdapter: HealioPharmacyAdapter) {}
 
   /**
    * Initialize a new order from a shopping cart
@@ -47,16 +47,16 @@ export class CheckoutService {
       : 'PENDING_PAYMENT';
 
     // Segregate items by supplier
-    const vaidyanathItems = cart.items.filter(item => item.brand === 'Vaidyanath Group' || item.sku.startsWith('VDN-'));
-    const nativeItems = cart.items.filter(item => !item.sku.startsWith('VDN-'));
+    const healioItems = cart.items.filter(item => item.brand === 'Healio Pharmacy' || item.sku.startsWith('HEALIO-') || item.sku.startsWith('VDN-'));
+    const nativeItems = cart.items.filter(item => !item.sku.startsWith('HEALIO-') && !item.sku.startsWith('VDN-') && item.brand !== 'Healio Pharmacy');
 
     const supplierDispatches: SupplierDispatchOrder[] = [];
 
-    if (vaidyanathItems.length > 0) {
+    if (healioItems.length > 0) {
       supplierDispatches.push({
-        supplierId: 'VAIDYANATH_GROUP',
+        supplierId: 'HEALIO_PHARMACY',
         status: 'PENDING',
-        lineItems: vaidyanathItems.map(i => ({
+        lineItems: healioItems.map(i => ({
           sku: i.sku,
           quantity: i.quantity,
           unitPriceInINR: i.unitPriceInINR
@@ -116,12 +116,12 @@ export class CheckoutService {
     order.status = 'PAYMENT_CONFIRMED';
     order.updatedAt = new Date().toISOString();
 
-    // ─── Automated Dropship Dispatch to Vaidyanath Group ───────────
+    // ─── Automated Dropship Dispatch to Healio Pharmacy ───────────
     for (let i = 0; i < order.supplierDispatches.length; i++) {
       const dispatch = order.supplierDispatches[i];
 
-      if (dispatch.supplierId === 'VAIDYANATH_GROUP') {
-        const result = await this.vaidyanathAdapter.submitDropshipOrder(order, order.shippingAddress);
+      if (dispatch.supplierId === 'HEALIO_PHARMACY' || dispatch.supplierId === 'VAIDYANATH_GROUP') {
+        const result = await this.healioAdapter.submitDropshipOrder(order, order.shippingAddress);
 
         if (result.success) {
           dispatch.status = 'ACCEPTED';
@@ -132,7 +132,7 @@ export class CheckoutService {
           dispatch.dispatchedAt = new Date().toISOString();
         } else {
           dispatch.status = 'FAILED';
-          console.error(`[CheckoutService] Vaidyanath fulfillment dispatch failed: ${result.error}`);
+          console.error(`[CheckoutService] Healio Pharmacy fulfillment dispatch failed: ${result.error}`);
         }
       } else if (dispatch.supplierId === 'NATIVE_WAREHOUSE') {
         dispatch.status = 'ACCEPTED';

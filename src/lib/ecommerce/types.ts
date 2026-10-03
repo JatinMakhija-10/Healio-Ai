@@ -5,7 +5,7 @@
  * 1. Product Catalog & Canonical Ayurvedic Formulations
  * 2. Clinical Traceability (linking purchased products directly to diagnostic engine recommendations)
  * 3. AYUSH Ministry compliance (Schedule E-1 prescription safety checks)
- * 4. Multi-supplier order dispatch (Vaidyanath Group B2B dropship, native inventory, affiliate fallback)
+ * 4. Multi-supplier order dispatch (Healio Pharmacy dropship, native inventory, affiliate fallback)
  */
 
 import type { DoshaType } from '../ayurveda/types';
@@ -53,7 +53,7 @@ export interface AyurvedicProductMetadata {
 export interface ProductSKU {
   id: string;
   sku: string;
-  brand: string;                        // e.g. "Vaidyanath Group", "Dabur", "Kottakkal Arya Vaidya Sala"
+  brand: string;                        // e.g. "Healio Pharmacy", "Arovia Pharmacy"
   title: string;
   description: string;
   priceInINR: number;
@@ -61,7 +61,7 @@ export interface ProductSKU {
   stockQuantity: number;
   unit: string;                         // e.g. "100g", "60 Tablets", "200ml"
   imageUrl: string;
-  supplierId: 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
+  supplierId: 'HEALIO_PHARMACY' | 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
   ayurvedicMetadata: AyurvedicProductMetadata;
   isAvailableForDirectPurchase: boolean;
   affiliateFallbackUrl?: string;
@@ -125,7 +125,7 @@ export interface ShippingAddress {
 }
 
 export interface SupplierDispatchOrder {
-  supplierId: 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
+  supplierId: 'HEALIO_PHARMACY' | 'VAIDYANATH_GROUP' | 'NATIVE_WAREHOUSE' | 'AFFILIATE_PARTNER';
   externalOrderId?: string;
   status: 'PENDING' | 'ACCEPTED' | 'PACKED' | 'SHIPPED' | 'DELIVERED' | 'FAILED';
   trackingNumber?: string;

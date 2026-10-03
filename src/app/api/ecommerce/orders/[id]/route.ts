@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CheckoutService } from '@/lib/ecommerce/services/checkoutService';
-import { VaidyanathSupplierAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
+import { HealioPharmacyAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
 
-const vaidyanathAdapter = new VaidyanathSupplierAdapter();
-const checkoutService = new CheckoutService(vaidyanathAdapter);
+const healioAdapter = new HealioPharmacyAdapter();
+const checkoutService = new CheckoutService(healioAdapter);
 
 export async function GET(
   req: NextRequest,

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Cart, ShippingAddress } from '@/lib/ecommerce/types';
 import { CheckoutService, CheckoutOptions } from '@/lib/ecommerce/services/checkoutService';
-import { VaidyanathSupplierAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
+import { HealioPharmacyAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
 
-const vaidyanathAdapter = new VaidyanathSupplierAdapter();
-const checkoutService = new CheckoutService(vaidyanathAdapter);
+const healioAdapter = new HealioPharmacyAdapter();
+const checkoutService = new CheckoutService(healioAdapter);
 
 export async function POST(req: NextRequest) {
   try {
