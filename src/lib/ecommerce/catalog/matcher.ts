@@ -2,7 +2,7 @@
  * Formulation-to-SKU Recommendation Matcher
  * 
  * Bridges the clinical diagnostic engine (Bayesian probabilities + RAG classical monographs)
- * to real-world commercial Ayurvedic products from Healio Pharmacy and authorized suppliers.
+ * to real-world commercial Ayurvedic products from Arovia Pharmacy and authorized suppliers.
  */
 
 import { ProductSKU, DoshaType, TraceabilityMetadata } from '../types';
@@ -15,7 +15,7 @@ export interface ClinicalMatchRequest {
   patientPrakriti?: DoshaType;          // Baseline constitution
   patientConditions?: string[];         // e.g. ["pregnancy", "hypertension", "diabetes"]
   patientAge?: number;
-  preferredBrand?: string;              // Default: "Healio Pharmacy"
+  preferredBrand?: string;              // Default: "Arovia Pharmacy"
 }
 
 export interface ProductMatchResult {
@@ -65,8 +65,8 @@ export class FormulationMatcher {
         const safetyAlerts: string[] = [];
         let isSafe = true;
 
-        // 2. Brand Priority (Healio Pharmacy partnership priority)
-        const targetBrand = request.preferredBrand || 'Healio Pharmacy';
+        // 2. Brand Priority (Arovia Pharmacy partnership priority)
+        const targetBrand = request.preferredBrand || 'Arovia Pharmacy';
         if (product.brand.toLowerCase() === targetBrand.toLowerCase()) {
           score += 15;
         }

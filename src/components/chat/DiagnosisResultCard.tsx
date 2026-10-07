@@ -79,7 +79,7 @@ type FlexibleRemedy = {
     videoUrl?: string;
 };
 
-type CareTabId = "home" | "ayurveda" | "homeopathy" | "safety";
+type CareTabId = "home" | "ayurveda" | "safety";
 
 function getConfidenceBand(score: number) {
     if (score >= 90) return "High";
@@ -739,11 +739,11 @@ export function DiagnosisResultCard({
         ...((condition.homeopathic_remedies || []) as FlexibleRemedy[]),
         ...((condition.remedies || []) as FlexibleRemedy[]),
     ].slice(0, 5);
+    type CareTabId = "home" | "ayurveda" | "safety";
     const careTabs = [
-        hasHomeRemedies ? { id: "home" as const, label: "Home Remedies", meta: `${homeRemedies.length} safe steps` } : null,
-        hasAyurvedic ? { id: "ayurveda" as const, label: "Ayurveda", meta: `${ayurvedicRemedies.length} source-backed` } : null,
-        hasHomeopathic ? { id: "homeopathy" as const, label: "Homeopathy", meta: "Experimental, ask a practitioner" } : null,
-        hasExerciseWarning ? { id: "safety" as const, label: "Warnings", meta: "Limits and next steps" } : null,
+        hasHomeRemedies ? { id: "home" as const, label: "Home Remedies", meta: `${homeRemedies.length} safe household steps` } : null,
+        hasAyurvedic ? { id: "ayurveda" as const, label: "Ayurvedic Remedies", meta: `${ayurvedicRemedies.length} source-backed remedies` } : null,
+        hasExerciseWarning ? { id: "safety" as const, label: "Warnings & Lifestyle", meta: "Precautions & next steps" } : null,
     ].filter(Boolean) as Array<{ id: CareTabId; label: string; meta: string }>;
     const activeCareTab = careTabs.some((tab) => tab.id === selectedCareTab)
         ? selectedCareTab

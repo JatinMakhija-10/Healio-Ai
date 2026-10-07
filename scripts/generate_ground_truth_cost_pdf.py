@@ -111,7 +111,7 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — 10-TURN CONVERSATION COST AUDIT", title_style))
+    story.append(Paragraph("AROVIA.AI — 10-TURN CONVERSATION COST AUDIT", title_style))
     story.append(Paragraph("Mathematical Token Accumulation & Cost Analysis for 5-Turn vs 10-Turn Back-and-Forth AI Consultations", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=6))
     
@@ -209,5 +209,5 @@ def create_pdf(filename):
 if __name__ == "__main__":
     out_dir = os.path.join(os.getcwd(), "docs", "business")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "HEALIO_GROUND_TRUTH_COST_AUDIT.pdf")
+    pdf_path = os.path.join(out_dir, "AROVIA_GROUND_TRUTH_COST_AUDIT.pdf")
     create_pdf(pdf_path)

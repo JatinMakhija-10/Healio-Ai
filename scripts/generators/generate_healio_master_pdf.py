@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages > 1)
         if self._pageNumber > 1:
-            self.drawString(54, 750, "HEALIO.AI — PRE-SEED INVESTMENT & STRATEGIC MASTER PLAN")
+            self.drawString(54, 750, "AROVIA.AI — PRE-SEED INVESTMENT & STRATEGIC MASTER PLAN")
             self.setStrokeColor(colors.HexColor("#E5E7EB"))
             self.setLineWidth(0.5)
             self.line(54, 744, 558, 744)
@@ -40,7 +40,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFillColor(colors.HexColor("#6B7280"))
         footer_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(558, 36, footer_text)
-        self.drawString(54, 36, "CONFIDENTIAL — PREPARED FOR HEALIO.AI PITCH DEFENSE")
+        self.drawString(54, 36, "CONFIDENTIAL — PREPARED FOR AROVIA.AI PITCH DEFENSE")
         self.setStrokeColor(colors.HexColor("#E5E7EB"))
         self.setLineWidth(0.5)
         self.line(54, 48, 558, 48)
@@ -233,6 +233,6 @@ def build_pdf(md_file_path, output_pdf_path):
     print(f"SUCCESS: PDF generated cleanly at: {output_pdf_path}")
 
 if __name__ == '__main__':
-    md_path = r"c:\Users\JATIN\Desktop\Healio.AI\docs\business\Healio_AI_Master_Pitch_and_Funding_Plan.md"
-    pdf_path = r"c:\Users\JATIN\Desktop\Healio.AI\Healio_AI_Master_Pitch_and_Funding_Plan.pdf"
+    md_path = r"c:\Users\JATIN\Desktop\Arovia.AI\docs\business\Arovia_AI_Master_Pitch_and_Funding_Plan.md"
+    pdf_path = r"c:\Users\JATIN\Desktop\Arovia.AI\Arovia_AI_Master_Pitch_and_Funding_Plan.pdf"
     build_pdf(md_path, pdf_path)

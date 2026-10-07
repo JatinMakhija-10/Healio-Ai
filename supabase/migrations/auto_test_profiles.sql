@@ -1,7 +1,7 @@
 -- =============================================
 -- AUTO TEST DATA SETUP
 -- =============================================
--- 1. Signs up 'doctor.test@healio.ai' and 'patient.test@healio.ai' automatically
+-- 1. Signs up 'doctor.test@arovia.ai' and 'patient.test@arovia.ai' automatically
 --    (if they don't exist in auth.users)
 -- 2. Creates their profiles and doctor details
 -- 
@@ -14,8 +14,8 @@ DO $$
 DECLARE
     v_doctor_uuid UUID := '';
     v_patient_uuid UUID := 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b22';
-    v_doctor_email TEXT := 'doctor.test@healio.ai';
-    v_patient_email TEXT := 'patient.test@healio.ai';
+    v_doctor_email TEXT := 'doctor.test@arovia.ai';
+    v_patient_email TEXT := 'patient.test@arovia.ai';
 BEGIN
     -- 1. Create Auth Users (if not exist)
     -- NOTE: Providing a dummy hash. Login might require 'Forgot Password' flow 

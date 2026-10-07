@@ -1,6 +1,6 @@
 -- ── Migration: Clinical Profile Demographics ─────────────────────────────────
 -- Date: 2026-08-13
--- Author: Healio.AI Engineering
+-- Author: Arovia.AI Engineering
 -- Audit Ref: Forensic Audit §10, Section 16 (Item 1)
 --
 -- Description:

@@ -1,5 +1,5 @@
 /**
- * Verified Product Catalog with Healio Pharmacy as Primary Supplier
+ * Verified Product Catalog with Arovia Pharmacy as Primary Supplier
  * Grounded in classical Ayurvedic formulations and standard AYUSH Pharmacopoeia.
  */
 
@@ -9,8 +9,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Digestion & Acidity (Amlapitta / Agni Disorders) ─────────────────────
   {
     id: 'prod_hl_001',
-    sku: 'HEALIO-AVP-100G',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-AVP-100G',
+    brand: 'Arovia Pharmacy',
     title: 'Avipattikar Churna',
     description: 'Classical Ayurvedic formulation for hyperacidity, heartburn, gastritis, and digestive disorders caused by aggravated Pitta dosha. Promotes healthy secretion of digestive enzymes.',
     priceInINR: 175,
@@ -18,9 +18,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 120,
     unit: '100g',
     imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/avipattikar-churna-100gm',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/avipattikar-churna-100gm',
     rating: 4.8,
     reviewCount: 342,
     ayurvedicMetadata: {
@@ -48,8 +48,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   },
   {
     id: 'prod_hl_002',
-    sku: 'HEALIO-LAVAN-100G',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-LAVAN-100G',
+    brand: 'Arovia Pharmacy',
     title: 'Lavan Bhaskar Churna',
     description: 'Traditional carminative powder for loss of appetite (Aruchi), indigestion (Ajeerna), abdominal flatulence, and sluggish Agni (Mandagni).',
     priceInINR: 130,
@@ -57,9 +57,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 85,
     unit: '100g',
     imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/lavan-bhaskar-churna',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/lavan-bhaskar-churna',
     rating: 4.7,
     reviewCount: 215,
     ayurvedicMetadata: {
@@ -88,8 +88,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Stress, Sleep & Insomnia (Vata Disorders & Manovaha Srotas) ────────────
   {
     id: 'prod_hl_003',
-    sku: 'HEALIO-ASH-450ML',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-ASH-450ML',
+    brand: 'Arovia Pharmacy',
     title: 'Ashwagandharishta Special',
     description: 'Premier nervine tonic and adaptogenic restorative. Calms nervous debility, mental exhaustion, fatigue, and insomnia (Anidra) caused by Vata aggravation.',
     priceInINR: 260,
@@ -97,9 +97,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 150,
     unit: '450ml',
     imageUrl: 'https://images.unsplash.com/photo-1512290900672-1f879ad8cb48?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/ashwagandharishta-450ml',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/ashwagandharishta-450ml',
     rating: 4.9,
     reviewCount: 512,
     ayurvedicMetadata: {
@@ -126,8 +126,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   },
   {
     id: 'prod_hl_004',
-    sku: 'HEALIO-BRAH-80TAB',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-BRAH-80TAB',
+    brand: 'Arovia Pharmacy',
     title: 'Brahmi Vati (Gold & Sarpagandha Free)',
     description: 'Renowned Medhya Rasayana (cognitive & memory tonic). Alleviates mental anxiety, overthinking, tension headaches, and promotes restorative restful sleep.',
     priceInINR: 195,
@@ -135,9 +135,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 95,
     unit: '80 Tablets',
     imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/brahmi-bati-80tab',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/brahmi-bati-80tab',
     rating: 4.8,
     reviewCount: 189,
     ayurvedicMetadata: {
@@ -165,8 +165,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Joint Mobility, Arthritis & Pain (Sandhivata / Amavata) ───────────────
   {
     id: 'prod_hl_005',
-    sku: 'HEALIO-YOG-80TAB',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-YOG-80TAB',
+    brand: 'Arovia Pharmacy',
     title: 'Yograj Guggulu',
     description: 'Classical anti-inflammatory formulation for chronic joint stiffness, osteoarthritis, sciatica, and neuromuscular discomfort. Clears Ama (metabolic toxins) from deep joint tissues.',
     priceInINR: 230,
@@ -174,9 +174,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 110,
     unit: '80 Tablets',
     imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/yograj-guggulu-80-tab',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/yograj-guggulu-80-tab',
     rating: 4.8,
     reviewCount: 290,
     ayurvedicMetadata: {
@@ -203,8 +203,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   },
   {
     id: 'prod_hl_006',
-    sku: 'HEALIO-RHEUMA-100ML',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-RHEUMA-100ML',
+    brand: 'Arovia Pharmacy',
     title: 'Rheuma Herbal Oil',
     description: 'Fast-penetrating herbal liniment enriched with Gandhapura and Maha Narayan Taila for quick relief from muscle spasms, backache, and stiff arthritic joints.',
     priceInINR: 180,
@@ -212,9 +212,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 75,
     unit: '100ml',
     imageUrl: 'https://images.unsplash.com/photo-1608248597359-2244436858e6?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/rheuma-oil-100ml',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/rheuma-oil-100ml',
     rating: 4.7,
     reviewCount: 164,
     ayurvedicMetadata: {
@@ -242,8 +242,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Respiratory & Immunity (Kasa / Shwasa / Rasayana) ────────────────────
   {
     id: 'prod_hl_007',
-    sku: 'HEALIO-SITO-60G',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-SITO-60G',
+    brand: 'Arovia Pharmacy',
     title: 'Sitopaladi Churna',
     description: 'Time-tested Ayurvedic respiratory remedy for wet cough, throat irritation, bronchitis, and chest congestion. Soothes airway inflammation and balances Kapha and Pitta.',
     priceInINR: 160,
@@ -251,9 +251,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 140,
     unit: '60g',
     imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/sitopaladi-churna-60gm',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/sitopaladi-churna-60gm',
     rating: 4.9,
     reviewCount: 420,
     ayurvedicMetadata: {
@@ -280,8 +280,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   },
   {
     id: 'prod_hl_008',
-    sku: 'HEALIO-CHYAWAN-1KG',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-CHYAWAN-1KG',
+    brand: 'Arovia Pharmacy',
     title: 'Chyawanprash Special',
     description: 'Flagship Rasayana prepared from fresh wild Amla fruits and 52 Himalayan herbs. Fortifies mucosal immunity, promotes cellular rejuvenation, and revitalizes Ojas.',
     priceInINR: 395,
@@ -289,9 +289,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 200,
     unit: '1kg',
     imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/chyawanprash-special-1kg',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/chyawanprash-special-1kg',
     rating: 4.9,
     reviewCount: 780,
     ayurvedicMetadata: {
@@ -320,8 +320,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Detoxification & Gut Health (Ama Pachana) ───────────────────────────
   {
     id: 'prod_hl_009',
-    sku: 'HEALIO-TRI-100G',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-TRI-100G',
+    brand: 'Arovia Pharmacy',
     title: 'Triphala Churna',
     description: 'Canonical blend of Haritaki, Bibhitaki, and Amalaki. Provides gentle colon cleansing, relieves habitual constipation, and supports eye and skin health.',
     priceInINR: 110,
@@ -329,9 +329,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 300,
     unit: '100g',
     imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/triphala-churna-100g',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/triphala-churna-100g',
     rating: 4.8,
     reviewCount: 620,
     ayurvedicMetadata: {
@@ -358,8 +358,8 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
   // ─── Schedule E-1 Regulated Herb (Requires Prescription / Clinical Review) ──
   {
     id: 'prod_hl_010',
-    sku: 'HEALIO-AGNIT-80TAB',
-    brand: 'Healio Pharmacy',
+    sku: 'AROVIA-AGNIT-80TAB',
+    brand: 'Arovia Pharmacy',
     title: 'Agnitundi Vati (Schedule E-1 Regulated)',
     description: 'Extremely potent digestive stimulant for acute intestinal colic, dyspepsia, and severe Agnimandya. Contains Shuddha Kupilu (purified Strychnos nux-vomica).',
     priceInINR: 145,
@@ -367,9 +367,9 @@ export const AYURVEDIC_CATALOG: ProductSKU[] = [
     stockQuantity: 40,
     unit: '80 Tablets',
     imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600',
-    supplierId: 'HEALIO_PHARMACY',
+    supplierId: 'AROVIA_PHARMACY',
     isAvailableForDirectPurchase: true,
-    affiliateFallbackUrl: 'https://healio.ai/store/product/agnitundi-bati',
+    affiliateFallbackUrl: 'https://arovia.ai/store/product/agnitundi-bati',
     rating: 4.6,
     reviewCount: 78,
     ayurvedicMetadata: {

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
     // Trigger daily regeneration lazily before checking balance
     try {
-        await (supabase as any).rpc("regenerate_healio_credits", { p_user_id: userId });
+        await (supabase as any).rpc("regenerate_arovia_credits", { p_user_id: userId });
     } catch {
         /* ignore if RPC missing */
     }

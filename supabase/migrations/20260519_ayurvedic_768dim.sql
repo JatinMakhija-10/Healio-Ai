@@ -1,5 +1,5 @@
 -- =============================================================================
--- Healio.AI — Ayurvedic: downgrade to 768-dim for indexability
+-- Arovia.AI — Ayurvedic: downgrade to 768-dim for indexability
 --
 -- Supabase free tier direct connections are IPv6-only; we can't build HNSW
 -- indexes on 3072-dim from outside. By truncating to 768-dim via

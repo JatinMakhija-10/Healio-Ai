@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Cart, ShippingAddress } from '@/lib/ecommerce/types';
 import { CheckoutService, CheckoutOptions } from '@/lib/ecommerce/services/checkoutService';
-import { HealioPharmacyAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
+import { AroviaPharmacyAdapter } from '@/lib/ecommerce/fulfillment/vaidyanathAdapter';
 
-const healioAdapter = new HealioPharmacyAdapter();
-const checkoutService = new CheckoutService(healioAdapter);
+const aroviaAdapter = new AroviaPharmacyAdapter();
+const checkoutService = new CheckoutService(aroviaAdapter);
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         orderId: order.id,
         amount: order.totalInINR * 100, // In paise
         currency: 'INR',
-        name: 'Healio.AI Ayurvedic Healthcare',
+        name: 'Arovia.AI Ayurvedic Healthcare',
         description: `Order ${order.id} (${order.items.length} items)`,
         customer: {
           name: shippingAddress.fullName,

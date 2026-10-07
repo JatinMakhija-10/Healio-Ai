@@ -1,5 +1,5 @@
 /**
- * Healio.AI — The Brain
+ * Arovia.AI — The Brain
  * =====================
  * Central knowledge orchestrator. Single entry point for ALL RAG lookups.
  *

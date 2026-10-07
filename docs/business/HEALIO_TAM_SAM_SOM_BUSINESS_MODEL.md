@@ -1,7 +1,7 @@
-# HEALIO.AI — RECONCILED TAM / SAM / SOM & BUSINESS MODEL FRAMEWORK
+# AROVIA.AI — RECONCILED TAM / SAM / SOM & BUSINESS MODEL FRAMEWORK
 
 **Document Title:** Reconciled Market Sizing (TAM/SAM/SOM), Fixed Mathematics, Unit Economics & Revenue Engine  
-**Target Brand:** Healio.AI (India's Clinical AI + Integrative AYUSH & Allopathic Healthcare Platform)  
+**Target Brand:** Arovia.AI (India's Clinical AI + Integrative AYUSH & Allopathic Healthcare Platform)  
 **Exchange Rate:** $1 USD = ₹94.5 INR (Current Market Rate)  
 **Classification:** Strategic & Financial Planning — Sourced, Reconciled & Diligence-Verified  
 **Date:** September 2026  
@@ -10,19 +10,19 @@
 
 ## 1. EXECUTIVE SUMMARY & RECONCILED MARKET THESIS
 
-**Healio.AI** is building India’s first **Clinical-Grade AI Health Companion & Integrative Healthcare Marketplace**. By replacing generic keyword symptom checkers with a **multi-stage Bayesian Probabilistic Triage Engine**, **Ayurvedic Prakriti/Vikriti Profiling**, **sub-200ms Red-Flag Emergency Scanning**, and **Evidence-Based Clinical Decision Rules (Wells, PERC, HEART)**, Healio.AI solves the critical "Dr. Google" diagnostic panic problem.
+**Arovia.AI** is building India’s first **Clinical-Grade AI Health Companion & Integrative Healthcare Marketplace**. By replacing generic keyword symptom checkers with a **multi-stage Bayesian Probabilistic Triage Engine**, **Ayurvedic Prakriti/Vikriti Profiling**, **sub-200ms Red-Flag Emergency Scanning**, and **Evidence-Based Clinical Decision Rules (Wells, PERC, HEART)**, Arovia.AI solves the critical "Dr. Google" diagnostic panic problem.
 
 All calculations in this document have been mathematically audited, units standardized (Lakhs vs Crores), exchange rates set to **₹94.5/$1**, and narrative cohort models reconciled across Year 1, Year 3, and Year 5.
 
 ```
                       ┌──────────────────────────────────────────────────┐
-                      │    Healio.AI Diagnostic Triage & Prakriti Scan   │
+                      │    Arovia.AI Diagnostic Triage & Prakriti Scan   │
                       └────────────────────────┬─────────────────────────┘
                                                │
                ┌───────────────────────────────┼───────────────────────────────┐
                ▼                               ▼                               ▼
   ┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────────┐
-  │   Healio E-Commerce     │     │   Doctor Marketplace    │     │  Subscription Engines   │
+  │   Arovia E-Commerce     │     │   Doctor Marketplace    │     │  Subscription Engines   │
   │ AYUSH Remedies & Herbs  │     │ 20-25% Consult Comm.    │     │ B2C Plus / B2B Pro SaaS │
   │ 10-25% Comm. + D2C      │     │ Sponsored Doctor Ads    │     │ Recurring MRR/ARR       │
   └─────────────────────────┘     └─────────────────────────┘     └─────────────────────────┘
@@ -58,7 +58,7 @@ All calculations in this document have been mathematically audited, units standa
                                          │
   ┌──────────────────────────────────────▼──────────────────────────────────────┐
   │ SERVICEABLE OBTAINABLE MARKET (SOM) - YEAR 5 OBTAINABLE ARR                 │
-  │ Healio.AI Realistic 1.5% Market Penetration Target                          │
+  │ Arovia.AI Realistic 1.5% Market Penetration Target                          │
   │ $18.75 Million USD ARR (₹177.20 Crore Net Revenue / ₹568 Crore GMV)        │
   └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -85,7 +85,7 @@ SAM filters the TAM down to India's **221 Million digitally active smartphone he
 3. **B2C Consumer Health Subscriptions:**
    $$\text{B2C Subscriptions SAM} = 221\text{M users} \times 4\% \text{ adoption} \times ₹1,499/\text{yr} = \mathbf{₹1,325 \text{ Crore (\$140.2 Million USD)}}$$
 
-4. **B2B Doctor SaaS (Healio Pro Workspace) — Corrected Math:**
+4. **B2B Doctor SaaS (Arovia Pro Workspace) — Corrected Math:**
    $$\text{Total Addressable Doctors} = 600,000 \text{ Practitioners} \times 25\% \text{ tech adoption} = 150,000 \text{ Doctors}$$
    $$\text{B2B SaaS SAM} = 150,000 \text{ Doctors} \times ₹23,988/\text{year} = \mathbf{₹359.8 \text{ Crore (\$38.1 Million USD)}}$$
    *(Note: Corrected from erroneous ₹3,598 Cr decimal slip in previous un-audited draft).*
@@ -132,13 +132,13 @@ To ensure institutional investor diligence holds up with 100% consistency across
 
 ---
 
-## 4. COMPETITIVE POSITIONING: WHY HEALIO WINS
+## 4. COMPETITIVE POSITIONING: WHY AROVIA WINS
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                                COMPETITIVE MATRIX SUMMARY                              │
 ├──────────────────────────┬───────────────────────┬───────────────────┬─────────────────┤
-│ Dimension                │ Healio.AI             │ Practo            │ Tata 1mg        │
+│ Dimension                │ Arovia.AI             │ Practo            │ Tata 1mg        │
 ├──────────────────────────┼───────────────────────┼───────────────────┼─────────────────┤
 │ Triage Engine            │ Bayesian Probabilistic│ None (Directory)  │ Search Catalog  │
 │ Ayurvedic Profiling      │ Deep (Prakriti Engine)│ None              │ Basic Category  │
@@ -161,14 +161,14 @@ To ensure institutional investor diligence holds up with 100% consistency across
 > 
 > **Ada Health** is a strong global AI symptom checker — but it stops at the assessment. It doesn't connect you to a doctor inside the app, and it has zero concept of Ayurveda — which matters enormously in India where families blend both systems daily.
 > 
-> **Healio** closes the whole loop. A patient tells us their symptoms, we triage them using validated clinical rules — Wells, PERC, HEART — while reading their Ayurvedic Prakriti and Vikriti. That full diagnostic snapshot goes straight onto a doctor's screen before the video call starts, and the right AYUSH or allopathic medicine is one tap away."
+> **Arovia** closes the whole loop. A patient tells us their symptoms, we triage them using validated clinical rules — Wells, PERC, HEART — while reading their Ayurvedic Prakriti and Vikriti. That full diagnostic snapshot goes straight onto a doctor's screen before the video call starts, and the right AYUSH or allopathic medicine is one tap away."
 
 #### On Revenue Streams (90-Second Spoken Pitch):
-> "Healio isn't a single-revenue-line company — we monetize the same user journey four different ways:
+> "Arovia isn't a single-revenue-line company — we monetize the same user journey four different ways:
 > 
 > 1. **Consultations:** 20% commission when a patient books a specialist.
 > 2. **AYUSH Marketplace:** 20% commission on diagnosis-driven medicine sales.
-> 3. **Subscriptions:** B2C Healio Plus (₹199/mo) for families + B2B Healio Pro (₹1,999/mo) for doctors with our AI SOAP Scribe (saves 2 hours/day).
+> 3. **Subscriptions:** B2C Arovia Plus (₹199/mo) for families + B2B Arovia Pro (₹1,999/mo) for doctors with our AI SOAP Scribe (saves 2 hours/day).
 > 4. **Enterprise Data:** Anonymized bio-surveillance licensing from Year 3 onward.
 > 
 > Put together, our bottom-up model starts lean at ~$97k net revenue in Year 1 and scales to **$18.75 Million ARR by Year 5** with an 86% gross margin."

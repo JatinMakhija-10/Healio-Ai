@@ -9,7 +9,7 @@
 DO $$
 DECLARE
   v_user_id UUID := gen_random_uuid();
-  v_email TEXT := 'debug_' || substr(md5(random()::text), 1, 6) || '@healio.ai';
+  v_email TEXT := 'debug_' || substr(md5(random()::text), 1, 6) || '@arovia.ai';
 BEGIN
   RAISE NOTICE 'Attempting to create Auth User: %', v_email;
 

@@ -83,7 +83,7 @@ CREATE POLICY "Users can read own credit reservations"
     USING (auth.uid() = user_id);
 
 -- 4. Updated Daily Regeneration Function for Dual Buckets
-CREATE OR REPLACE FUNCTION regenerate_healio_credits(p_user_id UUID)
+CREATE OR REPLACE FUNCTION regenerate_arovia_credits(p_user_id UUID)
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -181,7 +181,7 @@ BEGIN
     END IF;
 
     -- 2. Regenerate Daily Credits
-    PERFORM regenerate_healio_credits(p_user_id);
+    PERFORM regenerate_arovia_credits(p_user_id);
 
     -- 3. Lock Profile
     SELECT COALESCE(credits_plan, subscription_plan, 'free'),

@@ -244,7 +244,7 @@ def process_file(filepath: Path, existing_texts: set, file_idx: int, total_files
     print(f"[DONE] {title}: {inserted_count} new vector rows added to Supabase!", flush=True)
 
 def main():
-    print("[START] Healio.AI New Sources Parser & Knowledge Ingester", flush=True)
+    print("[START] Arovia.AI New Sources Parser & Knowledge Ingester", flush=True)
     txt_files = sorted(list(NEW_SOURCES_DIR.glob("*.txt")))
     print(f"[INFO] Found {len(txt_files)} source files in 'New Sources' directory.\n", flush=True)
     

@@ -1,5 +1,5 @@
 -- =============================================================================
--- Healio.AI — FIX: Recreate knowledge tables with correct vector(3072)
+-- Arovia.AI — FIX: Recreate knowledge tables with correct vector(3072)
 -- gemini-embedding-001 outputs 3072 dimensions, not 768.
 -- ivfflat max is 2000 dims — use hnsw instead (supports up to 2000 dims too,
 -- but for small datasets <1000 rows no index is needed — seq scan is instant).

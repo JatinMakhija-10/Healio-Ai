@@ -19,7 +19,7 @@ BEGIN
         '00000000-0000-0000-0000-000000000000', 
         'authenticated', 
         'authenticated', 
-        'doctor.test@healio.ai', 
+        'doctor.test@arovia.ai', 
         '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0123456789', -- Dummy hash
         NOW(), NOW(), NOW(), 
         '{"provider":"email","providers":["email"]}', 
@@ -29,7 +29,7 @@ BEGIN
 
     -- Create/Update Profile
     INSERT INTO public.profiles (id, email, role, full_name, phone)
-    VALUES (v_doctor_uuid, 'doctor.test@healio.ai', 'doctor', 'Dr. Test Doctor', '+91-9999999999')
+    VALUES (v_doctor_uuid, 'doctor.test@arovia.ai', 'doctor', 'Dr. Test Doctor', '+91-9999999999')
     ON CONFLICT (id) DO UPDATE SET role = 'doctor', full_name = 'Dr. Test Doctor';
 
     -- Create Doctor Details (Using CORRECT columns from schema)
@@ -67,7 +67,7 @@ BEGIN
         '00000000-0000-0000-0000-000000000000', 
         'authenticated', 
         'authenticated', 
-        'patient.test@healio.ai', 
+        'patient.test@arovia.ai', 
         '$2a$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0123456789', -- Dummy hash
         NOW(), NOW(), NOW(), 
         '{"provider":"email","providers":["email"]}', 
@@ -77,7 +77,7 @@ BEGIN
 
     -- Create/Update Profile
     INSERT INTO public.profiles (id, email, role, full_name, phone)
-    VALUES (v_patient_uuid, 'patient.test@healio.ai', 'patient', 'Test Patient', '+91-8888888888')
+    VALUES (v_patient_uuid, 'patient.test@arovia.ai', 'patient', 'Test Patient', '+91-8888888888')
     ON CONFLICT (id) DO UPDATE SET role = 'patient', full_name = 'Test Patient';
 
     RAISE NOTICE 'SUCCESS: Test users created (Schema Adjusted)!';

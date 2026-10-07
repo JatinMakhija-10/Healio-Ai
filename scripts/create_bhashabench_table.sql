@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- Healio.AI — Ayurvedic Q&A Embeddings Table (BhashaBench-Ayur)
+-- Arovia.AI — Ayurvedic Q&A Embeddings Table (BhashaBench-Ayur)
 -- Run in: Supabase Dashboard → SQL Editor
 -- ═══════════════════════════════════════════════════════════════════════════
 

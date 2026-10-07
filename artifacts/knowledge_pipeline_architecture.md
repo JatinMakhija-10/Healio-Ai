@@ -1,6 +1,6 @@
-# Healio.AI: The Medical Knowledge Pipeline Architecture
+# Arovia.AI: The Medical Knowledge Pipeline Architecture
 
-This document maps out the entire lifecycle of how raw, scattered medical intelligence was aggregated, translated, vectorized, and injected into the Healio.AI brain.
+This document maps out the entire lifecycle of how raw, scattered medical intelligence was aggregated, translated, vectorized, and injected into the Arovia.AI brain.
 
 ## 1. The Raw Sources (Where the data came from)
 To build a world-class RAG (Retrieval-Augmented Generation) brain, we pulled data from three distinct avenues:
@@ -20,7 +20,7 @@ To supplement your books with modern, government-verified clinical trials, I res
 *   *Ayurveda Focus Research Development*
 
 ### C. Live Web Scraping (Planet Ayurveda)
-To ensure Healio possessed modern clinical treatment pathways and symptom mapping, we built custom Python web-scrapers (`scripts/scrape_pa_herbs.py`, `scrape_pa_diseases.py`, etc.). These robots crawled the **Planet Ayurveda** website to extract structured data on:
+To ensure Arovia possessed modern clinical treatment pathways and symptom mapping, we built custom Python web-scrapers (`scripts/scrape_pa_herbs.py`, `scrape_pa_diseases.py`, etc.). These robots crawled the **Planet Ayurveda** website to extract structured data on:
 *   Botanical Herbs
 *   Modern Disease Correlations
 *   Ayurvedic Remedies & Formulations
@@ -54,7 +54,7 @@ All this data culminated in a single, high-performance vector vault.
 **The Database:** Supabase Postgres
 **The Table:** `ayurvedic_knowledge_embeddings`
 
-This table is the heart of Healio's intelligence. Every row contains:
+This table is the heart of Arovia's intelligence. Every row contains:
 1.  **`book` / `source`**: Where the text came from.
 2.  **`page`**: The exact page number for citations.
 3.  **`text`**: The raw medical paragraph.

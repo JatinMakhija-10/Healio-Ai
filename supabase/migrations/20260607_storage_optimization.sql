@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- Healio.AI — Storage Optimization & Retention Policies
+-- Arovia.AI — Storage Optimization & Retention Policies
 -- ═══════════════════════════════════════════════════════════════════════════
 -- Purpose:
 --   1. Implement automatic cleanup of old attachments

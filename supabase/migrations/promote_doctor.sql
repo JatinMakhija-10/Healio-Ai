@@ -3,7 +3,7 @@
 
 DO $$
 DECLARE
-    target_email TEXT := 'doctor_test@healio.ai';
+    target_email TEXT := 'doctor_test@arovia.ai';
     target_uid UUID;
 BEGIN
     -- 1. Find User

@@ -10,7 +10,7 @@ SET
     specialization = 'Ayurvedic Practitioner, General Physician',
     consultation_fee = 500
 WHERE user_id = (
-    SELECT id FROM auth.users WHERE email = 'doctor_test@healio.ai'
+    SELECT id FROM auth.users WHERE email = 'doctor_test@arovia.ai'
 );
 
 -- Verify the change
@@ -24,4 +24,4 @@ SELECT
 FROM auth.users u
 LEFT JOIN doctors d ON d.user_id = u.id
 LEFT JOIN profiles p ON p.id = u.id
-WHERE u.email = 'doctor_test@healio.ai';
+WHERE u.email = 'doctor_test@arovia.ai';

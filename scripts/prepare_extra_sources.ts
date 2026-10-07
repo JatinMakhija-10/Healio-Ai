@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Extra Sources Preprocessor
+ * Arovia.AI — Extra Sources Preprocessor
  * =====================================
  * Converts Desktop PDFs, Excel spreadsheets, DOCX text, CSV files, and
  * ALL PDF books in "NewBooks 2" & "NewBooks 2_needs_ocr" into .jsonl files
@@ -116,7 +116,7 @@ async function processDesktopPdfs() {
     'Arovia_AI_Math_RAG_Code_DeepDive.pdf',
     'Arovia_AI_Plain_English_Tech_Guide.pdf',
     'Arovia_AI_Technical_Architecture.pdf',
-    'Healio.AI - Science Meets Soul.pdf',
+    'Arovia.AI - Science Meets Soul.pdf',
     'Pitch Deck.pdf',
     'RESEARCH PUBLICATIONS IN AYURVEDIC SCIENCES.pdf',
     'Workflow.pdf',
@@ -135,7 +135,7 @@ async function processDesktopPdfs() {
       const baseName = path.basename(pdfName, '.pdf').replace(/[^a-zA-Z0-9_]/g, '_');
       const category = pdfName.toLowerCase().includes('ayurvedic')
         ? 'Ayurvedic Research'
-        : pdfName.toLowerCase().includes('arovia') || pdfName.toLowerCase().includes('healio')
+        : pdfName.toLowerCase().includes('arovia') || pdfName.toLowerCase().includes('arovia')
         ? 'Platform Architecture & Dossier'
         : 'Medical Document';
 

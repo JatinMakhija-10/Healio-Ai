@@ -1,5 +1,5 @@
 /**
- * Healio.AI E-Commerce Integration Module
+ * Arovia.AI E-Commerce Integration Module
  */
 
 export * from './types';

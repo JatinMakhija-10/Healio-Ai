@@ -1,5 +1,5 @@
 -- =============================================================================
--- Healio.AI — RAG Critical Fix: Dimension Mismatch + RPC fixes
+-- Arovia.AI — RAG Critical Fix: Dimension Mismatch + RPC fixes
 -- 
 -- PROBLEM 1: boericke_embeddings uses vector(768) but gemini-embedding-2-preview
 --            outputs 3072-dim vectors → RPC silently fails (function signature mismatch)

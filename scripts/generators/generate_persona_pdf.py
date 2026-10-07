@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages > 1)
         if self._pageNumber > 1:
-            self.drawString(54, 750, "HEALIO.AI — HEALTH PERSONA IMPACT & DIAGNOSTIC PIPELINE ANALYSIS")
+            self.drawString(54, 750, "AROVIA.AI — HEALTH PERSONA IMPACT & DIAGNOSTIC PIPELINE ANALYSIS")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(54, 744, 558, 744)
@@ -291,17 +291,17 @@ def build_pdf(md_content, output_pdf_path):
     doc.build(story, canvasmaker=NumberedCanvas)
     print(f"PDF successfully created at: {output_pdf_path}")
 
-md_document_text = """# HEALIO.AI — HEALTH PERSONA IMPACT ANALYSIS
+md_document_text = """# AROVIA.AI — HEALTH PERSONA IMPACT ANALYSIS
 > **Detailed Technical & Clinical Architecture Documentation**  
-> *Author: Healio.AI Core AI Engineering Team | Version: 3.2 | Platform Architecture Report*
+> *Author: Arovia.AI Core AI Engineering Team | Version: 3.2 | Platform Architecture Report*
 
 ---
 
 ## 1. Executive Summary & System Architecture
 
-In **Healio.AI**, a user's **Health Persona** (persisted in Supabase `user_metadata.medical_profile` and managed via `healthPersona.ts`) serves as the foundational clinical context for all diagnostic inference, drug safety filtering, and conversational output formatting.
+In **Arovia.AI**, a user's **Health Persona** (persisted in Supabase `user_metadata.medical_profile` and managed via `healthPersona.ts`) serves as the foundational clinical context for all diagnostic inference, drug safety filtering, and conversational output formatting.
 
-Rather than relying solely on raw LLM prompts, Healio.AI implements a **Math-First, Bayesian-Authoritative Architecture**. When a patient completes their profile or onboarding, `PersonaEngine.ts` parses raw physiological metrics, lifestyle habits, active medications, and family history into a deterministic, typed data structure (`PersonaProfile`).
+Rather than relying solely on raw LLM prompts, Arovia.AI implements a **Math-First, Bayesian-Authoritative Architecture**. When a patient completes their profile or onboarding, `PersonaEngine.ts` parses raw physiological metrics, lifestyle habits, active medications, and family history into a deterministic, typed data structure (`PersonaProfile`).
 
 This structured profile is fed into four core subsystems:
 1. **Bayesian MCMC Engine (`MCMCEngine.ts`)**: Adjusts disease prior probabilities via 12 groups of epidemiological covariate rules ($\alpha$ multipliers).
@@ -464,5 +464,5 @@ Integrating the **Health Persona** directly into the core mathematical engine ra
 """
 
 if __name__ == '__main__':
-    pdf_out_path = r"c:\Users\JATIN\Desktop\Healio.AI\Healio_AI_Health_Persona_Impact_Analysis.pdf"
+    pdf_out_path = r"c:\Users\JATIN\Desktop\Arovia.AI\Arovia_AI_Health_Persona_Impact_Analysis.pdf"
     build_pdf(md_document_text, pdf_out_path)

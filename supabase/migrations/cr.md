@@ -3,7 +3,7 @@
 ## 1. What's working well
 
 - **Ledger-backed, not just a counter.** `credit_transactions` records `balance_after` on every row, giving a real audit trail.
-- **Server-side cost computation.** `healio_credit_cost(action, plan)` runs in the database, so a client can't spoof its own discount.
+- **Server-side cost computation.** `arovia_credit_cost(action, plan)` runs in the database, so a client can't spoof its own discount.
 - **Lazy regeneration.** Computing the daily grant on request (instead of a cron job) avoids scheduler infrastructure for a fairly simple recurring credit.
 - **UPI top-up packs with volume bonuses.** A sensible monetization layer for the Indian market, decoupled from subscriptions.
 

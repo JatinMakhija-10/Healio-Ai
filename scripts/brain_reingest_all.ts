@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Master Brain Re-ingestion Script
+ * Arovia.AI — Master Brain Re-ingestion Script
  * =============================================
  * Re-ingests EVERY data source into Supabase using the Jina AI key pool.
  *
@@ -484,7 +484,7 @@ async function main() {
     const force     = args.includes('--force');
 
     console.log('\n' + '█'.repeat(70));
-    console.log('  HEALIO.AI — BRAIN MASTER RE-INGESTION');
+    console.log('  AROVIA.AI — BRAIN MASTER RE-INGESTION');
     console.log('█'.repeat(70));
     console.log(`  Source filter : ${sourceArg}`);
     console.log(`  Force re-embed: ${force}`);

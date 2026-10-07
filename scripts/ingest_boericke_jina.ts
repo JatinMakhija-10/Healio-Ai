@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Boericke Ingestion with Jina Key Pool
+ * Arovia.AI — Boericke Ingestion with Jina Key Pool
  * ===================================================
  * Parses scripts/boericke.txt (679 remedy chunks) and ingests them into
  * boericke_embeddings using the Jina AI key pool (768-dim).

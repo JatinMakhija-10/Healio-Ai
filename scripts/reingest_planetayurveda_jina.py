@@ -1,5 +1,5 @@
 """
-Healio.AI — Re-ingest PlanetAyurveda rows with Jina AI 768-dim embeddings.
+Arovia.AI — Re-ingest PlanetAyurveda rows with Jina AI 768-dim embeddings.
 
 PREREQUISITE: Run scripts/create_reingest_helpers.sql in Supabase SQL Editor FIRST.
 That SQL creates:

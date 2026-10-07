@@ -1,4 +1,4 @@
-# HEALIO.AI — PRE-SEED INVESTMENT & STRATEGIC MASTER PLAN
+# AROVIA.AI — PRE-SEED INVESTMENT & STRATEGIC MASTER PLAN
 
 **Document Title:** Pre-Seed Funding Strategy, Clinical Validation, Regulatory & E-Commerce Roadmap  
 **Target Raise:** ₹12,00,000 INR ($15,000 USD) | Micro Pre-Seed / Angel / Incubator Grant  
@@ -9,9 +9,9 @@
 
 ## 1. EXECUTIVE SUMMARY & PRODUCT VISION
 
-**Healio.AI** is India's first clinical-grade AI health companion that unifies **Bayesian probabilistic diagnostic precision** with **Ayurvedic and Homeopathic wisdom**, connected directly to a diagnosis-aware doctor marketplace and an AYUSH-certified e-commerce medicine store.
+**Arovia.AI** is India's first clinical-grade AI health companion that unifies **Bayesian probabilistic diagnostic precision** with **Ayurvedic and Homeopathic wisdom**, connected directly to a diagnosis-aware doctor marketplace and an AYUSH-certified e-commerce medicine store.
 
-Unlike standard symptom checkers that rely on generic decision trees or uncalibrated keyword matching, Healio.AI uses a transparent multi-stage Bayesian engine, sub-200ms emergency red-flag detection, and Prakriti/Vikriti constitutional profiling.
+Unlike standard symptom checkers that rely on generic decision trees or uncalibrated keyword matching, Arovia.AI uses a transparent multi-stage Bayesian engine, sub-200ms emergency red-flag detection, and Prakriti/Vikriti constitutional profiling.
 
 ### Key Product Pillars
 1. **AI Triage & Triage Handshake:** Patient symptom intake powered by Information Gain questioning, producing an explainable differential diagnosis handed directly to doctors.
@@ -23,7 +23,7 @@ Unlike standard symptom checkers that rely on generic decision trees or uncalibr
 
 ## 2. FUNDING REQUEST & CAPITAL ALLOCATION (₹12 LAKHS)
 
-Healio.AI is raising a **₹12,00,000 INR (12 Lakhs)** Micro Pre-Seed / Angel / Incubator Grant round to execute a 6 to 9-month lean growth cycle. This capital takes the platform from a functional prototype to a revenue-generating, clinically validated product.
+Arovia.AI is raising a **₹12,00,000 INR (12 Lakhs)** Micro Pre-Seed / Angel / Incubator Grant round to execute a 6 to 9-month lean growth cycle. This capital takes the platform from a functional prototype to a revenue-generating, clinically validated product.
 
 ### Summary Funding Split
 
@@ -43,7 +43,7 @@ Healio.AI is raising a **₹12,00,000 INR (12 Lakhs)** Micro Pre-Seed / Angel / 
 * **LLM & AI Inference Costs (OpenAI / Gemini APIs):** **₹1,00,000**
   * Supports 10,000+ patient triage chats using Gemini 1.5 Flash / GPT-4o-mini API calls over 6–8 months.
 * **Multi-Vendor E-Commerce Checkout (Razorpay Route):** **₹40,000**
-  * Automated payment split infrastructure (80% vendor payout, 20% Healio commission).
+  * Automated payment split infrastructure (80% vendor payout, 20% Arovia commission).
 * **LiveKit WebRTC Video Consultation Room:** **₹30,000**
   * TURN server infrastructure for seamless doctor-patient video calls.
 * **Contract Full-Stack Developer Stipend:** **₹2,50,000**
@@ -83,7 +83,7 @@ Healio.AI is raising a **₹12,00,000 INR (12 Lakhs)** Micro Pre-Seed / Angel / 
 
 ## 4. CLINICAL VALIDATION & CERTIFICATIONS ROADMAP
 
-To satisfy medical boards and health-tech investors, Healio.AI implements a **3-tier low-cost validation pipeline**:
+To satisfy medical boards and health-tech investors, Arovia.AI implements a **3-tier low-cost validation pipeline**:
 
 ```
  ┌───────────────────────────┐    ┌───────────────────────────┐    ┌───────────────────────────┐
@@ -101,9 +101,9 @@ To satisfy medical boards and health-tech investors, Healio.AI implements a **3-
 
 ## 5. COST-CUTTING HACKS: DOCTORS & LAWYERS
 
-By avoiding traditional high-fee agencies, Healio.AI slashes operational expenses by 70%:
+By avoiding traditional high-fee agencies, Arovia.AI slashes operational expenses by 70%:
 
-| Traditional Expense | Standard Fee | Healio.AI Bootstrapped Hack | Hack Cost |
+| Traditional Expense | Standard Fee | Arovia.AI Bootstrapped Hack | Hack Cost |
 |:---|:---:|:---|:---:|
 | **Corporate Law Firm** | ₹1,50,000 | Legal Tech Platform + Freelance Health Tech Lawyer | **₹45,000** |
 | **Senior Consultant Doctors** | ₹3,00,000 | PG Medical Residents / MD Scholars + Academic Co-authorship | **₹1,35,000** |
@@ -114,11 +114,11 @@ By avoiding traditional high-fee agencies, Healio.AI slashes operational expense
 ## 6. AYURVEDIC MEDICINE E-COMMERCE MARKETPLACE
 
 ### Business Model & Revenue Mechanics
-Healio.AI integrates a **Diagnosis-Driven Contextual Commerce Engine**:
+Arovia.AI integrates a **Diagnosis-Driven Contextual Commerce Engine**:
 
 1. **Diagnosis Result Handshake:** When a patient is diagnosed with an imbalance (e.g., *Vata Imbalance*, *Acidity/Pitta*, *Metabolic Ama*), the result card dynamically recommends specific, AYUSH-certified remedies (*Dashmool Kwath*, *Trikatu*, *Gulkand*).
 2. **Phase 1 — Affiliate Integration (Day 1):** Referral API integration with 1mg, Kapiva, Zandu, earning **10%–20% affiliate commission** with zero inventory liability.
-3. **Phase 2 — Direct D2C Vendor Marketplace (Month 3+):** Verified Ayurvedic vendors sell directly on Healio.AI. Healio collects a **25% marketplace commission** processed via Razorpay Route.
+3. **Phase 2 — Direct D2C Vendor Marketplace (Month 3+):** Verified Ayurvedic vendors sell directly on Arovia.AI. Arovia collects a **25% marketplace commission** processed via Razorpay Route.
 
 ---
 
@@ -126,7 +126,7 @@ Healio.AI integrates a **Diagnosis-Driven Contextual Commerce Engine**:
 
 Prior to investor due diligence, the engineering team must resolve the following key codebase flaws:
 
-1. **Rebranding Alignment:** Systematically replace all remaining internal references to `Arovia.AI` with `Healio.AI`.
+1. **Rebranding Alignment:** Systematically replace all remaining internal references to `Arovia.AI` with `Arovia.AI`.
 2. **Billing API Security Fix:** In `src/app/api/billing/route.ts`, implement Razorpay HMAC-SHA256 signature verification to prevent unauthorized credit top-ups.
 3. **WebRTC Consultation Room:** Replace mock UI in `/doctor/consult` with live WebRTC media room using LiveKit SDK.
 4. **Data Bundle Optimization:** Move 265+ condition JSON files behind a dynamic server API to shrink mobile bundle size.
@@ -135,7 +135,7 @@ Prior to investor due diligence, the engineering team must resolve the following
 
 ## 8. 6-MONTH TRACTION MILESTONES
 
-With the **₹12 Lakhs Pre-Seed round**, Healio.AI will deliver the following measurable milestones:
+With the **₹12 Lakhs Pre-Seed round**, Arovia.AI will deliver the following measurable milestones:
 
 * **1,000+ Completed Patient Consultations** with a CSAT ≥ 4.2 / 5.0.
 * **20 Verified Doctors** (Allopathic & Ayurvedic) active on the marketplace.

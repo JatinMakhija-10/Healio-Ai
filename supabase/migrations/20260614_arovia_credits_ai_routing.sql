@@ -1,4 +1,4 @@
--- Healio credits v3: prompt-aligned daily regeneration, atomic consumption,
+-- Arovia credits v3: prompt-aligned daily regeneration, atomic consumption,
 -- compatible ledger aliases, and LLM request attribution.
 
 ALTER TABLE profiles
@@ -76,7 +76,7 @@ CREATE POLICY "Users can read own llm requests"
     ON llm_requests FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE OR REPLACE FUNCTION healio_credit_cost(p_action TEXT, p_plan TEXT)
+CREATE OR REPLACE FUNCTION arovia_credit_cost(p_action TEXT, p_plan TEXT)
 RETURNS NUMERIC
 LANGUAGE plpgsql
 IMMUTABLE
@@ -97,7 +97,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION regenerate_healio_credits(p_user_id UUID)
+CREATE OR REPLACE FUNCTION regenerate_arovia_credits(p_user_id UUID)
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -148,7 +148,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION consume_healio_credits(
+CREATE OR REPLACE FUNCTION consume_arovia_credits(
     p_user_id UUID,
     p_action TEXT
 )
@@ -162,7 +162,7 @@ DECLARE
     v_cost NUMERIC(10,2);
     v_new_balance NUMERIC(10,2);
 BEGIN
-    PERFORM regenerate_healio_credits(p_user_id);
+    PERFORM regenerate_arovia_credits(p_user_id);
 
     SELECT COALESCE(credits_plan, subscription_plan, 'free'),
            COALESCE(credits_balance, 0)
@@ -175,7 +175,7 @@ BEGIN
         RETURN json_build_object('success', true, 'plan', v_plan, 'required', 0, 'balance_after', v_balance);
     END IF;
 
-    v_cost := healio_credit_cost(p_action, v_plan);
+    v_cost := arovia_credit_cost(p_action, v_plan);
     IF v_cost IS NULL THEN
         RETURN json_build_object('success', false, 'error', 'unknown_action', 'action', p_action);
     END IF;
@@ -199,7 +199,7 @@ BEGIN
 
     INSERT INTO credit_transactions (user_id, amount, delta, balance_after, action, reason, description)
     VALUES (p_user_id, -v_cost, -v_cost, v_new_balance, p_action, p_action,
-            'Consumed ' || v_cost || ' Healio credits for ' || p_action);
+            'Consumed ' || v_cost || ' Arovia credits for ' || p_action);
 
     RETURN json_build_object(
         'success', true,

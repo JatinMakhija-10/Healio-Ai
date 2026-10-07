@@ -1,5 +1,5 @@
 -- ============================================================
--- Healio.AI: Helper RPC for PlanetAyurveda re-ingestion
+-- Arovia.AI: Helper RPC for PlanetAyurveda re-ingestion
 -- Returns a batch of rows by ID range, for use by the
 -- Python re-ingestion script to avoid PostgREST timeouts.
 -- 

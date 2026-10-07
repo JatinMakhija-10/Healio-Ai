@@ -30,7 +30,7 @@
 INSERT INTO public.profiles (id, email, role, full_name, phone, created_at, updated_at)
 VALUES (
     '11111111-1111-1111-1111-111111111111',
-    'dr.priya.sharma@healio.test',
+    'dr.priya.sharma@arovia.test',
     'doctor',
     'Dr. Priya Sharma',
     '+91-9876543210',
@@ -46,7 +46,7 @@ VALUES (
 INSERT INTO public.profiles (id, email, role, full_name, phone, created_at, updated_at)
 VALUES (
     '22222222-2222-2222-2222-222222222222',
-    'dr.rajesh.kumar@healio.test',
+    'dr.rajesh.kumar@arovia.test',
     'doctor',
     'Dr. Rajesh Kumar',
     '+91-9876543211',
@@ -248,7 +248,7 @@ BEGIN
         NOW() + INTERVAL '2 days' + INTERVAL '10 hours',
         30,
         'confirmed',
-        'https://meet.healio.ai/session-abc123',
+        'https://meet.arovia.ai/session-abc123',
         'Patient experiencing occasional chest discomfort and wants preventive cardiology advice.',
         NOW()
     ) ON CONFLICT DO NOTHING;
@@ -271,7 +271,7 @@ BEGIN
         NOW() - INTERVAL '5 days',
         45,
         'completed',
-        'https://meet.healio.ai/session-xyz789',
+        'https://meet.arovia.ai/session-xyz789',
         'Patient seeking Ayurvedic consultation for digestive issues and Prakriti analysis.',
         NOW() - INTERVAL '7 days',
         NOW() - INTERVAL '5 days',

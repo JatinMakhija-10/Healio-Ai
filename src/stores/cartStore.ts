@@ -1,5 +1,5 @@
 /**
- * Zustand Cart Store for Healio.AI E-Commerce Integration
+ * Zustand Cart Store for Arovia.AI E-Commerce Integration
  * 
  * Supports adding products directly from diagnostic recommendation cards
  * with attached clinical traceability metadata.
@@ -133,7 +133,7 @@ export const useCartStore = create<CartState>()(
 
       applyCoupon: (code) => {
         const cleanCode = code.trim().toUpperCase();
-        if (cleanCode === 'HEALIO10') {
+        if (cleanCode === 'AROVIA10') {
           const discount = Math.round(get().subtotalInINR * 0.10);
           set({
             appliedCoupon: cleanCode,
@@ -154,7 +154,7 @@ export const useCartStore = create<CartState>()(
       }
     }),
     {
-      name: 'healio-ecommerce-cart',
+      name: 'arovia-ecommerce-cart',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         items: state.items,

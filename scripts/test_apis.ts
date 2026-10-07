@@ -27,7 +27,7 @@ function compactBody(body: string): string {
 
 async function testGroq() {
     const keys = parseKeyPool('GROQ_API_KEYS', 'GROQ_API_KEY');
-    const models = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile'];
+    const models = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b'];
 
     if (keys.length === 0) {
         console.error('Groq: no keys configured');
@@ -68,7 +68,7 @@ async function testGroq() {
 
 async function testGeminiGeneration() {
     const keys = parseKeyPool('GEMINI_API_KEY', 'GEMINI_API_KEYS');
-    const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+    const models = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
 
     if (keys.length === 0) {
         console.error('Gemini: no keys configured');

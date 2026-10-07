@@ -1,23 +1,23 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FormulationMatcher } from '../catalog/matcher';
-import { HealioPharmacyAdapter } from '../fulfillment/vaidyanathAdapter';
+import { AroviaPharmacyAdapter } from '../fulfillment/vaidyanathAdapter';
 import { CartService } from '../services/cartService';
 import { CheckoutService } from '../services/checkoutService';
 import { AYURVEDIC_CATALOG } from '../catalog/catalogData';
 
-describe('Healio.AI E-Commerce & Product Integration Tests', () => {
+describe('Arovia.AI E-Commerce & Product Integration Tests', () => {
   let matcher: FormulationMatcher;
-  let healioAdapter: HealioPharmacyAdapter;
+  let aroviaAdapter: AroviaPharmacyAdapter;
   let checkoutService: CheckoutService;
 
   beforeEach(() => {
     matcher = new FormulationMatcher(AYURVEDIC_CATALOG);
-    healioAdapter = new HealioPharmacyAdapter({ isTestMode: true });
-    checkoutService = new CheckoutService(healioAdapter);
+    aroviaAdapter = new AroviaPharmacyAdapter({ isTestMode: true });
+    checkoutService = new CheckoutService(aroviaAdapter);
   });
 
   describe('Formulation-to-SKU Matcher', () => {
-    it('should match a classical formulation name to Healio Pharmacy catalog SKU', () => {
+    it('should match a classical formulation name to Arovia Pharmacy catalog SKU', () => {
       const matches = matcher.matchRecommendations({
         diagnosticId: 'diag_test_101',
         recommendedFormulations: ['Avipattikar Churna'],
@@ -26,8 +26,8 @@ describe('Healio.AI E-Commerce & Product Integration Tests', () => {
 
       expect(matches.length).toBeGreaterThan(0);
       const topMatch = matches[0];
-      expect(topMatch.product.sku).toBe('HEALIO-AVP-100G');
-      expect(topMatch.product.brand).toBe('Healio Pharmacy');
+      expect(topMatch.product.sku).toBe('AROVIA-AVP-100G');
+      expect(topMatch.product.brand).toBe('Arovia Pharmacy');
       expect(topMatch.isSafe).toBe(true);
       expect(topMatch.traceability.diagnosticId).toBe('diag_test_101');
       expect(topMatch.traceability.targetDosha).toBe('pitta');
@@ -56,7 +56,7 @@ describe('Healio.AI E-Commerce & Product Integration Tests', () => {
       });
 
       expect(matches.length).toBeGreaterThan(0);
-      const lavanMatch = matches.find(m => m.product.sku === 'HEALIO-LAVAN-100G');
+      const lavanMatch = matches.find(m => m.product.sku === 'AROVIA-LAVAN-100G');
       expect(lavanMatch).toBeDefined();
       expect(lavanMatch?.isSafe).toBe(false);
       expect(lavanMatch?.safetyAlerts.some(a => a.includes('CONTRAINDICATED'))).toBe(true);
@@ -69,24 +69,24 @@ describe('Healio.AI E-Commerce & Product Integration Tests', () => {
         patientVikriti: 'kapha'
       });
 
-      const agnitundiMatch = matches.find(m => m.product.sku === 'HEALIO-AGNIT-80TAB');
+      const agnitundiMatch = matches.find(m => m.product.sku === 'AROVIA-AGNIT-80TAB');
       expect(agnitundiMatch).toBeDefined();
       expect(agnitundiMatch?.requiresPrescription).toBe(true);
     });
   });
 
-  describe('Healio Pharmacy Supplier Adapter', () => {
+  describe('Arovia Pharmacy Supplier Adapter', () => {
     it('should generate properly tagged affiliate fallback URLs', () => {
       const product = AYURVEDIC_CATALOG[0];
-      const link = healioAdapter.generateAffiliateLink(product, 'custom_campaign_ref');
+      const link = aroviaAdapter.generateAffiliateLink(product, 'custom_campaign_ref');
 
       expect(link).toContain('ref=custom_campaign_ref');
-      expect(link).toContain('utm_source=healio_ai');
+      expect(link).toContain('utm_source=arovia_ai');
     });
 
     it('should return valid inventory status in test mode', async () => {
-      const inventory = await healioAdapter.checkInventory(['HEALIO-AVP-100G']);
-      const status = inventory.get('HEALIO-AVP-100G');
+      const inventory = await aroviaAdapter.checkInventory(['AROVIA-AVP-100G']);
+      const status = inventory.get('AROVIA-AVP-100G');
 
       expect(status).toBeDefined();
       expect(status?.inStock).toBe(true);
@@ -126,7 +126,7 @@ describe('Healio.AI E-Commerce & Product Integration Tests', () => {
   });
 
   describe('Checkout Service & Order Lifecycle', () => {
-    it('should create order and dispatch dropship to Healio Express Logistics upon payment', async () => {
+    it('should create order and dispatch dropship to Arovia Express Logistics upon payment', async () => {
       let cart = CartService.createEmptyCart('user_test_99');
       const hlProduct = AYURVEDIC_CATALOG[0];
       cart = CartService.addItem(cart, hlProduct, 2);
@@ -146,7 +146,7 @@ describe('Healio.AI E-Commerce & Product Integration Tests', () => {
       expect(order.id).toBeDefined();
       expect(order.status).toBe('PENDING_PAYMENT');
       expect(order.supplierDispatches.length).toBe(1);
-      expect(order.supplierDispatches[0].supplierId).toBe('HEALIO_PHARMACY');
+      expect(order.supplierDispatches[0].supplierId).toBe('AROVIA_PHARMACY');
 
       // Simulate payment confirmation
       const confirmedOrder = await checkoutService.confirmPaymentAndDispatch(order.id, 'razorpay_pay_abc123');

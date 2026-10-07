@@ -1,14 +1,14 @@
-# Healio.AI — Workspace Directory Structure & Maintenance Guide
+# Arovia.AI — Workspace Directory Structure & Maintenance Guide
 
 > **Important Directive for Future Maintainers & AI Assistants:**  
-> This document provides a complete, structured overview of every directory, subfolder, and core file in the **Healio.AI** codebase. Whenever new top-level folders, major modules, or key architecture scripts are created or modified, **this file MUST be updated** to reflect the new structure.
+> This document provides a complete, structured overview of every directory, subfolder, and core file in the **Arovia.AI** codebase. Whenever new top-level folders, major modules, or key architecture scripts are created or modified, **this file MUST be updated** to reflect the new structure.
 
 ---
 
 ## 📁 Repository Overview
 
 ```
-Healio.AI/
+Arovia.AI/
 ├── src/                      # Next.js App Router, React Components, Clinical Engine & APIs
 ├── docs/                     # Documentation, Architectural Specs, UX Audits & PDF Reports
 │   ├── pdf_reports/          # Generated PDF Technical Dossiers, Pitch Guides & Architecture Reports
@@ -71,8 +71,8 @@ The core TypeScript/React application built on Next.js App Router (v15+):
 Contains all project documentation, audits, specs, and generated reports:
 
 * **`docs/pdf_reports/`**: Formatted PDF dossiers generated via ReportLab:
-  * `Healio_AI_Health_Persona_Impact_Analysis.pdf`: Comprehensive report on PersonaEngine, MCMCEngine, DDI safety, and LLM prompt rules.
-  * `Healio_AI_Master_Pitch_and_Funding_Plan.pdf`: Investor deck & funding breakdown.
+  * `Arovia_AI_Health_Persona_Impact_Analysis.pdf`: Comprehensive report on PersonaEngine, MCMCEngine, DDI safety, and LLM prompt rules.
+  * `Arovia_AI_Master_Pitch_and_Funding_Plan.pdf`: Investor deck & funding breakdown.
   * `Arovia_AI_Technical_Architecture.pdf`: Technical architecture dossier.
 * **`docs/architecture/`**: Markdown design specs:
   * `AROVIA_BRAND_CONTEXT.md`, `AROVIA_REDESIGN_AUDIT.md`, `Arovia-AI-Product-UX-Audit.md`, `Arovia_Engine_Documentation.md`.

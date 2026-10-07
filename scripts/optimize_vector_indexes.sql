@@ -1,5 +1,5 @@
 -- ============================================================
--- Healio.AI — Vector Index Optimization Script
+-- Arovia.AI — Vector Index Optimization Script
 -- Run this in the Supabase SQL editor (Settings > SQL Editor)
 -- or via: supabase db push (if using migrations folder)
 -- ============================================================

@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
         if self._pageNumber > 1:
-            self.drawString(36, 756, "HEALIO.AI — TECHNICAL AI ENGINE ARCHITECTURE EXPLAINER")
+            self.drawString(36, 756, "AROVIA.AI — TECHNICAL AI ENGINE ARCHITECTURE EXPLAINER")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 750, 576, 750)
@@ -147,7 +147,7 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — TECHNICAL AI ENGINE ARCHITECTURE", title_style))
+    story.append(Paragraph("AROVIA.AI — TECHNICAL AI ENGINE ARCHITECTURE", title_style))
     story.append(Paragraph("How the Diagnostic Engine Works: Math-First Bayesian MCMC, Prakriti Profiling, Clinical Rules & LLM Formatting", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=6))
     
@@ -155,7 +155,7 @@ def create_pdf(filename):
     story.append(Paragraph("1. Core Thesis: Math-First Architecture (Not an LLM Wrapper)", h1_style))
     exec_text = (
         "Unlike generic symptom checkers or raw LLM chatbots (ChatGPT/WebMD) that suffer from diagnostic hallucinations, "
-        "Healio.AI implements a <b>Math-First Clinical Architecture</b>. "
+        "Arovia.AI implements a <b>Math-First Clinical Architecture</b>. "
         "The <b>Bayesian MCMC Probabilistic Engine has 100% TOTAL AUTHORITY</b> over the diagnosis and confidence scoring. "
         "The LLM (OpenAI / Gemini / Groq) acts purely as a <b>Natural Language Formatter & Compassionate Writer</b>, "
         "articulating pre-verified database remedies and medical descriptions."
@@ -228,5 +228,5 @@ def create_pdf(filename):
 if __name__ == "__main__":
     out_dir = os.path.join(os.getcwd(), "docs", "business")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "HEALIO_AI_ENGINE_ARCHITECTURAL_EXPLAINER.pdf")
+    pdf_path = os.path.join(out_dir, "AROVIA_AI_ENGINE_ARCHITECTURAL_EXPLAINER.pdf")
     create_pdf(pdf_path)

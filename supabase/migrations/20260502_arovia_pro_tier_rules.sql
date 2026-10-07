@@ -1,4 +1,4 @@
--- Healio Pro tier rules
+-- Arovia Pro tier rules
 -- Enforces the same tier logic used by the app at the database boundary.
 
 CREATE OR REPLACE FUNCTION increment_chat_count(p_user_id UUID)

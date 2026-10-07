@@ -1,5 +1,5 @@
 -- =============================================================================
--- Healio.AI — New Knowledge Base Tables
+-- Arovia.AI — New Knowledge Base Tables
 -- Run this migration in Supabase SQL Editor
 -- =============================================================================
 

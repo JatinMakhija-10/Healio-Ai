@@ -32,7 +32,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages 2+)
         if self._pageNumber > 1:
-            self.drawString(36, 756, "HEALIO.AI — PROPER COST & FINANCIAL AUDIT REPORT")
+            self.drawString(36, 756, "AROVIA.AI — PROPER COST & FINANCIAL AUDIT REPORT")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 750, 576, 750)
@@ -40,7 +40,7 @@ class NumberedCanvas(canvas.Canvas):
         # Footer (all pages)
         page_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(576, 25, page_text)
-        self.drawString(36, 25, "CONFIDENTIAL — FOR HEALIO.AI EXECUTIVE & INVESTOR REVIEW")
+        self.drawString(36, 25, "CONFIDENTIAL — FOR AROVIA.AI EXECUTIVE & INVESTOR REVIEW")
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
         self.setLineWidth(0.5)
         self.line(36, 35, 576, 35)
@@ -151,7 +151,7 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — PROPER FINANCIAL & COST AUDIT REPORT", title_style))
+    story.append(Paragraph("AROVIA.AI — PROPER FINANCIAL & COST AUDIT REPORT", title_style))
     story.append(Paragraph("Ground-Truth Multi-Turn Token Accumulation, Sub-30s Infra Unit Costs, TAM/SAM/SOM & Competitor Matrix", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=8))
     
@@ -302,11 +302,11 @@ def create_pdf(filename):
         [Paragraph("MAU (Triage Users)", table_text), Paragraph("150,000", table_text), Paragraph("750,000", table_text), Paragraph("2.50M", table_text), Paragraph("6.50M", table_text), Paragraph("15.00M", table_text)],
         [Paragraph("Active Onboarded Doctors", table_text), Paragraph("50", table_text), Paragraph("350", table_text), Paragraph("1,200", table_text), Paragraph("3,500", table_text), Paragraph("8,500", table_text)],
         [Paragraph("Gross Merchandise Value (GMV)", table_text), Paragraph("₹2.40", table_text), Paragraph("₹18.50", table_text), Paragraph("₹84.20", table_text), Paragraph("₹245.00", table_text), Paragraph("₹568.00", table_text)],
-        [Paragraph("<b>NET REVENUE TO HEALIO.AI</b>", table_text), Paragraph("<b>₹0.68</b>", table_text), Paragraph("<b>₹5.15</b>", table_text), Paragraph("<b>₹26.29</b>", table_text), Paragraph("<b>₹78.40</b>", table_text), Paragraph("<b>₹177.20</b>", table_text)],
+        [Paragraph("<b>NET REVENUE TO AROVIA.AI</b>", table_text), Paragraph("<b>₹0.68</b>", table_text), Paragraph("<b>₹5.15</b>", table_text), Paragraph("<b>₹26.29</b>", table_text), Paragraph("<b>₹78.40</b>", table_text), Paragraph("<b>₹177.20</b>", table_text)],
         [Paragraph("<i>Net Revenue in USD ($)</i>", table_text), Paragraph("<i>$82K</i>", table_text), Paragraph("<i>$620K</i>", table_text), Paragraph("<i>$3.17M</i>", table_text), Paragraph("<i>$9.44M</i>", table_text), Paragraph("<i>$21.35M</i>", table_text)],
         [Paragraph("— E-Commerce Net Comm (20%)", table_text), Paragraph("₹0.32", table_text), Paragraph("₹2.40", table_text), Paragraph("₹11.36", table_text), Paragraph("₹33.00", table_text), Paragraph("₹76.00", table_text)],
         [Paragraph("— Consultation Net Comm (20%)", table_text), Paragraph("₹0.16", table_text), Paragraph("₹1.30", table_text), Paragraph("₹5.48", table_text), Paragraph("₹16.00", table_text), Paragraph("₹37.60", table_text)],
-        [Paragraph("— B2C Healio Plus ARR", table_text), Paragraph("₹0.08", table_text), Paragraph("₹0.75", table_text), Paragraph("₹4.78", table_text), Paragraph("₹14.50", table_text), Paragraph("₹35.00", table_text)],
+        [Paragraph("— B2C Arovia Plus ARR", table_text), Paragraph("₹0.08", table_text), Paragraph("₹0.75", table_text), Paragraph("₹4.78", table_text), Paragraph("₹14.50", table_text), Paragraph("₹35.00", table_text)],
         [Paragraph("— B2B Doctor Pro SaaS ARR", table_text), Paragraph("₹0.12", table_text), Paragraph("₹0.50", table_text), Paragraph("₹2.88", table_text), Paragraph("₹8.40", table_text), Paragraph("₹20.40", table_text)],
         [Paragraph("— Ads & Enterprise Data", table_text), Paragraph("₹0.00", table_text), Paragraph("₹0.20", table_text), Paragraph("₹1.79", table_text), Paragraph("₹6.50", table_text), Paragraph("₹8.20", table_text)],
         [Paragraph("Gross Margin (%)", table_text), Paragraph("78.0%", table_text), Paragraph("81.5%", table_text), Paragraph("84.0%", table_text), Paragraph("85.5%", table_text), Paragraph("86.2%", table_text)],
@@ -330,11 +330,11 @@ def create_pdf(filename):
     story.append(Spacer(1, 10))
 
     # Section 6: Competitors & Defensive Moats
-    story.append(Paragraph("6. Competitive Intelligence & Why Healio.AI Wins", h1_style))
+    story.append(Paragraph("6. Competitive Intelligence & Why Arovia.AI Wins", h1_style))
     
     comp_headers = [
         Paragraph("<b>Feature / Dimension</b>", table_header),
-        Paragraph("<b>Healio.AI</b>", table_header),
+        Paragraph("<b>Arovia.AI</b>", table_header),
         Paragraph("<b>Practo</b>", table_header),
         Paragraph("<b>Tata 1mg</b>", table_header),
         Paragraph("<b>Ada Health</b>", table_header),
@@ -372,5 +372,5 @@ def create_pdf(filename):
 if __name__ == "__main__":
     out_dir = os.path.join(os.getcwd(), "docs", "business")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "HEALIO_PROPER_COST_AND_BUSINESS_REPORT.pdf")
+    pdf_path = os.path.join(out_dir, "AROVIA_PROPER_COST_AND_BUSINESS_REPORT.pdf")
     create_pdf(pdf_path)

@@ -5,11 +5,11 @@
  * 1. Order generation from cart & shipping address
  * 2. Schedule E-1 prescription governance
  * 3. Payment lifecycle (Razorpay / Stripe)
- * 4. Multi-supplier dispatch to Healio Pharmacy
+ * 4. Multi-supplier dispatch to Arovia Pharmacy
  */
 
 import { Cart, Order, OrderStatus, ShippingAddress, SupplierDispatchOrder } from '../types';
-import { HealioPharmacyAdapter } from '../fulfillment/vaidyanathAdapter';
+import { AroviaPharmacyAdapter } from '../fulfillment/vaidyanathAdapter';
 
 export interface CheckoutOptions {
   paymentMethod?: 'RAZORPAY' | 'STRIPE' | 'COD';
@@ -20,7 +20,7 @@ export interface CheckoutOptions {
 export class CheckoutService {
   private static orders: Map<string, Order> = new Map();
 
-  constructor(private healioAdapter: HealioPharmacyAdapter) {}
+  constructor(private aroviaAdapter: AroviaPharmacyAdapter) {}
 
   /**
    * Initialize a new order from a shopping cart
@@ -47,16 +47,16 @@ export class CheckoutService {
       : 'PENDING_PAYMENT';
 
     // Segregate items by supplier
-    const healioItems = cart.items.filter(item => item.brand === 'Healio Pharmacy' || item.sku.startsWith('HEALIO-') || item.sku.startsWith('VDN-'));
-    const nativeItems = cart.items.filter(item => !item.sku.startsWith('HEALIO-') && !item.sku.startsWith('VDN-') && item.brand !== 'Healio Pharmacy');
+    const aroviaItems = cart.items.filter(item => item.brand === 'Arovia Pharmacy' || item.sku.startsWith('AROVIA-') || item.sku.startsWith('VDN-'));
+    const nativeItems = cart.items.filter(item => !item.sku.startsWith('AROVIA-') && !item.sku.startsWith('VDN-') && item.brand !== 'Arovia Pharmacy');
 
     const supplierDispatches: SupplierDispatchOrder[] = [];
 
-    if (healioItems.length > 0) {
+    if (aroviaItems.length > 0) {
       supplierDispatches.push({
-        supplierId: 'HEALIO_PHARMACY',
+        supplierId: 'AROVIA_PHARMACY',
         status: 'PENDING',
-        lineItems: healioItems.map(i => ({
+        lineItems: aroviaItems.map(i => ({
           sku: i.sku,
           quantity: i.quantity,
           unitPriceInINR: i.unitPriceInINR
@@ -116,12 +116,12 @@ export class CheckoutService {
     order.status = 'PAYMENT_CONFIRMED';
     order.updatedAt = new Date().toISOString();
 
-    // ─── Automated Dropship Dispatch to Healio Pharmacy ───────────
+    // ─── Automated Dropship Dispatch to Arovia Pharmacy ───────────
     for (let i = 0; i < order.supplierDispatches.length; i++) {
       const dispatch = order.supplierDispatches[i];
 
-      if (dispatch.supplierId === 'HEALIO_PHARMACY' || dispatch.supplierId === 'VAIDYANATH_GROUP') {
-        const result = await this.healioAdapter.submitDropshipOrder(order, order.shippingAddress);
+      if (dispatch.supplierId === 'AROVIA_PHARMACY' || dispatch.supplierId === 'VAIDYANATH_GROUP') {
+        const result = await this.aroviaAdapter.submitDropshipOrder(order, order.shippingAddress);
 
         if (result.success) {
           dispatch.status = 'ACCEPTED';
@@ -132,7 +132,7 @@ export class CheckoutService {
           dispatch.dispatchedAt = new Date().toISOString();
         } else {
           dispatch.status = 'FAILED';
-          console.error(`[CheckoutService] Healio Pharmacy fulfillment dispatch failed: ${result.error}`);
+          console.error(`[CheckoutService] Arovia Pharmacy fulfillment dispatch failed: ${result.error}`);
         }
       } else if (dispatch.supplierId === 'NATIVE_WAREHOUSE') {
         dispatch.status = 'ACCEPTED';

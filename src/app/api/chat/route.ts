@@ -2310,13 +2310,14 @@ UI HINT OUTPUT SAFETY:
                 parts: [{ text: m.content }],
             }));
 
-            const geminiModel = AI_PHASE_CONFIG.models.gemini;
+            const geminiModels = [AI_PHASE_CONFIG.models.gemini, AI_PHASE_CONFIG.models.geminiLite];
             let geminiText = '';
             let geminiSucceeded = false;
             let lastGeminiError = '';
             const maxGeminiAttempts = 5;  // More retries for free-tier rate limits
 
             for (let attempt = 0; attempt < maxGeminiAttempts; attempt++) {
+                const geminiModel = geminiModels[attempt % geminiModels.length];
                 for (const geminiKey of geminiKeys) {
                     const geminiController = new AbortController();
                     const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);

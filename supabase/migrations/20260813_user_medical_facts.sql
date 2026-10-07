@@ -1,6 +1,6 @@
 -- ── Migration: User Medical Facts & Memory Table ─────────────────────────────
 -- Date: 2026-08-13
--- Author: Healio.AI Engineering
+-- Author: Arovia.AI Engineering
 -- Audit Ref: Forensic Audit §8, F5, Inconsistency #2, Section 10
 --
 -- Description:

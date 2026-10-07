@@ -17,7 +17,7 @@ export const AI_PHASE_CONFIG = {
         groqFast: 'qwen/qwen3.8-27b',              // 27B param — fast Q&A turns (~900ms)
         groqRescue: 'groq/compound-mini',           // rescue fallback (~3.8s, always works)
         gemini: 'gemini-3.8-flash',                 // required for AQ-format API keys
-        geminiLite: 'gemini-3.8-flash',             // same model (lite not available for this key type)
+        geminiLite: 'gemini-3.5-flash-lite',        // fast fallback model — immune to 3.8-flash 503 spikes
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
         homeRemedyEmbedding: 'gemini-embedding-001', // 3072-dim — matches home_remedy_embeddings ingestion
     },

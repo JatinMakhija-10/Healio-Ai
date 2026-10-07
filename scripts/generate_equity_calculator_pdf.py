@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
         if self._pageNumber > 1:
-            self.drawString(36, 756, "HEALIO.AI — EQUITY DILUTION & VALUATION ADVISORY")
+            self.drawString(36, 756, "AROVIA.AI — EQUITY DILUTION & VALUATION ADVISORY")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 750, 576, 750)
@@ -148,14 +148,14 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — ₹12 LAKHS EQUITY & VALUATION ADVISORY", title_style))
+    story.append(Paragraph("AROVIA.AI — ₹12 LAKHS EQUITY & VALUATION ADVISORY", title_style))
     story.append(Paragraph("Founder Cap-Table Preservation Guide, Pre-Money Valuation Scenarios & SAFE Note Structures", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=8))
     
     # Section 1: Executive Answer
     story.append(Paragraph("1. Executive Valuation & Equity Benchmark Answer", h1_style))
     exec_text = (
-        "For a <b>₹12,00,000 INR ($15,000 USD)</b> micro pre-seed raise into Healio.AI, the recommended equity dilution is "
+        "For a <b>₹12,00,000 INR ($15,000 USD)</b> micro pre-seed raise into Arovia.AI, the recommended equity dilution is "
         "<b>4.0% to 6.0% (Maximum 7.5%)</b>. "
         "Giving away more than 7.5% for ₹12 Lakhs will severely over-dilute the founder cap-table, creating a major red flag "
         "for institutional VCs in future Seed and Series A rounds."
@@ -229,5 +229,5 @@ def create_pdf(filename):
 if __name__ == "__main__":
     out_dir = os.path.join(os.getcwd(), "docs", "business")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "HEALIO_EQUITY_VALUATION_ADVISORY.pdf")
+    pdf_path = os.path.join(out_dir, "AROVIA_EQUITY_VALUATION_ADVISORY.pdf")
     create_pdf(pdf_path)

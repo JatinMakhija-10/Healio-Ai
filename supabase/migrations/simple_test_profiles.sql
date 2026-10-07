@@ -23,7 +23,7 @@
 INSERT INTO public.profiles (id, email, role, full_name, phone)
 VALUES (
     'YOUR_DOCTOR_USER_ID'::uuid,
-    'doctor.test@healio.ai',
+    'doctor.test@arovia.ai',
     'doctor',
     'Dr. Test Doctor',
     '+91-9999999999'
@@ -85,7 +85,7 @@ INSERT INTO public.doctors (
 INSERT INTO public.profiles (id, email, role, full_name, phone)
 VALUES (
     'YOUR_PATIENT_USER_ID'::uuid,
-    'patient.test@healio.ai',
+    'patient.test@arovia.ai',
     'patient',
     'Test Patient',
     '+91-8888888888'
@@ -99,10 +99,10 @@ VALUES (
 -- Check if profiles were created:
 SELECT p.full_name, p.email, p.role 
 FROM public.profiles p 
-WHERE p.email LIKE '%test@healio.ai%';
+WHERE p.email LIKE '%test@arovia.ai%';
 
 -- Check doctor record:
 SELECT d.*, p.full_name 
 FROM public.doctors d
 JOIN public.profiles p ON d.user_id = p.id
-WHERE p.email LIKE '%doctor.test@healio.ai%';
+WHERE p.email LIKE '%doctor.test@arovia.ai%';

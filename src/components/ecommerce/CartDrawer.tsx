@@ -33,7 +33,7 @@ export const CartDrawer: React.FC = () => {
     if (!couponInput) return;
     const ok = applyCoupon(couponInput);
     if (!ok) {
-      setCouponError('Invalid coupon code. Try HEALIO10');
+      setCouponError('Invalid coupon code. Try AROVIA10');
     } else {
       setCouponError('');
       setCouponInput('');
@@ -65,7 +65,7 @@ export const CartDrawer: React.FC = () => {
             state: 'Delhi',
             postalCode: '110001',
             country: 'India',
-            email: 'patient@healio.ai'
+            email: 'patient@arovia.ai'
           }
         })
       });
@@ -116,7 +116,7 @@ export const CartDrawer: React.FC = () => {
               <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <strong className="font-semibold">AYUSH Schedule E-1 Compliance: </strong>
-                Your cart contains potent classical herbs requiring BAMS physician sign-off. Healio will attach your diagnostic verification automatically.
+                Your cart contains potent classical herbs requiring BAMS physician sign-off. Arovia will attach your diagnostic verification automatically.
               </div>
             </div>
           )}
@@ -203,7 +203,7 @@ export const CartDrawer: React.FC = () => {
                   <Tag className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400" />
                   <input
                     type="text"
-                    placeholder="Coupon (e.g. HEALIO10)"
+                    placeholder="Coupon (e.g. AROVIA10)"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
                     className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"

@@ -1,9 +1,9 @@
--- Upsert and Verify Dr. Mittal (doctor@healio_test)
+-- Upsert and Verify Dr. Mittal (doctor@arovia_test)
 -- Run this in Supabase SQL Editor
 
 DO $$
 DECLARE
-    target_email TEXT := 'doctor@healio_test';
+    target_email TEXT := 'doctor@arovia_test';
     target_uid UUID;
 BEGIN
     -- 1. Find User

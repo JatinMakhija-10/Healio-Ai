@@ -1,5 +1,5 @@
 /**
- * Healio.AI — Jina AI Key Pool + Embedding Module
+ * Arovia.AI — Jina AI Key Pool + Embedding Module
  * =================================================
  * Supports a pool of Jina API keys (JINA_API_KEYS env, comma-separated).
  * Keys rotate round-robin. On 429 → exponential backoff. On 403 → evict key.

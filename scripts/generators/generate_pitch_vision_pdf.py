@@ -244,6 +244,6 @@ def build_pdf(md_file_path, output_pdf_path):
     print(f"SUCCESS: Pitch & Vision PDF generated cleanly at: {output_pdf_path}")
 
 if __name__ == '__main__':
-    md_path = r"c:\Users\JATIN\Desktop\Healio.AI\docs\business\Arovia_Investor_Pitch_Vision_Guide.md"
-    pdf_path = r"c:\Users\JATIN\Desktop\Healio.AI\Arovia_Investor_Pitch_Vision_Guide.pdf"
+    md_path = r"c:\Users\JATIN\Desktop\Arovia.AI\docs\business\Arovia_Investor_Pitch_Vision_Guide.md"
+    pdf_path = r"c:\Users\JATIN\Desktop\Arovia.AI\Arovia_Investor_Pitch_Vision_Guide.pdf"
     build_pdf(md_path, pdf_path)

@@ -1,6 +1,6 @@
 -- ── Migration: P0-1 RPC Guard, P1-5 Confidence Ranking & P0-9 Audit Logs ────
 -- Date: 2026-08-14
--- Author: Healio.AI Security & Engineering
+-- Author: Arovia.AI Security & Engineering
 -- Audit Ref: P0-1, P1-5, P1-6, P0-9
 
 -- ── 1. Secure & Ranked Medical Facts RPC ──────────────────────────────────────

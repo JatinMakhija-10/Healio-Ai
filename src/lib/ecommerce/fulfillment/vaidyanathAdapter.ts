@@ -1,5 +1,5 @@
 /**
- * Healio Pharmacy Fulfillment Adapter
+ * Arovia Pharmacy Fulfillment Adapter
  * 
  * Provides:
  * 1. B2B dropshipping dispatch via REST API
@@ -10,7 +10,7 @@
 import { ProductSKU, Order, ShippingAddress } from '../types';
 import { ISupplierFulfillmentAdapter, StockStatus, FulfillmentSubmissionResult, TrackingDetails } from './adapter.interface';
 
-export interface HealioPharmacyConfig {
+export interface AroviaPharmacyConfig {
   apiKey?: string;
   apiUrl?: string;
   merchantId?: string;
@@ -18,24 +18,24 @@ export interface HealioPharmacyConfig {
   isTestMode?: boolean;
 }
 
-export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
-  public readonly supplierId = 'HEALIO_PHARMACY' as const;
+export class AroviaPharmacyAdapter implements ISupplierFulfillmentAdapter {
+  public readonly supplierId = 'AROVIA_PHARMACY' as const;
   private apiKey: string;
   private apiUrl: string;
   private merchantId: string;
   private defaultAffiliateCode: string;
   private isTestMode: boolean;
 
-  constructor(config?: HealioPharmacyConfig) {
-    this.apiKey = config?.apiKey || process.env.HEALIO_PHARMACY_API_KEY || 'hl_sandbox_key_99812';
-    this.apiUrl = config?.apiUrl || process.env.HEALIO_PHARMACY_API_URL || 'https://api.healio.ai/pharmacy/v1';
-    this.merchantId = config?.merchantId || process.env.HEALIO_MERCHANT_ID || 'HEALIO_AYURVEDA_01';
-    this.defaultAffiliateCode = config?.defaultAffiliateCode || 'healio_partner_2026';
-    this.isTestMode = config?.isTestMode ?? (!process.env.HEALIO_PHARMACY_API_KEY);
+  constructor(config?: AroviaPharmacyConfig) {
+    this.apiKey = config?.apiKey || process.env.AROVIA_PHARMACY_API_KEY || 'hl_sandbox_key_99812';
+    this.apiUrl = config?.apiUrl || process.env.AROVIA_PHARMACY_API_URL || 'https://api.arovia.ai/pharmacy/v1';
+    this.merchantId = config?.merchantId || process.env.AROVIA_MERCHANT_ID || 'AROVIA_AYURVEDA_01';
+    this.defaultAffiliateCode = config?.defaultAffiliateCode || 'arovia_partner_2026';
+    this.isTestMode = config?.isTestMode ?? (!process.env.AROVIA_PHARMACY_API_KEY);
   }
 
   /**
-   * Check real-time stock levels with Healio Pharmacy inventory
+   * Check real-time stock levels with Arovia Pharmacy inventory
    */
   public async checkInventory(skus: string[]): Promise<Map<string, StockStatus>> {
     const stockMap = new Map<string, StockStatus>();
@@ -53,14 +53,14 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
   }
 
   /**
-   * Submit an order to Healio Pharmacy dropship logistics
+   * Submit an order to Arovia Pharmacy dropship logistics
    */
   public async submitDropshipOrder(order: Order, address: ShippingAddress): Promise<FulfillmentSubmissionResult> {
-    const healioItems = order.items.filter(item => item.sku.startsWith('HEALIO-') || item.sku.startsWith('VDN-') || item.brand === 'Healio Pharmacy');
-    if (healioItems.length === 0) {
+    const aroviaItems = order.items.filter(item => item.sku.startsWith('AROVIA-') || item.sku.startsWith('VDN-') || item.brand === 'Arovia Pharmacy');
+    if (aroviaItems.length === 0) {
       return {
         success: false,
-        error: 'No Healio Pharmacy SKUs found in order.'
+        error: 'No Arovia Pharmacy SKUs found in order.'
       };
     }
 
@@ -79,7 +79,7 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
           country: address.country || 'India'
         }
       },
-      lineItems: healioItems.map(item => ({
+      lineItems: aroviaItems.map(item => ({
         sku: item.sku,
         quantity: item.quantity,
         pricePerUnit: item.unitPriceInINR
@@ -94,7 +94,7 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
       return {
         success: true,
         supplierOrderId: mockOrderId,
-        carrierName: 'Blue Dart Express (Healio Express Logistics)',
+        carrierName: 'Blue Dart Express (Arovia Express Logistics)',
         trackingNumber: mockTrackingNumber,
         trackingUrl: `https://www.bluedart.com/tracking?track=${mockTrackingNumber}`,
         estimatedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -114,7 +114,7 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to dispatch Healio Pharmacy order`);
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to dispatch Arovia Pharmacy order`);
       }
 
       const data = await response.json();
@@ -129,7 +129,7 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
     } catch (err: any) {
       return {
         success: false,
-        error: err.message || 'Unknown network error communicating with Healio Pharmacy API'
+        error: err.message || 'Unknown network error communicating with Arovia Pharmacy API'
       };
     }
   }
@@ -171,13 +171,13 @@ export class HealioPharmacyAdapter implements ISupplierFulfillmentAdapter {
     const ref = affiliateRef || this.defaultAffiliateCode;
     if (product.affiliateFallbackUrl) {
       const separator = product.affiliateFallbackUrl.includes('?') ? '&' : '?';
-      return `${product.affiliateFallbackUrl}${separator}ref=${encodeURIComponent(ref)}&utm_source=healio_ai&utm_medium=diagnostic_engine&utm_campaign=ayurvedic_care`;
+      return `${product.affiliateFallbackUrl}${separator}ref=${encodeURIComponent(ref)}&utm_source=arovia_ai&utm_medium=diagnostic_engine&utm_campaign=ayurvedic_care`;
     }
     
-    return `https://healio.ai/store/search?q=${encodeURIComponent(product.title)}&ref=${encodeURIComponent(ref)}&utm_source=healio_ai`;
+    return `https://arovia.ai/store/search?q=${encodeURIComponent(product.title)}&ref=${encodeURIComponent(ref)}&utm_source=arovia_ai`;
   }
 }
 
 // Alias for backwards compatibility
-export const VaidyanathSupplierAdapter = HealioPharmacyAdapter;
-export type VaidyanathConfig = HealioPharmacyConfig;
+export const VaidyanathSupplierAdapter = AroviaPharmacyAdapter;
+export type VaidyanathConfig = AroviaPharmacyConfig;

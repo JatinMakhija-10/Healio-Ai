@@ -26,7 +26,7 @@ SELECT
 FROM auth.users u
 LEFT JOIN doctors d ON d.user_id = u.id
 LEFT JOIN profiles p ON p.id = u.id
-WHERE u.email = 'doctor_test@healio.ai';
+WHERE u.email = 'doctor_test@arovia.ai';
 
 -- ====================================================================
 -- Step 3: Update doctor record to verified (if it exists)
@@ -41,7 +41,7 @@ SET
     bio = COALESCE(bio, 'Experienced doctor specializing in holistic wellness'),
     experience_years = COALESCE(experience_years, 5)
 WHERE user_id = (
-    SELECT id FROM auth.users WHERE email = 'doctor_test@healio.ai'
+    SELECT id FROM auth.users WHERE email = 'doctor_test@arovia.ai'
 );
 
 -- ====================================================================
@@ -49,7 +49,7 @@ WHERE user_id = (
 -- ====================================================================
 UPDATE profiles
 SET role = 'doctor'
-WHERE id = (SELECT id FROM auth.users WHERE email = 'doctor_test@healio.ai')
+WHERE id = (SELECT id FROM auth.users WHERE email = 'doctor_test@arovia.ai')
 AND role != 'doctor';
 
 -- ====================================================================
@@ -67,7 +67,7 @@ SELECT
 FROM auth.users u
 JOIN doctors d ON d.user_id = u.id
 JOIN profiles p ON p.id = u.id
-WHERE u.email = 'doctor_test@healio.ai';
+WHERE u.email = 'doctor_test@arovia.ai';
 
 -- ====================================================================
 -- Step 6: Test the API query (what patient search uses)

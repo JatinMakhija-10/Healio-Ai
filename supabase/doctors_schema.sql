@@ -1,7 +1,7 @@
 -- =============================================
--- HEALIO.AI - Priority 1: Foundation Schema
+-- AROVIA.AI - Priority 1: Foundation Schema
 -- =============================================
--- This schema extends the existing Healio.AI database to support:
+-- This schema extends the existing Arovia.AI database to support:
 -- 1. Doctor profiles and verification
 -- 2. Appointment booking linked to AI diagnosis sessions
 -- 3. Transaction ledger for the marketplace

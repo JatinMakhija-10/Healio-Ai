@@ -1,5 +1,5 @@
 -- Fix Doctor Verification Status
--- This script sets the doctor_test@healio.ai account to verified status
+-- This script sets the doctor_test@arovia.ai account to verified status
 
 -- First, find the doctor's user_id
 SELECT 
@@ -13,7 +13,7 @@ SELECT
 FROM auth.users u
 LEFT JOIN doctors d ON d.user_id = u.id
 LEFT JOIN profiles p ON p.id = u.id
-WHERE u.email = 'doctor_test@healio.ai';
+WHERE u.email = 'doctor_test@arovia.ai';
 
 -- Update the doctor record to set verification_status to 'verified'
 UPDATE doctors
@@ -22,7 +22,7 @@ SET
     verified = true,
     verified_at = NOW()
 WHERE user_id IN (
-    SELECT id FROM auth.users WHERE email = 'doctor_test@healio.ai'
+    SELECT id FROM auth.users WHERE email = 'doctor_test@arovia.ai'
 );
 
 -- Verify the update
@@ -34,4 +34,4 @@ SELECT
     d.consultation_fee
 FROM auth.users u
 JOIN doctors d ON d.user_id = u.id
-WHERE u.email = 'doctor_test@healio.ai';
+WHERE u.email = 'doctor_test@arovia.ai';

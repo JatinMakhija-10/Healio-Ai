@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- Healio.AI — Ayurvedic Knowledge Embeddings Table (Books & Classical Texts)
+-- Arovia.AI — Ayurvedic Knowledge Embeddings Table (Books & Classical Texts)
 -- Run in: Supabase Dashboard → SQL Editor
 -- ═══════════════════════════════════════════════════════════════════════════
 

@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
         if self._pageNumber > 1:
-            self.drawString(36, 756, "HEALIO.AI — CONVERTIBLE NOTES & SAFE AGREEMENT GUIDE")
+            self.drawString(36, 756, "AROVIA.AI — CONVERTIBLE NOTES & SAFE AGREEMENT GUIDE")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 750, 576, 750)
@@ -147,7 +147,7 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — CONVERTIBLE NOTES & SAFE GUIDE", title_style))
+    story.append(Paragraph("AROVIA.AI — CONVERTIBLE NOTES & SAFE GUIDE", title_style))
     story.append(Paragraph("Complete Legal & Financial Framework for Pre-Seed Fundraising in India (iSAFE, CCD, CCPS, CN)", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=8))
     
@@ -209,10 +209,10 @@ def create_pdf(filename):
     story.append(Spacer(1, 6))
 
     # Section 4: Numerical Example
-    story.append(Paragraph("4. Step-by-Step Conversion Example for Healio.AI", h1_style))
+    story.append(Paragraph("4. Step-by-Step Conversion Example for Arovia.AI", h1_style))
     example_text = (
-        "<b>Step 1 (Today - Pre-Seed):</b> Investor invests <b>₹12,00,000 INR</b> into Healio.AI via an iSAFE note with a <b>₹3.0 Crore Valuation Cap</b> and a <b>20% Discount</b>.<br/>"
-        "<b>Step 2 (12 Months Later - Seed Round):</b> Healio.AI raises a $300,000 (~₹2.5 Crore) Seed round from a VC at a <b>₹10.0 Crore Valuation</b>.<br/>"
+        "<b>Step 1 (Today - Pre-Seed):</b> Investor invests <b>₹12,00,000 INR</b> into Arovia.AI via an iSAFE note with a <b>₹3.0 Crore Valuation Cap</b> and a <b>20% Discount</b>.<br/>"
+        "<b>Step 2 (12 Months Later - Seed Round):</b> Arovia.AI raises a $300,000 (~₹2.5 Crore) Seed round from a VC at a <b>₹10.0 Crore Valuation</b>.<br/>"
         "<b>Step 3 (Conversion Math):</b><br/>"
         "• Standard Seed Price Valuation = ₹10.0 Crore<br/>"
         "• Investor's Cap Valuation = ₹3.0 Crore (Much better price for early investor than 20% discount on ₹10 Cr = ₹8 Cr).<br/>"
@@ -227,5 +227,5 @@ def create_pdf(filename):
 if __name__ == "__main__":
     out_dir = os.path.join(os.getcwd(), "docs", "business")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "HEALIO_CONVERTIBLE_NOTE_AND_SAFE_GUIDE.pdf")
+    pdf_path = os.path.join(out_dir, "AROVIA_CONVERTIBLE_NOTE_AND_SAFE_GUIDE.pdf")
     create_pdf(pdf_path)

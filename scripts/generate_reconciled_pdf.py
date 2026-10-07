@@ -30,7 +30,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
         if self._pageNumber > 1:
-            self.drawString(36, 756, "HEALIO.AI — RECONCILED TAM/SAM/SOM & COMPETITOR REPORT")
+            self.drawString(36, 756, "AROVIA.AI — RECONCILED TAM/SAM/SOM & COMPETITOR REPORT")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(36, 750, 576, 750)
@@ -147,14 +147,14 @@ def create_pdf(filename):
     story = []
     
     # Title Block
-    story.append(Paragraph("HEALIO.AI — RECONCILED TAM / SAM / SOM REPORT", title_style))
+    story.append(Paragraph("AROVIA.AI — RECONCILED TAM / SAM / SOM REPORT", title_style))
     story.append(Paragraph("Audited Market Sizing, Reconciled 5-Year Cohort Financials ($1 USD = ₹94.5 INR) & Competitor Analysis", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=8))
     
     # Section 1: Executive Audit Summary
     story.append(Paragraph("1. Executive Summary & Audited Sizing Basis", h1_style))
     exec_text = (
-        "This report provides the <b>audited, single-source-of-truth market sizing and cohort model</b> for Healio.AI. "
+        "This report provides the <b>audited, single-source-of-truth market sizing and cohort model</b> for Arovia.AI. "
         "All calculations have been corrected (fixing B2B SaaS math to 150k doctors × ₹23.9k = ₹359.8 Cr), "
         "standardized at the current market exchange rate of <b>$1 USD = ₹94.5 INR</b>, and fully reconciled across Years 1, 3, and 5."
     )
@@ -198,11 +198,11 @@ def create_pdf(filename):
         [Paragraph("MAU (Triage Users)", table_text), Paragraph("150,000", table_text), Paragraph("2,500,000", table_text), Paragraph("15,000,000", table_text)],
         [Paragraph("Active Onboarded Doctors", table_text), Paragraph("50", table_text), Paragraph("1,200", table_text), Paragraph("8,500", table_text)],
         [Paragraph("Gross Merchandise Value (GMV)", table_text), Paragraph("<b>₹2.40 Cr</b>", table_text), Paragraph("<b>₹84.20 Cr</b>", table_text), Paragraph("<b>₹568.00 Cr</b>", table_text)],
-        [Paragraph("<b>NET REVENUE TO HEALIO.AI (INR)</b>", table_text), Paragraph("<b>₹91.9 Lakhs (~₹92L)</b>", table_text), Paragraph("<b>₹25.64 Crore</b>", table_text), Paragraph("<b>₹177.20 Crore</b>", table_text)],
+        [Paragraph("<b>NET REVENUE TO AROVIA.AI (INR)</b>", table_text), Paragraph("<b>₹91.9 Lakhs (~₹92L)</b>", table_text), Paragraph("<b>₹25.64 Crore</b>", table_text), Paragraph("<b>₹177.20 Crore</b>", table_text)],
         [Paragraph("<i>NET REVENUE IN USD (@ ₹94.5/$)</i>", table_text), Paragraph("<i>~$97,300 USD</i>", table_text), Paragraph("<i>~$2.71 Million USD</i>", table_text), Paragraph("<i>~$18.75 Million USD</i>", table_text)],
         [Paragraph("— E-Commerce Net Comm (20%)", table_text), Paragraph("₹49.5 Lakhs", table_text), Paragraph("₹13.65 Cr", table_text), Paragraph("₹76.00 Cr", table_text)],
         [Paragraph("— Consultation Net Comm (20%)", table_text), Paragraph("₹16.2 Lakhs", table_text), Paragraph("₹4.32 Cr", table_text), Paragraph("₹37.60 Cr", table_text)],
-        [Paragraph("— B2C Healio Plus Subscriptions", table_text), Paragraph("₹14.2 Lakhs", table_text), Paragraph("₹3.00 Cr", table_text), Paragraph("₹35.00 Cr", table_text)],
+        [Paragraph("— B2C Arovia Plus Subscriptions", table_text), Paragraph("₹14.2 Lakhs", table_text), Paragraph("₹3.00 Cr", table_text), Paragraph("₹35.00 Cr", table_text)],
         [Paragraph("— B2B Doctor Pro SaaS ARR", table_text), Paragraph("₹12.0 Lakhs", table_text), Paragraph("₹2.88 Cr", table_text), Paragraph("₹20.40 Cr", table_text)],
         [Paragraph("— Ads & Enterprise Data Licensing", table_text), Paragraph("₹0.0 Lakhs", table_text), Paragraph("₹1.79 Cr", table_text), Paragraph("₹8.20 Cr", table_text)],
         [Paragraph("Gross Margin (%)", table_text), Paragraph("78.0%", table_text), Paragraph("84.0%", table_text), Paragraph("86.2%", table_text)],
@@ -231,11 +231,11 @@ def create_pdf(filename):
     story.append(Spacer(1, 8))
 
     # Section 5: Competitor Matrix
-    story.append(Paragraph("5. Competitive Matrix & Why Healio Wins", h1_style))
+    story.append(Paragraph("5. Competitive Matrix & Why Arovia Wins", h1_style))
     
     comp_headers = [
         Paragraph("<b>Feature / Dimension</b>", table_header),
-        Paragraph("<b>Healio.AI</b>", table_header),
+        Paragraph("<b>Arovia.AI</b>", table_header),
         Paragraph("<b>Practo</b>", table_header),
         Paragraph("<b>Tata 1mg</b>", table_header),
         Paragraph("<b>Ada Health</b>", table_header),
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     os.makedirs(out_dir, exist_ok=True)
     
     # Overwrite both PDF files so all generated reports in workspace are 100% reconciled and synchronized
-    p1 = os.path.join(out_dir, "HEALIO_AI_TAM_SAM_SOM_COMPETITOR_REPORT.pdf")
-    p2 = os.path.join(out_dir, "HEALIO_CORRECTED_TAM_SAM_SOM_REPORT.pdf")
+    p1 = os.path.join(out_dir, "AROVIA_AI_TAM_SAM_SOM_COMPETITOR_REPORT.pdf")
+    p2 = os.path.join(out_dir, "AROVIA_CORRECTED_TAM_SAM_SOM_REPORT.pdf")
     create_pdf(p1)
     create_pdf(p2)

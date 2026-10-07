@@ -1,9 +1,9 @@
--- Grant Healio Plus to all existing users + initial 50 credit grant
+-- Grant Arovia Plus to all existing users + initial 50 credit grant
 -- Run AFTER 20260514_credits_and_usage_rebalance.sql
 
 BEGIN;
 
--- 1. Upgrade every existing profile to Healio Plus
+-- 1. Upgrade every existing profile to Arovia Plus
 UPDATE profiles
 SET subscription_plan = 'plus',
     credits_balance = COALESCE(credits_balance, 0) + 50,
@@ -19,7 +19,7 @@ SELECT
     50,
     COALESCE(credits_balance, 0),   -- balance_after already includes the +50 from step 1
     'monthly_grant',
-    'Initial Healio Plus grant for existing user'
+    'Initial Arovia Plus grant for existing user'
 FROM profiles
 WHERE subscription_plan = 'plus';
 

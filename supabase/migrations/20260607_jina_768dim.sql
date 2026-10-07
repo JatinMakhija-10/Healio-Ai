@@ -1,5 +1,5 @@
 -- =============================================================================
--- Healio.AI — Jina AI v5 Migration
+-- Arovia.AI — Jina AI v5 Migration
 -- Change embedding dimensions from 3072 (Gemini) to 768 (Jina AI Matryoshka)
 -- =============================================================================
 
