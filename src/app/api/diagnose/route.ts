@@ -26,7 +26,7 @@ export const maxDuration = 60;
  */
 
 import { NextResponse } from "next/server";
-import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGroqApiKey, getSupabaseAdmin } from "@/lib/ai/config";
+import { AI_PHASE_CONFIG, disableGeminiApiKey, getGeminiApiKeys, getGroqApiKey, getOpenRouterApiKey, getSupabaseAdmin } from "@/lib/ai/config";
 import OpenAI from 'openai';
 import { getJinaEmbedding, getParallelEmbeddings } from "@/lib/ai/jina";
 import { buildRagCacheKey, getCachedRAG, setCachedRAG } from "@/lib/diagnosis/ragCache";
@@ -674,20 +674,32 @@ Based on all of the above, generate the formatting JSON.`;
         let provider: string = AI_PHASE_CONFIG.primary;
         const start = performance.now();
 
-        // Primary: Groq (Llama 3.3 70B) — hard 45 s timeout via AbortController
-        const groqAbort = new AbortController();
-        const groqTimeout = setTimeout(() => groqAbort.abort(), 45_000);
+        // Primary: OpenRouter (meta-llama/llama-3.3-70b-instruct) — hard 45s timeout via AbortController
+        const primaryAbort = new AbortController();
+        const primaryTimeout = setTimeout(() => primaryAbort.abort(), 45_000);
 
         try {
-            const activeGroqKey = getGroqApiKey();
-            if (!activeGroqKey) throw new Error("Missing GROQ_API_KEY");
+            const openRouterKey = getOpenRouterApiKey();
+            const groqKey = getGroqApiKey();
+            const activeKey = openRouterKey || groqKey;
+            if (!activeKey) throw new Error("Missing OPENROUTER_API_KEY");
 
-            // Create per-request client so key rotation applies on every call
-            const groq = new OpenAI({ baseURL: AI_PHASE_CONFIG.endpoints.groq, apiKey: activeGroqKey });
+            const baseURL = openRouterKey ? AI_PHASE_CONFIG.endpoints.openrouter : AI_PHASE_CONFIG.endpoints.groq;
+            const model = openRouterKey ? AI_PHASE_CONFIG.models.openrouter : AI_PHASE_CONFIG.models.groq;
+            provider = openRouterKey ? 'openrouter' : 'groq';
 
-            const completion = await groq.chat.completions.create(
+            const llm = new OpenAI({
+                baseURL,
+                apiKey: activeKey,
+                defaultHeaders: openRouterKey ? {
+                    'HTTP-Referer': 'https://arovia.ai',
+                    'X-Title': 'Arovia.ai Diagnostic Engine',
+                } : undefined,
+            });
+
+            const completion = await llm.chat.completions.create(
                 {
-                    model: AI_PHASE_CONFIG.models.groq,
+                    model,
                     messages: [
                         { role: "system", content: SYSTEM_PROMPT },
                         { role: "user", content: userPrompt },
@@ -695,12 +707,12 @@ Based on all of the above, generate the formatting JSON.`;
                     response_format: { type: "json_object" },
                     temperature: dynamicTemperature,
                 },
-                { signal: groqAbort.signal }
+                { signal: primaryAbort.signal }
             );
 
             aiResponseContent = completion.choices[0].message.content || "{}";
-        } catch (groqError) {
-            console.warn("[Diagnose] Groq failed, falling back to Gemini:", groqError);
+        } catch (llmError) {
+            console.warn("[Diagnose] Primary LLM failed, falling back to Gemini:", llmError);
             provider = AI_PHASE_CONFIG.fallback;
 
             // Fallback: Gemini 2.5 Flash — use GEMINI_API_KEYS pool; hard 45 s timeout
@@ -777,7 +789,7 @@ Based on all of the above, generate the formatting JSON.`;
                 throw new Error(`Gemini fallback failed: ${lastGeminiError || "no response"}`);
             }
         } finally {
-            clearTimeout(groqTimeout);
+            clearTimeout(primaryTimeout);
         }
 
         const latencyMs = Math.round(performance.now() - start);

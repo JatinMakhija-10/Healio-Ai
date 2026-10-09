@@ -3,11 +3,11 @@ import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 
 export const AI_PHASE_CONFIG = {
-    // Primary provider — Groq (both keys verified working 2026-09-03)
-    primary: 'groq' as 'groq' | 'gemini',
+    // Primary provider — OpenRouter (meta-llama/llama-3.3-70b-instruct)
+    primary: 'openrouter' as 'openrouter' | 'gemini',
 
-    // Fallback provider — Gemini 3.6 Flash (AQ-format key requires 3.x models)
-    fallback: 'gemini' as 'groq' | 'gemini',
+    // Fallback provider — Gemini Flash
+    fallback: 'gemini' as 'openrouter' | 'gemini',
 
     // Model Selection — latencies measured live 2026-09-03:
     //   qwen3.8-27b: ~900ms | gpt-oss-120b: ~1.5s | compound-mini: ~3.8s
