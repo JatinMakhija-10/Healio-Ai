@@ -2314,10 +2314,12 @@ UI HINT OUTPUT SAFETY:
             let geminiText = '';
             let geminiSucceeded = false;
             let lastGeminiError = '';
+            let usedGeminiModel: string = AI_PHASE_CONFIG.models.gemini;
             const maxGeminiAttempts = 5;  // More retries for free-tier rate limits
 
             for (let attempt = 0; attempt < maxGeminiAttempts; attempt++) {
                 const geminiModel = geminiModels[attempt % geminiModels.length];
+                usedGeminiModel = geminiModel;
                 for (const geminiKey of geminiKeys) {
                     const geminiController = new AbortController();
                     const geminiTimeoutId = setTimeout(() => geminiController.abort(), timeoutMs);
@@ -2390,7 +2392,7 @@ UI HINT OUTPUT SAFETY:
                 await logLlmRequest(serviceClient, {
                     userId,
                     provider: 'gemini',
-                    model: geminiModel,
+                    model: usedGeminiModel,
                     intent: intentResult.intent,
                     creditAction,
                     latencyMs: totalMs,
@@ -2409,7 +2411,7 @@ UI HINT OUTPUT SAFETY:
                 return streamTextResponse(safeGeminiText, {
                     'Connection': 'keep-alive',
                     'X-Provider': 'gemini',
-                    'X-Model': geminiModel,
+                    'X-Model': usedGeminiModel,
                     'X-Response-Time': String(totalMs),
                 });
             } else {

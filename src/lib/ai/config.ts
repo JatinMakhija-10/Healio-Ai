@@ -96,10 +96,16 @@ export function getGroqApiKeys(): string[] {
     return parseApiKeys(process.env.GROQ_API_KEYS, process.env.GROQ_API_KEY);
 }
 
-/** Returns the best available Groq API key (prefers GROQ_API_KEYS pool, falls back to GROQ_API_KEY). */
+let _groqKeyIdx = 0;
+
+/** Returns the best available Groq API key with round-robin load balancing across GROQ_API_KEYS. */
 export function getGroqApiKey(): string {
     const pool = getGroqApiKeys();
-    if (pool.length > 0) return pool[Date.now() % pool.length];
+    if (pool.length > 0) {
+        const key = pool[_groqKeyIdx % pool.length];
+        _groqKeyIdx = (_groqKeyIdx + 1) % pool.length;
+        return key;
+    }
     return '';
 }
 

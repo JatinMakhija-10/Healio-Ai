@@ -1446,18 +1446,7 @@ export function DiagnosisResultCard({
                                 </div>
                             )}
 
-                            {activeCareTab === "homeopathy" && (
-                                <div id="care-panel-homeopathy" role="tabpanel" aria-labelledby="care-tab-homeopathy" className="space-y-3">
-                                    <div className="rounded-lg border border-[var(--arovia-evidence-traditional)] bg-[var(--arovia-evidence-traditional-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--arovia-wellness-accent)]">
-                                        Experimental suggestions. Consult a qualified homeopathic or medical practitioner before use.
-                                    </div>
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        {homeopathicRemedies.map((remedy, idx) => (
-                                            <RemedyCard key={`homeopathy-${idx}`} remedy={remedy} kind="homeopathy" />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+
 
                             {activeCareTab === "safety" && (
                                 <div id="care-panel-safety" role="tabpanel" aria-labelledby="care-tab-safety" className="space-y-3">

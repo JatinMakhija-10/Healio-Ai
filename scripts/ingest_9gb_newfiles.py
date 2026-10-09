@@ -245,21 +245,43 @@ def load_existing_db_cache() -> set:
         print(f"⚡ Cache: {len(cache):,} existing chunks")
     return cache
 
-# ── OCR Page via Gemini Vision ─────────────────────────────────────────────────
-def ocr_page_gemini(page) -> str:
+# ── Local RapidOCR Engine (0 Quota, 100% Offline) ──────────────────────────────
+HAS_RAPID_OCR = False
+rapid_ocr_engine = None
+try:
+    from rapidocr_onnxruntime import RapidOCR
+    rapid_ocr_engine = RapidOCR()
+    HAS_RAPID_OCR = True
+except Exception:
+    pass
+
+def ocr_page(page) -> str:
+    pix = page.get_pixmap(dpi=150)
+    img_bytes = pix.tobytes("png")
+
+    # 1. Try RapidOCR (Local, 0 quota, instant)
+    if HAS_RAPID_OCR and rapid_ocr_engine is not None:
+        try:
+            res, _ = rapid_ocr_engine(img_bytes)
+            if res:
+                text = "\n".join([line[1] for line in res])
+                if len(text.strip()) > 30:
+                    return text
+        except Exception:
+            pass
+
+    # 2. Fallback to Gemini Vision API
     if not HAS_GEMINI: return ""
     for attempt in range(len(GEMINI_KEYS)):
         try:
-            pix = page.get_pixmap(dpi=150)
-            img = pix.tobytes("png")
             resp = gemini_client.models.generate_content(
                 model='gemini-flash-latest',
                 contents=[
-                    "You are a precise OCR engine. Extract ALL text verbatim from this medical/Ayurvedic book page. Output ONLY the raw extracted text in the original language (Hindi/English/Marathi/Sanskrit). No formatting, no commentary.",
-                    genai_types.Part.from_bytes(data=img, mime_type="image/png"),
+                    "Extract all text verbatim from this medical/Ayurvedic book page. Output raw text only.",
+                    genai_types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                 ]
             )
-            time.sleep(1.5)   # respect Gemini rate limits
+            time.sleep(1.0)
             return resp.text or ""
         except Exception as e:
             rotate_gemini()
@@ -269,23 +291,26 @@ def ocr_page_gemini(page) -> str:
 # ── Jina Embedding Batch ──────────────────────────────────────────────────────
 def jina_embed_batch(texts: list) -> list:
     last_err = None
-    for attempt in range(len(JINA_KEYS) * 2):
+    max_retries = max(10, len(JINA_KEYS) * 3)
+    for attempt in range(max_retries):
         key = next_jina_key()
         try:
             r = requests.post(
                 "https://api.jina.ai/v1/embeddings",
                 json={"model": "jina-embeddings-v3", "input": texts, "dimensions": 768},
                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                timeout=90
+                timeout=45
             )
             if r.status_code == 200:
                 return [d["embedding"] for d in r.json()["data"]]
             last_err = f"HTTP {r.status_code}: {r.text[:120]}"
-            time.sleep(2)
         except Exception as e:
             last_err = str(e)
-            time.sleep(2)
-    raise RuntimeError(f"Jina embed failed after retries: {last_err}")
+        
+        sleep_time = min(2 * (attempt + 1), 15)
+        time.sleep(sleep_time)
+        
+    raise RuntimeError(f"Jina embed failed after {max_retries} retries: {last_err}")
 
 # ── Supabase Bulk Insert ───────────────────────────────────────────────────────
 def supabase_insert_batch(rows: list) -> int:
@@ -338,7 +363,7 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
 
         # OCR fallback for scanned pages
         if len(raw.strip()) < 40:
-            raw = ocr_page_gemini(page)
+            raw = ocr_page(page)
 
         cleaned = clean_text(raw)
         if not cleaned:
