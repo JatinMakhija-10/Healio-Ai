@@ -16,6 +16,8 @@ export const AI_PHASE_CONFIG = {
         groq: 'openai/gpt-oss-120b',               // 120B param — best quality for diagnosis (~1.5s)
         groqFast: 'qwen/qwen3.8-27b',              // 27B param — fast Q&A turns (~900ms)
         groqRescue: 'groq/compound-mini',           // rescue fallback (~3.8s, always works)
+        openrouter: 'meta-llama/llama-3.3-70b-instruct', // OpenRouter ultra-fast 70B model ($0.12/M)
+        openrouterFast: 'deepseek/deepseek-chat',   // DeepSeek V3 fast model ($0.14/M)
         gemini: 'gemini-3.8-flash',                 // required for AQ-format API keys
         geminiLite: 'gemini-3.5-flash-lite',        // fast fallback model — immune to 3.8-flash 503 spikes
         embedding: 'gemini-embedding-2-preview',    // 3072-dim — Boericke & Ayurvedic search model
@@ -25,6 +27,7 @@ export const AI_PHASE_CONFIG = {
     // API Endpoints
     endpoints: {
         groq: 'https://api.groq.com/openai/v1',
+        openrouter: 'https://openrouter.ai/api/v1',
     },
 
     // ── RAG Configuration ─────────────────────────────────────────────────────
@@ -118,6 +121,29 @@ export function getGroqClient(): OpenAI {
         });
     }
     return _groqClient;
+}
+
+/** Returns the best available OpenRouter API key. */
+export function getOpenRouterApiKey(): string {
+    const keys = parseApiKeys(process.env.OPENROUTER_API_KEY, process.env.OPENROUTER_API_KEYS);
+    return keys.length > 0 ? keys[0] : '';
+}
+
+let _openRouterClient: OpenAI | null = null;
+
+/** Returns a module-level singleton OpenRouter client (OpenAI-compatible). */
+export function getOpenRouterClient(): OpenAI {
+    if (!_openRouterClient) {
+        _openRouterClient = new OpenAI({
+            baseURL: AI_PHASE_CONFIG.endpoints.openrouter,
+            apiKey: getOpenRouterApiKey(),
+            defaultHeaders: {
+                'HTTP-Referer': 'https://arovia.ai',
+                'X-Title': 'Arovia.ai Medical Diagnostic Brain',
+            }
+        });
+    }
+    return _openRouterClient;
 }
 
 export function disableGeminiApiKey(apiKey: string): void {
