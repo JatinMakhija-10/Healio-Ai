@@ -57,13 +57,19 @@ try:
     from rich.panel import Panel
     from rich.text import Text
     from rich import box
-    RICH = True
-    console = Console()
+    RICH = sys.stdout.isatty() and os.environ.get("NO_RICH", "0") != "1"
+    console = Console(force_terminal=RICH)
 except ImportError:
     RICH = False
+
+if not RICH:
     class _FakeConsole:
-        def print(self, *a, **kw): print(*a)
-        def rule(self, *a, **kw): print("─"*60)
+        def print(self, *a, **kw):
+            msg = " ".join(str(x) for x in a)
+            msg = re.sub(r'\[/?[a-zA-Z0-9_ ]+\]', '', msg)
+            print(msg)
+        def rule(self, *a, **kw):
+            print("─"*60)
     console = _FakeConsole()
 
 # ── Try PyMuPDF ────────────────────────────────────────────────────────────────
@@ -95,8 +101,8 @@ SOURCE_TAG     = "NEWFiles"
 
 CHUNK_SIZE  = 800
 CHUNK_OVERLAP = 150
-EMBED_BATCH = 30      # chunks per Jina API call
-DB_BATCH    = 50      # rows per Supabase INSERT
+EMBED_BATCH = 120     # chunks per Jina API call (max throughput)
+DB_BATCH    = 250     # rows per Supabase INSERT (max throughput)
 MIN_CHUNK_LEN = 60    # chars
 
 VALID_EXTS  = {".pdf"}
@@ -223,46 +229,40 @@ def save_manifest(m: dict):
 
 # ── Existing DB text cache ─────────────────────────────────────────────────────
 def load_existing_db_cache() -> set:
-    console.print("[cyan]Loading existing Supabase cache to skip duplicates...[/cyan]" if RICH else "Loading DB cache...")
-    cache = set()
-    offset, limit = 0, 2000
-    while True:
-        url = (f"{SUPABASE_URL}/rest/v1/{TABLE_NAME}"
-               f"?select=text&source=eq.{SOURCE_TAG}&limit={limit}&offset={offset}")
-        try:
-            r = requests.get(url, headers=SB_HEADERS, timeout=30)
-            if r.status_code != 200: break
-            data = r.json()
-            if not data: break
-            for row in data: cache.add(row["text"])
-            if len(data) < limit: break
-            offset += limit
-        except Exception:
-            break
-    if RICH:
-        console.print(f"[green]⚡ Cache loaded: {len(cache):,} existing chunks (instant-skip enabled)[/green]")
-    else:
-        print(f"⚡ Cache: {len(cache):,} existing chunks")
-    return cache
+    print("⚡ Instant cache ready (Manifest state enabled)")
+    return set()
 
-# ── Local RapidOCR Engine (0 Quota, 100% Offline) ──────────────────────────────
+# ── Local RapidOCR Engine (GPU 0 Hardware Accelerated: NVIDIA RTX 4060) ─────────
 HAS_RAPID_OCR = False
 rapid_ocr_engine = None
 try:
+    import rapidocr_onnxruntime.utils.infer_engine as ie
     from rapidocr_onnxruntime import RapidOCR
+
+    # Force DirectML provider binding to GPU 0 (NVIDIA GeForce RTX 4060)
+    def _gpu_get_ep_list(self):
+        self.use_cuda = False
+        self.use_directml = True
+        return [('DmlExecutionProvider', {'device_id': 0}), ('CPUExecutionProvider', {})]
+
+    ie.OrtInferSession._get_ep_list = _gpu_get_ep_list
+
     rapid_ocr_engine = RapidOCR()
     HAS_RAPID_OCR = True
 except Exception:
     pass
 
-def ocr_page(page) -> str:
-    pix = page.get_pixmap(dpi=150)
-    img_bytes = pix.tobytes("png")
+import threading
+fitz_lock = threading.Lock()
+ocr_lock = threading.Lock()
 
-    # 1. Try RapidOCR (Local, 0 quota, instant)
+def ocr_bytes(img_bytes: bytes) -> str:
+    if not img_bytes:
+        return ""
     if HAS_RAPID_OCR and rapid_ocr_engine is not None:
         try:
-            res, _ = rapid_ocr_engine(img_bytes)
+            with ocr_lock:
+                res, _ = rapid_ocr_engine(img_bytes)
             if res:
                 text = "\n".join([line[1] for line in res])
                 if len(text.strip()) > 30:
@@ -353,21 +353,26 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
     result["pages"] = num_pages
     all_chunks = []
 
-    # ── Extract text page by page ─────────────────────────────────────────────
-    for pno in range(num_pages):
-        try:
-            page = doc.load_page(pno)
-            raw  = page.get_text("text")
-        except Exception:
-            raw = ""
+    # ── Extract text page by page (Thread-safe 8x Multi-threading) ────────────
+    def _extract_single_page(pno: int) -> list:
+        raw = ""
+        img_bytes = None
+        with fitz_lock:
+            try:
+                page = doc.load_page(pno)
+                raw  = page.get_text("text")
+                if len(raw.strip()) < 40:
+                    pix = page.get_pixmap(dpi=150)
+                    img_bytes = pix.tobytes("png")
+            except Exception:
+                pass
 
-        # OCR fallback for scanned pages
-        if len(raw.strip()) < 40:
-            raw = ocr_page(page)
+        if len(raw.strip()) < 40 and img_bytes:
+            raw = ocr_bytes(img_bytes)
 
         cleaned = clean_text(raw)
         if not cleaned:
-            continue
+            return []
 
         heading = f"Page {pno+1}"
         lines = cleaned.split("\n")
@@ -377,8 +382,9 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
                 heading = ln
                 break
 
+        page_chunks = []
         for ch in chunk_text(cleaned):
-            all_chunks.append({
+            page_chunks.append({
                 "source":   SOURCE_TAG,
                 "book":     title,
                 "category": category,
@@ -387,9 +393,14 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
                 "text":     ch,
                 "keywords": detect_keywords(ch),
             })
+        return page_chunks
 
-        if file_progress and chunk_task is not None:
-            file_progress.update(chunk_task, completed=pno+1, total=num_pages)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        page_results = list(executor.map(_extract_single_page, range(num_pages)))
+
+    for p_chunks in page_results:
+        all_chunks.extend(p_chunks)
 
     try:
         doc.close()
@@ -428,7 +439,7 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
     if len(all_chunks) > 0 and (inserted > 0 or skipped > 0):
         result["status"] = "COMPLETED"
     else:
-        result["status"] = "ERROR"
+        result["status"] = "PENDING"
     result["finished_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
     return result
 
@@ -524,22 +535,16 @@ def main():
 
     # ── Work out which files still need processing ─────────────────────────────
     pending = []
+    done_count = 0
     for f in all_files:
         key = str(f.relative_to(ROOT_DIR))
         st = manifest["files"].get(key, {}).get("status", "PENDING")
         if st != "COMPLETED":
             pending.append(f)
         else:
-            if RICH:
-                console.print(f"  [dim]⏩ Already done: {f.name}[/dim]")
-            else:
-                print(f"  Skip (done): {f.name}")
+            done_count += 1
 
-    done_count = len(all_files) - len(pending)
-    if RICH:
-        console.print(f"\n[bold]▶ {len(pending)} books to ingest, {done_count} already completed.[/bold]\n")
-    else:
-        print(f"\n{len(pending)} books pending, {done_count} already done.\n")
+    console.print(f"\n▶ {len(pending)} books to ingest, {done_count} already completed.\n")
 
     if not pending:
         console.print("[bold green]✅ All books already ingested![/bold green]" if RICH else "All done!")
