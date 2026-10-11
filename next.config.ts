@@ -52,9 +52,18 @@ export default sentryEnabled
       // circumvent ad-blockers. Adds latency, so keep at default route.
       tunnelRoute: "/monitoring",
 
-      // Hide generated source maps from client bundles after they are uploaded.
+      // Disable source map upload during build to prevent build failure on invalid project/auth
       sourcemaps: {
-        deleteSourcemapsAfterUpload: true,
+        disable: true,
+      },
+
+      release: {
+        create: false,
+        finalize: false,
+      },
+
+      errorHandler: (err) => {
+        console.warn("Sentry build warning ignored:", err.message);
       },
 
       webpack: {

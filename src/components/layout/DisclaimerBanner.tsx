@@ -1,25 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, Info, X } from "lucide-react";
 
 export function DisclaimerBanner() {
     const [expanded, setExpanded] = useState(false);
-    const [dismissed, setDismissed] = useState(false);
-
-    useEffect(() => {
+    const [dismissed, setDismissed] = useState(() => {
         if (typeof window !== "undefined") {
-            const isDismissed = sessionStorage.getItem("arovia_disclaimer_dismissed");
-            if (isDismissed === "true") {
-                setDismissed(true);
+            try {
+                return sessionStorage.getItem("arovia_disclaimer_dismissed") === "true";
+            } catch {
+                return false;
             }
         }
-    }, []);
+        return false;
+    });
 
     const handleDismiss = () => {
         setDismissed(true);
         if (typeof window !== "undefined") {
-            sessionStorage.setItem("arovia_disclaimer_dismissed", "true");
+            try {
+                sessionStorage.setItem("arovia_disclaimer_dismissed", "true");
+            } catch {
+                // ignore storage error
+            }
         }
     };
 

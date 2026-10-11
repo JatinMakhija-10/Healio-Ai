@@ -35,6 +35,7 @@ export const AyurvedicFormIllustration: React.FC<AyurvedicFormIllustrationProps>
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full object-contain p-2"
       >
+        <title>{title}</title>
         <defs>
           {/* Subtle contact shadow */}
           <radialGradient id="shadowGrad" cx="50%" cy="50%" r="50%">

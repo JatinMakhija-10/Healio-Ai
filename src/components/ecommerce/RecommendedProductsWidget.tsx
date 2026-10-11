@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ShoppingBag, Sparkles, AlertCircle, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { ShoppingBag, Sparkles, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { ProductMatchResult } from '@/lib/ecommerce/catalog/matcher';
 import { DoshaType } from '@/lib/ecommerce/types';
 import { ProductCard } from './ProductCard';
@@ -54,9 +54,10 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
         } else if (isMounted) {
           setError(data.error || 'Failed to match products');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || 'Error connecting to product engine');
+          const message = err instanceof Error ? err.message : String(err);
+          setError(message || 'Error connecting to product engine');
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -103,7 +104,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
             </h3>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Grounded in your diagnostic report. Sourced from Arovia's <strong className="font-semibold text-zinc-700 dark:text-zinc-300">AYUSH Certified</strong> partner network.
+            Grounded in your diagnostic report. Sourced from Arovia&apos;s <strong className="font-semibold text-zinc-700 dark:text-zinc-300">AYUSH Certified</strong> partner network.
           </p>
         </div>
 

@@ -34,7 +34,7 @@ export class CartService {
     traceability?: TraceabilityMetadata
   ): Cart {
     const existingIndex = cart.items.findIndex(item => item.productId === product.id);
-    let updatedItems = [...cart.items];
+    const updatedItems = [...cart.items];
 
     if (existingIndex >= 0) {
       const existing = updatedItems[existingIndex];

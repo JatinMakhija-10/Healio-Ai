@@ -126,10 +126,11 @@ export class AroviaPharmacyAdapter implements ISupplierFulfillmentAdapter {
         trackingUrl: data.trackingUrl,
         estimatedDeliveryDate: data.estimatedDeliveryDate
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
         success: false,
-        error: err.message || 'Unknown network error communicating with Arovia Pharmacy API'
+        error: message || 'Unknown network error communicating with Arovia Pharmacy API'
       };
     }
   }

@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldAlert, Tag, Check, Sparkles } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldAlert, Tag, Sparkles } from 'lucide-react';
 import { AyurvedicFormIllustration } from './AyurvedicFormIllustration';
 import { getFormLabel } from '@/lib/ecommerce/formatters';
 import { useCartStore } from '@/stores/cartStore';
-import { CartItem } from '@/lib/ecommerce/types';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -80,8 +78,9 @@ export const CartDrawer: React.FC = () => {
       } else {
         alert(`Checkout Error: ${data.error}`);
       }
-    } catch (err: any) {
-      alert(`Checkout failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Checkout failed: ${message}`);
     } finally {
       setIsCheckingOut(false);
     }
