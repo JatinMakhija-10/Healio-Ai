@@ -1,0 +1,330 @@
+{
+  "total_cases_run": 1000,
+  "total_cases_passed": 1000,
+  "pass_rate_percentage": 100.0,
+  "strict_two_category_compliance": "100.0% (Home Remedies vs Ayurvedic Remedies)",
+  "total_home_remedies_served": 2000,
+  "total_ayurvedic_remedies_served": 2000,
+  "top_knowledge_base_citations": [
+    [
+      "Charak Samhita (Chikitsa Sthana)",
+      200
+    ],
+    [
+      "Bhavprakash Nighantu",
+      200
+    ],
+    [
+      "Kaaychikitsa - Gangasahay Pandey",
+      200
+    ],
+    [
+      "Charak Samhita - 2 - P.V Sharma (English)",
+      100
+    ],
+    [
+      "Shalakya Tantra (ENT)",
+      100
+    ],
+    [
+      "Dravyagun vigyan pv sharma",
+      100
+    ],
+    [
+      "Sushrut Samhita - UttarTantra",
+      100
+    ],
+    [
+      "Chakradatta (Vatavyadhi Chikitsa)",
+      100
+    ],
+    [
+      "Yogaratnakara",
+      100
+    ],
+    [
+      "Charak Samhita (Unmada & Apasmara)",
+      100
+    ],
+    [
+      "CRC Handbook of Ayurvedic Medicinal Plants",
+      100
+    ],
+    [
+      "Saraswati Ayurvedic Treatises",
+      100
+    ],
+    [
+      "Ashtanga Hridaya (Kushtha Chikitsa)",
+      100
+    ],
+    [
+      "Bhaishajya Ratnavali",
+      100
+    ],
+    [
+      "Dravyagun vigyan part 2",
+      100
+    ],
+    [
+      "Charak Samhita",
+      100
+    ],
+    [
+      "Sushrut Samhita",
+      100
+    ],
+    [
+      "Astanga Hrdayam",
+      100
+    ],
+    [
+      "Prasuti Tantra & Striroga",
+      100
+    ],
+    [
+      "Strirog Shipra (Hindi) (AyuTech)",
+      100
+    ],
+    [
+      "Charak Samhita (Yoni Vyapad)",
+      100
+    ],
+    [
+      "Kaumarbhrutya Part 2 - Shrinidhi",
+      100
+    ],
+    [
+      "Balrog DN Mishra (Hindi)",
+      100
+    ],
+    [
+      "Kashyapa Samhita",
+      100
+    ],
+    [
+      "Sushrut Samhita (Ashmari Chikitsa)",
+      100
+    ],
+    [
+      "Davidsons-Principles and Practice of Medicine",
+      100
+    ],
+    [
+      "Rasa Tarangini",
+      100
+    ]
+  ],
+  "system_breakdown": {
+    "Gastrointestinal": 100,
+    "Respiratory & ENT": 100,
+    "Musculoskeletal": 100,
+    "Neurology & Mental Health": 100,
+    "Dermatology": 100,
+    "Cardiovascular & Metabolic": 100,
+    "Women's Health": 100,
+    "Pediatrics & Childhood": 100,
+    "Renal & Urinary": 100,
+    "Infectious & General": 100
+  },
+  "sample_case_outputs": [
+    {
+      "case_id": 1,
+      "system": "Gastrointestinal",
+      "condition": "GERD / Acid Reflux",
+      "prompt": "I am a 24-year-old female. I have been suffering from gerd / acid reflux (epigastric burning, acid regurgitation, sour belching) ongoing for 4 months. It feels moderate with recurrent exacerbations. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "GERD / Acid Reflux",
+        "sanskrit_classification": "amlapitta",
+        "confidence_level": "94%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "1 teaspoon fennel seeds (saunf) soaked in water overnight, sip morning on empty stomach.",
+            "Chew 1/2 teaspoon roasted ajwain (carom seeds) with warm water after heavy meals."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Kutajarishta (15ml with equal water twice daily after food for IBS and loose stools).",
+            "Hingwashtak Churna (1-2g with first morsel of food with warm ghee)."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Charak Samhita (Chikitsa Sthana)",
+          "Bhavprakash Nighantu",
+          "Kaaychikitsa - Gangasahay Pandey"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    },
+    {
+      "case_id": 151,
+      "system": "Respiratory & ENT",
+      "condition": "Sore Throat & Pharyngitis",
+      "prompt": "I am a 38-year-old female. I have been suffering from sore throat & pharyngitis (hoarseness, painful swallowing, red swollen tonsils) for over 1 year. It feels moderate with resistant to over-the-counter medication. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "Sore Throat & Pharyngitis",
+        "sanskrit_classification": "galagraha",
+        "confidence_level": "94%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "Golden milk (Haldi Doodh) — 1/2 tsp pure turmeric in warm milk with pinch of black pepper at bedtime.",
+            "Steam inhalation with 2-3 drops of eucalyptus oil or ajwain seeds in boiling water."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Talisadi Churna (2g with warm water for productive bronchial congestion).",
+            "Kantakari Avaleha for chronic stubborn cough and throat tickling."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Charak Samhita - 2 - P.V Sharma (English)",
+          "Shalakya Tantra (ENT)",
+          "Dravyagun vigyan pv sharma"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    },
+    {
+      "case_id": 321,
+      "system": "Neurology & Mental Health",
+      "condition": "Chronic Insomnia",
+      "prompt": "I am a 23-year-old male. I have been suffering from chronic insomnia (waking up at 2 AM with racing mind, daytime somnolence, difficulty initiating sleep) since 2 days. It feels mild with sudden onset. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "Chronic Insomnia",
+        "sanskrit_classification": "anidra",
+        "confidence_level": "88%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "Warm milk with 1/4 tsp nutmeg (jaiphal) powder and 1 tsp crushed almonds before bed for insomnia.",
+            "Brahmi or Chamomile herbal tea in the evening to calm nervous agitation."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Brahmi Vati / Saraswatarishta (15ml with water for cognitive clarity and calm).",
+            "Ashwagandharishta (15ml with equal water twice daily after meals)."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Charak Samhita (Unmada & Apasmara)",
+          "CRC Handbook of Ayurvedic Medicinal Plants",
+          "Saraswati Ayurvedic Treatises"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    },
+    {
+      "case_id": 511,
+      "system": "Cardiovascular & Metabolic",
+      "condition": "Type 2 Diabetes Mellitus",
+      "prompt": "I am a 54-year-old male. I have been suffering from type 2 diabetes mellitus (polydipsia, unexplained weight loss, polyuria) ongoing for 4 months. It feels mild with recurrent exacerbations. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "Type 2 Diabetes Mellitus",
+        "sanskrit_classification": "prameha",
+        "confidence_level": "88%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "Lemon water with 1 tsp raw honey first thing in the morning to flush systemic toxins (Ama).",
+            "Triphala water — soak 1/2 tsp Triphala churna overnight, strain and drink morning."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Gokshuradi Guggulu (2 tablets twice daily with water for urinary and renal support).",
+            "Triphala Guggulu (2 tablets twice daily for detox and metabolism)."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Charak Samhita",
+          "Sushrut Samhita",
+          "Astanga Hrdayam"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    },
+    {
+      "case_id": 741,
+      "system": "Pediatrics & Childhood",
+      "condition": "Pediatric Pinworm Infection",
+      "prompt": "I am a 31-year-old male. I have been suffering from pediatric pinworm infection (perianal itching at night, restless sleep in child, teeth grinding) since 2 days. It feels moderate with sudden onset. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "Pediatric Pinworm Infection",
+        "sanskrit_classification": "krimi roga",
+        "confidence_level": "94%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "Lemon water with 1 tsp raw honey first thing in the morning to flush systemic toxins (Ama).",
+            "Pomegranate juice (fresh) to enhance red blood cell count and relieve body heat."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Chyawanprash (10g daily morning with warm milk for Ojas and Rasayana vitality).",
+            "Triphala Guggulu (2 tablets twice daily for detox and metabolism)."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Kaumarbhrutya Part 2 - Shrinidhi",
+          "Balrog DN Mishra (Hindi)",
+          "Kashyapa Samhita"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    },
+    {
+      "case_id": 921,
+      "system": "Infectious & General",
+      "condition": "Malaria Presentation",
+      "prompt": "I am a 38-year-old female. I have been suffering from malaria presentation (periodic shaking chills followed by high fever and profuse drenching sweating) for over 1 year. It feels mild with resistant to over-the-counter medication. What natural home remedies and Ayurvedic treatments do you recommend from your books?",
+      "test_passed": true,
+      "chatbot_display": {
+        "status": "SUCCESS",
+        "condition_identified": "Malaria Presentation",
+        "sanskrit_classification": "vishama jwara",
+        "confidence_level": "88%",
+        "triage_urgency": "Home & Ayurvedic Care",
+        "categories": {
+          "Home Remedies (Dadi-Nani ke Nuskhe)": [
+            "Lemon water with 1 tsp raw honey first thing in the morning to flush systemic toxins (Ama).",
+            "Triphala water — soak 1/2 tsp Triphala churna overnight, strain and drink morning."
+          ],
+          "Ayurvedic Remedies (Classical Herbs & Formulations)": [
+            "Triphala Guggulu (2 tablets twice daily for detox and metabolism).",
+            "Amritarishta (15ml after meals with water during and after viral fevers)."
+          ]
+        },
+        "knowledge_base_citations": [
+          "Charak Samhita (Chikitsa Sthana)",
+          "Bhavprakash Nighantu",
+          "Kaaychikitsa - Gangasahay Pandey"
+        ],
+        "contraindications_and_warnings": [
+          "If symptoms persist or worsen beyond 72 hours, consult a certified physician immediately.",
+          "Pregnant or lactating mothers must consult an Ayurvedic practitioner prior to internal formulations."
+        ]
+      }
+    }
+  ]
+}
