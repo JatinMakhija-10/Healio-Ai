@@ -179,11 +179,14 @@ async function fetchBoerickeContext(embedding: number[]): Promise<string> {
         return [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.60)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-            .slice(0, 5)
+            .slice(0, 3)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((c: any, i: number) =>
-                `[${i + 1}] REMEDY: ${c.remedy_name} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.chunk_text}`
-            ).join('\n\n');
+            .map((c: any, i: number) => {
+                const text = typeof c.chunk_text === 'string' && c.chunk_text.length > 450
+                    ? c.chunk_text.slice(0, 450) + '...'
+                    : c.chunk_text;
+                return `[${i + 1}] REMEDY: ${c.remedy_name} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${text}`;
+            }).join('\n\n');
     } catch {
         return '';
     }
@@ -225,13 +228,16 @@ async function fetchAyurvedicContext(jinaEmbedding: number[]): Promise<string> {
         return [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.55)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-            .slice(0, 8)
+            .slice(0, 4)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) => {
                 const sourceLabel = c.source === 'WHO ICD-11 MMS 2024-01'
                     ? `ICD-11 CODE: ${c.section?.replace('Code: ', '').split(' | ')[0] ?? ''} | ${c.book}`
                     : `SOURCE: ${c.source ?? c.book} | BOOK: ${c.book}`;
-                return `[${i + 1}] ${sourceLabel} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.text}`;
+                const text = typeof c.text === 'string' && c.text.length > 550
+                    ? c.text.slice(0, 550) + '...'
+                    : c.text;
+                return `[${i + 1}] ${sourceLabel} | SECTION: ${c.section ?? 'General'} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${text}`;
             }).join('\n\n');
     } catch {
         return '';
@@ -268,11 +274,14 @@ async function fetchAyurvedicPdfContext(embedding768: number[] | null): Promise<
         return [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.60)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-            .slice(0, 3)
+            .slice(0, 2)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((c: any, i: number) =>
-                `[PDF${i + 1}] SOURCE: ${c.source_file} | PAGE: ${c.page_number} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${c.chunk_text}`
-            ).join('\n\n');
+            .map((c: any, i: number) => {
+                const text = typeof c.chunk_text === 'string' && c.chunk_text.length > 400
+                    ? c.chunk_text.slice(0, 400) + '...'
+                    : c.chunk_text;
+                return `[PDF${i + 1}] SOURCE: ${c.source_file} | PAGE: ${c.page_number} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%\n${text}`;
+            }).join('\n\n');
     } catch {
         return '';
     }
@@ -312,14 +321,17 @@ async function fetchHomeRemedyContext(embedding3072: number[] | null): Promise<s
         return [...seen.values()]
             .filter(c => (c.similarity ?? 0) >= 0.58)
             .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-            .slice(0, 5)
+            .slice(0, 3)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((c: any, i: number) => {
                 const nameHindi = c.remedy_name_hindi ? ` / ${c.remedy_name_hindi}` : '';
                 const ailmentHindi = c.ailment_hindi ? ` (${c.ailment_hindi})` : '';
+                const text = typeof c.chunk_text === 'string' && c.chunk_text.length > 400
+                    ? c.chunk_text.slice(0, 400) + '...'
+                    : c.chunk_text;
                 return [
                     `[${i + 1}] AILMENT: ${c.ailment}${ailmentHindi} | NUSKHA: ${c.remedy_name}${nameHindi} | relevance: ${((c.similarity ?? 0) * 100).toFixed(0)}%`,
-                    c.chunk_text,
+                    text,
                 ].join('\n');
             }).join('\n\n');
     } catch (e) {
@@ -388,15 +400,11 @@ async function fetchAllContext(
     try {
         const t0Embed = Date.now();
 
-        // ── Fire embedding in PARALLEL, all RAG tables via Jina ──────────────
-        // Jina (768-dim) → ALL tables:
-        //   boericke_embeddings, home_remedy_embeddings, ayurvedic_knowledge_embeddings
-        // ayurvedic_knowledge_embeddings covers PlanetAyurveda + NewSources (13 books)
-        //   + WHO ICD-11 MMS 2024-01 — all unified under Jina AI embeddings.
-        const { jina: jinaEmb } = await getParallelEmbeddings(symptomSummary);
+        // ── Fire embedding in PARALLEL across available embedders ──────────────
+        // Prioritize: FastEmbed (186 books exact vector space) → Jina → Gemini 768 fallback
+        const { fastembed: localEmb, jina: jinaEmb, gemini768: geminiEmb } = await getParallelEmbeddings(symptomSummary);
 
-        // Single Jina embedding fans out to all knowledge base tables
-        const embedding = jinaEmb; // Jina → Boericke, HomeRemedies, Ayurvedic/Medical KB
+        const embedding = localEmb || jinaEmb || geminiEmb;
 
         const embedDone = Date.now();
         spans?.record('embedJina', embedDone - t0Embed);
@@ -2011,8 +2019,6 @@ export async function POST(req: NextRequest) {
             intentResult.intent === 'medication_query' ||
             intentResult.intent === 'lab_result_query' ||
             (isFollowUpMode && asksForAdviceOnly) ||
-            userTurns === 2 ||
-            lastUserMsg.length >= 60 ||
             /diagnos|remedy|treatment|suggest|recommend|medicine|herb|what (is|should|do)|cure|relief|prescri/i
                 .test(lastUserMsg)
         );

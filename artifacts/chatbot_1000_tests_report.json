@@ -1,0 +1,296 @@
+{
+  "total_test_cases": 1000,
+  "passed_vector_hits": 2,
+  "fallback_matches": 998,
+  "retrieval_success_rate": "0.2%",
+  "unique_books_cited": 1,
+  "top_cited_books": [
+    [
+      "Strirog  Shipra (Hindi) (AyuTech™)",
+      2
+    ]
+  ],
+  "category_distribution": [
+    [
+      "prasutitantra_gynecology",
+      2
+    ]
+  ],
+  "sample_evaluations": [
+    {
+      "id": 1,
+      "condition": "tremors kampa",
+      "category": "neurological_mental",
+      "symptoms": "Patient is a 65-year-old female presenting with tremors kampa and resting muscle rigidity with sluggish movement, for 3 days. Context: accompanied by mild nausea and poor digestion.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 2,
+      "condition": "bronchial asthma tamaka shwasa",
+      "category": "respiratory",
+      "symptoms": "Patient is a 35-year-old male presenting with bronchial asthma tamaka shwasa with expiratory wheezing and breathlessness, ongoing for 3 months. Context: worsened after eating spicy oily fermented foods.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 3,
+      "condition": "irritable bowel syndrome",
+      "category": "digestive",
+      "symptoms": "Patient is a 58-year-old male presenting with irritable bowel syndrome with alternating loose stools and cramps, for 6 months. Context: chronic condition ongoing for 6 months despite allopathic medication.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 4,
+      "condition": "plantar fasciitis",
+      "category": "musculoskeletal",
+      "symptoms": "Patient is a 65-year-old female presenting with plantar fasciitis with sharp heel pain upon taking first steps in the morning, for 6 months. Context: worsened after eating spicy oily fermented foods.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 5,
+      "condition": "aphthous stomatitis mukhapaka",
+      "category": "pediatric_ent_renal",
+      "symptoms": "Patient is a 42-year-old male presenting with aphthous stomatitis mukhapaka with recurrent painful ulcers on tongue and buccal mucosa, for 2 weeks. Context: triggered by seasonal transition and damp weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 6,
+      "condition": "allergic rhinitis",
+      "category": "respiratory",
+      "symptoms": "Patient is a 50-year-old male presenting with allergic rhinitis with excessive morning sneezing and runny nose, recurrently over the past year. Context: worsened in morning hours with significant stiffness.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 7,
+      "condition": "menorrhagia asrigdara",
+      "category": "womens_health",
+      "symptoms": "Patient is a 50-year-old female presenting with menorrhagia asrigdara with prolonged heavy menstrual bleeding and clot passage, for 3 days. Context: associated with significant stress and irregular sleep habits.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 8,
+      "condition": "ulcerative colitis",
+      "category": "digestive",
+      "symptoms": "Patient is a 42-year-old male presenting with ulcerative colitis with mucus in stool and tenesmus, for 2 weeks. Context: seeking natural herbal and Ayurvedic home remedies.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 9,
+      "condition": "dyslipidemia",
+      "category": "cardiovascular_metabolic",
+      "symptoms": "Patient is a 50-year-old male presenting with dyslipidemia and hypercholesterolemia with sluggish metabolic circulation, ongoing for 3 months. Context: acute presentation aggravated by cold dry weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 10,
+      "condition": "fibromyalgia",
+      "category": "musculoskeletal",
+      "symptoms": "Patient is a 42-year-old female presenting with fibromyalgia with generalized muscle aches tender points and chronic exhaustion, for 2 weeks. Context: triggered by seasonal transition and damp weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 11,
+      "condition": "bronchial asthma tamaka shwasa",
+      "category": "respiratory",
+      "symptoms": "Patient is a 58-year-old female presenting with bronchial asthma tamaka shwasa with expiratory wheezing and breathlessness, for 6 months. Context: in an elderly patient with sluggish digestive fire.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 12,
+      "condition": "chronic otitis media",
+      "category": "pediatric_ent_renal",
+      "symptoms": "Patient is a 35-year-old female presenting with chronic otitis media with ear discharge hearing fullness and itching in ear canal, for 2 weeks. Context: chronic condition ongoing for 6 months despite allopathic medication.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 13,
+      "condition": "chronic urinary tract infection mutrakrichra",
+      "category": "pediatric_ent_renal",
+      "symptoms": "Patient is a 50-year-old female presenting with chronic urinary tract infection mutrakrichra with burning micturition and dysuria, recurrently over the past year. Context: worsened in morning hours with significant stiffness.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 14,
+      "condition": "palpitations hridrava",
+      "category": "cardiovascular_metabolic",
+      "symptoms": "Patient is a 65-year-old male presenting with palpitations hridrava with sudden racing heart sensation triggered by anxiety, for 2 weeks. Context: triggered by seasonal transition and damp weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 15,
+      "condition": "hemorrhoids piles arsha",
+      "category": "digestive",
+      "symptoms": "Patient is a 42-year-old male presenting with hemorrhoids piles arsha with bleeding and burning rectal pain, for 3 days. Context: worsened after eating spicy oily fermented foods.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 16,
+      "condition": "hemorrhoids piles arsha",
+      "category": "digestive",
+      "symptoms": "Patient is a 72-year-old female presenting with hemorrhoids piles arsha with bleeding and burning rectal pain, for 6 months. Context: acute presentation aggravated by cold dry weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 17,
+      "condition": "premenstrual syndrome",
+      "category": "womens_health",
+      "symptoms": "Patient is a 22-year-old female presenting with premenstrual syndrome with tender breasts fluid retention irritability and sugar cravings, for 3 days. Context: in an elderly patient with sluggish digestive fire.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 18,
+      "condition": "iron deficiency anemia pandu",
+      "category": "cardiovascular_metabolic",
+      "symptoms": "Patient is a 35-year-old male presenting with iron deficiency anemia pandu with pallor brittle nails and exertion dyspnea, for 3 days. Context: worsened in morning hours with significant stiffness.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 19,
+      "condition": "essential hypertension",
+      "category": "cardiovascular_metabolic",
+      "symptoms": "Patient is a 72-year-old male presenting with essential hypertension with morning occipital throbbing headache and epistaxis, recurrently over the past year. Context: associated with significant stress and irregular sleep habits.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 20,
+      "condition": "palpitations hridrava",
+      "category": "cardiovascular_metabolic",
+      "symptoms": "Patient is a 28-year-old male presenting with palpitations hridrava with sudden racing heart sensation triggered by anxiety, for 6 months. Context: acute presentation aggravated by cold dry weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 21,
+      "condition": "allergic conjunctivitis",
+      "category": "pediatric_ent_renal",
+      "symptoms": "Patient is a 42-year-old male presenting with allergic conjunctivitis with burning itchy red eyes and tearing in pollen season, for 3 days. Context: triggered by seasonal transition and damp weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 22,
+      "condition": "lichen planus",
+      "category": "dermatological",
+      "symptoms": "Patient is a 72-year-old female presenting with lichen planus with violaceous polygonal pruritic flat-topped papules on wrists, ongoing for 3 months. Context: triggered by seasonal transition and damp weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 23,
+      "condition": "menorrhagia asrigdara",
+      "category": "womens_health",
+      "symptoms": "Patient is a 72-year-old male presenting with menorrhagia asrigdara with prolonged heavy menstrual bleeding and clot passage, for 3 days. Context: worsened after eating spicy oily fermented foods.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 24,
+      "condition": "pelvic congestion",
+      "category": "womens_health",
+      "symptoms": "Patient is a 35-year-old female presenting with pelvic congestion with dull aching pain in hypogastrium and lower back, ongoing for 3 months. Context: accompanied by mild nausea and poor digestion.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    },
+    {
+      "id": 25,
+      "condition": "rheumatoid arthritis amavata",
+      "category": "musculoskeletal",
+      "symptoms": "Patient is a 42-year-old female presenting with rheumatoid arthritis amavata with symmetrical morning stiffness in finger joints, for 3 days. Context: acute presentation aggravated by cold dry weather.",
+      "status": "FALLBACK_KEYWORD",
+      "top_book": "General Clinical Knowledge",
+      "top_category": "Ayurveda",
+      "top_similarity": 0.0,
+      "preview": "Symptom matched via clinical reasoning engine"
+    }
+  ]
+}

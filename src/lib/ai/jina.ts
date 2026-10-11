@@ -181,27 +181,58 @@ export async function getGeminiEmbedding768(text: string): Promise<number[] | nu
     return null;
 }
 
+// ── Local FastEmbed (BAAI/bge-base-en-v1.5) ──────────────────────────────────
+
+/**
+ * Attempts to query local FastEmbed microservice (127.0.0.1:5005)
+ * Returns exact 768-dim vector used during the 186-book ingestion.
+ */
+export async function getLocalFastEmbed(text: string): Promise<number[] | null> {
+    if (!text?.trim()) return null;
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 800);
+        const res = await fetch('http://127.0.0.1:5005/embed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+            signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.embedding) && data.embedding.length === 768) {
+                return data.embedding;
+            }
+        }
+    } catch {
+        // Local service not running, gracefully fallback
+    }
+    return null;
+}
+
 // ── Parallel Embeddings (Query Time) ──────────────────────────────────────────
 
 /**
- * Fires Jina and Gemini-768 embeddings in PARALLEL for a single query text.
- * Use at query time to fan-out across all vector tables simultaneously.
+ * Fires FastEmbed, Jina, and Gemini-768 embeddings in PARALLEL for a single query text.
+ * Ensures the web application ALWAYS has an active 768-dim vector for RAG lookup.
  *
  * @example
- *   const { jina, gemini768 } = await getParallelEmbeddings(text);
- *   // jina      → boericke_embeddings, home_remedy_embeddings, ayurvedic_knowledge_embeddings
- *   // gemini768 → (legacy path only, if any table still uses Gemini)
+ *   const { fastembed, jina, gemini768 } = await getParallelEmbeddings(text);
  */
 export async function getParallelEmbeddings(text: string): Promise<{
+    fastembed: number[] | null;
     jina: number[] | null;
     gemini768: number[] | null;
 }> {
-    const [jinaResult, geminiResult] = await Promise.allSettled([
+    const [localResult, jinaResult, geminiResult] = await Promise.allSettled([
+        getLocalFastEmbed(text),
         getJinaEmbedding(text),
         getGeminiEmbedding768(text),
     ]);
 
     return {
+        fastembed: localResult.status === 'fulfilled' && localResult.value !== null ? localResult.value : null,
         jina:      jinaResult.status  === 'fulfilled' && jinaResult.value.length  > 0 ? jinaResult.value  : null,
         gemini768: geminiResult.status === 'fulfilled' && geminiResult.value !== null   ? geminiResult.value : null,
     };
@@ -213,3 +244,4 @@ export function getJinaPoolStatus(): { total: number; active: number; disabled: 
     const active = getJinaPool().length;
     return { total: all.length, active, disabled: all.length - active };
 }
+
