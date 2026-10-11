@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = "https://arovia-ai.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aroviaai.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {

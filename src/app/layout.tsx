@@ -8,7 +8,7 @@ import "../bones/registry";
 import { Analytics } from "@vercel/analytics/next";
 import { CartDrawer } from "@/components/ecommerce/CartDrawer";
 
-const siteUrl = new URL("https://arovia-ai.vercel.app");
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.aroviaai.com");
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
