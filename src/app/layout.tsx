@@ -49,6 +49,14 @@ export const metadata: Metadata = {
     siteName: "Arovia.AI",
     type: "website",
     url: "/",
+    images: [
+      {
+        url: "/logo-horizontal.png",
+        width: 1200,
+        height: 630,
+        alt: "Arovia.AI - Where Science Meets Soul",
+      },
+    ],
   },
   icons: {
     icon: [
@@ -59,9 +67,10 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Arovia.AI - Where Science Meets Soul",
     description: "Simple, honest wellness guidance for Indian families in their language. Where science meets soul.",
+    images: ["/logo-horizontal.png"],
   },
 };
 
