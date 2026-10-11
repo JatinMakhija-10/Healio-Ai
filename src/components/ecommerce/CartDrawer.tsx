@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldAlert, Tag, Check, Sparkles } from 'lucide-react';
+import { AyurvedicFormIllustration } from './AyurvedicFormIllustration';
+import { getFormLabel } from '@/lib/ecommerce/formatters';
 import { useCartStore } from '@/stores/cartStore';
+import { CartItem } from '@/lib/ecommerce/types';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -133,33 +136,32 @@ export const CartDrawer: React.FC = () => {
               items.map((item) => (
                 <div
                   key={item.productId}
-                  className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40 flex gap-3"
+                  className="p-3 rounded-lg border border-[#DDD8CB] dark:border-[#2B3530] bg-[#F7F5F0]/50 dark:bg-[#1A211E] flex gap-3"
                 >
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
+                  <div className="w-16 h-14 flex-shrink-0">
+                    <AyurvedicFormIllustration
+                      form={item.ayurvedicMetadata.form}
+                      title={item.title}
+                      className="w-full h-full rounded-[4px]"
                     />
                   </div>
 
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between gap-1">
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                        <h4 className="text-xs font-semibold text-[#1B2420] dark:text-[#E8EDE9] line-clamp-1">
                           {item.title}
                         </h4>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="text-zinc-400 hover:text-red-500 transition p-0.5"
+                          className="text-[#55625A] hover:text-red-500 transition p-0.5"
+                          aria-label={`Remove ${item.title} from cart`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        {item.brand}
+                      <p className="text-[11px] text-[#55625A] dark:text-[#9AA8A0]">
+                        {getFormLabel(item.ayurvedicMetadata.form)}
                       </p>
                       {item.traceability && (
                         <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
@@ -257,7 +259,7 @@ export const CartDrawer: React.FC = () => {
                 type="button"
                 onClick={handleProceedToCheckout}
                 disabled={isCheckingOut}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-[8px] bg-[#0E6B52] hover:bg-[#0B5B47] text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B52]"
               >
                 {isCheckingOut ? (
                   <span>Processing your order…</span>

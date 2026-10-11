@@ -110,7 +110,7 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
         {totalCartCount > 0 && (
           <button
             onClick={toggleCart}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition shadow-xs self-start sm:self-auto"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#0E6B52] hover:bg-[#0B5B47] text-white text-xs font-semibold transition shadow-xs self-start sm:self-auto"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>View Regimen Cart ({totalCartCount})</span>
@@ -133,13 +133,13 @@ export const RecommendedProductsWidget: React.FC<RecommendedProductsWidgetProps>
         ))}
       </div>
 
-      {/* Bottom Compliance & Authenticity Guarantee */}
+      {/* Bottom Compliance Guarantee */}
       <div className="mt-4 pt-3 border-t border-emerald-100 dark:border-emerald-950/60 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
         <div className="flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>100% Authentic AYUSH GMP Certified Formulations</span>
+          <ShieldCheck className="w-4 h-4 text-[#0E6B52] dark:text-[#3FB58F]" />
+          <span>Classical Samhita Formulations · AYUSH GMP Licensed</span>
         </div>
-        <span>AYUSH GMP Certified · Direct Dropship</span>
+        <span>Batch Traceability Enabled</span>
       </div>
     </div>
   );

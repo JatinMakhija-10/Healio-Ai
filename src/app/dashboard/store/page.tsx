@@ -4,322 +4,378 @@ import React, { useState, useMemo } from 'react';
 import {
   ShoppingBag,
   Search,
-  Sparkles,
+  X,
   ShieldCheck,
-  Leaf,
-  Zap,
-  FlaskConical,
-  Sun,
-  ChevronRight,
-  Star,
   Truck,
+  FileText,
   BadgeCheck,
-  ArrowRight,
+  ArrowUpDown,
+  Filter,
 } from 'lucide-react';
 import { AYURVEDIC_CATALOG } from '@/lib/ecommerce/catalog/catalogData';
 import { ProductCard } from '@/components/ecommerce/ProductCard';
 import { CartDrawer } from '@/components/ecommerce/CartDrawer';
 import { useCartStore } from '@/stores/cartStore';
-import { DoshaType } from '@/lib/ecommerce/types';
+import { DoshaType, ProductForm } from '@/lib/ecommerce/types';
+import { FORM_DISPLAY_LABELS } from '@/lib/ecommerce/formatters';
 
-/* ── Category definitions ────────────────────────────────────────── */
-const CATEGORIES = [
-  { id: 'ALL', label: 'All Products', icon: Sparkles, color: '#0F6E56' },
-  { id: 'pitta', label: 'Pacifies Pitta', icon: Zap, color: '#E9A21A' },
-  { id: 'vata', label: 'Pacifies Vata', icon: Leaf, color: '#2D6A4F' },
-  { id: 'kapha', label: 'Pacifies Kapha', icon: FlaskConical, color: '#3D405B' },
-  { id: 'rasayana', label: 'Rasayana', icon: Sun, color: '#C9675A' },
-] as const;
+/* ── Dosha filter tabs definition ──────────────────────────────────── */
+type DoshaFilter = 'ALL' | 'pitta' | 'vata' | 'kapha' | 'tridoshic';
 
-/* ── Promo banner cards (like reference "Medication at one place" row) ── */
-const PROMO_CARDS = [
-  {
-    id: 1,
-    eyebrow: 'Up to 15% off',
-    title: 'Classical\nFormulations',
-    bg: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
-    accent: '#0F6E56',
-    emoji: '🌿',
-  },
-  {
-    id: 2,
-    eyebrow: 'Up to 20% off',
-    title: 'Ayurvedic\nRasayanas',
-    bg: 'linear-gradient(135deg, #FEF6E0 0%, #FDE68A 100%)',
-    accent: '#E9A21A',
-    emoji: '✨',
-  },
-  {
-    id: 3,
-    eyebrow: 'Up to 10% off',
-    title: 'Herbal Oils\n& Liniments',
-    bg: 'linear-gradient(135deg, #EEF2FF 0%, #C7D2FE 100%)',
-    accent: '#3D405B',
-    emoji: '💧',
-  },
-  {
-    id: 4,
-    eyebrow: 'Up to 25% off',
-    title: 'Immunity\nBoosters',
-    bg: 'linear-gradient(135deg, #FAEAE8 0%, #F9A8A0 100%)',
-    accent: '#C9675A',
-    emoji: '🛡️',
-  },
+interface DoshaTabOption {
+  id: DoshaFilter;
+  label: string;
+}
+
+const DOSHA_TABS: DoshaTabOption[] = [
+  { id: 'ALL', label: 'All' },
+  { id: 'pitta', label: 'Pacifies Pitta' },
+  { id: 'vata', label: 'Pacifies Vata' },
+  { id: 'kapha', label: 'Pacifies Kapha' },
+  { id: 'tridoshic', label: 'Tridoshic' },
 ];
 
-/* ── Stat badges for hero ─────────────────────────────────────────── */
-const STATS = [
-  { icon: ShieldCheck, text: 'AYUSH GMP Certified' },
-  { icon: Truck, text: 'Free Delivery ₹499+' },
-  { icon: BadgeCheck, text: 'Clinically Matched' },
+/* ── Available Form filters ────────────────────────────────────────── */
+const AVAILABLE_FORMS: Array<{ id: 'ALL' | ProductForm; label: string }> = [
+  { id: 'ALL', label: 'All forms' },
+  { id: 'churna', label: FORM_DISPLAY_LABELS.churna },
+  { id: 'vati', label: FORM_DISPLAY_LABELS.vati },
+  { id: 'taila', label: FORM_DISPLAY_LABELS.taila },
+  { id: 'asava_arishta', label: FORM_DISPLAY_LABELS.asava_arishta },
+  { id: 'avaleha', label: FORM_DISPLAY_LABELS.avaleha },
 ];
 
 export default function StorefrontPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'ALL' | 'pitta' | 'vata' | 'kapha' | 'rasayana'>('ALL');
+  const [selectedDosha, setSelectedDosha] = useState<DoshaFilter>('ALL');
+  const [selectedForm, setSelectedForm] = useState<'ALL' | ProductForm>('ALL');
+  const [sortBy, setSortBy] = useState<'recommended' | 'price_asc' | 'price_desc' | 'rating' | 'name_asc'>('recommended');
 
   const toggleCart = useCartStore((s) => s.toggleCart);
   const totalCartCount = useCartStore((s) => s.items.reduce((a, i) => a + i.quantity, 0));
 
+  /* ── Live item counts for dosha filter tabs ──────────────────────── */
+  const doshaCounts = useMemo(() => {
+    const counts: Record<DoshaFilter, number> = {
+      ALL: AYURVEDIC_CATALOG.length,
+      pitta: 0,
+      vata: 0,
+      kapha: 0,
+      tridoshic: 0,
+    };
+
+    AYURVEDIC_CATALOG.forEach((p) => {
+      const pacifies = p.ayurvedicMetadata.doshaTarget.pacifies;
+      const isTridoshic =
+        pacifies.includes('vata') &&
+        pacifies.includes('pitta') &&
+        pacifies.includes('kapha');
+
+      if (pacifies.includes('pitta')) counts.pitta += 1;
+      if (pacifies.includes('vata')) counts.vata += 1;
+      if (pacifies.includes('kapha')) counts.kapha += 1;
+      if (isTridoshic) counts.tridoshic += 1;
+    });
+
+    return counts;
+  }, []);
+
+  /* ── Filtered & sorted products ──────────────────────────────────── */
   const filteredProducts = useMemo(() => {
-    return AYURVEDIC_CATALOG.filter((product) => {
-      const q = searchQuery.toLowerCase();
+    let list = AYURVEDIC_CATALOG.filter((product) => {
+      const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
         !q ||
         product.title.toLowerCase().includes(q) ||
         product.description.toLowerCase().includes(q) ||
-        product.ayurvedicMetadata.classicalFormulationName.toLowerCase().includes(q);
+        product.ayurvedicMetadata.classicalFormulationName.toLowerCase().includes(q) ||
+        product.ayurvedicMetadata.botanicalComposition.some(
+          (b) =>
+            b.herbName.toLowerCase().includes(q) ||
+            (b.latinName && b.latinName.toLowerCase().includes(q))
+        );
 
-      const matchesCategory =
-        activeCategory === 'ALL' ||
-        activeCategory === 'rasayana' ||
-        product.ayurvedicMetadata.doshaTarget.pacifies.includes(activeCategory as DoshaType);
+      const pacifies = product.ayurvedicMetadata.doshaTarget.pacifies;
+      const isTridoshic =
+        pacifies.includes('vata') &&
+        pacifies.includes('pitta') &&
+        pacifies.includes('kapha');
 
-      return matchesSearch && matchesCategory;
+      const matchesDosha =
+        selectedDosha === 'ALL' ||
+        (selectedDosha === 'tridoshic' ? isTridoshic : pacifies.includes(selectedDosha as DoshaType));
+
+      const matchesForm =
+        selectedForm === 'ALL' || product.ayurvedicMetadata.form === selectedForm;
+
+      return matchesSearch && matchesDosha && matchesForm;
     });
-  }, [searchQuery, activeCategory]);
+
+    // Sorting
+    list = [...list].sort((a, b) => {
+      switch (sortBy) {
+        case 'price_asc':
+          return a.priceInINR - b.priceInINR;
+        case 'price_desc':
+          return b.priceInINR - a.priceInINR;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'name_asc':
+          return a.title.localeCompare(b.title);
+        case 'recommended':
+        default:
+          return 0;
+      }
+    });
+
+    return list;
+  }, [searchQuery, selectedDosha, selectedForm, sortBy]);
+
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setSelectedDosha('ALL');
+    setSelectedForm('ALL');
+    setSortBy('recommended');
+  };
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' ||
+    selectedDosha !== 'ALL' ||
+    selectedForm !== 'ALL' ||
+    sortBy !== 'recommended';
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 text-[#1B2420] dark:text-[#E8EDE9]">
 
-      {/* ─── Hero Banner ─────────────────────────────────────────────── */}
-      <div
-        className="relative rounded-3xl overflow-hidden mb-8 shadow-lg"
-        style={{
-          background: 'linear-gradient(135deg, #0B5B47 0%, #0F6E56 45%, #1A7A5E 100%)',
-          minHeight: 220,
-        }}
-      >
-        {/* Decorative blobs */}
-        <div
-          style={{
-            position: 'absolute', top: -60, right: -60, width: 280, height: 280,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)',
-            pointerEvents: 'none',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute', bottom: -40, left: '40%', width: 200, height: 200,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.04)',
-            pointerEvents: 'none',
-          }}
-        />
-
-        <div className="relative z-10 p-7 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="max-w-xl">
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/20 bg-white/10 text-white/80 text-[11px] font-semibold uppercase tracking-widest mb-4">
-              <Sparkles className="w-3 h-3" />
-              Arovia Herbal Pharmacy
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight tracking-tight">
-              Authentic Ayurvedic<br />
-              <span style={{ color: '#9FE1CB' }}>Medicines & Formulations</span>
+      {/* ─── Compact Header (Products visible without scrolling) ─────── */}
+      <div className="pt-2 pb-5 border-b border-[#DDD8CB] dark:border-[#2B3530]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#1B2420] dark:text-[#E8EDE9]">
+              Ayurvedic Store
             </h1>
-            <p className="mt-2 text-sm text-white/70 leading-relaxed max-w-md">
-              Order classical Ayurvedic medicines matched to your doshic constitution.
-              Every product is grounded in classical Samhitas and AYUSH pharmacopoeia.
+            <p className="mt-1 text-xs text-[#55625A] dark:text-[#9AA8A0]">
+              Classical formulations matched to your dosha profile from your consultation.
+              <span className="hidden sm:inline text-[#55625A]/70 dark:text-[#9AA8A0]/70 ml-1.5">
+                Purchases are in INR and do not consume consultation credits.
+              </span>
             </p>
-
-            {/* Search */}
-            <div className="relative mt-5 max-w-sm">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50" />
-              <input
-                type="text"
-                placeholder="Search herbs, formulations or conditions…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-2xl bg-white/15 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 transition"
-              />
-            </div>
-
-            {/* Stats strip */}
-            <div className="flex flex-wrap items-center gap-4 mt-5">
-              {STATS.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-1.5 text-xs text-white/70">
-                  <Icon className="w-4 h-4 text-emerald-300" />
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Hero stat card */}
-          <div
-            className="hidden md:flex flex-col items-center justify-center rounded-2xl px-8 py-6 text-center shrink-0"
-            style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}
-          >
-            <span className="text-4xl font-black text-white">10,000+</span>
-            <span className="text-xs text-white/60 mt-1 font-medium">Ayurvedic products<br />curated daily</span>
+          {/* Header Regimen Cart Button */}
+          {totalCartCount > 0 && (
+            <button
+              type="button"
+              onClick={toggleCart}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] border border-[#0E6B52] bg-[#0E6B52] text-white hover:bg-[#0B5B47] text-xs font-semibold transition shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B52]"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Regimen Cart ({totalCartCount})</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ─── Unified Sticky Toolbar (Search, Filters, Sort, Counts) ──── */}
+      <div className="sticky top-0 z-20 py-3 bg-[#FDF8F0]/95 dark:bg-[#121715]/95 backdrop-blur-xs border-b border-[#DDD8CB] dark:border-[#2B3530] mb-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          
+          {/* Search Field */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#55625A] dark:text-[#9AA8A0]" />
+            <input
+              type="text"
+              placeholder="Search formulations, herbs or ingredients…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-[8px] bg-white dark:bg-[#1A211E] border border-[#DDD8CB] dark:border-[#2B3530] text-[#1B2420] dark:text-[#E8EDE9] placeholder:text-[#55625A]/60 dark:placeholder:text-[#9AA8A0]/60 focus:outline-none focus:ring-2 focus:ring-[#0E6B52] transition"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#55625A] hover:text-[#1B2420] dark:text-[#9AA8A0] dark:hover:text-[#E8EDE9]"
+                aria-label="Clear search query"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Form Filter & Sort Tooling */}
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            {/* Form filter dropdown */}
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-[#55625A] dark:text-[#9AA8A0] hidden sm:inline" />
+              <select
+                value={selectedForm}
+                onChange={(e) => setSelectedForm(e.target.value as typeof selectedForm)}
+                className="h-8 px-2.5 text-xs rounded-[8px] bg-white dark:bg-[#1A211E] border border-[#DDD8CB] dark:border-[#2B3530] text-[#1B2420] dark:text-[#E8EDE9] focus:outline-none focus:ring-2 focus:ring-[#0E6B52] transition"
+                aria-label="Filter by Ayurvedic form"
+              >
+                {AVAILABLE_FORMS.map((form) => (
+                  <option key={form.id} value={form.id}>
+                    {form.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#55625A] dark:text-[#9AA8A0] hidden sm:inline" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="h-8 px-2.5 text-xs rounded-[8px] bg-white dark:bg-[#1A211E] border border-[#DDD8CB] dark:border-[#2B3530] text-[#1B2420] dark:text-[#E8EDE9] focus:outline-none focus:ring-2 focus:ring-[#0E6B52] transition"
+                aria-label="Sort product list"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="rating">Rating</option>
+                <option value="name_asc">Name: A to Z</option>
+              </select>
+            </div>
+
+            {/* Reset Filters button */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="h-8 px-2 text-[11px] font-medium text-[#55625A] hover:text-[#1B2420] dark:text-[#9AA8A0] dark:hover:text-[#E8EDE9] underline transition"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Dosha Filter Chips (Single row text tabs with counts) ──── */}
+        <div className="mt-3 flex items-center justify-between gap-3 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-2">
+            {DOSHA_TABS.map((tab) => {
+              const count = doshaCounts[tab.id];
+              const isSelected = selectedDosha === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedDosha(tab.id)}
+                  className={`h-7 px-3 rounded-[4px] text-xs transition-colors whitespace-nowrap flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B52] ${
+                    isSelected
+                      ? 'bg-[#0E6B52] text-white font-semibold'
+                      : 'border border-[#DDD8CB] dark:border-[#2B3530] bg-white dark:bg-[#1A211E] text-[#55625A] dark:text-[#9AA8A0] hover:text-[#1B2420] dark:hover:text-[#E8EDE9]'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[11px] font-medium ${
+                      isSelected ? 'text-white/80' : 'text-[#55625A]/70 dark:text-[#9AA8A0]/70'
+                    }`}
+                  >
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Accurate Result Count */}
+          <div className="text-xs text-[#55625A] dark:text-[#9AA8A0] whitespace-nowrap shrink-0">
+            {filteredProducts.length === AYURVEDIC_CATALOG.length
+              ? `${filteredProducts.length} formulations`
+              : `${filteredProducts.length} of ${AYURVEDIC_CATALOG.length} formulations`}
           </div>
         </div>
       </div>
 
-      {/* ─── Category Icon Row (like reference "Medicine / Wellness / Diagnostic / Health Corner") ── */}
-      <div className="mb-8 grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {CATEGORIES.map(({ id, label, icon: Icon, color }) => (
-          <button
-            key={id}
-            onClick={() => setActiveCategory(id as typeof activeCategory)}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-150 group"
-            style={{
-              background: activeCategory === id ? color + '14' : '#FFFFFF',
-              borderColor: activeCategory === id ? color : '#E5E7EB',
-              boxShadow: activeCategory === id
-                ? `0 2px 12px 0 ${color}22`
-                : '0 1px 4px rgba(0,0,0,0.04)',
-            }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: color + '18' }}
-            >
-              <Icon className="w-5 h-5" style={{ color }} />
-            </div>
-            <span className="text-[12px] font-semibold text-center leading-tight" style={{ color: activeCategory === id ? color : '#374151' }}>
-              {label}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* ─── Promo Cards Row (like reference "Medication at one place / Naturally Good / …") ─── */}
-      <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {PROMO_CARDS.map((card) => (
-          <div
-            key={card.id}
-            className="relative rounded-2xl overflow-hidden cursor-pointer transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md"
-            style={{ background: card.bg, minHeight: 120 }}
-          >
-            <div className="p-4 flex flex-col justify-between h-full" style={{ minHeight: 120 }}>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: card.accent, opacity: 0.7 }}>
-                  {card.eyebrow}
-                </p>
-                <h3 className="text-sm font-bold leading-snug whitespace-pre-line" style={{ color: card.accent }}>
-                  {card.title}
-                </h3>
-              </div>
-              <button
-                className="mt-3 flex items-center gap-1 text-[11px] font-semibold transition-opacity"
-                style={{ color: card.accent }}
-              >
-                Shop Now <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <span
-              className="absolute right-3 top-3 text-3xl select-none pointer-events-none"
-              style={{ opacity: 0.35 }}
-            >
-              {card.emoji}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* ─── Products Section ─────────────────────────────────────────── */}
-      <div className="mb-3 flex items-end justify-between">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest mb-0.5" style={{ color: '#0F6E56' }}>
-            Our Daily Products
-          </p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-            Classical Pharmacy Formulations
+      {/* ─── Product Listing Section ─────────────────────────────────── */}
+      <section aria-label="Ayurvedic Formulations Catalog">
+        {/* Section title (Clean sentence case, no gold stars or redundant text) */}
+        <div className="mb-4">
+          <h2 className="text-base font-bold text-[#1B2420] dark:text-[#E8EDE9]">
+            Classical Formulations
           </h2>
         </div>
-        {totalCartCount > 0 && (
-          <button
-            onClick={toggleCart}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-xs font-semibold shadow-md transition hover:scale-105"
-            style={{ background: '#0F6E56' }}
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Regimen Cart ({totalCartCount})
-          </button>
-        )}
-      </div>
 
-      {/* Product star rating legend */}
-      <div className="flex items-center gap-3 mb-6 text-xs text-slate-500">
-        <div className="flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />
+        {/* Responsive Grid with sensible 260px-300px card width */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: '1.25rem',
+          }}
+        >
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
-        <span>AYUSH certified · Clinically matched to your dosha · GMP manufactured</span>
-      </div>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-20 text-slate-400">
-          <FlaskConical className="w-12 h-12 mx-auto mb-3 stroke-[1.5]" />
-          <p className="text-base font-semibold text-slate-600">No formulations matched</p>
-          <p className="text-sm mt-1">Try resetting the category filter or a different search term.</p>
-        </div>
-      )}
-
-      {/* ─── Bottom Trust Strip ────────────────────────────────────────── */}
-      <div
-        className="mt-12 rounded-2xl p-5 flex flex-wrap items-center justify-center gap-6 text-sm"
-        style={{ background: '#EAF4EF', border: '1px solid #C8E6C9' }}
-      >
-        {[
-          { icon: BadgeCheck, text: '100% Authentic Formulations' },
-          { icon: ShieldCheck, text: 'AYUSH Schedule E-1 Compliance' },
-          { icon: Truck, text: 'Pan-India Express Delivery' },
-          { icon: Star, text: 'Clinically Matched to Your Dosha' },
-        ].map(({ icon: Icon, text }) => (
-          <div key={text} className="flex items-center gap-2 text-[#0F6E56] font-medium">
-            <Icon className="w-4 h-4" />
-            <span>{text}</span>
+        {/* Empty state when no formulations match query */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-16 px-4 rounded-lg border border-[#DDD8CB] dark:border-[#2B3530] bg-white dark:bg-[#1A211E] text-[#55625A] dark:text-[#9AA8A0] mt-4">
+            <FileText className="w-10 h-10 mx-auto mb-2 text-[#55625A]/50 dark:text-[#9AA8A0]/50 stroke-[1.5]" />
+            <p className="text-sm font-semibold text-[#1B2420] dark:text-[#E8EDE9]">
+              No formulations match your search or filter criteria
+            </p>
+            <p className="text-xs mt-1">
+              Try resetting the form or dosha filter, or checking for alternate herb names.
+            </p>
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="mt-4 px-3.5 py-1.5 text-xs font-semibold rounded-[8px] border border-[#0E6B52] text-[#0E6B52] dark:border-[#3FB58F] dark:text-[#3FB58F] hover:bg-[#0E6B52]/10 dark:hover:bg-[#3FB58F]/10 transition"
+            >
+              Reset all filters
+            </button>
           </div>
-        ))}
+        )}
+      </section>
+
+      {/* ─── Bottom Trust & Compliance Strip (Accurate copy) ─────────── */}
+      <aside
+        className="mt-12 rounded-[12px] p-5 border border-[#DDD8CB] dark:border-[#2B3530] bg-white dark:bg-[#1A211E] flex flex-wrap items-center justify-around gap-4 text-xs text-[#55625A] dark:text-[#9AA8A0]"
+        aria-label="Quality and compliance standards"
+      >
+        <div className="flex items-center gap-2">
+          <BadgeCheck className="w-4 h-4 text-[#0E6B52] dark:text-[#3FB58F] shrink-0" />
+          <span>Classical Samhita Formulations</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#0E6B52] dark:text-[#3FB58F] shrink-0" />
+          <span>AYUSH Schedule E-1 Prescription Audit</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Truck className="w-4 h-4 text-[#0E6B52] dark:text-[#3FB58F] shrink-0" />
+          <span>Pan-India Express Delivery</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-[#0E6B52] dark:text-[#3FB58F] shrink-0" />
+          <span>Matched to your consultation profile</span>
+        </div>
+      </aside>
+
+      {/* ─── Medical Disclaimer on Store Page ────────────────────────── */}
+      <div className="mt-4 text-center text-[11px] text-[#55625A]/80 dark:text-[#9AA8A0]/80 max-w-2xl mx-auto leading-relaxed">
+        Ayurvedic formulations are traditional preparations grounded in classical pharmacopoeia.
+        Please consult a certified Ayurvedic practitioner before beginning any new medicinal regimen.
       </div>
 
-      {/* Floating cart button (always visible when cart has items) */}
+      {/* ─── Floating Regimen Cart Button ────────────────────────────── */}
       {totalCartCount > 0 && (
         <button
+          type="button"
           onClick={toggleCart}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-xl transition-transform hover:scale-105"
-          style={{ background: 'linear-gradient(135deg, #0F6E56, #0B5B47)' }}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-white font-semibold text-xs shadow-lg bg-[#0E6B52] hover:bg-[#0B5B47] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B52]"
         >
-          <ShoppingBag className="w-5 h-5" />
+          <ShoppingBag className="w-4 h-4" />
           <span>Regimen Cart ({totalCartCount})</span>
-          <ArrowRight className="w-4 h-4" />
         </button>
       )}
 
-      {/* Cart Drawer */}
+      {/* Regimen Cart Drawer */}
       <CartDrawer />
     </div>
   );

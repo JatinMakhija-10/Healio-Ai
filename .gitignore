@@ -153,4 +153,6 @@ HEAD_diff.txt
 get_diff.txt
 tmp_pubmed_check.py
 scripts/test_scrape.js
+__pycache__/
+*.pyc
 

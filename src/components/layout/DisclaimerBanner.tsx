@@ -1,10 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AlertTriangle, ChevronDown, ChevronUp, Info, X } from "lucide-react";
 
 export function DisclaimerBanner() {
     const [expanded, setExpanded] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const isDismissed = sessionStorage.getItem("arovia_disclaimer_dismissed");
+            if (isDismissed === "true") {
+                setDismissed(true);
+            }
+        }
+    }, []);
+
+    const handleDismiss = () => {
+        setDismissed(true);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("arovia_disclaimer_dismissed", "true");
+        }
+    };
+
+    if (dismissed) return null;
 
     return (
         <div className="z-30 select-none border-b border-amber-200 bg-amber-50 text-xs text-amber-900">
@@ -15,13 +34,23 @@ export function DisclaimerBanner() {
                         <strong>Beta</strong> · Arovia.AI is an AI tool, not a substitute for professional medical advice. Results may vary.
                     </span>
                 </div>
-                <button
-                    onClick={() => setExpanded((open) => !open)}
-                    className="ml-2 shrink-0 rounded p-1 transition-colors hover:bg-amber-100"
-                    aria-label={expanded ? "Collapse disclaimer" : "Expand disclaimer"}
-                >
-                    {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => setExpanded((open) => !open)}
+                        className="rounded p-1 transition-colors hover:bg-amber-100"
+                        aria-label={expanded ? "Collapse disclaimer" : "Expand disclaimer"}
+                    >
+                        {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    </button>
+                    <button
+                        onClick={handleDismiss}
+                        className="rounded p-1 transition-colors hover:bg-amber-100 text-amber-800"
+                        aria-label="Dismiss banner"
+                        title="Dismiss banner"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                </div>
             </div>
             {expanded && (
                 <div className="mx-auto max-w-6xl space-y-2 px-4 pb-3 pt-2 md:px-6">

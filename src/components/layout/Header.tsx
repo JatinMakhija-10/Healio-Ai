@@ -24,6 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard/learn": "Learn",
     "/dashboard/videos": "Videos",
     "/dashboard/billing": "Plan & Credits",
+    "/dashboard/store": "Ayurvedic Store",
 };
 
 /** Map notification type → icon + color */
