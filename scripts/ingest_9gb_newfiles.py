@@ -20,9 +20,12 @@ To reset and re-ingest from scratch:
   Delete logs/newfiles_manifest.json and re-run.
 """
 
-import os, sys, re, json, time, unicodedata
+import os, sys, re, json, time, unicodedata, site
 from pathlib import Path
 import requests
+
+if site.getusersitepackages() not in sys.path:
+    sys.path.insert(0, site.getusersitepackages())
 
 # Force UTF-8 output on Windows
 if hasattr(sys.stdout, 'reconfigure'):
@@ -94,6 +97,11 @@ if GEMINI_KEYS:
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 NEWFILES_DIR   = ROOT_DIR / "NEWFiles"
+import os
+os.environ["OMP_NUM_THREADS"] = "12"
+os.environ["MKL_NUM_THREADS"] = "12"
+os.environ["OPENBLAS_NUM_THREADS"] = "12"
+
 PROCESSED_DIR  = ROOT_DIR / "data" / "newfiles_processed"
 MANIFEST_FILE  = ROOT_DIR / "logs" / "newfiles_manifest.json"
 TABLE_NAME     = "ayurvedic_knowledge_embeddings"
@@ -101,8 +109,8 @@ SOURCE_TAG     = "NEWFiles"
 
 CHUNK_SIZE  = 800
 CHUNK_OVERLAP = 150
-EMBED_BATCH = 120     # chunks per Jina API call (max throughput)
-DB_BATCH    = 250     # rows per Supabase INSERT (max throughput)
+EMBED_BATCH = 256     # chunks per batch (max ONNX SIMD throughput)
+DB_BATCH    = 300     # rows per Supabase INSERT
 MIN_CHUNK_LEN = 60    # chars
 
 VALID_EXTS  = {".pdf"}
@@ -288,29 +296,68 @@ def ocr_bytes(img_bytes: bytes) -> str:
             time.sleep(1)
     return ""
 
-# ── Jina Embedding Batch ──────────────────────────────────────────────────────
-def jina_embed_batch(texts: list) -> list:
-    last_err = None
-    max_retries = max(10, len(JINA_KEYS) * 3)
-    for attempt in range(max_retries):
-        key = next_jina_key()
+_local_embed_model = None
+
+def get_local_embedder():
+    global _local_embed_model
+    if _local_embed_model is None:
         try:
-            r = requests.post(
-                "https://api.jina.ai/v1/embeddings",
-                json={"model": "jina-embeddings-v3", "input": texts, "dimensions": 768},
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                timeout=45
-            )
-            if r.status_code == 200:
-                return [d["embedding"] for d in r.json()["data"]]
-            last_err = f"HTTP {r.status_code}: {r.text[:120]}"
+            from fastembed import TextEmbedding
+            print("  ⚡ Loading local 768-dim ONNX embedding model (BAAI/bge-base-en-v1.5)...", flush=True)
+            _local_embed_model = TextEmbedding(model_name="BAAI/bge-base-en-v1.5")
+        except Exception:
+            try:
+                import torch
+                torch.set_num_threads(8)
+                from sentence_transformers import SentenceTransformer
+                print("  ⚡ Loading local 768-dim embedding model (all-mpnet-base-v2)...", flush=True)
+                _local_embed_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+            except Exception as e:
+                print(f"  ❌ Local embedder error: {e}", flush=True)
+    return _local_embed_model
+
+# ── Jina & Local Embedding Batch ──────────────────────────────────────────────
+_jina_quota_exhausted = False
+
+def jina_embed_batch(texts: list) -> list:
+    global _jina_quota_exhausted
+    last_err = None
+    if not _jina_quota_exhausted:
+        for attempt in range(len(JINA_KEYS)):
+            key = next_jina_key()
+            try:
+                r = requests.post(
+                    "https://api.jina.ai/v1/embeddings",
+                    json={"model": "jina-embeddings-v3", "input": texts, "dimensions": 768},
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    timeout=15
+                )
+                if r.status_code == 200:
+                    return [d["embedding"] for d in r.json()["data"]]
+                last_err = f"HTTP {r.status_code}: {r.text[:120]}"
+                if r.status_code == 403 or "INSUFFICIENT_BALANCE" in r.text:
+                    continue
+            except Exception as e:
+                last_err = str(e)
+        _jina_quota_exhausted = True
+        print("  ⚡ Jina API quota exhausted across all keys — switched to 100% Local FastEmbed ONNX Engine (0s network delay).", flush=True)
+
+    # Local fallback
+    embedder = get_local_embedder()
+    if embedder is not None:
+        try:
+            if hasattr(embedder, "embed"):
+                # fastembed TextEmbedding
+                vecs = list(embedder.embed(texts))
+                return [v.tolist() for v in vecs]
+            elif hasattr(embedder, "encode"):
+                # SentenceTransformer
+                vecs = embedder.encode(texts, show_progress_bar=False, batch_size=64)
+                return [v.tolist() for v in vecs]
         except Exception as e:
-            last_err = str(e)
-        
-        sleep_time = min(2 * (attempt + 1), 15)
-        time.sleep(sleep_time)
-        
-    raise RuntimeError(f"Jina embed failed after {max_retries} retries: {last_err}")
+            last_err = f"Local embedder failed: {e}"
+
+    raise RuntimeError(f"All Jina keys and local embedder failed: {last_err}")
 
 # ── Supabase Bulk Insert ───────────────────────────────────────────────────────
 def supabase_insert_batch(rows: list) -> int:
@@ -362,7 +409,7 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
                 page = doc.load_page(pno)
                 raw  = page.get_text("text")
                 if len(raw.strip()) < 40:
-                    pix = page.get_pixmap(dpi=150)
+                    pix = page.get_pixmap(dpi=110)
                     img_bytes = pix.tobytes("png")
             except Exception:
                 pass
@@ -371,6 +418,9 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
             raw = ocr_bytes(img_bytes)
 
         cleaned = clean_text(raw)
+        if (pno + 1) % 25 == 0 or pno == num_pages - 1:
+            print(f"    ↳ Page {pno+1}/{num_pages} processed...", flush=True)
+
         if not cleaned:
             return []
 
@@ -396,7 +446,7 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
         return page_chunks
 
     from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=16) as executor:
         page_results = list(executor.map(_extract_single_page, range(num_pages)))
 
     for p_chunks in page_results:
@@ -429,6 +479,8 @@ def process_one_file(pdf_path: Path, manifest: dict, db_cache: set,
             for k in range(0, len(rows), DB_BATCH):
                 sub = rows[k:k+DB_BATCH]
                 inserted += supabase_insert_batch(sub)
+
+            print(f"    ↳ Embedded & inserted {inserted}/{len(new_chunks)} chunks into Supabase DB...", flush=True)
 
         except Exception as e:
             console.print(f"[red]    Embed/insert error: {e}[/red]" if RICH else f"    Error: {e}")
