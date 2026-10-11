@@ -2,14 +2,21 @@
 """
 Arovia.ai — Interactive Clinical Chatbot CLI Test Tool
 ======================================================
-Allows pair-testing the full clinical RAG pipeline directly from the command line:
-  1. Live Vector Retrieval (311,668 vectors from 186 ingested medical/Ayurvedic books)
-  2. Strict 2-Category Remedy Engine:
-       • Home Remedies (Dadi-Nani ke Nuskhe — Kitchen items only)
-       • Ayurvedic Remedies (Classical Formulations & Herbs)
-  3. High-authority Classical Citations (Charak, Sushrut, Bhavprakash, etc.)
-  4. Ultra-fast LLM Response (Groq Qwen-27B / Gemini fallback)
-  5. Multi-turn conversation memory
+Faithfully mirrors the full web app chatbot experience:
+  1. Multi-turn Clinical Cross-Questioning (Intake Phase):
+       • Empathetically cross-questions the user turn-by-turn.
+       • Clarifies duration, character, aggravating/relieving factors, and red flags.
+       • Exactly one focused clinical question per turn.
+  2. Automatic Phase Transition to Final Assessment:
+       • Triggers after sufficient intake (3 turns) or upon explicit user request.
+  3. Live Vector RAG Retrieval:
+       • Queries 311,668 live indexed vectors from 186 classical medical books.
+       • Displays exact book citations (Charak, Sushrut, Bhavprakash, etc.).
+  4. Strict 2-Category Remedy Engine:
+       • 🌿 Home Remedies (Dadi-Nani ke Nuskhe — Kitchen items only)
+       • 🕉️ Ayurvedic Remedies (Classical Formulations & Text Citations)
+  5. Multi-turn Post-Diagnosis Q&A:
+       • Continue asking follow-up questions within the diagnosed context.
 
 Usage:
   python cli_chat.py
@@ -22,7 +29,7 @@ from pathlib import Path
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# ── ANSI Color Codes for Beautiful CLI UX ─────────────────────────────────────
+# ── ANSI Color Codes for Terminal UI ──────────────────────────────────────────
 class Colors:
     HEADER    = '\033[95m'
     BLUE      = '\033[94m'
@@ -30,6 +37,7 @@ class Colors:
     GREEN     = '\033[92m'
     YELLOW    = '\033[93m'
     RED       = '\033[91m'
+    PURPLE    = '\033[35m'
     BOLD      = '\033[1m'
     DIM       = '\033[2m'
     UNDERLINE = '\033[4m'
@@ -111,10 +119,10 @@ def query_vector_knowledge(query_text: str, top_k: int = 4):
             return r.json(), embed_ms, rpc_ms
         else:
             return [], embed_ms, rpc_ms
-    except Exception as e:
+    except Exception:
         return [], embed_ms, (time.time() - t1) * 1000
 
-# ── Groq / Gemini LLM Query ───────────────────────────────────────────────────
+# ── Robust Multi-Key LLM Call ─────────────────────────────────────────────────
 def call_llm(messages: list) -> str:
     """Call Groq (Qwen 27B / GPT-OSS) with fallback to Gemini across key pools."""
     # 1. Try Groq key pool
@@ -133,15 +141,15 @@ def call_llm(messages: list) -> str:
                     json={
                         "model": model,
                         "messages": messages,
-                        "temperature": 0.4,
-                        "max_tokens": 1200
+                        "temperature": 0.35,
+                        "max_tokens": 1400
                     },
-                    timeout=12
+                    timeout=14
                 )
                 if resp.status_code == 200:
                     return resp.json()["choices"][0]["message"]["content"]
                 elif resp.status_code == 429:
-                    break # try next key on rate limit
+                    break
             except Exception:
                 continue
 
@@ -166,9 +174,9 @@ def call_llm(messages: list) -> str:
                 json={
                     "systemInstruction": {"parts": [{"text": sys_prompt}]},
                     "contents": gem_contents,
-                    "generationConfig": {"temperature": 0.4, "maxOutputTokens": 1200}
+                    "generationConfig": {"temperature": 0.35, "maxOutputTokens": 1400}
                 },
-                timeout=12
+                timeout=14
             )
             if resp.status_code == 200:
                 return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
@@ -177,124 +185,214 @@ def call_llm(messages: list) -> str:
 
     return "Error: Could not obtain response from AI services (all Groq and Gemini keys exhausted)."
 
-# ── System Instruction Template ───────────────────────────────────────────────
-SYSTEM_PROMPT = """You are Arovia.ai's Clinical Health Assistant — an integrative medical AI combining modern clinical discernment, authentic Ayurvedic science, and evidence-informed Indian home remedies.
+# ── System Prompts ────────────────────────────────────────────────────────────
+INTAKE_SYSTEM_PROMPT = """You are Arovia.ai's Clinical Intake Doctor — an empathetic, attentive integrative health physician.
 
-CRITICAL REMEDY CATEGORIZATION RULES:
-Always structure remedy guidance into STRICTLY TWO DISTINCT CATEGORIES:
+CURRENT PHASE: INTAKE (CROSS-QUESTIONING)
+Your role is to conduct an active medical intake interview. You MUST NOT diagnose or prescribe remedies yet.
 
-1. 🌿 HOME REMEDIES (Dadi-Nani ke Nuskhe)
-   - Scope: IMMEDIATE kitchen-shelf items ONLY (Haldi, Adrak, Tulsi, Ajwain, Jeera, Hing, Lemon, Raw Honey, Pudina, Methi seeds, Mustard Oil, etc.).
-   - Accessibility: 0 pharmacy or prescription needed.
-   - For each remedy: State ingredient quantities, exact preparation method, timing, and frequency.
+STRICT INTAKE INSTRUCTIONS:
+1. Empathy: Begin with exactly ONE warm, reassuring sentence acknowledging the patient's newest symptom or reply.
+2. Cross-Questioning: Ask EXACTLY ONE clinically focused, highly relevant follow-up question to narrow down the differential diagnosis:
+   - Clarify onset, exact location, and sensation (throbbing, burning, dull, sharp, colicky).
+   - Clarify aggravating & relieving factors (modalities: worse with food, fasting, night, stress, cold/heat).
+   - Check associated symptoms (nausea, fever, digestion, bowel movements, sleep, skin signs).
+   - Screen for red flags (sudden severe spikes, dizziness, difficulty breathing, radiation to chest/jaw).
+3. Brevity: Keep your total response under 3-4 sentences. Do NOT overwhelm the patient.
+4. ABSOLUTE RULE: DO NOT name diseases, DO NOT give diagnoses, and DO NOT give home remedies or medications yet! The patient must first answer your intake questions.
+"""
 
-2. 🕉️ AYURVEDIC REMEDIES (Classical Herbs & Formulations)
+SUMMARY_SYSTEM_PROMPT = """You are Arovia.ai's Senior Integrative Physician delivering the Comprehensive Final Clinical Assessment and Remedy Plan based on the completed intake and retrieved classical medical literature.
+
+STRUCTURE YOUR RESPONSE INTO THESE STRICT SECTIONS:
+
+1. 🩺 PRIMARY CLINICAL ASSESSMENT & DIFFERENTIALS
+   - Primary Clinical Pattern & Bayesian Confidence (e.g., 88% Confidence)
+   - Underlying Dosha & Agni Imbalance (e.g., aggravated Pitta-Vata, sluggish Jatharagni, Ama accumulation)
+   - 2-3 Plausible Differential Diagnoses and clinical rationale for considering them.
+
+2. 🌿 HOME REMEDIES (Dadi-Nani ke Nuskhe — Household Kitchen Items)
+   - Scope: IMMEDIATE kitchen-shelf items ONLY (Haldi, Adrak, Tulsi, Ajwain, Jeera, Hing, Lemon, Raw Honey, Methi, Buttermilk, Saunf, etc.).
+   - Accessibility: 0 pharmacy or doctor prescription needed.
+   - For each remedy: State ingredient quantities, step-by-step preparation, timing, and frequency.
+
+3. 🕉️ AYURVEDIC REMEDIES (Classical Herbs & Formulations)
    - Scope: Classical Ayurvedic herbs and formulations (Triphala, Ashwagandha, Yograj Guggulu, Sitopaladi Churna, Avipattikar Churna, Kaishore Guggulu, Maharasnadi Kwath, Vasavaleha, etc.).
-   - Authority: Cite the specific classical treatise or text (e.g. Charak Samhita, Sushrut Samhita, Bhavprakash Nighantu).
-   - For each formulation: State recommended dosage, anupana (vehicle: warm water, honey, or ghee), and optimal timing.
+   - Classical Text Citation: Explicitly cite the specific treatise (e.g., Charak Samhita, Sushrut Samhita, Bhavprakash Nighantu, Shalya Tantra).
+   - Preparation, recommended dosage, anupana (vehicle: warm water, honey, or ghee), and optimal timing.
 
-CLINICAL SAFETY RULES:
-- Always highlight Red Flags & Warning Signs (when the patient MUST seek emergency care).
-- Include clear Contraindications (e.g., pregnancy, high blood pressure, diabetes, acid peptic disease).
-- Always include the Arovia medical disclaimer: "Arovia provides health education and traditional wellness guidance, not a medical diagnosis. Consult a qualified physician for persistent or worsening symptoms."
+4. ⚠️ RED FLAGS & WHEN TO CONSULT A DOCTOR
+   - Warning signs requiring urgent in-person medical evaluation.
+   - Specific contraindications (e.g. pregnancy, chronic kidney/liver disease, hypertension).
+
+5. 🛡️ AROVIA MEDICAL DISCLAIMER
+   - "Arovia provides health education and traditional wellness guidance, not a medical diagnosis. Consult a qualified physician for persistent, severe, or worsening symptoms."
+"""
+
+FOLLOWUP_SYSTEM_PROMPT = """You are Arovia.ai's Clinical Health Assistant answering patient follow-up questions regarding their previously established assessment and remedy plan.
+Answer clearly, warmly, and practically. Always reinforce safety, dosage timing, and physician consultation when needed.
 """
 
 # ── Interactive CLI Loop ──────────────────────────────────────────────────────
 def run_cli():
     print(f"{Colors.BOLD}{Colors.HEADER}{'=' * 75}{Colors.RESET}")
-    print(f"{Colors.BOLD}{Colors.GREEN} 🩺  AROVIA.AI CLINICAL CHATBOT — INTERACTIVE CLI TESTING SUITE{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.GREEN} 🩺  AROVIA.AI CLINICAL CHATBOT — INTERACTIVE CLI ENGINE{Colors.RESET}")
     print(f"{Colors.BOLD}{Colors.HEADER}{'=' * 75}{Colors.RESET}")
+    print(f"{Colors.CYAN} • Mode           : {Colors.BOLD}Full Clinical Intake & Active Cross-Questioning{Colors.RESET}")
     print(f"{Colors.CYAN} • Knowledge Base : {Colors.BOLD}311,668 Live Indexed Vectors (186 Medical/Ayurvedic Books){Colors.RESET}")
-    print(f"{Colors.CYAN} • Vector Index    : {Colors.BOLD}Active IVFFlat (idx_ayurvedic_knowledge_ivfflat){Colors.RESET}")
-    print(f"{Colors.CYAN} • LLM Engine     : {Colors.BOLD}Groq Qwen-27B (~400ms) / Gemini Flash Fallback{Colors.RESET}")
-    print(f"{Colors.CYAN} • Embeddings     : {Colors.BOLD}Local FastEmbed ONNX (BAAI/bge-base-en-v1.5){Colors.RESET}")
+    print(f"{Colors.CYAN} • Remedy Rules   : {Colors.BOLD}Strict 2-Category (Home Remedies vs Classical Ayurveda){Colors.RESET}")
+    print(f"{Colors.CYAN} • AI Engine      : {Colors.BOLD}Groq Qwen-27B (~400ms) / Gemini Flash Fallback{Colors.RESET}")
     print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}")
-    print(f"{Colors.YELLOW} Commands:{Colors.RESET}")
-    print(f"   • Type your symptoms (e.g. {Colors.BOLD}'acid reflux heartburn for 3 days'{Colors.RESET})")
-    print(f"   • Type {Colors.BOLD}'clear'{Colors.RESET} to reset conversation memory")
-    print(f"   • Type {Colors.BOLD}'exit'{Colors.RESET} or {Colors.BOLD}'quit'{Colors.RESET} to exit")
+    print(f"{Colors.YELLOW} Workflow:{Colors.RESET}")
+    print(f"   1. Tell the chatbot what you're experiencing (e.g. {Colors.BOLD}'I have bad acid reflux'{Colors.RESET})")
+    print(f"   2. The AI doctor will {Colors.BOLD}cross-question you{Colors.RESET} to narrow down the clinical picture.")
+    print(f"   3. After intake (or when you say {Colors.BOLD}'diagnose me'{Colors.RESET}), it retrieves from the 186 books")
+    print(f"      and outputs the {Colors.BOLD}Full Clinical Assessment Card & 2-Category Remedies{Colors.RESET}.")
+    print(f"   4. Type {Colors.BOLD}'clear'{Colors.RESET} to start fresh, or {Colors.BOLD}'exit'{Colors.RESET} to quit.")
     print(f"{Colors.BOLD}{Colors.HEADER}{'=' * 75}{Colors.RESET}\n")
 
     history = []
+    intake_turn = 0
+    phase = "intake" # "intake" -> "summary" -> "post_summary"
+    user_symptoms_summary = []
+
+    EARLY_SUMMARY_TRIGGERS = [
+        "diagnose", "diagnosis", "remedy", "remedies", "prescription",
+        "tell me what to take", "what should i take", "treatment", "give me remedies"
+    ]
 
     while True:
         try:
-            user_input = input(f"{Colors.BOLD}{Colors.BLUE}You > {Colors.RESET}").strip()
+            prompt_label = f"{Colors.BOLD}{Colors.BLUE}You > {Colors.RESET}"
+            user_input = input(prompt_label).strip()
         except (KeyboardInterrupt, EOFError):
-            print(f"\n{Colors.YELLOW}Exiting Arovia CLI. Stay healthy!{Colors.RESET}")
+            print(f"\n{Colors.YELLOW}Exiting Arovia CLI. Take care!{Colors.RESET}")
             break
 
         if not user_input:
             continue
 
         if user_input.lower() in ["exit", "quit", "q"]:
-            print(f"\n{Colors.YELLOW}Goodbye from Arovia.ai! 👋{Colors.RESET}")
+            print(f"\n{Colors.YELLOW}Goodbye from Arovia.ai! Stay healthy! 👋{Colors.RESET}")
             break
 
         if user_input.lower() == "clear":
             history = []
-            print(f"{Colors.GREEN}✓ Conversation memory cleared.{Colors.RESET}\n")
+            intake_turn = 0
+            phase = "intake"
+            user_symptoms_summary = []
+            print(f"{Colors.GREEN}✓ Conversation reset. Ready for new consultation.{Colors.RESET}\n")
             continue
 
-        # ── Step 1: Vector RAG Retrieval ──────────────────────────────────────
-        print(f"\n{Colors.DIM}🔍 Querying 311k indexed vectors across 186 classical books...{Colors.RESET}", end="\r", flush=True)
-        chunks, t_embed, t_rpc = query_vector_knowledge(user_input, top_k=4)
-        
-        # Display RAG Citations Box
-        print(f"{Colors.CYAN}┌── 📚 KNOWLEDGE BASE RETRIEVAL ({len(chunks)} citations in {t_rpc:.0f}ms | embed: {t_embed:.0f}ms) ──────────{Colors.RESET}")
-        rag_context_parts = []
-        if chunks:
-            for idx, c in enumerate(chunks, 1):
-                book = c.get("book", "Classical Treatise")
-                section = c.get("section", "General")
-                sim = c.get("similarity", 0)
-                text = c.get("text", "").replace("\n", " ")
-                print(f"{Colors.CYAN}│{Colors.RESET} [{idx}] {Colors.BOLD}{book}{Colors.RESET} | {Colors.DIM}{section}{Colors.RESET} ({Colors.GREEN}{sim*100:.1f}% match{Colors.RESET})")
-                rag_context_parts.append(f"[{idx}] Source: {book} | Section: {section} | Match: {sim*100:.0f}%\nExcerpt: {text}")
-        else:
-            print(f"{Colors.CYAN}│{Colors.RESET} {Colors.DIM}No direct vector threshold match (using classical medical baseline).{Colors.RESET}")
-        print(f"{Colors.CYAN}└{'─' * 65}{Colors.RESET}\n")
+        user_symptoms_summary.append(user_input)
 
-        # ── Step 2: Build LLM Prompt ──────────────────────────────────────────
-        rag_text = "\n\n".join(rag_context_parts) if rag_context_parts else "No specific text excerpts retrieved."
-        turn_prompt = f"""PATIENT SYMPTOM / QUERY:
+        # Check if user requested early summary
+        user_wants_early_summary = any(trig in user_input.lower() for trig in EARLY_SUMMARY_TRIGGERS)
+
+        # Determine phase transition
+        if phase == "intake":
+            intake_turn += 1
+            if intake_turn >= 3 or user_wants_early_summary:
+                phase = "summary"
+
+        # ── Handle INTAKE Phase (Cross-Questioning) ───────────────────────────
+        if phase == "intake":
+            print(f"\n{Colors.YELLOW}⏳ [Clinical Intake Phase — Question {intake_turn} of 3]{Colors.RESET}")
+            print(f"{Colors.DIM}Doctor analyzing symptom history & formulating clinical cross-question...{Colors.RESET}", end="\r", flush=True)
+
+            messages = [{"role": "system", "content": INTAKE_SYSTEM_PROMPT}]
+            for h in history:
+                messages.append(h)
+            messages.append({"role": "user", "content": user_input})
+
+            t0 = time.time()
+            reply = call_llm(messages)
+            t_ms = (time.time() - t0) * 1000
+
+            history.append({"role": "user", "content": user_input})
+            history.append({"role": "assistant", "content": reply})
+
+            print(f"{Colors.BOLD}{Colors.GREEN}Arovia Doctor ({t_ms:.0f}ms){Colors.RESET}:")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}")
+            print(f"{reply}")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}\n")
+
+        # ── Handle SUMMARY Phase (Final Diagnosis & Remedies) ─────────────────
+        elif phase == "summary":
+            full_case_text = " | ".join(user_symptoms_summary)
+            print(f"\n{Colors.PURPLE}📋 [Intake Complete — Running Live RAG Across 311k Vectors & 186 Books...]{Colors.RESET}")
+            
+            chunks, t_embed, t_rpc = query_vector_knowledge(full_case_text, top_k=5)
+
+            # Display RAG Citations Box
+            print(f"{Colors.CYAN}┌── 📚 KNOWLEDGE BASE CITATIONS RETRIEVED ({len(chunks)} sources | {t_rpc:.0f}ms) ──────────{Colors.RESET}")
+            rag_context_parts = []
+            if chunks:
+                for idx, c in enumerate(chunks, 1):
+                    book = c.get("book", "Classical Medical Text")
+                    section = c.get("section", "General")
+                    sim = c.get("similarity", 0)
+                    text = c.get("text", "").replace("\n", " ")
+                    print(f"{Colors.CYAN}│{Colors.RESET} [{idx}] {Colors.BOLD}{book}{Colors.RESET} | {Colors.DIM}{section}{Colors.RESET} ({Colors.GREEN}{sim*100:.1f}% match{Colors.RESET})")
+                    rag_context_parts.append(f"[{idx}] Book: {book} | Section: {section} | Relevance: {sim*100:.0f}%\nExcerpt: {text}")
+            else:
+                print(f"{Colors.CYAN}│{Colors.RESET} {Colors.DIM}Direct match threshold not met; using baseline classical pharmacopoeia.{Colors.RESET}")
+            print(f"{Colors.CYAN}└{'─' * 65}{Colors.RESET}\n")
+
+            rag_text = "\n\n".join(rag_context_parts)
+            summary_user_prompt = f"""PATIENT INTAKE SUMMARY & FULL SYMPTOM PROFILE:
+{full_case_text}
+
+LATEST PATIENT INPUT:
 "{user_input}"
 
 RETRIEVED KNOWLEDGE BASE EXCERPTS (186 Ingested Books):
 {rag_text}
 
-Provide your complete clinical response strictly formatted into:
-1. Primary Assessment & Differential Considerations
-2. 🌿 Home Remedies (Dadi-Nani ke Nuskhe — Household kitchen items only)
-3. 🕉️ Ayurvedic Remedies (Classical formulations with dosage and citations)
-4. Red Flags & When to Consult a Doctor
-5. Medical Disclaimer
+Now synthesize the complete intake and generate the full Clinical Assessment Card with strict 2-Category Remedies (Home Remedies vs Ayurvedic Remedies) as instructed.
 """
 
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        for h in history:
-            messages.append(h)
-        messages.append({"role": "user", "content": turn_prompt})
+            messages = [{"role": "system", "content": SUMMARY_SYSTEM_PROMPT}]
+            for h in history:
+                messages.append(h)
+            messages.append({"role": "user", "content": summary_user_prompt})
 
-        # ── Step 3: Stream/Fetch AI Response ──────────────────────────────────
-        print(f"{Colors.DIM}🧠 Generating clinical response via Arovia Medical Engine...{Colors.RESET}", end="\r", flush=True)
-        t_llm0 = time.time()
-        reply = call_llm(messages)
-        t_llm = (time.time() - t_llm0) * 1000
+            print(f"{Colors.DIM}🧠 Synthesizing final clinical diagnosis card & source-backed remedy plan...{Colors.RESET}", end="\r", flush=True)
+            t0 = time.time()
+            reply = call_llm(messages)
+            t_ms = (time.time() - t0) * 1000
 
-        # Update multi-turn history
-        history.append({"role": "user", "content": user_input})
-        history.append({"role": "assistant", "content": reply})
+            history.append({"role": "user", "content": user_input})
+            history.append({"role": "assistant", "content": reply})
 
-        # Keep history bounded to last 6 turns
-        if len(history) > 12:
-            history = history[-12:]
+            print(f"{Colors.BOLD}{Colors.GREEN}Arovia Senior Physician ({t_ms:.0f}ms){Colors.RESET}:")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}")
+            print(f"{reply}")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}\n")
 
-        # ── Step 4: Display Formatted AI Output ───────────────────────────────
-        print(f"{Colors.BOLD}{Colors.GREEN}Arovia.ai ({t_llm:.0f}ms){Colors.RESET}:")
-        print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}")
-        print(reply)
-        print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}\n")
+            phase = "post_summary"
+            print(f"{Colors.YELLOW}💬 Clinical assessment delivered! You can now ask any follow-up questions (e.g. timing, interactions, or modifications).{Colors.RESET}\n")
+
+        # ── Handle POST-SUMMARY Phase (Follow-up Q&A) ─────────────────────────
+        else:
+            print(f"{Colors.DIM}Consulting clinical context for follow-up guidance...{Colors.RESET}", end="\r", flush=True)
+            messages = [{"role": "system", "content": FOLLOWUP_SYSTEM_PROMPT}]
+            # Keep recent history
+            for h in history[-8:]:
+                messages.append(h)
+            messages.append({"role": "user", "content": user_input})
+
+            t0 = time.time()
+            reply = call_llm(messages)
+            t_ms = (time.time() - t0) * 1000
+
+            history.append({"role": "user", "content": user_input})
+            history.append({"role": "assistant", "content": reply})
+
+            print(f"{Colors.BOLD}{Colors.GREEN}Arovia Clinical Assistant ({t_ms:.0f}ms){Colors.RESET}:")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}")
+            print(f"{reply}")
+            print(f"{Colors.DIM}{'─' * 75}{Colors.RESET}\n")
 
 if __name__ == "__main__":
     run_cli()
