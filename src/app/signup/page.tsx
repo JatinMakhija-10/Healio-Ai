@@ -1,17 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { AroviaLogo } from '@/components/ui/AroviaLogo';
 
 export default function SignupPage() {
-    const { signup, signInWithGoogle } = useAuth();
+    const router = useRouter();
+    const { signup, signInWithGoogle, user, loading: authLoading, role } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            const target = role === 'admin' ? '/admin' : role === 'doctor' ? '/doctor' : '/dashboard';
+            router.replace(target);
+        }
+    }, [authLoading, user, role, router]);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,6 +60,14 @@ export default function SignupPage() {
             setGoogleLoading(false);
         }
     };
+
+    if (authLoading || user) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2]">
+                <AroviaLogo variant="icon" size={48} priority className="animate-pulse" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2] py-6 px-4">

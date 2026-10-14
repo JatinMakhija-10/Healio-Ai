@@ -2,9 +2,59 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldAlert, Tag, Check, Sparkles } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingBag,
+  ArrowRight,
+  ShieldAlert,
+  Tag,
+  Check,
+  Sparkles,
+  Leaf,
+  PackageCheck,
+  Truck,
+  Gift,
+} from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 
+/* ── Progress bar toward free shipping ──────────────────────────────── */
+function FreeShippingBar({ subtotal }: { subtotal: number }) {
+  const threshold = 499;
+  const progress = Math.min(100, (subtotal / threshold) * 100);
+  const remaining = Math.max(0, threshold - subtotal);
+
+  if (subtotal >= threshold) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium">
+        <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+        🎉 You&apos;ve unlocked <strong>FREE delivery</strong>!
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-[11px] text-slate-500">
+        <span className="flex items-center gap-1">
+          <Truck className="w-3.5 h-3.5" />
+          Add <strong className="text-slate-700">₹{remaining}</strong> more for free delivery
+        </span>
+        <span className="font-semibold text-[#0F6E56]">{Math.round(progress)}%</span>
+      </div>
+      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-[#0F6E56] to-emerald-400 rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── Main CartDrawer ─────────────────────────────────────────────────── */
 export const CartDrawer: React.FC = () => {
   const {
     items,
@@ -12,6 +62,7 @@ export const CartDrawer: React.FC = () => {
     setOpen,
     updateQuantity,
     removeItem,
+    clearCart,
     subtotalInINR,
     discountInINR,
     shippingInINR,
@@ -19,21 +70,23 @@ export const CartDrawer: React.FC = () => {
     requiresPrescriptionAudit,
     appliedCoupon,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
   } = useCartStore();
 
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  const totalCount = items.reduce((s, i) => s + i.quantity, 0);
+
   if (!isOpen) return null;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!couponInput) return;
+    if (!couponInput.trim()) return;
     const ok = applyCoupon(couponInput);
     if (!ok) {
-      setCouponError('Invalid coupon code. Try AROVIA10');
+      setCouponError('Invalid coupon. Try AROVIA10');
     } else {
       setCouponError('');
       setCouponInput('');
@@ -43,20 +96,11 @@ export const CartDrawer: React.FC = () => {
   const handleProceedToCheckout = async () => {
     setIsCheckingOut(true);
     try {
-      // Simulate checkout order initialization
       const res = await fetch('/api/ecommerce/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cart: {
-            id: 'cart_current',
-            items,
-            subtotalInINR,
-            discountInINR,
-            shippingInINR,
-            totalInINR,
-            requiresPrescriptionAudit
-          },
+          cart: { id: 'cart_current', items, subtotalInINR, discountInINR, shippingInINR, totalInINR, requiresPrescriptionAudit },
           shippingAddress: {
             fullName: 'Ayurvedic Patient',
             phone: '+91 98765 43210',
@@ -65,124 +109,162 @@ export const CartDrawer: React.FC = () => {
             state: 'Delhi',
             postalCode: '110001',
             country: 'India',
-            email: 'patient@arovia.ai'
-          }
-        })
+            email: 'patient@arovia.ai',
+          },
+        }),
       });
-
       const data = await res.json();
       if (data.success) {
         alert(`Order Confirmed!\nOrder ID: ${data.order.id}\nStatus: ${data.order.status}\nFulfillment: Processing with Arovia Logistics`);
+        clearCart();
         setOpen(false);
       } else {
         alert(`Checkout Error: ${data.error}`);
       }
-    } catch (err: any) {
-      alert(`Checkout failed: ${err.message}`);
+    } catch (err: unknown) {
+      alert(`Checkout failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsCheckingOut(false);
     }
   };
 
   return (
+    /* ── Overlay ──────────────────────────────────────────────────────── */
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={() => setOpen(false)}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white dark:bg-zinc-900 shadow-2xl flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                Prescribed Ayurvedic Regimen ({items.reduce((s, i) => s + i.quantity, 0)})
-              </h2>
+      {/* Drawer panel */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none">
+        <div className="w-screen max-w-md pointer-events-auto flex flex-col bg-[#FDFAF6] shadow-2xl border-l border-[#E8E3DC]">
+
+          {/* ── Header ───────────────────────────────────────────────── */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E3DC] bg-white">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-[#EAF4EF] flex items-center justify-center">
+                <ShoppingBag className="w-4 h-4 text-[#0F6E56]" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 leading-none">Ayurvedic Regimen</h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">{totalCount} item{totalCount !== 1 ? 's' : ''} in your cart</p>
+              </div>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {items.length > 0 && (
+                <button
+                  onClick={clearCart}
+                  className="text-[11px] text-slate-400 hover:text-red-500 transition underline underline-offset-2"
+                >
+                  Clear all
+                </button>
+              )}
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Schedule E-1 Prescription Notification */}
+          {/* ── Schedule E-1 Prescription Warning ─────────────────── */}
           {requiresPrescriptionAudit && (
-            <div className="mx-4 mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
-              <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="mx-4 mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+              <ShieldAlert className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <strong className="font-semibold">AYUSH Schedule E-1 Compliance: </strong>
-                Your cart contains potent classical herbs requiring BAMS physician sign-off. Arovia will attach your diagnostic verification automatically.
+                Your cart contains potent herbs requiring BAMS physician sign-off. Arovia will attach your diagnostic verification automatically.
               </div>
             </div>
           )}
 
-          {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* ── Free Shipping Progress ─────────────────────────────── */}
+          {items.length > 0 && (
+            <div className="px-4 pt-3">
+              <FreeShippingBar subtotal={subtotalInINR} />
+            </div>
+          )}
+
+          {/* ── Cart Items ────────────────────────────────────────── */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
             {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-zinc-400">
-                <ShoppingBag className="w-12 h-12 mb-3 stroke-[1.5]" />
-                <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300">Your regimen cart is empty</p>
-                <p className="text-xs text-zinc-500 mt-1">Items recommended from your consultation report can be added here.</p>
+              <div className="h-full flex flex-col items-center justify-center text-center py-16 px-6">
+                <div className="w-20 h-20 rounded-full bg-[#EAF4EF] flex items-center justify-center mb-4">
+                  <Leaf className="w-10 h-10 text-[#0F6E56] stroke-[1.5]" />
+                </div>
+                <p className="font-semibold text-slate-800 text-sm">Your regimen is empty</p>
+                <p className="text-xs text-slate-500 mt-1.5 max-w-[220px] leading-relaxed">
+                  Add Ayurvedic products matched to your dosha from the pharmacy.
+                </p>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="mt-5 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-[#0F6E56] hover:bg-[#0B5B47] transition shadow-sm"
+                >
+                  Browse Products
+                </button>
               </div>
             ) : (
               items.map((item) => (
                 <div
                   key={item.productId}
-                  className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40 flex gap-3"
+                  className="flex gap-3 p-3 rounded-2xl bg-white border border-[#E8E3DC] shadow-sm hover:shadow transition-shadow"
                 >
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
-                    />
+                  {/* Thumbnail */}
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#EAF4EF] border border-[#D4EDE5]">
+                    {item.imageUrl ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Leaf className="w-7 h-7 text-[#0F6E56]" />
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-1">
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1">
-                          {item.title}
-                        </h4>
-                        <button
-                          onClick={() => removeItem(item.productId)}
-                          className="text-zinc-400 hover:text-red-500 transition p-0.5"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        {item.brand}
-                      </p>
-                      {item.traceability && (
-                        <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
-                          Dosage: {item.traceability.recommendedDosage}
-                        </p>
-                      )}
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-1">
+                      <h4 className="text-xs font-semibold text-slate-900 line-clamp-2 leading-snug">{item.title}</h4>
+                      <button
+                        onClick={() => removeItem(item.productId)}
+                        className="p-0.5 text-slate-300 hover:text-red-500 transition flex-shrink-0"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{item.brand}</p>
+                    {item.traceability && (
+                      <p className="text-[10px] text-[#0F6E56] font-medium mt-0.5">
+                        Dosage: {item.traceability.recommendedDosage}
+                      </p>
+                    )}
 
-                    <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-200/60 dark:border-zinc-700/60">
-                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                    {/* Price + Qty */}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-bold text-slate-900">
                         ₹{item.unitPriceInINR * item.quantity}
                       </span>
-                      <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-1.5 py-0.5">
+                      <div className="flex items-center gap-1 bg-[#F5F3EF] border border-[#E0DDD8] rounded-lg px-1.5 py-0.5">
                         <button
                           onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          className="p-0.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-300"
+                          className="p-0.5 text-slate-600 hover:text-slate-900 transition"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
-                        <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
+                        <span className="text-xs font-semibold w-4 text-center text-slate-800">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          className="p-0.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-300"
+                          className="p-0.5 text-slate-600 hover:text-slate-900 transition"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -194,76 +276,105 @@ export const CartDrawer: React.FC = () => {
             )}
           </div>
 
-          {/* Footer & Checkout */}
+          {/* ── Footer / Checkout ────────────────────────────────── */}
           {items.length > 0 && (
-            <div className="p-5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 space-y-3">
-              {/* Coupon Code Section */}
-              <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400" />
-                  <input
-                    type="text"
-                    placeholder="Coupon (e.g. AROVIA10)"
-                    value={couponInput}
-                    onChange={(e) => setCouponInput(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-3 py-1.5 text-xs font-medium rounded-xl bg-zinc-800 hover:bg-zinc-900 text-white dark:bg-zinc-700 dark:hover:bg-zinc-600 transition"
-                >
-                  Apply
-                </button>
-              </form>
+            <div className="border-t border-[#E8E3DC] bg-white px-5 py-4 space-y-3">
 
-              {couponError && <p className="text-[11px] text-red-500">{couponError}</p>}
-              {appliedCoupon && (
-                <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg">
-                  <span className="flex items-center gap-1 font-medium">
-                    <Sparkles className="w-3 h-3" /> {appliedCoupon} applied (-₹{discountInINR})
+              {/* Coupon */}
+              {!appliedCoupon ? (
+                <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Coupon code (e.g. AROVIA10)"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-[#E0DDD8] bg-[#F8F5F0] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F6E56]/30 transition"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-900 text-white transition"
+                  >
+                    Apply
+                  </button>
+                </form>
+              ) : (
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                  <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                    <Gift className="w-3.5 h-3.5" />
+                    {appliedCoupon} — saving ₹{discountInINR}
                   </span>
-                  <button onClick={removeCoupon} className="text-[11px] underline">Remove</button>
+                  <button onClick={removeCoupon} className="text-slate-400 hover:text-red-500 transition">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               )}
 
-              {/* Price Calculation Summary */}
-              <div className="space-y-1.5 text-xs pt-2 border-t border-zinc-200/80 dark:border-zinc-800">
-                <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
-                  <span>Subtotal</span>
+              {couponError && (
+                <p className="text-[11px] text-red-500 -mt-1">{couponError}</p>
+              )}
+
+              {/* Price summary */}
+              <div className="space-y-1.5 text-xs pt-1">
+                <div className="flex justify-between text-slate-600">
+                  <span>Subtotal ({totalCount} items)</span>
                   <span>₹{subtotalInINR}</span>
                 </div>
                 {discountInINR > 0 && (
-                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
-                    <span>Discount</span>
-                    <span>-₹{discountInINR}</span>
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Coupon discount</span>
+                    <span>−₹{discountInINR}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
-                  <span>Standard Shipping</span>
-                  <span>{shippingInINR === 0 ? <strong className="text-emerald-600 font-medium">FREE</strong> : `₹${shippingInINR}`}</span>
+                <div className="flex justify-between text-slate-600">
+                  <span>Delivery</span>
+                  <span>
+                    {shippingInINR === 0
+                      ? <strong className="text-emerald-700 font-semibold">FREE</strong>
+                      : `₹${shippingInINR}`}
+                  </span>
                 </div>
-                {shippingInINR > 0 && (
-                  <p className="text-[10px] text-zinc-400">Add ₹{499 - subtotalInINR} more for free delivery</p>
-                )}
-                <div className="flex justify-between font-bold text-sm text-zinc-900 dark:text-zinc-100 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                  <span>Total (inc. GST)</span>
+                <div className="flex justify-between font-bold text-sm text-slate-900 pt-2 border-t border-[#E8E3DC]">
+                  <span>Total (incl. GST)</span>
                   <span>₹{totalInINR}</span>
                 </div>
               </div>
 
-              {/* Checkout CTA */}
+              {/* Trust badges */}
+              <div className="flex items-center justify-center gap-4 pt-1">
+                {[
+                  { icon: PackageCheck, label: 'Authentic' },
+                  { icon: Sparkles, label: 'AYUSH Certified' },
+                  { icon: Truck, label: 'Express Delivery' },
+                ].map(({ icon: Icon, label }) => (
+                  <div key={label} className="flex flex-col items-center gap-0.5">
+                    <Icon className="w-3.5 h-3.5 text-[#0F6E56]" />
+                    <span className="text-[9px] text-slate-500 font-medium">{label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
               <button
                 type="button"
                 onClick={handleProceedToCheckout}
                 disabled={isCheckingOut}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: isCheckingOut ? '#9CA3AF' : 'linear-gradient(135deg, #0F6E56, #0B5B47)' }}
               >
                 {isCheckingOut ? (
-                  <span>Processing your order…</span>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Processing your order…
+                  </span>
                 ) : (
                   <>
-                    <span>Proceed to Direct Checkout</span>
+                    <span>Proceed to Checkout</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

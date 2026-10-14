@@ -40,8 +40,81 @@ const PHASE2_TOP_LEVEL_ROUTES = [
     '/inbox',
 ];
 
+function redirectWithCookies(targetUrl: URL | string, sourceResponse: NextResponse): NextResponse {
+    const redirectResponse = NextResponse.redirect(targetUrl);
+    sourceResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
+}
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
+    let supabaseResponse = NextResponse.next({ request });
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        return supabaseResponse;
+    }
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookieOptions: {
+            maxAge: 400 * 24 * 60 * 60,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        },
+        cookies: {
+            getAll() {
+                return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value }) =>
+                    request.cookies.set(name, value)
+                );
+                supabaseResponse = NextResponse.next({ request });
+                cookiesToSet.forEach(({ name, value, options }) =>
+                    supabaseResponse.cookies.set(name, value, options)
+                );
+            },
+        },
+    });
+
+    // Refresh and validate session using getUser() — ensures token is refreshed before it expires
+    let user = null;
+    let authErrorOccurred = false;
+    try {
+        const userPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((resolve) =>
+            setTimeout(() => resolve({ data: { user: null }, error: new Error('Auth timeout') }), 6000)
+        );
+        const { data: { user: verifiedUser }, error } = await Promise.race([userPromise, timeoutPromise]);
+        if (error) {
+            authErrorOccurred = true;
+        } else {
+            user = verifiedUser;
+        }
+    } catch (e) {
+        authErrorOccurred = true;
+        console.error('Middleware session refresh error:', e);
+    }
+
+    // Resilient fallback: if getUser network call timed out, check local JWT claims so user isn't falsely logged out
+    if (!user && authErrorOccurred) {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                user = session.user;
+            }
+        } catch {
+            // fallback failed, user remains null
+        }
+    }
 
     // Phase 2 route blocking — redirect to /dashboard
     const isPhase2DashboardRoute = PHASE2_DASHBOARD_ROUTES.some(route =>
@@ -51,76 +124,34 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith(route)
     );
     if (isPhase2DashboardRoute || isPhase2TopLevelRoute) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        return redirectWithCookies(new URL('/dashboard', request.url), supabaseResponse);
     }
 
-    // Skip auth check for public routes — no Supabase client needed
-    const publicRoutes = [
-        '/',
+    // If user is already authenticated and visits login/signup, redirect them straight to their dashboard
+    const authEntryRoutes = [
         '/login',
         '/signup',
         '/doctor/signup',
         '/doctor/register',
-        '/privacy',
-        '/terms',
-        '/medical-disclaimer',
     ];
-    if (publicRoutes.includes(pathname)) {
-        return NextResponse.next();
+    if (authEntryRoutes.includes(pathname) && user) {
+        const role = (user.user_metadata?.role as UserRole) || 'patient';
+        const dashboardUrl = request.nextUrl.clone();
+        dashboardUrl.pathname = getDashboardRoute(role);
+        return redirectWithCookies(dashboardUrl, supabaseResponse);
     }
 
-    let supabaseResponse = NextResponse.next({ request })
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey =
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-        return supabaseResponse
-    }
-
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-        cookies: {
-            getAll() {
-                return request.cookies.getAll()
-            },
-            setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value }) =>
-                    request.cookies.set(name, value)
-                )
-                supabaseResponse = NextResponse.next({ request })
-                cookiesToSet.forEach(({ name, value, options }) =>
-                    supabaseResponse.cookies.set(name, value, options)
-                )
-            },
-        },
-    })
-
-    // Read session from cookie (with 3.5s timeout to prevent Edge function upstream timeout)
-    let user = null;
-    try {
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null } }), 3500)
-        );
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-        user = session?.user ?? null;
-    } catch (e) {
-        console.error('Middleware session error:', e);
-    }
-
-    // --- RBAC Enforcement ---
+    // --- RBAC Enforcement for Protected Routes ---
     const protectedPrefixes = ['/admin', '/doctor', '/dashboard'];
     const isProtectedRoute = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
 
     if (isProtectedRoute) {
         if (!user) {
-            // Not authenticated — redirect to login
+            // Not authenticated — redirect to login preserving destination
             const loginUrl = request.nextUrl.clone();
             loginUrl.pathname = '/login';
             loginUrl.searchParams.set('redirectTo', pathname);
-            return NextResponse.redirect(loginUrl);
+            return redirectWithCookies(loginUrl, supabaseResponse);
         }
 
         const role = (user.user_metadata?.role as UserRole) || 'patient';
@@ -128,11 +159,11 @@ export async function middleware(request: NextRequest) {
             // Authenticated but wrong role — redirect to their dashboard
             const dashboardUrl = request.nextUrl.clone();
             dashboardUrl.pathname = getDashboardRoute(role);
-            return NextResponse.redirect(dashboardUrl);
+            return redirectWithCookies(dashboardUrl, supabaseResponse);
         }
     }
 
-    return supabaseResponse
+    return supabaseResponse;
 }
 
 export const config = {

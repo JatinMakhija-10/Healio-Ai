@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/ai/config";
+import { createClient } from "@/lib/supabaseServer";
 
 export type AroviaCreditAction =
     | "standard_chat"
@@ -41,13 +42,23 @@ export interface CreditReleaseResult {
 
 export async function getAuthedUserId(req: NextRequest): Promise<string | null> {
     const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) return null;
+    if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7);
+        const supabase = getSupabaseAdmin();
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (!error && user) return user.id;
+    }
 
-    const token = authHeader.slice(7);
-    const supabase = getSupabaseAdmin();
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    return user.id;
+    // Fallback: check session cookies via createClient
+    try {
+        const supabaseServer = await createClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
+        if (user) return user.id;
+    } catch {
+        // Fallback failed
+    }
+
+    return null;
 }
 
 export function unauthorized() {

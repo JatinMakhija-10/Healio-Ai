@@ -21,6 +21,12 @@ export async function createClient() {
     const cookieStore = await cookies();
 
     return createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookieOptions: {
+            maxAge: 400 * 24 * 60 * 60,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        },
         cookies: {
             getAll() {
                 return cookieStore.getAll();

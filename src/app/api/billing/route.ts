@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CREDIT_PACKS, getTotalCreditsForPack, CREDIT_COSTS, type CreditAction, FREE_MONTHLY_CONSULTATIONS, FREE_DAILY_CONSULTATIONS } from '@/lib/subscription/plans';
 import { getSupabaseAdmin } from '@/lib/ai/config';
+import { createClient } from '@/lib/supabaseServer';
 
 async function getUserId(req: NextRequest): Promise<string | null> {
     const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) return null;
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.slice(7);
+        const supabase = getSupabaseAdmin();
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (!error && user) return user.id;
+    }
 
-    const token = authHeader.slice(7);
-    const supabase = getSupabaseAdmin();
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    return user.id;
+    // Cookie session fallback
+    try {
+        const supabaseServer = await createClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
+        if (user) return user.id;
+    } catch {
+        // Fallback failed
+    }
+
+    return null;
 }
 
 // GET /api/billing — returns usage summary + credit history

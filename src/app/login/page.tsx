@@ -1,19 +1,36 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { AroviaLogo } from '@/components/ui/AroviaLogo';
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
-    const { signInWithGoogle } = useAuth();
+    const searchParams = useSearchParams();
+    const { signInWithGoogle, user, loading: authLoading, role } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const rawRedirect = searchParams.get('redirectTo');
+    const safeRedirect = (rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//'))
+        ? rawRedirect
+        : null;
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            if (safeRedirect) {
+                router.replace(safeRedirect);
+            } else {
+                const target = role === 'admin' ? '/admin' : role === 'doctor' ? '/doctor' : '/dashboard';
+                router.replace(target);
+            }
+        }
+    }, [authLoading, user, role, safeRedirect, router]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,6 +46,11 @@ export default function LoginPage() {
             if (signInError) throw signInError;
 
             if (session) {
+                if (safeRedirect) {
+                    router.push(safeRedirect);
+                    return;
+                }
+
                 let targetRoute = '/dashboard';
                 try {
                     // Timeout profile fetch after 2.5s to prevent hanging on network/DB latency
@@ -88,6 +110,14 @@ export default function LoginPage() {
             setGoogleLoading(false);
         }
     };
+
+    if (authLoading || user) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2]">
+                <AroviaLogo variant="icon" size={48} priority className="animate-pulse" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2] py-12 px-4 overflow-y-auto">
@@ -202,5 +232,17 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F2]">
+                <AroviaLogo variant="icon" size={48} priority className="animate-pulse" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }

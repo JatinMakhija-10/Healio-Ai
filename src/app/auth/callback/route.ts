@@ -25,6 +25,12 @@ export async function GET(request: NextRequest) {
     }> = []
 
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookieOptions: {
+            maxAge: 400 * 24 * 60 * 60,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        },
         cookies: {
             getAll() {
                 return request.cookies.getAll()
@@ -47,8 +53,17 @@ export async function GET(request: NextRequest) {
     const role = metadata?.role
     const isOnboardingCompleted = metadata?.onboarding_completed === true
 
-    let redirectTo = `${origin}${next}`
-    if (role === 'doctor' && !isOnboardingCompleted) {
+    // Prevent open redirect attacks: ensure next is a relative path
+    const safeNext = (next && next.startsWith('/') && !next.startsWith('//')) ? next : '/dashboard'
+
+    let redirectTo = `${origin}${safeNext}`
+    if (safeNext === '/dashboard') {
+        if (role === 'admin') {
+            redirectTo = `${origin}/admin`
+        } else if (role === 'doctor') {
+            redirectTo = isOnboardingCompleted ? `${origin}/doctor` : `${origin}/doctor/onboarding`
+        }
+    } else if (role === 'doctor' && !isOnboardingCompleted) {
         redirectTo = `${origin}/doctor/onboarding`
     }
 

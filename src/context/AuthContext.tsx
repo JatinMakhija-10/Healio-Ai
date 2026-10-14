@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null);
-    const [previousUserId, setPreviousUserId] = useState<string | null>(null);
+    const previousUserIdRef = useRef<string | null>(null);
     const router = useRouter();
 
     // Derive role from user
@@ -146,6 +146,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let doctorSubscription: any = null;
 
         const setupRealtimeSubscriptions = (sessionUser: User) => {
+            if (profileSubscription) {
+                supabase.removeChannel(profileSubscription);
+            }
+            if (doctorSubscription) {
+                supabase.removeChannel(doctorSubscription);
+            }
+
             profileSubscription = supabase
                 .channel('profile_changes')
                 .on('postgres_changes', {
@@ -177,37 +184,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         };
 
-        // Read session from local JWT — no network call
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setPreviousUserId(session?.user?.id ?? null);
-            if (session?.user) {
-                const isDoctor = session.user.user_metadata?.role === 'doctor';
-                fetchProfile(session.user.id, isDoctor);
-                setupRealtimeSubscriptions(session.user);
+        // Initialize session: try getUser first for active validation, falling back to getSession
+        supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+            if (currentUser) {
+                setUser(currentUser);
+                previousUserIdRef.current = currentUser.id;
+                const isDoctor = currentUser.user_metadata?.role === 'doctor';
+                fetchProfile(currentUser.id, isDoctor);
+                setupRealtimeSubscriptions(currentUser);
+                setLoading(false);
+            } else {
+                supabase.auth.getSession().then(({ data: { session } }) => {
+                    setUser(session?.user ?? null);
+                    previousUserIdRef.current = session?.user?.id ?? null;
+                    if (session?.user) {
+                        const isDoctor = session.user.user_metadata?.role === 'doctor';
+                        fetchProfile(session.user.id, isDoctor);
+                        setupRealtimeSubscriptions(session.user);
+                    }
+                    setLoading(false);
+                });
             }
-            setLoading(false);
+        }).catch(() => {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                setUser(session?.user ?? null);
+                previousUserIdRef.current = session?.user?.id ?? null;
+                setLoading(false);
+            });
         });
 
-        // Listen for auth changes
+        // Listen for auth changes (token refresh, sign in, sign out)
         const {
             data: { subscription: authSubscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
             const newUserId = session?.user?.id ?? null;
+            const prevId = previousUserIdRef.current;
 
-            if (newUserId && previousUserId && newUserId !== previousUserId) {
+            if (newUserId && prevId && newUserId !== prevId) {
                 clearAllUserData();
             }
 
-            if (!newUserId && previousUserId) {
+            if (!newUserId && prevId) {
                 clearAllUserData();
             }
 
-            setPreviousUserId(newUserId);
+            previousUserIdRef.current = newUserId;
             setUser(session?.user ?? null);
+
             if (session?.user) {
                 const isDoctor = session.user.user_metadata?.role === 'doctor';
                 fetchProfile(session.user.id, isDoctor);
+                setupRealtimeSubscriptions(session.user);
             } else {
                 setProfile(null);
                 setDoctorProfile(null);
