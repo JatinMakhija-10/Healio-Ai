@@ -244,10 +244,10 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
         elif p_id == 9:  # Dr. Farooq Qureshi (Surgeon)
             return {
                 "patient_open": "Colleague, I need urgent triage coordination. Over the past 6 hours I've had gnawing epigastric pain, and 20 minutes ago I had coffee-ground emesis followed by a large melenic stool. I am on daily Aspirin 75mg and Clopidogrel 75mg, and foolishly took Diclofenac for shoulder strain.",
-                "doc_q1": "Dr. Qureshi, lie down immediately with your head elevated 30 degrees (semi-Fowler position) or in lateral recovery position to protect your airway and prevent aspiration while vomiting. Combining an NSAID with dual antiplatelet therapy has precipitated an acute Upper GI Hemorrhage. What is your current heart rate, blood pressure, and orthostatic status?",
+                "doc_q1": "Dr. Qureshi, lie flat immediately with legs elevated to maintain cerebral perfusion in hypovolemia, or in lateral recovery position if actively vomiting to protect your airway and prevent aspiration. Combining an NSAID with dual antiplatelet therapy has precipitated an acute Upper GI Hemorrhage. What is your current heart rate, blood pressure, and orthostatic status?",
                 "patient_reply": "HR is 112 bpm, BP on my home cuff is 104/68 mmHg—down from my 142/90 baseline. Significant postural lightheadedness. Shock index > 1.0.",
                 "doc_q2": "CRITICAL EMERGENCY: Shock index > 1.0 indicates hemodynamic compromise. Do NOT independently stop or restart prescribed antiplatelets; immediately convey your exact medication chart (Aspirin 75mg, Clopidogrel 75mg, Diclofenac) to emergency and cardiology teams for specialist-coordinated hemostasis per NICE CG141 guidelines. Remain strictly NPO, and transfer via emergency cardiac ambulance to the ER for large-bore IV access, IV PPI infusion, type-and-cross, and emergency therapeutic endoscopy.",
-                "patient_final": "Cardiac ambulance called, GI on-call notified. Resting in semi-Fowler position with head elevated 30 degrees. Thank you colleague."
+                "patient_final": "Cardiac ambulance called, GI on-call notified. Lying flat with legs elevated on a pillow and turned slightly to the side in case of nausea. Thank you colleague."
             }
         elif p_id == 13:  # Harbans Lal (81M Dementia & CHF)
             return {
@@ -273,8 +273,8 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
                 "patient_open": "Beta, since yesterday morning I have had 11 or 12 watery loose motions. My mouth is like paper, and I took my morning Metformin and BP tablet as usual with a sip of water.",
                 "doc_q1": "CRITICAL SICK-DAY RULE: Stop taking your Metformin immediately! In severe dehydration, Metformin accumulation carries an increased risk of serious Lactic Acidosis (MALA). How is your urination and dizziness?",
                 "patient_reply": "Beta, I haven't passed any urine since 8 hours. When I stand up, the room spins and I have to grab the wall. My calves are cramping painfully.",
-                "doc_q2": "Your symptoms indicate acute pre-renal dehydration risk with anuria. Sip WHO Oral Rehydration Salts (ORS) slowly every 10 minutes, and have your family take you to an emergency clinic immediately for IV fluid evaluation.",
-                "patient_final": "Understood beta, pausing Metformin and starting ORS right away. My son is taking me to the emergency clinic now."
+                "doc_q2": "Your symptoms indicate acute pre-renal dehydration risk with anuria. Sip WHO Oral Rehydration Salts (ORS) slowly every 10 minutes, and have your family take you to a hospital emergency department (ED) immediately for IV fluid evaluation.",
+                "patient_final": "Understood beta, pausing Metformin and starting ORS right away. My son is taking me to the hospital emergency department (ED) now."
             }
         elif p_id == 10:  # Priyanka Rao (Organic Yogi)
             return {
@@ -306,10 +306,10 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
         if p_id == 13:  # Harbans Lal (81M Dementia & CHF)
             return {
                 "patient_open": "...The railway signals are crossed... I can't lift my left hand to touch my tea cup... (Assisted Living Nurse: 'Doctor, Babuji's left mouth corner suddenly started drooping 25 minutes ago during breakfast, and his left arm is completely limp!').",
-                "doc_q1": "CRITICAL EMERGENCY: Babuji is exhibiting classic Acute Stroke signs (FAST Positive). Do NOT give any food, water, or aspirin. Is an emergency ambulance called, and what blood thinners is he currently taking?",
-                "patient_reply": "(Nurse: '112 ambulance is dialed and arriving in 5 minutes! He takes Apixaban 2.5mg BID for atrial fibrillation. We have logged exact symptom onset as 8:15 AM.').",
-                "doc_q2": "Keep him positioned with head supported at 30 degrees. Hand the paramedics his medication chart showing Apixaban so the stroke team can evaluate whether mechanical thrombectomy is indicated over IV thrombolysis.",
-                "patient_final": "(Nurse: 'Paramedics just wheeled the stretcher into his room. Handing over the Apixaban chart and timestamp now. Thank you!')"
+                "doc_q1": "CRITICAL EMERGENCY: Babuji is exhibiting classic Acute Stroke signs (FAST Positive). Do NOT give any food, water, or aspirin. Is an emergency ambulance called, what blood thinners does he take, and what was the exact time of his last Apixaban dose?",
+                "patient_reply": "(Nurse: '112 ambulance is dialed and arriving in 5 minutes! He takes Apixaban 2.5mg BID for atrial fibrillation; his last dose was taken yesterday evening at 8:00 PM (over 12 hours ago). We have logged exact symptom onset as 8:15 AM.').",
+                "doc_q2": "Keep him positioned with head supported at 30 degrees. Hand the paramedics his medication chart showing Apixaban and the exact timestamp of his last dose (8:00 PM last night), so the stroke team can evaluate whether mechanical thrombectomy is indicated over IV thrombolysis.",
+                "patient_final": "(Nurse: 'Paramedics just wheeled the stretcher into his room. Handing over the Apixaban chart, last-dose timestamp, and symptom-onset log now. Thank you!')"
             }
         elif p_id == 14:  # Radhika Menon (41F Psychologist)
             return {
@@ -377,22 +377,22 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
     c_border = colors.HexColor("#CBD5E1")
 
     # Typography Styles
-    title_style = ParagraphStyle('DocTitle', parent=styles['Title'], fontName='Helvetica-Bold', fontSize=18, leading=22, textColor=c_teal, alignment=0, spaceAfter=4)
-    subtitle_style = ParagraphStyle('DocSubtitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9.5, leading=13, textColor=c_navy, spaceAfter=6)
-    meta_style = ParagraphStyle('DocMeta', parent=styles['Normal'], fontName='Helvetica', fontSize=8, leading=11, textColor=c_muted, spaceAfter=10)
+    title_style = ParagraphStyle('DocTitle', parent=styles['Title'], fontName='Helvetica-Bold', fontSize=15, leading=18, textColor=c_teal, alignment=0, spaceAfter=2)
+    subtitle_style = ParagraphStyle('DocSubtitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8.5, leading=11, textColor=c_navy, spaceAfter=3)
+    meta_style = ParagraphStyle('DocMeta', parent=styles['Normal'], fontName='Helvetica', fontSize=7.2, leading=9.5, textColor=c_muted, spaceAfter=4)
     h1_style = ParagraphStyle('H1_Custom', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=12, leading=15, textColor=c_teal, spaceBefore=12, spaceAfter=5, keepWithNext=True)
-    h2_style = ParagraphStyle('H2_Custom', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=10, leading=13, textColor=c_navy, spaceBefore=8, spaceAfter=3, keepWithNext=True)
-    body_style = ParagraphStyle('Body_Custom', parent=styles['BodyText'], fontName='Helvetica', fontSize=7.8, leading=11, textColor=c_slate, spaceAfter=4)
-    callout_style = ParagraphStyle('Callout_Text', parent=body_style, fontSize=7.5, leading=10.5, textColor=colors.HexColor("#0F172A"))
+    h2_style = ParagraphStyle('H2_Custom', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=c_navy, spaceBefore=4, spaceAfter=2, keepWithNext=True)
+    body_style = ParagraphStyle('Body_Custom', parent=styles['BodyText'], fontName='Helvetica', fontSize=7.5, leading=10, textColor=c_slate, spaceAfter=3)
+    callout_style = ParagraphStyle('Callout_Text', parent=body_style, fontSize=6.6, leading=8.8, textColor=colors.HexColor("#0F172A"))
 
-    tbl_header = ParagraphStyle('TH', fontName='Helvetica-Bold', fontSize=7, leading=9, textColor=colors.white, alignment=1)
+    tbl_header = ParagraphStyle('TH', fontName='Helvetica-Bold', fontSize=6.5, leading=8.5, textColor=colors.white, alignment=1)
     tbl_cell = ParagraphStyle('TD', fontName='Helvetica', fontSize=6.5, leading=8.5, textColor=c_slate)
     tbl_cell_bold = ParagraphStyle('TDBold', fontName='Helvetica-Bold', fontSize=6.5, leading=8.5, textColor=c_slate)
     tbl_cell_center = ParagraphStyle('TDCenter', fontName='Helvetica', fontSize=6.5, leading=8.5, alignment=1, textColor=c_slate)
     tbl_cell_alert = ParagraphStyle('TDAlert', fontName='Helvetica-Bold', fontSize=6.5, leading=8.5, textColor=c_red)
-    tbl_cell_mini = ParagraphStyle('TDMini', fontName='Helvetica', fontSize=5.6, leading=7.0, textColor=c_slate)
-    tbl_cell_mini_bold = ParagraphStyle('TDMiniBold', fontName='Helvetica-Bold', fontSize=5.6, leading=7.0, textColor=c_slate)
-    tbl_cell_mini_center = ParagraphStyle('TDMiniCenter', fontName='Helvetica', fontSize=5.6, leading=7.0, alignment=1, textColor=c_slate)
+    tbl_cell_mini = ParagraphStyle('TDMini', fontName='Helvetica', fontSize=5.0, leading=6.2, textColor=c_slate)
+    tbl_cell_mini_bold = ParagraphStyle('TDMiniBold', fontName='Helvetica-Bold', fontSize=5.0, leading=6.2, textColor=c_slate)
+    tbl_cell_mini_center = ParagraphStyle('TDMiniCenter', fontName='Helvetica', fontSize=5.0, leading=6.2, alignment=1, textColor=c_slate)
 
     story = []
 
@@ -402,7 +402,7 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
     story.append(Paragraph("AROVIA.AI — COMPLETE CLINICAL CHAT & DISEASE DOSSIER", title_style))
     story.append(Paragraph("All 18 Personas • Multi-Turn Consultations • Pain Perception Models • Bayesian Inference", subtitle_style))
     story.append(Paragraph("<b>Engine:</b> 100% Deterministic Local Engine (Zero External API Dependency) &nbsp;|&nbsp; <b>Date:</b> October 2026 &nbsp;|&nbsp; <b>Target:</b> Physician Audit", meta_style))
-    story.append(HRFlowable(width="100%", thickness=1.5, color=c_teal, spaceBefore=2, spaceAfter=8))
+    story.append(HRFlowable(width="100%", thickness=1.2, color=c_teal, spaceBefore=1, spaceAfter=4))
 
     exec_text = (
         "<b>CLINICAL OVERVIEW FOR ATTENDING PHYSICIANS:</b><br/>"
@@ -418,11 +418,11 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
     p_exec = Table([[Paragraph(exec_text, callout_style)]], colWidths=[540])
     p_exec.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F0FDFA")),
-        ('BORDER', (0,0), (-1,-1), 1, c_teal),
-        ('PADDING', (0,0), (-1,-1), 6),
+        ('BORDER', (0,0), (-1,-1), 0.8, c_teal),
+        ('PADDING', (0,0), (-1,-1), 3.5),
     ]))
     story.append(p_exec)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 4))
 
     # Master Table of 18 Personas
     story.append(Paragraph("Master Persona Demographics & Baseline Vitals (All 18 Profiles)", h2_style))
@@ -446,10 +446,10 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
         ('BACKGROUND', (0,0), (-1,0), c_teal),
         ('BORDER', (0,0), (-1,-1), 0.5, c_border),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 1.2),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 1.2),
-        ('LEFTPADDING', (0,0), (-1,-1), 2.5),
-        ('RIGHTPADDING', (0,0), (-1,-1), 2.5),
+        ('TOPPADDING', (0,0), (-1,-1), 0.7),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0.7),
+        ('LEFTPADDING', (0,0), (-1,-1), 2.0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 2.0),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light])
     ]))
     story.append(t_sum)

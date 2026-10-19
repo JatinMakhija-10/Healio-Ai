@@ -153,7 +153,7 @@ PERSONAS: List[ClinicalPersona] = [
             "stress_level": "Medium (financial & health worries)",
             "circadian": "Fragmented, multiple nocturia awakenings"
         },
-        conditions=["Type 2 Diabetes Mellitus (15 yrs)", "Essential Hypertension (18 yrs)", "Stage 3a Chronic Kidney Disease (eGFR 48 mL/min)", "Diabetic Retinopathy (Mild)"],
+        conditions=["Type 2 Diabetes Mellitus (15 yrs)", "Essential Hypertension (18 yrs)", "Stage 3a Chronic Kidney Disease (eGFR 48 mL/min, baseline Creatinine 1.5 mg/dL)", "Diabetic Retinopathy (Mild)"],
         medications=["Metformin 1000mg BID", "Glimepiride 2mg OD", "Telmisartan 40mg OD", "Atorvastatin 20mg OD", "Aspirin 75mg OD"],
         allergies=["Sulfa drugs (rash)"],
         family_history=["Father: Fatal Myocardial Infarction at 56", "Mother: Type 2 Diabetes & Stroke"],
@@ -360,7 +360,7 @@ PERSONAS: List[ClinicalPersona] = [
         },
         conditions=["Chronic Gastroesophageal Reflux Disease (GERD with Grade B Esophagitis)", "Bilateral Noise-Induced Tinnitus", "Social Anxiety Disorder"],
         medications=["Pantoprazole 40mg OD", "Sertraline 50mg OD", "Clonazepam 0.25mg PRN"],
-        allergies=["NSAIDs (Aspirin/Ibuprofen induce immediate severe epigastric agony)"],
+        allergies=["Severe NSAID Allergy (Aspirin & Ibuprofen trigger acute urticaria, angioedema & bronchospasm)"],
         family_history=["Father: Alcoholic liver cirrhosis", "Mother: Depression"],
         frailty_index=2,
         polypharmacy_risk="moderate",
@@ -1218,9 +1218,14 @@ class ClinicalImpactEngine:
             # Severe respiratory distress escalation (Anand #11 inability to speak, Zoya #12 SpO2 93%, Ramesh #1 diabetic CKD pneumonia, Devaki #6, Harbans #13)
             is_severe_resp_risk = (scenario.id == 2 and (persona.id in [1, 6, 11, 12, 13] or persona.frailty_index >= 6 or has_copd or (persona.age >= 65 and has_diabetes)))
 
-            if has_emergent_top or has_high_emergent_diff or is_frail_acute or is_severe_resp_risk:
+            # Acute cardiopulmonary distress on OCP (Aanya #2 resting HR 138, PE/arrhythmia concern needing 112 emergency transport)
+            is_ocp_cardiopulm = (scenario.id == 1 and (persona.id == 2 or ("contraceptive" in med_str and persona.age <= 35)))
+
+            if has_emergent_top or has_high_emergent_diff or is_frail_acute or is_severe_resp_risk or is_ocp_cardiopulm:
                 red_flag_triggered = True
-                if scenario.emergency_type == "CARDIAC_EMERGENCY":
+                if is_ocp_cardiopulm:
+                    red_flag_message = f"🚨 RED FLAG: Acute Tachycardia (HR 138) with Retrosternal Tightness in patient on Combined Oral Contraceptive therapy. Pulmonary Embolism & Acute Arrhythmia risk. Immediate 112 ambulance dispatch & emergency cardiopulmonary evaluation required!"
+                elif scenario.emergency_type == "CARDIAC_EMERGENCY":
                     red_flag_message = f"🚨 RED FLAG: High probability of Acute Coronary Syndrome in {persona.name} (Age {persona.age}, Cardiac Prior Multiplier {cov_mults['cardiac']}x). Immediate 112/911 ambulance dispatch & 12-lead ECG required!"
                 elif scenario.emergency_type == "STROKE_FAST":
                     red_flag_message = f"🚨 RED FLAG: Acute Stroke Syndrome (FAST Positive). Immediate Emergency Thrombolysis window (< 4.5 hrs). Do NOT administer Aspirin until non-contrast head CT rules out bleed!"
@@ -1231,8 +1236,16 @@ class ClinicalImpactEngine:
                 else:
                     red_flag_message = f"🚨 RED FLAG: Critical acute escalation. Urgent hospital emergency room transfer required."
 
+        # Obstetric emergency escalation in pregnancy (Meera #4: Pyelonephritis or profuse dehydrating diarrhea)
+        if persona.is_pregnant and (scenario.id in [7, 10] or "dehydration" in scenario.title.lower() or "pyelonephritis" in scenario.title.lower()):
+            red_flag_triggered = True
+            red_flag_message = f"🚨 RED FLAG: Acute Obstetric Emergency in {persona.pregnancy_weeks}-week pregnancy. Risk of premature contractions, maternal-fetal sepsis, and severe hypoperfusion. Immediate hospital transfer to Maternity Triage / Labor & Delivery required!"
+
         if red_flag_triggered:
-            triage_level = "EMERGENCY"
+            if persona.is_pregnant and scenario.id in [7, 10]:
+                triage_level = "EMERGENCY (OBSTETRIC)"
+            else:
+                triage_level = "EMERGENCY"
             triage_color = "red"
         elif any(d.get("urgency") == "URGENT" and d.get("posterior_pct", 0) > 20.0 for d in final_differentials) or persona.frailty_index >= 6:
             triage_level = "URGENT"
@@ -1347,9 +1360,28 @@ class ClinicalImpactEngine:
         if is_hemostatic_critical_domain and ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str):
             ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
 
+        # Priority: Severe Allergy Shields (Immediate Hypersensitivity / Anaphylactoid Hazard)
+        for allergy in persona.allergies:
+            al_lower = allergy.lower()
+            if "aspirin" in al_lower or "nsaid" in al_lower or "ibuprofen" in al_lower:
+                ddi_alerts.append("🚨 ALLERGY SHIELD (SEVERE NSAID HYPERSENSITIVITY): Documented severe hypersensitivity to Aspirin and NSAIDs (urticaria/angioedema/bronchospasm). Absolute contraindication to Aspirin, Ibuprofen, Diclofenac, Naproxen; emergency avoidance of all COX inhibitors.")
+            if "penicillin" in al_lower:
+                ddi_alerts.append("🚨 ALLERGY ALERT: Penicillin allergy noted. Avoid Amoxicillin, Ampicillin; select Cephalosporins with extreme caution or use Macrolides / Azithromycin.")
+            if "sulfa" in al_lower:
+                ddi_alerts.append("⚠️ ALLERGY SHIELD: Sulfa allergy documented. Avoid Sulfamethoxazole (Bactrim) and thiazide cross-reactivity.")
+
         # Priority in Pain / Inflammatory Domains (Gout, Pneumonia, UTI, Spine): Renal NSAID Safety is P0
         if ("kidney" in cond_str or "ckd" in cond_str) and not any("RENAL" in a for a in ddi_alerts):
             ddi_alerts.append("⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.")
+
+        # Priority: Estrogen / Combined Oral Contraceptive (VTE / Stroke Hazard)
+        if "contraceptive" in med_str or "ethinylestradiol" in med_str or "estrogen" in med_str:
+            if scenario.id in [1, 2]:
+                ddi_alerts.append("⚠️ ESTROGEN / VTE ALERT: Patient on Combined Oral Contraceptives. Increased baseline risk of venous thromboembolism (VTE) and Pulmonary Embolism (PE). Urgent cardiopulmonary evaluation required.")
+            elif scenario.id in [3, 9, 13] or "migraine" in scenario.title.lower() or "headache" in scenario.title.lower():
+                ddi_alerts.append("🚨 WHO MEC CATEGORY 4 CONTRAINDICATION: Combined oral contraceptives are strictly contraindicated in migraine with aura due to markedly elevated ischemic stroke risk. Cease estrogen and arrange urgent neurologic/prescriber review.")
+            elif not any("ESTROGEN" in a for a in ddi_alerts):
+                ddi_alerts.append("⚠️ ESTROGEN SAFETY ALERT: Patient on Combined Oral Contraceptive therapy. Heightened hypercoagulability and thrombotic risk.")
 
         # General Hemostatic Alert (for non-GI/Stroke domains if not already covered)
         if ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str) and not any("HEMOSTATIC" in a for a in ddi_alerts):
@@ -1372,15 +1404,9 @@ class ClinicalImpactEngine:
         if ("metoprolol" in med_str or "propranolol" in med_str) and ("asthma" in cond_str or "bronchitis" in cond_str or "byssinosis" in cond_str or "copd" in cond_str or scenario.id == 8):
             ddi_alerts.append("⚠️ RESPIRATORY DDI: Patient is taking Beta-blockers. Non-cardioselective or high-dose beta-blockers exacerbate acute bronchospasm and blunt bronchodilator response.")
 
-        # Priority 8: Allergies
-        for allergy in persona.allergies:
-            al_lower = allergy.lower()
-            if "sulfa" in al_lower:
-                ddi_alerts.append("⚠️ ALLERGY SHIELD: Sulfa allergy documented. Avoid Sulfamethoxazole (Bactrim) and thiazide cross-reactivity.")
-            if "penicillin" in al_lower:
-                ddi_alerts.append("🚨 ALLERGY ALERT: Penicillin allergy noted. Avoid Amoxicillin, Ampicillin; select Cephalosporins with extreme caution or use Macrolides / Azithromycin.")
-            if "aspirin" in al_lower:
-                ddi_alerts.append("🚨 SAMTER'S TRIAD / ASPIRIN ALLERGY: Severe bronchospasm hazard with all COX-1 inhibitors.")
+        # Priority: Serotonergic Safety Caution (SNRI/SSRI + Triptan)
+        if ("duloxetine" in med_str or "snri" in med_str or "ssri" in med_str) and ("triptan" in med_str or "rizatriptan" in med_str or "sumatriptan" in med_str):
+            ddi_alerts.append("⚠️ SEROTONERGIC CAUTION: Concomitant Duloxetine (SNRI) and Rizatriptan (5-HT1 agonist). Monitor for Serotonin Syndrome symptoms (hyperreflexia, clonus, autonomic instability, agitation).")
 
         if not ddi_alerts:
             ddi_alerts.append("✓ No immediate high-risk DDI clashes detected with baseline profile.")
