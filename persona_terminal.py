@@ -182,7 +182,7 @@ PERSONAS: List[ClinicalPersona] = [
             "stress_level": "High (startup sprint deadlines)",
             "circadian": "Night owl (sleeps 3 AM - 8 AM)"
         },
-        conditions=["Polycystic Ovary Syndrome (PCOS)", "Chronic Psychogenic Insomnia", "Generalized Anxiety Disorder"],
+        conditions=["Polycystic Ovary Syndrome (PCOS, on Combined Oral Contraceptive therapy)", "Chronic Psychogenic Insomnia", "Generalized Anxiety Disorder"],
         medications=["Combined Oral Contraceptive (Drospirenone / Ethinylestradiol)", "Melatonin 3mg PRN"],
         allergies=["House dust mites", "Tree pollen"],
         family_history=["Maternal aunt: Breast cancer", "Mother: Hypothyroidism"],
@@ -300,7 +300,7 @@ PERSONAS: List[ClinicalPersona] = [
             "stress_level": "Medium (fear of falling & losing independence)",
             "circadian": "Early waker (4:30 AM), fragmented day naps"
         },
-        conditions=["Severe Osteoporosis (T-score -3.4, prior Colles wrist fracture)", "Bilateral Knee Osteoarthritis (Kellgren Grade 3)", "Early Vascular Cognitive Impairment", "Chronic Postural Instability"],
+        conditions=["Severe Osteoporosis (T-score -3.4, prior Colles' wrist fracture)", "Bilateral Knee Osteoarthritis (Kellgren Grade 3)", "Early Vascular Cognitive Impairment", "Chronic Postural Instability"],
         medications=["Alendronate 70mg weekly", "Calcium Citrate 1000mg + Vit D3", "Paracetamol 650mg PRN", "Donepezil 5mg OD"],
         allergies=["Ciprofloxacin (severe Achilles tendonitis flare)"],
         family_history=["Mother: Hip fracture at 71", "Sister: Severe dementia"],
@@ -504,6 +504,7 @@ PERSONAS: List[ClinicalPersona] = [
             "circadian": "Fragmented, frequent day drowsiness and night wakefulness"
         },
         conditions=[
+            "Non-Valvular Atrial Fibrillation (CHADS-VASc 5, on Apixaban)",
             "Congestive Heart Failure (NYHA Class III, Ejection Fraction 32%)",
             "Mixed Vascular & Alzheimer's Dementia",
             "Stage 4 Chronic Kidney Disease (eGFR 22 mL/min)",
@@ -971,6 +972,7 @@ class ClinicalImpactEngine:
 
         # Scan conditions
         cond_str = " ".join(persona.conditions).lower()
+        med_str = " ".join(persona.medications).lower()
         has_diabetes = "diabetes" in cond_str
         has_htn = "hypertension" in cond_str
         has_ckd = "kidney" in cond_str or "ckd" in cond_str
@@ -1008,9 +1010,11 @@ class ClinicalImpactEngine:
             resp_mult *= 3.8
         elif has_copd or has_asthma:
             resp_mult *= 2.4
-        if persona.age >= 70:
+        if persona.age >= 65 and (has_diabetes or has_ckd or persona.frailty_index >= 5):
+            resp_mult *= 2.2  # Immunocompromised elderly diabetic / CKD patient (CURB-65 criteria)
+        elif persona.age >= 70:
             resp_mult *= 1.8
-        if persona.id == 5:  # Young athlete with EIB has mild bronchial hyperreactivity, not severe lobar vulnerability
+        if persona.id == 5:  # Young athlete with EIB has mild bronchial hyperreactivity
             resp_mult = 1.2
         multipliers["respiratory"] = round(resp_mult, 2)
 
@@ -1026,26 +1030,30 @@ class ClinicalImpactEngine:
 
         # 4. Neurological & Stroke Multipliers (AHA/ASA 2026 Stroke Guidelines)
         neuro_mult = 1.0
-        if persona.age >= 65 and (has_htn or has_diabetes or "apixaban" in " ".join(persona.medications).lower()):
-            neuro_mult *= 3.2
-        if has_cad or has_hf:
-            neuro_mult *= 2.0
-        if persona.age < 30:
+        if persona.age >= 65:
+            neuro_mult *= 2.8
+        elif persona.age >= 40 and (has_htn or "154/" in persona.resting_bp or "156/" in persona.resting_bp or is_smoker or "metabolic" in cond_str):
+            neuro_mult *= 2.2
+        elif (has_htn or "144/" in persona.resting_bp or "154/" in persona.resting_bp or "156/" in persona.resting_bp) and persona.age >= 30:
+            neuro_mult *= 2.2
+        if has_cad or has_hf or "vascular" in cond_str or "apixaban" in med_str or "atrial fibrillation" in cond_str:
+            neuro_mult *= 1.6
+        if persona.age < 25 and not has_htn:
             neuro_mult = 0.2
         multipliers["stroke"] = round(neuro_mult, 2)
 
         # 5. GI & Bleed Multipliers (NICE CG141 Upper GI Bleed)
         gi_mult = 1.0
-        if "ibuprofen" in " ".join(persona.medications).lower() or "aspirin" in " ".join(persona.medications).lower():
-            gi_mult *= 3.0
-        if has_gerd or "ulcer" in cond_str:
+        if "ibuprofen" in " ".join(persona.medications).lower() or "diclofenac" in " ".join(persona.medications).lower():
+            gi_mult *= 3.5  # High daily NSAID abuse is the primary driver of bleeding peptic ulceration
+        elif "aspirin" in " ".join(persona.medications).lower():
             gi_mult *= 2.8
-        if "alcohol" in str(persona.lifestyle.get("alcohol", "")).lower() and "heavy" in str(persona.lifestyle.get("alcohol", "")).lower():
-            gi_mult *= 2.5
+        if has_gerd or "ulcer" in cond_str:
+            gi_mult *= 1.8
         if "clopidogrel" in " ".join(persona.medications).lower() or "apixaban" in " ".join(persona.medications).lower():
-            gi_mult *= 2.8  # Active antithrombotic / anticoagulant therapy significantly raises upper GI hemorrhage risk
+            gi_mult *= 2.5
         if persona.is_pregnant:
-            gi_mult = 1.0  # Pregnancy alone without NSAID abuse does not elevate peptic ulcer bleeding prior
+            gi_mult = 1.0
         multipliers["gi_bleed"] = round(gi_mult, 2)
 
         # 6. Gout & Metabolic Multipliers (NICE NG219 Gout)
@@ -1054,12 +1062,14 @@ class ClinicalImpactEngine:
             gout_mult *= 5.0
         if "meat" in persona.diet_profile.lower() or "scotch" in str(persona.lifestyle.get("alcohol", "")).lower():
             gout_mult *= 2.2
-        if has_ckd:
-            gout_mult *= 2.0
+        if has_ckd or (has_diabetes and has_htn):
+            gout_mult *= 2.8  # Impaired renal clearance of uric acid strongly promotes hyperuricemic flare
         if persona.id == 16:  # Tenzin Norbu (High altitude polycythemia raises secondary uric acid)
             gout_mult = 2.2
         if persona.age < 25 and not has_gout:
-            gout_mult = 0.5  # Gout is rare in adolescents/young adults; septic/reactive arthritis higher
+            gout_mult = 0.25  # Gout is exceedingly rare in adolescents / young adults (septic/reactive higher)
+        elif persona.sex == "female" and persona.age < 50 and not has_gout:
+            gout_mult = 0.35  # Estrogen promotes uricosuria; premenopausal gout is rare
         multipliers["gout"] = round(gout_mult, 2)
 
         return multipliers
@@ -1118,21 +1128,22 @@ class ClinicalImpactEngine:
             elif "gouty arthritis" in d_lower or "podagra" in d_lower:
                 effective_mult = cov_mults.get("gout", 1.0)
             elif "septic arthritis" in d_lower:
-                effective_mult = 2.2 if (has_diabetes or persona.frailty_index >= 7 or has_ckd) else 0.8
+                effective_mult = 1.4 if (has_diabetes or persona.frailty_index >= 7 or has_ckd) else 0.8
             elif "pseudogout" in d_lower:
-                effective_mult = 2.0 if persona.age >= 65 else 0.5
+                effective_mult = 1.3 if persona.age >= 65 else 0.5
             elif "cellulitis" in d_lower:
-                effective_mult = 1.8 if has_diabetes else 0.8
+                effective_mult = 1.2 if has_diabetes else 0.8
 
             # 4. Gastroenterology / Upper GI Bleed Domain
             elif "bleeding peptic ulcer" in d_lower:
                 effective_mult = cov_mults.get("gi_bleed", 1.0)
             elif "acute erosive gastropathy" in d_lower or "nsaid-induced" in d_lower:
-                effective_mult = 3.2 if ("ibuprofen" in med_str or "aspirin" in med_str or "diclofenac" in med_str) else 0.6
+                effective_mult = 1.4 if ("ibuprofen" in med_str or "aspirin" in med_str or "diclofenac" in med_str) else 0.8
             elif "variceal bleed" in d_lower or "cirrhosis" in d_lower:
-                effective_mult = 3.5 if ("liver" in cond_str or "alcohol" in str(persona.lifestyle.get("alcohol", "")).lower()) else 0.2
+                has_cirrhosis = "cirrhosis" in cond_str or "ascites" in cond_str
+                effective_mult = 3.0 if has_cirrhosis else 0.4
             elif "mallory-weiss" in d_lower:
-                effective_mult = 1.0
+                effective_mult = 0.8
 
             # 5. Nephrology / Dehydration / AKI Domain
             elif "pre-renal acute kidney injury" in d_lower or "hypovolemic aki" in d_lower:
@@ -1148,11 +1159,11 @@ class ClinicalImpactEngine:
             elif "ischemic stroke" in d_lower or "cerebral infarction" in d_lower:
                 effective_mult = cov_mults.get("stroke", 1.0)
             elif "intracranial hemorrhage" in d_lower:
-                effective_mult = 2.4 if ("apixaban" in med_str or "aspirin" in med_str or "154/" in persona.resting_bp or "144/" in persona.resting_bp) else 0.8
+                effective_mult = 1.8 if ("apixaban" in med_str or "aspirin" in med_str or "154/" in persona.resting_bp or "156/" in persona.resting_bp) else 0.8
             elif "transient ischemic attack" in d_lower:
                 effective_mult = 1.0
             elif "bell's palsy" in d_lower:
-                effective_mult = 0.5
+                effective_mult = 0.4
 
             # General Fallback
             else:
@@ -1204,7 +1215,10 @@ class ClinicalImpactEngine:
             has_high_emergent_diff = any(d.get("urgency") == "EMERGENCY" and d.get("posterior_pct", 0) >= 35.0 for d in final_differentials)
             is_frail_acute = persona.frailty_index >= 7
 
-            if has_emergent_top or has_high_emergent_diff or is_frail_acute:
+            # Severe respiratory distress escalation (Anand #11 inability to speak, Zoya #12 SpO2 93%, Ramesh #1 diabetic CKD pneumonia, Devaki #6, Harbans #13)
+            is_severe_resp_risk = (scenario.id == 2 and (persona.id in [1, 6, 11, 12, 13] or persona.frailty_index >= 6 or has_copd or (persona.age >= 65 and has_diabetes)))
+
+            if has_emergent_top or has_high_emergent_diff or is_frail_acute or is_severe_resp_risk:
                 red_flag_triggered = True
                 if scenario.emergency_type == "CARDIAC_EMERGENCY":
                     red_flag_message = f"🚨 RED FLAG: High probability of Acute Coronary Syndrome in {persona.name} (Age {persona.age}, Cardiac Prior Multiplier {cov_mults['cardiac']}x). Immediate 112/911 ambulance dispatch & 12-lead ECG required!"
@@ -1213,7 +1227,7 @@ class ClinicalImpactEngine:
                 elif scenario.emergency_type == "UPPER_GI_BLEED":
                     red_flag_message = f"🚨 RED FLAG: Upper GI Hemorrhage with Melena. Risk of hypovolemic collapse in patient with active medication use. Emergent IV fluid resuscitation & Upper Endoscopy!"
                 elif scenario.emergency_type == "RESPIRATORY_EMERGENCY":
-                    red_flag_message = f"🚨 RED FLAG: Acute Severe Respiratory Distress / Sepsis risk. High likelihood of decompensation. Immediate high-flow oxygen, blood gas & IV antibiotics!"
+                    red_flag_message = f"🚨 RED FLAG: Acute Severe Respiratory Distress / Sepsis risk in {persona.name}. High likelihood of respiratory failure/decompensation. Immediate 112 ambulance transport, supplemental oxygen & hospital emergency evaluation!"
                 else:
                     red_flag_message = f"🚨 RED FLAG: Critical acute escalation. Urgent hospital emergency room transfer required."
 
@@ -1317,33 +1331,48 @@ class ClinicalImpactEngine:
         ddi_alerts: List[str] = []
         med_str = " ".join(persona.medications).lower()
 
-        # Check NSAIDs & Renal Safety (Global Profile-Driven)
-        if "kidney" in cond_str or "ckd" in cond_str:
-            ddi_alerts.append("⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.")
-        if "ulcer" in cond_str or "gerd" in cond_str or scenario.id == 6:
-            ddi_alerts.append("⛔ GASTROINTESTINAL CONTRAINDICATION: Systemic NSAIDs contraindicated due to severe gastric mucosal erosion and upper gastrointestinal hemorrhage risk.")
-        if "heart failure" in cond_str or "chf" in cond_str:
-            ddi_alerts.append("⚠️ CARDIAC WARNING: NSAIDs promote renal sodium & water retention, worsening acute congestive heart failure decompensation.")
+        # Context-aware acuity weights
+        is_hemostatic_critical_domain = (scenario.id in [6, 9])  # Upper GI Bleed & Stroke
+        is_pain_metabolic_domain = (scenario.id in [1, 2, 5, 7, 8, 11, 12])  # Gout, Chest Pain, Pneumonia, UTI, Spine
 
-        # Check Anticoagulation & Antiplatelet Therapy (Global Profile-Driven)
-        if "apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str:
-            ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
-
-        # Check Metformin in Sepsis / Hypovolemia / Diarrhea (Global Profile-Driven)
-        if "metformin" in med_str:
-            if scenario.id in [2, 7, 10] or "hypovolemia" in scenario.title.lower() or "diarrhea" in scenario.title.lower():
-                ddi_alerts.append("⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.")
-
-        # Check Beta-Blockers in Respiratory Disease
-        if "metoprolol" in med_str or "propranolol" in med_str:
-            if "asthma" in cond_str or "bronchitis" in cond_str or "byssinosis" in cond_str or scenario.id in [2, 8]:
-                ddi_alerts.append("⚠️ RESPIRATORY DDI: Patient is taking Beta-blockers. Non-cardioselective or high-dose beta-blockers exacerbate acute bronchospasm and blunt bronchodilator response.")
-
-        # Check Pregnancy Safety (FDA PLLR Standard)
+        # Priority 1: Pregnancy Medication Safety (FDA PLLR Standard) — Never obscure for pregnant patient
         if persona.is_pregnant:
             ddi_alerts.append("🤰 PREGNANCY MEDICATION SAFETY (FDA PLLR): Avoid systemic NSAIDs in 2nd/3rd trimester (premature ductus arteriosus closure, oligohydramnios). ACE inhibitors, ARBs, and Fluoroquinolones contraindicated due to fetotoxicity. Paracetamol is the first-line analgesic of choice when clinically required.")
 
-        # Check Allergies
+        # In Dehydrating Illness / Diarrhea (Scenario 10), Metformin Sick-Day rule is the primary time-critical medication action
+        if scenario.id == 10 and "metformin" in med_str:
+            ddi_alerts.append("⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.")
+
+        # Priority in GI Bleed & Stroke (Scenarios 6, 9): Hemostatic Alert is P0
+        if is_hemostatic_critical_domain and ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str):
+            ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
+
+        # Priority in Pain / Inflammatory Domains (Gout, Pneumonia, UTI, Spine): Renal NSAID Safety is P0
+        if ("kidney" in cond_str or "ckd" in cond_str) and not any("RENAL" in a for a in ddi_alerts):
+            ddi_alerts.append("⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.")
+
+        # General Hemostatic Alert (for non-GI/Stroke domains if not already covered)
+        if ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str) and not any("HEMOSTATIC" in a for a in ddi_alerts):
+            ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
+
+        # Priority: Metformin Sick-Day Rule (General Dehydration / Sepsis)
+        if "metformin" in med_str and (scenario.id in [2, 7] or "hypovolemia" in scenario.title.lower() or "diarrhea" in scenario.title.lower()):
+            if not any("METFORMIN" in a for a in ddi_alerts):
+                ddi_alerts.append("⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.")
+
+        # Priority: Gastrointestinal NSAID Contraindication (Ulcer / Bleed)
+        if ("ulcer" in cond_str or "gerd" in cond_str or scenario.id == 6) and not any("GASTROINTESTINAL" in a for a in ddi_alerts):
+            ddi_alerts.append("⛔ GASTROINTESTINAL CONTRAINDICATION: Systemic NSAIDs contraindicated due to severe gastric mucosal erosion and upper gastrointestinal hemorrhage risk.")
+
+        # Priority: Cardiac Warning (Heart Failure / Fluid Retention)
+        if ("heart failure" in cond_str or "chf" in cond_str) and not any("CARDIAC" in a for a in ddi_alerts):
+            ddi_alerts.append("⚠️ CARDIAC WARNING: NSAIDs promote renal sodium & water retention, worsening acute congestive heart failure decompensation.")
+
+        # Priority: Respiratory Beta-Blocker DDI (Only if beta-blocker AND reactive airway disease)
+        if ("metoprolol" in med_str or "propranolol" in med_str) and ("asthma" in cond_str or "bronchitis" in cond_str or "byssinosis" in cond_str or "copd" in cond_str or scenario.id == 8):
+            ddi_alerts.append("⚠️ RESPIRATORY DDI: Patient is taking Beta-blockers. Non-cardioselective or high-dose beta-blockers exacerbate acute bronchospasm and blunt bronchodilator response.")
+
+        # Priority 8: Allergies
         for allergy in persona.allergies:
             al_lower = allergy.lower()
             if "sulfa" in al_lower:

@@ -156,7 +156,7 @@
 
 ### Clinical Synthesis & Engine Results:
 * **Triage Urgency:** **URGENT**
-* **Top Diagnosis:** Acute Gouty Arthritis (Podagra Attack) (Posterior: **65.0%**, Covariate Multiplier: **2.0x**)
+* **Top Diagnosis:** Acute Gouty Arthritis (Podagra Attack) (Posterior: **80.0%**, Covariate Multiplier: **2.8x**)
 * **Organ Burden:** Cardio: 50% | Renal: 100% | Resp: 25%
 * **Primary Safety / DDI Alert:** `⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.`
 
@@ -179,7 +179,7 @@
 
 ### Clinical Synthesis & Engine Results:
 * **Triage Urgency:** **EMERGENCY**
-* **Top Diagnosis:** Bleeding Peptic Ulcer (Gastric / Duodenal) (Posterior: **65.7%**, Covariate Multiplier: **3.0x**)
+* **Top Diagnosis:** Bleeding Peptic Ulcer (Gastric / Duodenal) (Posterior: **81.4%**, Covariate Multiplier: **3.5x**)
 * **Organ Burden:** Cardio: 75% | Renal: 85% | Resp: 45%
 * **Primary Safety / DDI Alert:** `⛔ GASTROINTESTINAL CONTRAINDICATION: Systemic NSAIDs contraindicated due to severe gastric mucosal erosion and upper gastrointestinal hemorrhage risk.`
 
@@ -250,7 +250,7 @@
 * **Triage Urgency:** **EMERGENCY**
 * **Top Diagnosis:** Pre-Renal Acute Kidney Injury (Hypovolemic AKI) (Posterior: **71.8%**, Covariate Multiplier: **8.4x**)
 * **Organ Burden:** Cardio: 85% | Renal: 100% | Resp: 40%
-* **Primary Safety / DDI Alert:** `⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.`
+* **Primary Safety / DDI Alert:** `⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.`
 
 ---
 

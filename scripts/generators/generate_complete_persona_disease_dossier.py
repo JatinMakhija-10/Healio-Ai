@@ -117,8 +117,8 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
                 "patient_open": "Doctor omg please help me!! My Apple Watch literally just buzzed an alert that my resting HR hit 138 bpm! My chest feels so tight, like an iron band is clamping my ribs shut, and my left arm has pins-and-needles. Am I having a heart attack?! I'm breathing into a paper bag now to stop hyperventilating!",
                 "doc_q1": "⚠️ URGENT SAFETY INTERCEPT: Aanya, STOP breathing into a paper bag immediately! Rebreathing into a paper bag is medically dangerous—it causes progressive hypoxia and can mask serious cardiopulmonary emergencies. Take slow, unassisted breaths. Does the pain become sharply worse when you press directly on your ribs or take a deep breath?",
                 "patient_reply": "Threw the bag away, breathing on my own. Yes! When I press my fingers right next to my breastbone it hurts sharply, and taking a deep breath feels like a stitch. No cold sweats, but my heart is pounding at 138 bpm.",
-                "doc_q2": "While focal chest wall tenderness and deep inspiration pain point toward costochondritis, a resting heart rate of 138 with dizziness in someone on oral contraceptives cannot be cleared remotely without an ECG (ruling out SVT, arrhythmia, or pulmonary embolism). Arrange an urgent clinic escort right now for an ECG.",
-                "patient_final": "Okay, my roommate is driving me to the urgent care clinic right now to get an ECG. Thank you for stopping the paper bag."
+                "doc_q2": "While focal chest wall tenderness and deep inspiration pain point toward costochondritis, ongoing chest tightness with a resting heart rate of 138 bpm and dizziness in someone on oral contraceptives cannot be cleared remotely without an emergency ECG and cardiopulmonary evaluation (ruling out SVT, acute arrhythmia, or pulmonary embolism). Call 112 for emergency ambulance transport; do not attempt to drive yourself.",
+                "patient_final": "Understood doctor, my roommate is calling the 112 ambulance right now. Resting quietly and breathing normally until they arrive."
             }
         elif p_id == 3:  # Gurpreet Singh (Trucker)
             return {
@@ -219,8 +219,8 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
                 "patient_open": "Colleague, I just finished a 6-hour CABG scrub while slightly dehydrated, and woke up at 3 AM with acute podagra of the right 1st MTP joint. Erythematous, edematous, 9/10 allodynia. Given my DAPT (Aspirin + Clopidogrel) and Ramipril, I am holding off on NSAIDs.",
                 "doc_q1": "Hello Dr. Qureshi. Volume depletion on an ACE inhibitor during prolonged standing is a classic precipitant. What was your most recent serum urate and baseline creatinine, and are you afebrile?",
                 "patient_reply": "Afebrile. Last serum urate was 8.6 mg/dL, creatinine 1.1 mg/dL. Pain is strictly monoarticular in the right hallux. Zero systemic signs.",
-                "doc_q2": "With active DAPT, systemic NSAIDs are strictly contraindicated due to severe GI hemorrhage and cardiovascular stent risk. A short course of oral Prednisolone or low-dose Colchicine (screening for statin-colchicine myopathy with your Rosuvastatin), plus cool compression and limb elevation, is the safest regimen.",
-                "patient_final": "Good catch on the statin-colchicine CYP3A4 interaction—I will opt for a short Prednisolone taper and hydrate. Thank you colleague."
+                "doc_q2": "With active DAPT, systemic NSAIDs are strictly contraindicated due to severe GI hemorrhage and cardiovascular stent risk. A short course of oral Prednisolone or low-dose Colchicine (screening for additive statin-colchicine skeletal myopathy with your Rosuvastatin), plus cool compression and limb elevation, is the safest regimen.",
+                "patient_final": "Good catch on the additive colchicine-statin myotoxicity and rhabdomyolysis hazard—I will opt for a short Prednisolone taper and hydrate. Thank you colleague."
             }
         else:
             return {
@@ -244,10 +244,10 @@ def get_persona_dialogue(persona: ClinicalPersona, scenario: SymptomScenario) ->
         elif p_id == 9:  # Dr. Farooq Qureshi (Surgeon)
             return {
                 "patient_open": "Colleague, I need urgent triage coordination. Over the past 6 hours I've had gnawing epigastric pain, and 20 minutes ago I had coffee-ground emesis followed by a large melenic stool. I am on daily Aspirin 75mg and Clopidogrel 75mg, and foolishly took Diclofenac for shoulder strain.",
-                "doc_q1": "Dr. Qureshi, lie flat immediately with legs elevated. Combining an NSAID with dual antiplatelet therapy has precipitated an acute Upper GI Hemorrhage. What is your current heart rate, blood pressure, and orthostatic status?",
+                "doc_q1": "Dr. Qureshi, lie down immediately with your head elevated 30 degrees (semi-Fowler position) or in lateral recovery position to protect your airway and prevent aspiration while vomiting. Combining an NSAID with dual antiplatelet therapy has precipitated an acute Upper GI Hemorrhage. What is your current heart rate, blood pressure, and orthostatic status?",
                 "patient_reply": "HR is 112 bpm, BP on my home cuff is 104/68 mmHg—down from my 142/90 baseline. Significant postural lightheadedness. Shock index > 1.0.",
-                "doc_q2": "CRITICAL EMERGENCY: Shock index > 1.0 indicates hemodynamic compromise. Hold antiplatelets immediately, remain NPO, and transfer via cardiac ambulance to the ER for large-bore IV access, IV PPI infusion, type-and-cross, and emergency therapeutic endoscopy.",
-                "patient_final": "Cardiac ambulance called, GI on-call notified. Lying supine with legs elevated. Thank you colleague."
+                "doc_q2": "CRITICAL EMERGENCY: Shock index > 1.0 indicates hemodynamic compromise. Do NOT independently stop or restart prescribed antiplatelets; immediately convey your exact medication chart (Aspirin 75mg, Clopidogrel 75mg, Diclofenac) to emergency and cardiology teams for specialist-coordinated hemostasis per NICE CG141 guidelines. Remain strictly NPO, and transfer via emergency cardiac ambulance to the ER for large-bore IV access, IV PPI infusion, type-and-cross, and emergency therapeutic endoscopy.",
+                "patient_final": "Cardiac ambulance called, GI on-call notified. Resting in semi-Fowler position with head elevated 30 degrees. Thank you colleague."
             }
         elif p_id == 13:  # Harbans Lal (81M Dementia & CHF)
             return {
@@ -538,7 +538,7 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
             ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light])
         ]))
         story.append(t_matrix)
-        story.append(Spacer(1, 8))
+        story.append(PageBreak())
 
         # Synthetic Clinical Simulation Transcripts for Key Personas
         story.append(Paragraph("B. Synthetic Clinical Simulation Transcripts (Multi-Turn Triage Benchmark)", h2_style))
@@ -644,7 +644,7 @@ def build_complete_dossier_pdf(output_pdf_path: Path):
         ],
         [
             Paragraph("<b>4. Organ Strain & Frailty Index</b>", tbl_cell_bold),
-            Paragraph("0-100% organ reserve mapping (Cardio, Renal, Resp, GI, Neuro) and acute frailty surge.", tbl_cell),
+            Paragraph("0-100% organ strain index mapping (Cardio, Renal, Resp, GI, Neuro) and acute frailty surge.", tbl_cell),
             Paragraph("[ &nbsp; ] Concur<br/>[ &nbsp; ] Modify<br/>[ &nbsp; ] Disagree", tbl_cell_center),
             Paragraph("_____________________________<br/>_____________________________", tbl_cell)
         ],
