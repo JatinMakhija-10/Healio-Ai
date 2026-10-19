@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import {
     Bell,
     Shield,
@@ -21,11 +22,16 @@ import {
     Activity,
     User,
     Mic,
-    Loader2
+    Loader2,
+    HeartPulse,
+    Watch,
+    Smartphone
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { loadHealthState } from "@/lib/health/healthSyncEngine";
+import { HealthIntegrationState } from "@/types/healthSync";
 
 function getLocalAroviaKeys(userId: string) {
     const suffix = `_${userId}`;
@@ -147,9 +153,14 @@ export default function SettingsPage() {
     const [isExportingData, setIsExportingData] = useState(false);
     const [isClearingLocalData, setIsClearingLocalData] = useState(false);
 
+    // Connected Health State
+    const [healthState, setHealthState] = useState<HealthIntegrationState | null>(null);
+
     useEffect(() => {
         // Skip if no user
         if (!user) return;
+
+        setHealthState(loadHealthState(user.id));
 
         // Load profile data from context
         if (profile) {
@@ -481,6 +492,73 @@ export default function SettingsPage() {
                             <p className="text-sm text-slate-500">Add an expandable explanation panel with rules, factors, and alternatives considered.</p>
                         </div>
                         <Switch checked={detailedExplanations} onToggle={toggleDetailed} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Connected Devices & Health Sync */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <HeartPulse className="h-5 w-5 text-teal-600" />
+                            <CardTitle>Connected Devices & Health Sync</CardTitle>
+                        </div>
+                        <Link href="/dashboard/health-sync">
+                            <Button size="sm" variant="outline" className="text-xs border-teal-500/40 text-teal-700 hover:bg-teal-50">
+                                Open Health Hub
+                                <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                            </Button>
+                        </Link>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-slate-500">
+                        Synchronize Apple Health (HealthKit), Google Health Connect, and smartphone sensors to feed biometric telemetry into Arovia consultations.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-slate-800">Apple Health</span>
+                                <Watch className="w-3.5 h-3.5 text-rose-500" />
+                            </div>
+                            <div className="mt-2 text-xs">
+                                {healthState?.sources.apple_health.status === 'connected' ? (
+                                    <span className="font-semibold text-emerald-600">Connected</span>
+                                ) : (
+                                    <span className="text-slate-400">Disconnected</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-slate-800">Google Health Connect</span>
+                                <Activity className="w-3.5 h-3.5 text-teal-500" />
+                            </div>
+                            <div className="mt-2 text-xs">
+                                {healthState?.sources.google_health_connect.status === 'connected' ? (
+                                    <span className="font-semibold text-emerald-600">Connected</span>
+                                ) : (
+                                    <span className="text-slate-400">Disconnected</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-slate-800">Phone Sensors</span>
+                                <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+                            </div>
+                            <div className="mt-2 text-xs">
+                                {healthState?.sources.phone_sensors.status === 'connected' ? (
+                                    <span className="font-semibold text-emerald-600">Active</span>
+                                ) : (
+                                    <span className="text-slate-400">Standby</span>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

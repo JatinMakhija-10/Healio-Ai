@@ -37,9 +37,11 @@ Arovia.AI/
 The core TypeScript/React application built on Next.js App Router (v15+):
 
 * **`src/app/`**: Next.js App Router pages and serverless API endpoints:
-  * `src/app/api/chat/route.ts`: Core AI Chatbot API (handles Intent Routing, System Prompt Injection, Groq/Gemini fallbacks, and RAG context merge).
+  * `src/app/api/chat/route.ts`: Core AI Chatbot API (handles Intent Routing, System Prompt Injection, Groq/Gemini fallbacks, RAG context merge, and Wearable Biometric Telemetry injection).
   * `src/app/api/diagnose/route.ts`: Bayesian Diagnostic Inference API.
+  * `src/app/api/health/sync/route.ts`: Health & Wearable Telemetry Ingestion API (persists Apple Health, Google Health Connect, and phone sensor metrics to user metadata).
   * `src/app/dashboard/`: Patient Dashboard, Chat UI, Consultation History, Assessment & Settings pages.
+  * `src/app/dashboard/health-sync/`: Dedicated Connected Health & Wearables Hub (Apple Health, Google Health Connect, Phone Sensors, BLE Pairing, Anomaly Alerts & Import).
   * `src/app/doctor/`: Doctor Portal (Consultations, Appointments, Patient Review, Registration).
   * `src/app/onboarding/`: Interactive Medical Profile & Persona Builder wizard.
   * `src/app/admin/`: Admin Control Panel.
@@ -50,6 +52,7 @@ The core TypeScript/React application built on Next.js App Router (v15+):
   * `src/components/layout/`: Header, Sidebar, Navigation Bar, and Page Layout wrappers.
 
 * **`src/lib/`**: Core Clinical Algorithms & Business Logic:
+  * `src/lib/health/`: Health and Wearable synchronization engine (`healthSyncEngine.ts` — Apple Health XML parser, Google Health Connect JSON parser, DeviceMotion pedometer, Web Bluetooth LE heart rate, and clinical anomaly detection).
   * `src/lib/diagnosis/`:
     * `advanced/PersonaEngine.ts`: Deterministic patient profile parser (calculates BMI, WHO classes, Comorbidity flags, Medication flags, Polypharmacy risk, and 0–10 Clinical Frailty Index).
     * `advanced/MCMCEngine.ts`: Bayesian MCMC diagnostic engine with 12 groups of Covariate Prior ($\alpha$) Multipliers.
@@ -57,13 +60,13 @@ The core TypeScript/React application built on Next.js App Router (v15+):
     * `ddi.ts`: Stateless Drug-Drug & Drug-Disease Interaction Safety Filter.
     * `dialogue/`: Dialogue state management (`DialogueState.ts`, `SymptomQuestionSchemas.ts`, `EmpatheticResponseGenerator.ts`).
   * `src/lib/chat/`: Chat utilities, `widgetDetection.ts` (detects pain slider, location picker, quick reply chips), and consultation history.
-  * `src/lib/healthPersona.ts`: Merges Supabase `user_metadata.medical_profile` with local state.
+  * `src/lib/healthPersona.ts`: Merges Supabase `user_metadata.medical_profile` and `wearable_data` with local state.
   * `src/lib/rag/`: Vector search interfaces, Boericke Homeopathy RAG, Ayurvedic RAG, and `queryRewriter.ts`.
   * `src/lib/safety/`: Safety scanners (`redFlagDetector.ts`) and escalation managers.
 
 * **`src/context/`**: React Context providers (`AuthContext.tsx`, `ChatContext.tsx`, `AppointmentContext.tsx`).
 * **`src/hooks/`**: Custom React hooks (`useChat.ts`, `useDiagnosisChat.ts`, `useAuth.ts`).
-* **`src/types/`**: Global TypeScript interfaces (`UserSymptomData`, `DiagnosisResult`, `PersonaProfile`).
+* **`src/types/`**: Global TypeScript interfaces (`healthSync.ts`, `UserSymptomData`, `DiagnosisResult`, `PersonaProfile`).
 
 ---
 

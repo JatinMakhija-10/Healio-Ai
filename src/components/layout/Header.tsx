@@ -19,6 +19,7 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard/consult": "New Consultation",
     "/dashboard/history": "History",
     "/dashboard/profile": "Profile",
+    "/dashboard/health-sync": "Health Sync & Wearables",
     "/dashboard/settings": "Settings",
     "/dashboard/search": "Find Specialist",
     "/dashboard/learn": "Learn",

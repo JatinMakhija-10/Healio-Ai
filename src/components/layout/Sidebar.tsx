@@ -19,7 +19,8 @@ import {
     Sun,
     Users,
     UserRoundSearch,
-    ShoppingBag
+    ShoppingBag,
+    HeartPulse
 } from "lucide-react";
 import { AroviaLogo } from "@/components/ui/AroviaLogo";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,6 +62,12 @@ const allSidebarItems = [
         href: "/dashboard/profile",
         icon: UserCircle,
         visible: true, // Always visible
+    },
+    {
+        title: "Health Sync",
+        href: "/dashboard/health-sync",
+        icon: HeartPulse,
+        visible: PHASE_CONFIG.showHealthSync,
     },
     {
         title: "Ayurvedic Store",

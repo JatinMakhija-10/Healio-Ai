@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import type { WearableDataSummary } from "@/types/healthSync";
 
 /** Shape of `user_metadata.medical_profile` across onboarding + prakriti flows */
 export type MedicalProfileRecord = {
@@ -23,6 +24,8 @@ export type MedicalProfileRecord = {
     recent_surgery?: string | boolean;
     /** String or list depending on writer */
     family_history?: string | string[];
+    /** Apple Health / Google Health Connect telemetry */
+    wearable_data?: WearableDataSummary;
 };
 
 export type ResolvedHealthPersona = {
@@ -35,6 +38,7 @@ export type ResolvedHealthPersona = {
     gender: string | undefined;
     weight: string | number | undefined;
     height: string | number | undefined;
+    wearable?: WearableDataSummary;
 };
 
 function pickDisplay(top: unknown, nested: unknown): string | number | undefined {
@@ -166,11 +170,13 @@ export function resolveHealthPersona(
 
     const medical = normalizeMedical(metadata.medical_profile);
     const ayurvedic = metadata.ayurvedic_profile;
+    const wearable = (metadata.wearable_data || medical.wearable_data) as WearableDataSummary | undefined;
 
     return {
         metadata,
         medical,
         ayurvedic,
+        wearable,
         isPersonaBuilt: Boolean(medical.persona_built),
         age: pickDisplay(metadata.age, medical.age),
         gender: pickDisplay(metadata.gender, medical.gender) as string | undefined,

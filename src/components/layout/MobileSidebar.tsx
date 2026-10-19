@@ -16,7 +16,8 @@ import {
     Loader2,
     CreditCard,
     Crown,
-    ShoppingBag
+    ShoppingBag,
+    HeartPulse
 } from "lucide-react";
 import { AroviaLogo } from "@/components/ui/AroviaLogo";
 import { useState } from "react";
@@ -49,6 +50,12 @@ const allSidebarItems = [
         href: "/dashboard/profile",
         icon: UserCircle,
         visible: true,
+    },
+    {
+        title: "Health Sync",
+        href: "/dashboard/health-sync",
+        icon: HeartPulse,
+        visible: PHASE_CONFIG.showHealthSync,
     },
     {
         title: "Ayurvedic Store",

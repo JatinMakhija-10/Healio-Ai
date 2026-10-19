@@ -8,11 +8,13 @@ import { SeasonalBanner } from "@/components/wellness/SeasonalBanner";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock, Activity, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Plus, Clock, Activity, ArrowRight, CheckCircle2, HeartPulse, Watch, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
+import { loadHealthState } from "@/lib/health/healthSyncEngine";
+import { HealthIntegrationState } from "@/types/healthSync";
 
 // Type definition for stored consultation
 type Consultation = {
@@ -34,7 +36,12 @@ export default function DashboardPage() {
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [localName, setLocalName] = useState<string | null>(null);
+    const [healthState, setHealthState] = useState<HealthIntegrationState | null>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        setHealthState(loadHealthState(user?.id));
+    }, [user?.id]);
 
     useEffect(() => {
         if (!user && !loading) {
@@ -153,6 +160,87 @@ export default function DashboardPage() {
 
 
             )}
+
+            {/* Connected Health & Wearables Widget */}
+            {(() => {
+                const connectedSources = healthState
+                    ? Object.values(healthState.sources).filter((s) => s.status === 'connected')
+                    : [];
+                const m = healthState?.latestMetrics;
+
+                return (
+                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 p-5 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-start sm:items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-200/60 dark:border-teal-800">
+                                    <HeartPulse className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                            Connected Health & Wearables
+                                        </h3>
+                                        {connectedSources.length > 0 ? (
+                                            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                                {connectedSources.length} Active Source{connectedSources.length > 1 ? 's' : ''}
+                                            </span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                                Not Connected
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-0.5">
+                                        {connectedSources.length > 0
+                                            ? `Synced from ${connectedSources.map((s) => s.name).join(', ')}. Integrated into consultations.`
+                                            : 'Integrate Apple Health (HealthKit), Google Health Connect, or phone pedometer.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Link href="/dashboard/health-sync">
+                                    <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs">
+                                        {connectedSources.length > 0 ? 'Manage Health Vitals' : 'Connect Apple / Google Health'}
+                                        <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Quick Vitals Snapshot */}
+                        {connectedSources.length > 0 && m && (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                                    <div className="text-[11px] text-slate-400 uppercase font-medium">Steps Today</div>
+                                    <div className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
+                                        {m.steps ? m.steps.toLocaleString() : '—'}
+                                    </div>
+                                </div>
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                                    <div className="text-[11px] text-slate-400 uppercase font-medium">Resting HR</div>
+                                    <div className="text-base font-bold text-slate-900 dark:text-white mt-0.5 flex items-baseline gap-1">
+                                        {m.restingHeartRate ?? '—'}
+                                        <span className="text-[10px] text-slate-400">bpm</span>
+                                    </div>
+                                </div>
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                                    <div className="text-[11px] text-slate-400 uppercase font-medium">Sleep</div>
+                                    <div className="text-base font-bold text-slate-900 dark:text-white mt-0.5 flex items-baseline gap-1">
+                                        {m.sleepDurationHours ? `${m.sleepDurationHours}h` : '—'}
+                                    </div>
+                                </div>
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                                    <div className="text-[11px] text-slate-400 uppercase font-medium">SpO2 Oxygen</div>
+                                    <div className="text-base font-bold text-slate-900 dark:text-white mt-0.5 flex items-baseline gap-1">
+                                        {m.bloodOxygenSpO2 ? `${m.bloodOxygenSpO2}%` : '—'}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
 
             {PHASE_CONFIG.showWellnessSection && <WellnessEntryCards />}
             {PHASE_CONFIG.showWellnessSection && <SeasonalBanner />}

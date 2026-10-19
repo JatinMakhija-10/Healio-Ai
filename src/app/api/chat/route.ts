@@ -638,6 +638,62 @@ function buildPatientProfileContext(userMeta: Record<string, any>): string {
         clinicalInferences.forEach(inf => block.push(`- ${inf}`));
     }
 
+    // 5. Wearable & Health Telemetry (Apple Health, Google Health Connect, Phone Sensors)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wearable = (userMeta.wearable_data || mp.wearable_data) as any;
+    if (wearable && (wearable.hasConnectedDevice || (Array.isArray(wearable.connectedSources) && wearable.connectedSources.length > 0) || wearable.metrics)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const wm: Record<string, any> = wearable.metrics || {};
+        const sources = Array.isArray(wearable.connectedSources) && wearable.connectedSources.length > 0
+            ? wearable.connectedSources.join(', ')
+            : 'Apple Health / Google Health Connect';
+
+        block.push('\n[LIVE WEARABLE & BIOMETRIC TELEMETRY — APPLE HEALTH / GOOGLE HEALTH CONNECT]');
+        block.push(`- Connected Source(s): ${sources}`);
+        if (wearable.lastSyncedAt) {
+            block.push(`- Last Synced: ${new Date(wearable.lastSyncedAt).toLocaleString()}`);
+        }
+        if (wm.restingHeartRate != null) {
+            block.push(`- Resting Heart Rate: ${wm.restingHeartRate} bpm (Normal baseline: 60–75 bpm)`);
+        }
+        if (wm.currentHeartRate != null) {
+            block.push(`- Current Heart Rate: ${wm.currentHeartRate} bpm`);
+        }
+        if (wm.hrvSdnnMs != null) {
+            block.push(`- Heart Rate Variability (SDNN): ${wm.hrvSdnnMs} ms`);
+        }
+        if (wm.sleepDurationHours != null) {
+            block.push(`- Sleep Duration: ${wm.sleepDurationHours} hrs ${wm.sleepScore ? `(Sleep Score: ${wm.sleepScore}/100)` : ''}`);
+        }
+        if (wm.bloodOxygenSpO2 != null) {
+            block.push(`- Blood Oxygen Saturation (SpO2): ${wm.bloodOxygenSpO2}%`);
+        }
+        if (wm.bloodPressureSystolic != null && wm.bloodPressureDiastolic != null) {
+            block.push(`- Blood Pressure: ${wm.bloodPressureSystolic}/${wm.bloodPressureDiastolic} mmHg`);
+        }
+        if (wm.bodyTemperatureC != null) {
+            block.push(`- Body Temperature: ${wm.bodyTemperatureC}°C (${((wm.bodyTemperatureC * 9) / 5 + 32).toFixed(1)}°F)`);
+        }
+        if (wm.steps != null) {
+            block.push(`- Daily Steps Today: ${Number(wm.steps).toLocaleString()} steps`);
+        }
+        if (wm.activeCalories != null) {
+            block.push(`- Active Energy: ${wm.activeCalories} kcal`);
+        }
+
+        // Active Clinical Anomalies from Wearable
+        if (Array.isArray(wearable.anomalies) && wearable.anomalies.length > 0) {
+            block.push('\n[ACTIVE WEARABLE CLINICAL ALERTS]');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            wearable.anomalies.forEach((a: any) => {
+                block.push(`- [${String(a.severity || 'WARNING').toUpperCase()}] ${a.title}: ${a.description} (${a.clinicalImplication})`);
+            });
+        }
+
+        block.push('\n[CLINICAL INSTRUCTION FOR WEARABLE INTEGRATION]');
+        block.push('- The patient has connected Apple Health / Google Health. If their symptoms (e.g. fever, fatigue, weakness, headache, palpitations, dizziness, insomnia) correlate with their wearable metrics (such as elevated resting HR, acute sleep deficit, mild desaturation, or low HRV), explicitly and empathetically correlate this data in your consultation response. Never state that wearable data replaces diagnostic testing, but use it to provide personalized, precise guidance.');
+    }
+
     if (stalenessNotice) {
         block.push('\n' + stalenessNotice);
     }

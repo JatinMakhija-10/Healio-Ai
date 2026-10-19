@@ -6,6 +6,7 @@
 
 export const PHASE_CONFIG = {
     // Navigation & Sections
+    showHealthSync: true,           // Wearables & Apple Health / Google Health Connect integration
     showLearnSection: true,         // Phase 2 — enabled: myth checks, evidence guide, seasonal care, safety notes done
     showWellnessSection: false,     // Phase 2 — disabled for now
     showVideoConsult: false,        // Phase 2
