@@ -1,0 +1,144 @@
+Claude
+
+# Clinical audit of the Arovia 18-persona dossier
+
+I'm an AI, not a licensed physician. This is a clinician-style review against standard guidelines (ACS/ESC/AHA, CURB-65/qSOFA, WHO ORS, KDIGO sick-day rules, FDA labelling). It can't replace the registered-doctor sign-off the last page asks for. Verdict: **not ready for patient guidance in its current form.** Several scripted answers would harm a real patient, and the "Bayesian" numbers don't reproduce.
+
+---
+
+## A. Critical (patient-safety) findings
+
+**1. Priyanka Rao (#10), severe dehydration managed with herbs only.**
+- The engine rates her EMERGENCY with severe dehydration (10 watery stools, "extreme dryness"). The AI recommends coconut water, Kutajaghan Vati and rice kanji, and never mentions ORS.
+- Coconut water has far less sodium than WHO ORS and is not a substitute.
+- The AI also validated her "no synthetic chemicals" stance instead of correcting it. Red flags such as blood, fever and urine output were never asked about, and "consult in person if dizziness worsens" is too late for an emergency-triaged patient.
+- The herbal product gets no dose strength and no safety screening, yet audit item 5 claims herb-drug screening. The same case shows "no DDI clashes", so nothing was demonstrated.
+
+**2. Meera Nambiar (#4), pregnant and dehydrated, managed at home.**
+- She is triaged EMERGENCY with 10+ watery stools, dizziness, dark urine and Hb 9.8. The AI says "start ORS" and nothing else.
+- Gestational age was never asked, nor fetal movements, contractions, fever or bleeding. A pregnant, anaemic, dehydrated woman needs same-day in-person assessment.
+- The teratogenicity alert (ACEi, ARB, statins, fluoroquinolones) is irrelevant to what she actually needs. The relevant guidance is on antimotility drugs and antibiotic choice.
+
+**3. Aanya Sen (#2), HR 138 at rest labelled costochondritis.**
+- She has a resting HR of 138, three nights without sleep, arm paraesthesia and dizziness. The AI diagnosed costochondritis "amplified by panic" after two questions.
+- Reproducible tenderness does not exclude PE, pericarditis, SVT, thyrotoxicosis or stimulant effects. She has PCOS, so combined-pill use (a VTE risk) should have been asked about. There was no ECG or manual-pulse advice.
+- She says she's breathing into a paper bag, and the AI lets it stand. Rebreathing is discouraged because it can cause hypoxaemia and mask a serious cause.
+- Triage says EMERGENCY, but the advice is "calm down".
+
+**4. Harbans Lal (#13), internal contradictions.**
+- *Stroke:* the AI announces "immediate thrombolysis within 4.5 h", but the same record carries a HEMOSTATIC alert (antiplatelet/anticoagulant). A DOAC taken within about 48 h is a thrombolysis contraindication. He has EF 32% and likely AF, so thrombectomy may be the real pathway.
+- The alert also lumps antiplatelets with anticoagulants, and they are not equivalent for thrombolysis.
+- The AI says "lying flat" in a patient with heart failure and recent hypoxia (orthopnoea and aspiration risk). It omits a glucose check (hypoglycaemia mimic) and nil-by-mouth until a swallow screen.
+- *Pneumonia/sepsis:* BP 94/56, RR 28 and confusion give qSOFA 3 and CURB-65 of at least 3 (age, confusion, diastolic ≤60). That is severe, and the engine still reports a 40% posterior.
+- "IV inotropes" is the wrong frame. Sepsis in HF needs early antibiotics, cultures and lactate, cautious fluid boluses, and a vasopressor (norepinephrine) if hypotension persists. The target ">92%" SpO₂ is also below the usual 94–98% for a non-COPD patient. No goals-of-care or aspiration-risk discussion for an 81-year-old with dementia.
+- *Consistency:* he is "severely confused" in the pneumonia case but gives lucid answers in the GI-bleed and stroke cases.
+
+**5. Ramesh Sharma (#1), diarrhoea and AKI risk.**
+- Only Metformin is stopped. He also took a "BP tablet". Sick-day rules (SADMANS) also cover ACEi/ARB, diuretics, SGLT2 inhibitors and NSAIDs, and the AI never asked which BP drug.
+- Eight hours without urine, orthostatic dizziness and cramps is an ER problem (electrolytes, creatinine, IV fluids), not "go to the clinic".
+- "Fatal lactic acidosis" overstates it. It is rare but serious.
+
+**6. Transport advice is unsafe in several cases.**
+- Ramesh (suspected ACS) goes by his son's car. Gurpreet (suspected shock from GI bleed) goes by co-driver. Anand (can't speak two words) goes by his son.
+- All of these call for EMS (108/112) so ECG, oxygen, IV access and defibrillation are available en route. The AI never corrects the patient.
+- For Ramesh, "no painkillers" without addressing aspirin is also a gap. Standard first aid is chewed aspirin 300 mg unless allergic or bleeding.
+
+**7. Chest-pain differential is a closed three-way set (ACS vs costochondritis vs GERD).**
+- PE, aortic dissection, pericarditis, pneumothorax, SCAD (relevant to pregnant Meera) and panic are never ranked.
+- For the stated complaint (crushing pressure radiating to jaw and arm), GERD is the top diagnosis for Devaki (74F, frailty 7/10), Shalini (63F), Meera (pregnant), Priyanka, Tenzin and Deepak. For a 74-year-old woman, 1.0x is not defensible.
+- Gurpreet (obese, BP 154/98, severe OSA) gets only 1.4x, while Sunita (49F, mild risk profile) gets 2.6x.
+- Sunita, Anand and Harbans all get an identical 2.6x / 50.1%, which suggests an age bucket rather than a covariate model.
+- Vik is told "no cardiac risk". A sudden sprint-onset stitch needs pneumothorax and rib stress fracture considered, exertional red flags, and a safety-net. An absolute "no risk" is unsafe.
+
+---
+
+## B. The "Bayesian" engine does not reproduce
+
+Posterior odds should equal prior odds times the multiplier. The numbers show otherwise:
+
+| Section | Baseline (1.0x) | Shown | Expected if odds × multiplier |
+|---|---|---|---|
+| Stroke, 0.2x (Aanya, Vik, Koko, Zoya) | 70.0% | 58.3% | ~32% |
+| Stroke, 3.2x (Ramesh) | 70.0% | 72.5% | ~88% |
+| Gout, 11x (Manish) | 65.0% | 79.4% | ~95% |
+| Gout, 2.0x (Ramesh) | 65.0% | 72.2% | ~79% |
+| GI bleed, 3.0x | 60.0% | 60.0% | ~82% |
+| Pneumonia, 3.8x (Anand) | 40.0% | 40.0% | ~72% |
+
+- In the pneumonia and GI-bleed sections, the multiplier has **no effect at all**. Every persona gets exactly 40.0% or 60.0%.
+- Many posteriors are suspiciously round (70.0%, 65.0%, 60.0%, 40.0%), as if they were template constants.
+- A 40% posterior for pneumonia, with 103°F, rigors, rust-coloured sputum and a pleuritic stitch, is not credible. Gastroenteritis at 60% with 12 watery stools a day is also too low. The doctor's text ("This is pneumonia", "textbook costochondritis") contradicts the engine's own numbers.
+- Gout is 65% for a 16-year-old girl (Zoya) and a 23-year-old woman (Aanya), identical to a 47-year-old man. Gout is rare in adolescents and premenopausal women, so septic or reactive arthritis, JIA and trauma should dominate. Tenzin's 2.2x (altitude, dehydration) is a good, sensible example by contrast.
+- Zoya, Aanya and Vik have identical outputs (costochondritis 63.2% / 2.8x), so the engine seems to key on an age band.
+- **Organ burden:** audit item 4 claims a five-system map, but only "C" and "R" appear, and "R" is ambiguous (renal or respiratory). Values saturate at 100% (Ramesh renal 100% with eGFR 48, which is not renal failure). Deepak (34M) has cardiac burden 100% in chest pain, while Gurpreet has 90%. Anand's transcript says "lung burden 100%" but the matrix shows R:70%.
+- **Triage vs advice:** everyone is EMERGENCY for chest pain, yet Vik and Aanya are sent home with heat packs and breathing tips.
+
+---
+
+## C. High-severity clinical and drug-safety issues
+
+- **Alerts are disease-triggered, not profile-driven.** Dr. Farooq (stented CAD) and Harbans get the antiplatelet alert only in the GI-bleed and stroke sections, not in gout, chest pain or diarrhoea. Deepak's beta-blocker flag appears only in pneumonia.
+- **Ramesh's gout case.**
+  - The AI advises "cool Epsom water", the patient replies "warm Epsom water", and the AI doesn't correct it.
+  - It omits septic arthritis, diabetic foot infection and cellulitis (fever? skin break?) in a diabetic with CKD.
+  - It advises a steroid without warning about glucose.
+  - "A single Brufen dose causes permanent kidney shutdown" is overstated, though the contraindication itself is right.
+- **Manish's gout case.**
+  - The AI says "please prescribe the Colchicine right away" without dose, renal function, statin or macrolide interactions, or fever screening.
+  - He already took Brufen with BP 156/96.
+  - His case is tophaceous, recurrent gout, yet current urate-lowering therapy was not asked about.
+- **Dr. Farooq's gout.** Hydration advice only, with no analgesic plan. NSAIDs are unsafe for him (stent and antiplatelet), but the engine says "no DDI clashes".
+- **GI bleed.**
+  - Gurpreet is told "early hypovolaemic shock" with no vitals. The AI gives no positioning advice (lie flat, legs raised), and varices from alcohol are not considered.
+  - Dr. Farooq (on antiplatelets, likely with a stent) is told "painkillers eroded your lining" without asking which drug. Antiplatelets must not be stopped without cardiology input.
+- **Anand.**
+  - Hindi/Hinglish from the patient gets English replies, a safety risk with low health literacy.
+  - TB and a COPD exacerbation aren't considered. The AI mentions smoking he never stated in the transcript.
+  - The "Samter's/aspirin allergy" label on a chronic-bronchitis patient looks wrong, and no antiplatelet alternative is given for ACS.
+- **Zoya (16F).** The AI doesn't involve a parent or guardian, doesn't consider atypical pneumonia (mycoplasma), and doesn't consider whether severe atopic dermatitis means systemic immunosuppression, which would change the risk. The consult is only three turns.
+- **Outdated pregnancy labelling.** FDA retired A/B/C/D/X letter categories in 2015 (PLLR format). Statins' blanket pregnancy warning was relaxed in 2021. Fluoroquinolones are "avoid unless no alternative", not "strictly prohibited". The "FDA/Beers filter" claim should cite current labelling and show Beers outputs (none appear for Devaki, Harbans or Ramesh).
+
+---
+
+## D. Dossier integrity problems
+
+- **"Hello Dr.." is a template bug**, appearing twice (Dr. Farooq).
+- **Cloned scripts.** Dr. Farooq and Harbans have identical GI-bleed dialogues, and Harbans, Radhika and Deepak have identical stroke dialogues. This contradicts "distinct voices and pain perception models". A cardiothoracic surgeon talking like a layperson also breaks persona. No pain-perception model output is shown, apart from Vik's 7/10 vs 2/10.
+- **"Authentic" transcripts are scripted**, with the patient lines authored. That is fine for a demo, but it should be labelled synthetic so the physician isn't misled.
+- **Coverage is overclaimed.** There are six presentations, and each has 2–3 transcripts out of 18 personas (Devaki, Sunita and Tenzin never get a transcript). Truncated persona table cells (e.g. "Interstate Long-Ha", "Hb 9.8") hide comorbidities needed to verify alerts.
+- **No validation evidence:** no sensitivity/specificity, no guideline citations, no calibration data. "Deterministic" means reproducible, not correct.
+- **Patient-facing false precision.** "Pre-Renal AKI 73.7%" can't be diagnosed without creatinine. There is also no "not a substitute for medical care" language, and diagnoses are stated as certainties.
+
+---
+
+## E. What the engine gets right
+
+- NSAID avoidance in CKD (Ramesh) and the stop-Brufen reaction.
+- The Metformin sick-day principle.
+- "No aspirin before CT" in suspected stroke, and noting the onset time.
+- Recognising the stoic or atypical presentation (Ramesh).
+- Recognising melena/hematemesis as an emergency (Gurpreet).
+- The pregnancy NSAID alert.
+- The Tenzin gout multiplier.
+
+---
+
+## F. Suggested stance on the five concurrence boxes
+
+1. **Bayesian priors: Disagree** until the arithmetic is documented (see B).
+2. **NSAID/renal guard: Modify.** Add HF, anticoagulants, ACEi/ARB plus diuretic ("triple whammy"), age ≥65, and ≥20 weeks pregnancy. Replace "permanent shutdown" with a risk statement.
+3. **Metformin sick-day: Concur, modify.** Extend to ACEi/ARB, diuretics, SGLT2 inhibitors and sulfonylureas. State the eGFR thresholds and say "rare but serious".
+4. **Organ strain/frailty: Cannot verify.** Needs a legend, all five organs shown, and no saturation at 100%.
+5. **Multi-modal integrative safety: Disagree.** The Priyanka case is unsafe and no screening is evidenced.
+
+## G. Priority fixes
+
+1. Stop the engine and the doctor script contradicting each other (diagnosis wording must follow the posterior).
+2. Add severity scores (CURB-65/qSOFA, Wells/HEART, ORS/volume status) and make triage drive the advice.
+3. Widen differentials (PE, dissection, septic joint, hypoglycaemia, etc.).
+4. Make alerts profile-wide.
+5. Never give herbal-only management for emergency-triaged dehydration. Always give ORS plus escalation criteria.
+6. Default to EMS for ACS, GI bleed and respiratory failure.
+7. Fix the template bugs, label synthetic transcripts, and add validation data.
+
+If useful, I can turn this into a formatted PDF or Word audit report, or draft a corrected version of any of the transcripts.

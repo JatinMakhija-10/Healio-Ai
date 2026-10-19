@@ -26,7 +26,8 @@ export type RedFlagType =
     | 'AORTIC_DISSECTION'
     | 'MENINGITIS'
     | 'TESTICULAR_TORSION'
-    | 'ECTOPIC_PREGNANCY';
+    | 'ECTOPIC_PREGNANCY'
+    | 'PAPER_BAG_REBREATHING_HAZARD';
 
 export interface RedFlagResult {
     detected: boolean;
@@ -188,7 +189,18 @@ const COMPOUND_RED_FLAGS: CompoundPattern[] = [
             /(?:nausea|vomiting|abdominal\s*pain)/i,
         ],
         emergencyMessage:
-            '⚠️ URGENT: Sudden severe testicular pain with nausea may indicate testicular torsion — a surgical emergency. Call 112 (India) or 911 (US) immediately. Every minute counts.',
+            '⚠️ CRITICAL: Sudden severe testicular pain is a surgical emergency (testicular torsion). Delaying treatment can lead to permanent damage. Seek emergency care immediately.',
+    },
+
+    // ── Respiratory Hazards ───────────────────────────────────────────────────
+    {
+        flag: 'PAPER_BAG_REBREATHING_HAZARD',
+        components: [
+            /paper\s*bag|rebreath/i,
+            /(?:breath|dizzy|chest|panic|hyperventilat)/i,
+        ],
+        emergencyMessage:
+            '⚠️ CRITICAL SAFETY WARNING: STOP breathing into a paper bag immediately. Rebreathing into a paper bag is medically dangerous—it can cause life-threatening hypoxia, hypercapnia, and mask serious cardiac or pulmonary conditions (British Thoracic Society / ANZCOR). Call 112 (India) or 911 (US) if severe dizziness, chest pain, or breathlessness persists.',
     },
 ];
 

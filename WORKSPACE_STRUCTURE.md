@@ -71,6 +71,7 @@ The core TypeScript/React application built on Next.js App Router (v15+):
 Contains all project documentation, audits, specs, and generated reports:
 
 * **`docs/pdf_reports/`**: Formatted PDF dossiers generated via ReportLab:
+  * `Arovia_Clinical_Persona_Stress_Test_Dossier.pdf`: Comprehensive 13-page physician verification dossier (18 personas x 7 acute disease mix-and-match matrix, Bayesian prior shift calculations, DDI shields, layman guides, doctor sign-off).
   * `Arovia_AI_Health_Persona_Impact_Analysis.pdf`: Comprehensive report on PersonaEngine, MCMCEngine, DDI safety, and LLM prompt rules.
   * `Arovia_AI_Master_Pitch_and_Funding_Plan.pdf`: Investor deck & funding breakdown.
   * `Arovia_AI_Technical_Architecture.pdf`: Technical architecture dossier.
@@ -83,7 +84,7 @@ Contains all project documentation, audits, specs, and generated reports:
 ### 3. `scripts/` — Database Ingestion & Maintenance Tools
 Contains Python, TypeScript, and JavaScript maintenance scripts:
 
-* **`scripts/generators/`**: Python PDF generation scripts (`generate_persona_pdf.py`, `generate_arovia_pdf.py`, `generate_pitch_prep_pdf.py`).
+* **`scripts/generators/`**: Python PDF generation scripts (`generate_doctor_dossier.py`, `generate_persona_pdf.py`, `generate_arovia_pdf.py`, `generate_pitch_prep_pdf.py`).
 * **`scripts/helpers/`**: One-off helper & test scripts (`organize_workspace.mjs`, `commit_script.js`, `run_full_disease_test.mjs`, `test_long_chat.mjs`).
 * Ingestion & Scrapers: Scripts for ingesting Ayurvedic texts (`ingest_ayurveda_pdfs.ts`), Boericke Homeopathy (`ingest_boericke.ts`), PubMed, and OpenFDA datasets.
 
@@ -113,6 +114,9 @@ Contains Python, TypeScript, and JavaScript maintenance scripts:
 | `package.json` | Project dependencies, npm scripts (`dev`, `build`, `lint`, `test`). |
 | `tsconfig.json` | TypeScript compiler configuration and path aliases (`@/*`). |
 | `next.config.ts` | Next.js framework configuration (images, redirects, headers, Sentry). |
+| `cli_chat.py` | Interactive terminal clinical chatbot test tool (FastEmbed + RAG + Cross-questioning). |
+| `persona_terminal.py` | Interactive clinical persona & disease impact terminal simulator (18 personas, Bayesian shift, DDI shield, Organ burden, Matrix stress-test). |
+| `persona_chat_sim.py` | Multi-turn clinical chat simulator testing distinct persona voices, pain perception styles, and patient-doctor dialogues. |
 | `.env.local` / `.env.example` | Local environment variables (Supabase URL, Groq API key, Gemini API key). |
 | `vitest.config.ts` | Vitest unit test runner configuration. |
 | `playwright.config.ts` | Playwright E2E browser test configuration. |
