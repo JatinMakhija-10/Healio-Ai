@@ -122,7 +122,7 @@
 * **Triage Urgency:** **SEMI-URGENT**
 * **Top Diagnosis:** Severe Prolonged Migraine without Aura (Central Allodynia Flare) (Posterior: **60.0%**, Covariate Multiplier: **1.0x**)
 * **Organ Strain Index:** Cardio: 30% | Renal: 15% | Resp: 10%
-* **Primary Safety / DDI Alert:** `⚠️ SEROTONERGIC CAUTION: Concomitant Duloxetine (SNRI) and Rizatriptan (5-HT1 agonist). Monitor for Serotonin Syndrome symptoms (hyperreflexia, clonus, autonomic instability, agitation).`
+* **Primary Safety / DDI Alert:** `⚠️ SEROTONERGIC CAUTION: Concomitant Serotonergic agents (SSRI/SNRI + 5-HT1 Triptan). Monitor for Serotonin Syndrome symptoms (hyperreflexia, clonus, autonomic instability, agitation).`
 
 ---
 

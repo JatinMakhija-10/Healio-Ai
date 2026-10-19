@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "title": "Arovia / Healio.AI \u2014 500,000-Patient Clinical Monte Carlo Verification Certificate",
+    "timestamp": "2026-10-19 10:08:47Z",
+    "total_simulations": 500000,
+    "master_seed": 20261019,
+    "execution_duration_seconds": 3.16,
+    "throughput_sim_per_second": 158310.6,
+    "cpu_workers": 15
+  },
+  "safety_summary": {
+    "overall_pass_rate_percent": 100.0,
+    "total_passed": 500000,
+    "total_failed": 0,
+    "compliance_status": "CERTIFIED_SAFE",
+    "invariants": {
+      "INV1_Hemodynamic_Shock_Breaker": {
+        "violations": 0,
+        "status": "PASSED"
+      },
+      "INV2_Red_Flag_Pathology_Stops": {
+        "violations": 0,
+        "status": "PASSED"
+      },
+      "INV3_Drug_Disease_Drug_Drug_Safety_Shield": {
+        "violations": 0,
+        "status": "PASSED"
+      },
+      "INV4_Triage_Narrative_Synchronization": {
+        "violations": 0,
+        "status": "PASSED"
+      },
+      "INV5_Organ_Strain_Calibration_Bounds": {
+        "violations": 0,
+        "status": "PASSED"
+      },
+      "INV6_Bayesian_Probability_Coherence": {
+        "violations": 0,
+        "status": "PASSED"
+      }
+    }
+  },
+  "epidemiology": {
+    "pregnancy_cases": 10436,
+    "hemodynamic_shock_cases": 27663,
+    "active_ddi_alerts_triggered": 259731,
+    "triage_distribution": {
+      "EMERGENCY": 298540,
+      "EMERGENCY (OBSTETRIC)": 2427,
+      "URGENT": 107764,
+      "URGENT (RULE-OUT)": 13879,
+      "SEMI-URGENT": 77390,
+      "ROUTINE": 0
+    }
+  },
+  "quarantined_sample_anomalies": []
+}

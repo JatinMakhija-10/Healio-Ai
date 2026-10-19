@@ -89,6 +89,9 @@ class ClinicalPersona:
     is_pregnant: bool = False
     pregnancy_weeks: Optional[int] = None
     key_quote: str = ""
+    spo2: Optional[int] = None
+    rr: Optional[int] = None
+    egfr: Optional[float] = None
 
     @property
     def bmi(self) -> float:
@@ -1088,6 +1091,7 @@ class ClinicalImpactEngine:
         has_gerd = "gerd" in cond_str or "reflux" in cond_str or "esophagitis" in cond_str
         has_asthma = "asthma" in cond_str
         has_copd = "copd" in cond_str or "chronic bronchitis" in cond_str or "byssinosis" in cond_str
+        is_smoker = "smoker" in str(persona.lifestyle.get("smoking", "")).lower()
 
         # ── 1. Calculate Shifted Differential Diagnoses (Bayesian Posterior Shift) ──
         raw_diffs = []
@@ -1209,8 +1213,25 @@ class ClinicalImpactEngine:
         red_flag_message = ""
         top_diff = final_differentials[0]
 
+        # Hemodynamic Shock & Vital Sign Circuit Breaker (Invariant 1)
+        sbp = 120
+        try:
+            if "/" in str(persona.resting_bp):
+                sbp = int(persona.resting_bp.split("/")[0].strip())
+        except Exception:
+            sbp = 120
+        hr = persona.resting_hr or 75
+        shock_index = hr / max(1, sbp)
+        spo2 = getattr(persona, 'spo2', None)
+        rr = getattr(persona, 'rr', None)
+
+        is_vital_shock = (shock_index > 1.0 or sbp < 90 or (spo2 is not None and spo2 < 90) or (rr is not None and rr > 28))
+
         # Check conditions & scenario severity
-        if scenario.is_emergency_trigger:
+        if is_vital_shock:
+            red_flag_triggered = True
+            red_flag_message = f"🚨 RED FLAG (HEMODYNAMIC COLLAPSE / VITAL INSTABILITY): Severe vital instability detected (SBP {sbp} mmHg, HR {hr} bpm, Shock Index {shock_index:.2f}). Immediate 112/911 ambulance transport, resuscitation, and emergency hospital evaluation required!"
+        elif scenario.is_emergency_trigger:
             has_emergent_top = top_diff.get("urgency") == "EMERGENCY"
             has_high_emergent_diff = any(d.get("urgency") == "EMERGENCY" and d.get("posterior_pct", 0) >= 35.0 for d in final_differentials)
             is_frail_acute = persona.frailty_index >= 7
@@ -1221,28 +1242,33 @@ class ClinicalImpactEngine:
             # Acute cardiopulmonary distress on OCP (Aanya #2 resting HR 138, PE/arrhythmia concern needing 112 emergency transport)
             is_ocp_cardiopulm = (scenario.id == 1 and (persona.id == 2 or ("contraceptive" in med_str and persona.age <= 35)))
 
-            if has_emergent_top or has_high_emergent_diff or is_frail_acute or is_severe_resp_risk or is_ocp_cardiopulm:
+            # Stroke FAST and Upper GI Bleed and Diabetic ACS hard stops (Invariant 2)
+            is_stroke_fast = (scenario.emergency_type == "STROKE_FAST" or scenario.id == 9)
+            is_gi_bleed = (scenario.emergency_type == "UPPER_GI_BLEED" or scenario.id == 6)
+            is_diabetic_acs = (scenario.id == 1 and (has_diabetes or (persona.age >= 60 and (has_htn or is_smoker))))
+
+            if has_emergent_top or has_high_emergent_diff or is_frail_acute or is_severe_resp_risk or is_ocp_cardiopulm or is_stroke_fast or is_gi_bleed or is_diabetic_acs:
                 red_flag_triggered = True
                 if is_ocp_cardiopulm:
                     red_flag_message = f"🚨 RED FLAG: Acute Tachycardia (HR 138) with Retrosternal Tightness in patient on Combined Oral Contraceptive therapy. Pulmonary Embolism & Acute Arrhythmia risk. Immediate 112 ambulance dispatch & emergency cardiopulmonary evaluation required!"
-                elif scenario.emergency_type == "CARDIAC_EMERGENCY":
+                elif scenario.emergency_type == "CARDIAC_EMERGENCY" or is_diabetic_acs:
                     red_flag_message = f"🚨 RED FLAG: High probability of Acute Coronary Syndrome in {persona.name} (Age {persona.age}, Cardiac Prior Multiplier {cov_mults['cardiac']}x). Immediate 112/911 ambulance dispatch & 12-lead ECG required!"
-                elif scenario.emergency_type == "STROKE_FAST":
+                elif scenario.emergency_type == "STROKE_FAST" or is_stroke_fast:
                     red_flag_message = f"🚨 RED FLAG: Acute Stroke Syndrome (FAST Positive). Immediate Emergency Thrombolysis window (< 4.5 hrs). Do NOT administer Aspirin until non-contrast head CT rules out bleed!"
-                elif scenario.emergency_type == "UPPER_GI_BLEED":
+                elif scenario.emergency_type == "UPPER_GI_BLEED" or is_gi_bleed:
                     red_flag_message = f"🚨 RED FLAG: Upper GI Hemorrhage with Melena. Risk of hypovolemic collapse in patient with active medication use. Emergent IV fluid resuscitation & Upper Endoscopy!"
                 elif scenario.emergency_type == "RESPIRATORY_EMERGENCY":
                     red_flag_message = f"🚨 RED FLAG: Acute Severe Respiratory Distress / Sepsis risk in {persona.name}. High likelihood of respiratory failure/decompensation. Immediate 112 ambulance transport, supplemental oxygen & hospital emergency evaluation!"
                 else:
                     red_flag_message = f"🚨 RED FLAG: Critical acute escalation. Urgent hospital emergency room transfer required."
 
-        # Obstetric emergency escalation in pregnancy (Meera #4: Pyelonephritis or profuse dehydrating diarrhea)
-        if persona.is_pregnant and (scenario.id in [7, 10] or "dehydration" in scenario.title.lower() or "pyelonephritis" in scenario.title.lower()):
+        # Obstetric emergency escalation in pregnancy (Meera #4: Pyelonephritis or profuse dehydrating diarrhea, or shock)
+        if persona.is_pregnant and (scenario.id in [7, 10] or "dehydration" in scenario.title.lower() or "pyelonephritis" in scenario.title.lower() or is_vital_shock):
             red_flag_triggered = True
-            red_flag_message = f"🚨 RED FLAG: Acute Obstetric Emergency in {persona.pregnancy_weeks}-week pregnancy. Risk of premature contractions, maternal-fetal sepsis, and severe hypoperfusion. Immediate hospital transfer to Maternity Triage / Labor & Delivery required!"
+            red_flag_message = f"🚨 RED FLAG: Acute Obstetric Emergency in {persona.pregnancy_weeks or 'third'}-week pregnancy. Risk of premature contractions, maternal-fetal sepsis, and severe hypoperfusion. Immediate hospital transfer to Maternity Triage / Labor & Delivery required!"
 
         if red_flag_triggered:
-            if persona.is_pregnant and scenario.id in [7, 10]:
+            if persona.is_pregnant and (scenario.id in [7, 10] or "dehydration" in scenario.title.lower() or "pyelonephritis" in scenario.title.lower() or is_vital_shock):
                 triage_level = "EMERGENCY (OBSTETRIC)"
             else:
                 triage_level = "EMERGENCY"
@@ -1310,7 +1336,7 @@ class ClinicalImpactEngine:
 
         # ── 4. Frailty Surge & Functional Impact ──
         frailty_surge = 1
-        if triage_level == "EMERGENCY":
+        if "EMERGENCY" in triage_level:
             frailty_surge = 3 if persona.frailty_index <= 5 else 2
         elif triage_level == "URGENT":
             frailty_surge = 2
@@ -1327,7 +1353,7 @@ class ClinicalImpactEngine:
             acute_pain = min(10, acute_pain + 1)
 
         # Functional mobility & Work disruption
-        if acute_frailty >= 8 or triage_level == "EMERGENCY":
+        if acute_frailty >= 8 or "EMERGENCY" in triage_level:
             functional_mobility = "Bedridden / Emergency Admission"
             work_disruption = "Complete Disability (Strict Medical Leave Required)"
         elif acute_frailty >= 5 or triage_level == "URGENT":
@@ -1353,11 +1379,11 @@ class ClinicalImpactEngine:
             ddi_alerts.append("🤰 PREGNANCY MEDICATION SAFETY (FDA PLLR): Avoid systemic NSAIDs in 2nd/3rd trimester (premature ductus arteriosus closure, oligohydramnios). ACE inhibitors, ARBs, and Fluoroquinolones contraindicated due to fetotoxicity. Paracetamol is the first-line analgesic of choice when clinically required.")
 
         # In Dehydrating Illness / Diarrhea (Scenario 10), Metformin Sick-Day rule is the primary time-critical medication action
-        if scenario.id == 10 and "metformin" in med_str:
+        if (scenario.id == 10 or is_vital_shock) and "metformin" in med_str:
             ddi_alerts.append("⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.")
 
         # Priority in GI Bleed & Stroke (Scenarios 6, 9): Hemostatic Alert is P0
-        if is_hemostatic_critical_domain and ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str):
+        if is_hemostatic_critical_domain and any(d in med_str for d in ["apixaban", "aspirin", "clopidogrel", "warfarin", "rivaroxaban", "dabigatran", "heparin"]):
             ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
 
         # Priority: Severe Allergy Shields (Immediate Hypersensitivity / Anaphylactoid Hazard)
@@ -1371,24 +1397,24 @@ class ClinicalImpactEngine:
                 ddi_alerts.append("⚠️ ALLERGY SHIELD: Sulfa allergy documented. Avoid Sulfamethoxazole (Bactrim) and thiazide cross-reactivity.")
 
         # Priority in Pain / Inflammatory Domains (Gout, Pneumonia, UTI, Spine): Renal NSAID Safety is P0
-        if ("kidney" in cond_str or "ckd" in cond_str) and not any("RENAL" in a for a in ddi_alerts):
+        if ("kidney" in cond_str or "ckd" in cond_str or "renal" in cond_str or (getattr(persona, 'egfr', None) is not None and persona.egfr < 60)) and not any("RENAL" in a for a in ddi_alerts):
             ddi_alerts.append("⛔ RENAL NSAID CONTRAINDICATION: NSAIDs (Ibuprofen/Naproxen/Diclofenac) strictly contraindicated in Stage 3-5 CKD. High risk of hemodynamically mediated Acute Kidney Injury (AKI) and accelerating CKD progression via afferent arteriolar vasoconstriction.")
 
         # Priority: Estrogen / Combined Oral Contraceptive (VTE / Stroke Hazard)
-        if "contraceptive" in med_str or "ethinylestradiol" in med_str or "estrogen" in med_str:
-            if scenario.id in [1, 2]:
-                ddi_alerts.append("⚠️ ESTROGEN / VTE ALERT: Patient on Combined Oral Contraceptives. Increased baseline risk of venous thromboembolism (VTE) and Pulmonary Embolism (PE). Urgent cardiopulmonary evaluation required.")
-            elif scenario.id in [3, 9, 13] or "migraine" in scenario.title.lower() or "headache" in scenario.title.lower():
+        if any(c in med_str for c in ["contraceptive", "ethinylestradiol", "estrogen", "ocp"]):
+            if scenario.id in [3, 9, 13] or "aura" in cond_str or "aura" in scenario.title.lower():
                 ddi_alerts.append("🚨 WHO MEC CATEGORY 4 CONTRAINDICATION: Combined oral contraceptives are strictly contraindicated in migraine with aura due to markedly elevated ischemic stroke risk. Cease estrogen and arrange urgent neurologic/prescriber review.")
+            elif scenario.id in [1, 2]:
+                ddi_alerts.append("⚠️ ESTROGEN / VTE ALERT: Patient on Combined Oral Contraceptives. Increased baseline risk of venous thromboembolism (VTE) and Pulmonary Embolism (PE). Urgent cardiopulmonary evaluation required.")
             elif not any("ESTROGEN" in a for a in ddi_alerts):
                 ddi_alerts.append("⚠️ ESTROGEN SAFETY ALERT: Patient on Combined Oral Contraceptive therapy. Heightened hypercoagulability and thrombotic risk.")
 
         # General Hemostatic Alert (for non-GI/Stroke domains if not already covered)
-        if ("apixaban" in med_str or "aspirin" in med_str or "clopidogrel" in med_str) and not any("HEMOSTATIC" in a for a in ddi_alerts):
+        if any(d in med_str for d in ["apixaban", "aspirin", "clopidogrel", "warfarin", "rivaroxaban", "dabigatran", "heparin"]) and not any("HEMOSTATIC" in a for a in ddi_alerts):
             ddi_alerts.append("🚨 HEMOSTATIC ALERT: Patient on active antiplatelet/anticoagulant therapy. High bleeding hazard. NSAIDs contraindicated (severe GI bleed risk); avoid unmonitored procedures; record last-dose timing for emergency team.")
 
-        # Priority: Metformin Sick-Day Rule (General Dehydration / Sepsis)
-        if "metformin" in med_str and (scenario.id in [2, 7] or "hypovolemia" in scenario.title.lower() or "diarrhea" in scenario.title.lower()):
+        # Priority: Metformin Sick-Day Rule (General Dehydration / Sepsis / Shock)
+        if "metformin" in med_str and (scenario.id in [2, 7, 10] or "hypovolemia" in scenario.title.lower() or "diarrhea" in scenario.title.lower() or "sepsis" in scenario.title.lower() or is_vital_shock):
             if not any("METFORMIN" in a for a in ddi_alerts):
                 ddi_alerts.append("⚠️ METFORMIN SICK-DAY RULE (SADMANS): Hold Metformin during dehydrating illness, acute sepsis, or volume depletion due to increased risk of serious Metformin-Associated Lactic Acidosis (MALA). Coordinate clinical restart with physician once eGFR and hydration normalize.")
 
@@ -1405,8 +1431,9 @@ class ClinicalImpactEngine:
             ddi_alerts.append("⚠️ RESPIRATORY DDI: Patient is taking Beta-blockers. Non-cardioselective or high-dose beta-blockers exacerbate acute bronchospasm and blunt bronchodilator response.")
 
         # Priority: Serotonergic Safety Caution (SNRI/SSRI + Triptan)
-        if ("duloxetine" in med_str or "snri" in med_str or "ssri" in med_str) and ("triptan" in med_str or "rizatriptan" in med_str or "sumatriptan" in med_str):
-            ddi_alerts.append("⚠️ SEROTONERGIC CAUTION: Concomitant Duloxetine (SNRI) and Rizatriptan (5-HT1 agonist). Monitor for Serotonin Syndrome symptoms (hyperreflexia, clonus, autonomic instability, agitation).")
+        if any(s in med_str for s in ["duloxetine", "snri", "ssri", "sertraline", "fluoxetine", "escitalopram", "venlafaxine"]) and any(t in med_str for t in ["triptan", "rizatriptan", "sumatriptan", "zolmitriptan"]):
+            if not any("SEROTONERGIC" in a for a in ddi_alerts):
+                ddi_alerts.append("⚠️ SEROTONERGIC CAUTION: Concomitant Serotonergic agents (SSRI/SNRI + 5-HT1 Triptan). Monitor for Serotonin Syndrome symptoms (hyperreflexia, clonus, autonomic instability, agitation).")
 
         if not ddi_alerts:
             ddi_alerts.append("✓ No immediate high-risk DDI clashes detected with baseline profile.")
@@ -1417,13 +1444,24 @@ class ClinicalImpactEngine:
         kitchen: List[str] = []
         lifestyle: List[str] = []
 
-        if triage_level == "EMERGENCY":
-            allopathic.append("Immediate 112/911 ambulance transport to tertiary emergency trauma/cardiac unit.")
-            allopathic.append("Establish dual large-bore IV access, continuous 12-lead ECG telemetry, and supplemental oxygen if SpO2 < 92%.")
-            allopathic.append("Do NOT administer oral medications if aspiration or emergency endoscopy/surgery is possible.")
-            ayush.append("Hold traditional formulations until emergency clinical stabilization is achieved.")
-            kitchen.append("Nil Per Os (NPO / Nothing by mouth) while awaiting emergency team assessment.")
-            lifestyle.append("Complete bed rest in semi-Fowler position (head elevated 30-45 degrees). Loosen tight clothing.")
+        if "EMERGENCY" in triage_level:
+            if triage_level == "EMERGENCY (OBSTETRIC)":
+                allopathic.append("Immediate 112/911 ambulance transport to Tertiary Obstetric Hospital / Labor & Delivery Unit.")
+                allopathic.append("Continuous maternal-fetal monitoring (CTG), IV hydration, and immediate obstetrician evaluation.")
+                allopathic.append("Do NOT administer systemic NSAIDs, ACE-inhibitors, or unsafe antibiotics in pregnancy.")
+                ayush.append("Hold traditional formulations until obstetric and fetal stabilization is confirmed.")
+                kitchen.append("Nil Per Os (NPO / Nothing by mouth) while awaiting emergency team assessment.")
+                lifestyle.append("Left lateral decubitus position (tilt 15-30 degrees to the left) to relieve inferior vena cava compression and optimize placental perfusion.")
+            else:
+                allopathic.append("Immediate 112/911 ambulance transport to tertiary emergency trauma/cardiac unit.")
+                allopathic.append("Establish dual large-bore IV access, continuous 12-lead ECG telemetry, and supplemental oxygen if SpO2 < 92%.")
+                allopathic.append("Do NOT administer oral medications if aspiration or emergency endoscopy/surgery is possible.")
+                ayush.append("Hold traditional formulations until emergency clinical stabilization is achieved.")
+                kitchen.append("Nil Per Os (NPO / Nothing by mouth) while awaiting emergency team assessment.")
+                if scenario.emergency_type in ["UPPER_GI_BLEED", "HYPOVOLEMIC_SHOCK"] or scenario.id in [6, 10] or is_vital_shock:
+                    lifestyle.append("Supine position with legs elevated 30 degrees (or left lateral recovery position if actively vomiting or nauseated to protect airway). Avoid head elevation.")
+                else:
+                    lifestyle.append("Complete bed rest in semi-Fowler position (head elevated 30-45 degrees). Loosen tight clothing.")
         else:
             # Calibrated Non-Emergency Recommendations
             if scenario.id == 3:  # Migraine / Headache
